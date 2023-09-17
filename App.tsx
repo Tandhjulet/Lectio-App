@@ -1,19 +1,19 @@
 import { NavigationContainer, NavigationProp, useNavigation, useRoute } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Skema from './Skema';
-import Beskeder from './Beskeder';
-import Lektier from './Lektier';
-import Mere from './Mere';
-import Header from '../components/Header';
+import Skema from './pages/Skema';
+import Beskeder from './pages/Beskeder';
+import Lektier from './pages/Lektier';
+import Mere from './pages/Mere';
+import Header from './components/Header';
 
-import Loading from './Loading';
-import Login from './login/Login';
-import Schools from './login/Schools';
-import COLORS from '../modules/Themes';
+import Loading from './pages/Loading';
+import Login from './pages/login/Login';
+import Schools from './pages/login/Schools';
+import COLORS from './modules/Themes';
 import { View } from 'react-native';
-import Absence from './mere/Absence';
-import TeachersAndStudents from './mere/TeachersAndStudents';
-import TruantOMeter from './mere/TruantOMeter';
+import Absence from './pages/mere/Absence';
+import TeachersAndStudents from './pages/mere/TeachersAndStudents';
+import TruantOMeter from './pages/mere/TruantOMeter';
 
 const AppStack = createNativeStackNavigator();
 const Settings = createNativeStackNavigator();
