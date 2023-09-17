@@ -10,10 +10,10 @@ import Loading from './pages/Loading';
 import Login from './pages/login/Login';
 import Schools from './pages/login/Schools';
 import COLORS from './modules/Themes';
-import { View } from 'react-native';
 import Absence from './pages/mere/Absence';
 import TeachersAndStudents from './pages/mere/TeachersAndStudents';
 import TruantOMeter from './pages/mere/TruantOMeter';
+import { LogBox } from 'react-native';
 
 const AppStack = createNativeStackNavigator();
 const Settings = createNativeStackNavigator();

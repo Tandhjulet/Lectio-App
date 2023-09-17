@@ -3,9 +3,9 @@ import NavigationBar from "../components/Navbar";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import COLORS from "../modules/Themes";
 import { useEffect, useState } from "react";
-import { Profile } from "../modules/Profile";
 import { BellSnoozeIcon, UserMinusIcon, UsersIcon } from "react-native-heroicons/solid";
 import { getUnsecure, removeSecure, removeUnsecure, signOut } from "../modules/api/Authentication";
+import { Profile, getProfile, saveProfile } from "../modules/api/scraper/Scraper";
 
 export default function Mere({ navigation }: {navigation: any}) {
     const [loading, setLoading] = useState<boolean>(true);
@@ -17,25 +17,17 @@ export default function Mere({ navigation }: {navigation: any}) {
     const [beskeder, setBeskeder] = useState<boolean>();
 
     useEffect(() => {
-        setProfile({
-            name: "Mads Bech Mortensen",
-            school: "Tradium, Vester Allè",
-            username: "23htx23h205",
+        (async () => {
+            const prof = await getProfile() 
+            setProfile(prof);
 
-            notifications: {
-                aflysteLektioner: true,
-                beskeder: true,
-                ændredeLektioner: true,
-            }
-        })
-
-        setAflysteLektioner(true);
-        setÆndredeLektioner(true);
-        setBeskeder(true);
-
-        setLoading(false);
-    }, [])
+            setAflysteLektioner(prof.notifications.aflysteLektioner);
+            setÆndredeLektioner(prof.notifications.ændredeLektioner);
+            setBeskeder(prof.notifications.beskeder);
     
+            setLoading(false);
+        })();
+    }, [])
 
     return (
     <View style={{height: '100%',width:'100%'}}>
@@ -124,7 +116,16 @@ export default function Mere({ navigation }: {navigation: any}) {
                             cellAccessoryView={<Switch 
                                 trackColor={{false: '#767577', true: "#4ca300"}}
 
-                                onValueChange={() => setAflysteLektioner((prev) => !prev)}
+                                onValueChange={() => setAflysteLektioner((prev) => {
+                                    setProfile((profile) => {
+                                        if(profile != null) {
+                                            profile.notifications.aflysteLektioner = !prev;
+                                            saveProfile(profile);
+                                        }
+                                        return profile;
+                                    })
+                                    return !prev
+                                })}
                                 value={aflysteLektioner}
                             />}
                         />
@@ -135,7 +136,16 @@ export default function Mere({ navigation }: {navigation: any}) {
                             cellAccessoryView={<Switch 
                                 trackColor={{false: '#767577', true: "#4ca300"}}
 
-                                onValueChange={() => setÆndredeLektioner((prev) => !prev)}
+                                onValueChange={() => setÆndredeLektioner((prev) => {
+                                    setProfile((profile) => {
+                                        if(profile != null) {
+                                            profile.notifications.ændredeLektioner = !prev;
+                                            saveProfile(profile);
+                                        }
+                                        return profile;
+                                    })
+                                    return !prev
+                                })}
                                 value={ændredeLektioner}
                             />}
                         />
@@ -146,7 +156,17 @@ export default function Mere({ navigation }: {navigation: any}) {
                             cellAccessoryView={<Switch 
                                 trackColor={{false: '#767577', true: "#4ca300"}}
 
-                                onValueChange={() => setBeskeder((prev) => !prev)}
+                                onValueChange={() => setBeskeder((prev) => {
+                                    setProfile((profile) => {
+                                        if(profile != null) {
+                                            profile.notifications.beskeder = !prev;
+                                            saveProfile(profile);
+                                        }
+
+                                        return profile;
+                                    })
+                                    return !prev
+                                })}
                                 value={beskeder}
                             />}
                         />
@@ -169,9 +189,13 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                                     await removeSecure("password");
                                     await removeSecure("username");
-                                    await removeUnsecure("gym");
-    
-                                    await navigation.navigate("Schools");
+                                    //await removeUnsecure("gym");
+
+                                    await getUnsecure("gym").then((gym: { gymNummer: string, gymName: string }) => {
+                                        navigation.navigate("Login", {
+                                            gym: [gym.gymName, gym.gymNummer]
+                                        })
+                                    })
                                 })();
                             }}
                         />

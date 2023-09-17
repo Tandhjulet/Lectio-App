@@ -103,7 +103,6 @@ export async function getUnsecure(key: string) {
 }
 
 export async function signOut() {
-
     fetch(SCRAPE_URLS().LOG_UD, {
         method: "GET",
         credentials: "include",

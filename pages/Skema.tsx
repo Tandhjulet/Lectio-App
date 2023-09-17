@@ -1,4 +1,4 @@
-import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, LogBox, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { useEffect, useState } from "react";
 import { getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
@@ -212,7 +212,7 @@ export default function Skema({ navigation }: {
 
     const [ loadDate, setLoadDate ] = useState<Date>(new Date());
 
-    const [ skema, setSkema ] = useState<Day[]>([]);
+    const [ skema, setSkema ] = useState<Day[] | null>([]);
     const [ loading, setLoading ] = useState(true);
 
     const [modalVisible, setModalVisible] = useState(false);
@@ -335,7 +335,7 @@ export default function Skema({ navigation }: {
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => {
-                    if(skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter == "")
+                    if(skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter == ""))
                         return;
 
                     setModalVisible(true)
@@ -345,7 +345,7 @@ export default function Skema({ navigation }: {
                         padding: 5,
                         borderRadius: 12.5,
 
-                        opacity: (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter == "") ? 0.5 : 1,
+                        opacity: (skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter == "")) ? 0.5 : 1,
                     }}>
                         <ClipboardDocumentListIcon color={COLORS.DARK} />
                     </View>
@@ -398,7 +398,7 @@ export default function Skema({ navigation }: {
                                 <Text style={{
                                     color: COLORS.WHITE,
                                 }}>
-                                    {skema[dayNum - 2] != undefined && skema[dayNum - 2].skemaNoter}
+                                    {skema != null && skema[dayNum - 2] != undefined && skema[dayNum - 2].skemaNoter}
                                 </Text>
                             </View>
                         </View>
@@ -510,7 +510,29 @@ export default function Skema({ navigation }: {
                     </View>
                     :
                     <ScrollView>
-                        {skema[dayNum - 1] == undefined ? (
+                        {skema == null && 
+                        <View style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+
+                            flexDirection: 'column-reverse',
+
+                            minHeight: '40%',
+
+                            gap: 20,
+                        }}>
+                            <Text style={{
+                                color: COLORS.RED,
+                                textAlign: 'center'
+                            }}>
+                                Der opstod en fejl.
+                                {"\n"}
+                                Du kan prøve igen ved at genstarte appen.
+                            </Text>
+
+                        </View>}
+                        {skema != null && skema[dayNum - 1] == undefined ? (
                             <View style={{
                                 display: 'flex',
                                 justifyContent: 'center',
@@ -535,7 +557,7 @@ export default function Skema({ navigation }: {
                         )
                         :
                         <>
-                            {skema[dayNum - 1].sortedKeys.map((index: string, i: number) => {
+                            {skema != null && skema[dayNum - 1].sortedKeys.map((index: string, i: number) => {
                                 const moduler: Modul[] = skema[dayNum - 1].moduler[index];
 
                                 return (

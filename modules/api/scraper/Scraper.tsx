@@ -1,7 +1,10 @@
 // @ts-ignore
 import DomSelector from 'react-native-dom-parser';
 import { Day, scrapeSchema } from './SkemaScraper';
-import { TypedAbsence, scrapeAbsence } from './AbsenceScraper';
+import { Fag, scrapeAbsence } from './AbsenceScraper';
+
+import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 export function SCRAPE_URLS(gymNummer?: String) {
@@ -71,40 +74,122 @@ export async function getASPHeaders(gymNummer: string): Promise<{[id: string]: s
     return headers;
 }
 
-export async function getElevID(gymNummer: string): Promise<string> {
-    const res = await fetch(SCRAPE_URLS(gymNummer).FORSIDE, {
+export async function fetchProfile(): Promise<Profile> {
+    let gym: {gymName: string, gymNummer: string} = await _getUnsecure("gym");
+    if(gym == null)
+        gym = { gymName: "", gymNummer: "" }
+    
+    let username = await getUsername();
+    if(username == null)
+        username = "";
+
+    const res = await fetch(SCRAPE_URLS(gym.gymNummer).FORSIDE, {
         method: "GET",
         credentials: 'include',
         headers: {
             "User-Agent": "Mozilla/5.0",
         },
     })
-
     const text = await res.text();
-
     const parser = DomSelector(text);
-    let elevID = parser.getElementsByName("msapplication-starturl")[0];
 
+    let elevID = parser.getElementsByName("msapplication-starturl")[0];
     if(elevID != null && "attributes" in elevID)
         elevID = elevID.attributes.content
     else {
-        // probably rate limited 
         console.warn("Rate limited!")
-        return "";
+        elevID = "";
     }
-
-    if(elevID == "/lectio/" + gymNummer + "/default.aspx") {
+    if(elevID == "/lectio/" + gym.gymNummer + "/default.aspx") {
         console.warn("getElevID called without login.")
-        return "";
+        elevID = "";
     }
 
-    return elevID.split("?")[1].replace(/\D/gm, "");
+    let realName = parser.getElementById("s_m_HeaderContent_MainTitle");
+    if(realName == null) {
+        realName = "";
+        console.warn("getProfile called with no login!");
+    }
+    realName = realName.firstChild.firstChild.text.split(", ")[0].replace("Eleven", "");
+
+    return {
+        name: realName,
+        username: username,
+
+        elevId: elevID.split("?")[1].replace(/\D/gm, ""),
+    
+        school: gym.gymName,
+    
+        notifications: {
+            aflysteLektioner: true,
+            ændredeLektioner: true,
+            beskeder: true,
+        }
+    }
 }
 
-
-export async function getSkema(gymNummer: string, date: Date): Promise<Day[]> {
+export type Profile = {
+    name: string,
+    username: string,
     
-    const res = await fetch(SCRAPE_URLS(gymNummer).SKEMA + `?type=elev&elevid=${await getElevID(gymNummer)}&week=${getWeekNumber(date).toString().padStart(2, "0")}${date.getFullYear()}`, {
+    elevId: string,
+    school: string,
+
+    notifications: {
+        aflysteLektioner: boolean,
+        ændredeLektioner: boolean,
+        beskeder: boolean,
+    }
+}
+
+let profile: Profile;
+
+// this is so stupid, but it's the only way to get metro to stfu.
+async function _getUnsecure(key: string) {
+    const stringifiedValue = await AsyncStorage.getItem(key);
+    if(stringifiedValue == null)
+        return null;
+    return JSON.parse(stringifiedValue);
+}
+
+export async function saveProfile(newProfile: Profile) {
+    if(newProfile == null)
+        return;
+    profile = newProfile;
+
+    const stringifiedValue = JSON.stringify(newProfile);
+    await AsyncStorage.setItem("profile", stringifiedValue);
+}
+
+async function getUsername() {
+    const res = await SecureStore.getItemAsync("username");
+    return res;
+}
+// end of stupidity.
+
+export async function getProfile(): Promise<Profile> {
+    if(profile != null) {
+        return profile;
+    }
+
+    const savedProfile = await _getUnsecure("profile");
+    if(savedProfile != null) {
+        profile = savedProfile;
+        return savedProfile;
+    }
+
+    // first login or maybe memory cleared. let's make a new profile and save it.
+
+    profile = await fetchProfile();
+    saveProfile(profile);
+
+    return profile;
+}
+
+export async function getSkema(gymNummer: string, date: Date): Promise<Day[] | null> {
+    const profile: Profile = await getProfile();
+    
+    const res = await fetch(SCRAPE_URLS(gymNummer).SKEMA + `?type=elev&elevid=${profile.elevId}&week=${getWeekNumber(date).toString().padStart(2, "0")}${date.getFullYear()}`, {
         method: "GET",
         credentials: 'include',
         headers: {
@@ -115,12 +200,12 @@ export async function getSkema(gymNummer: string, date: Date): Promise<Day[]> {
     const text = await res.text();
 
     const parser = DomSelector(text);
-    const skema: Day[] = scrapeSchema(parser);
+    const skema: Day[] | null = scrapeSchema(parser);
 
     return skema;
 }
 
-export async function getAbsence(gymNummer: string): Promise<TypedAbsence[]> {
+export async function getAbsence(gymNummer: string): Promise<Fag[]> {
     const res = await fetch(SCRAPE_URLS(gymNummer).ABSENCE, {
         method: "GET",
         credentials: 'include',

@@ -1,6 +1,9 @@
-export function scrapeSchema(parser: any): Day[] {
+export function scrapeSchema(parser: any): Day[] | null {
 
     const table = parser.getElementById("s_m_Content_Content_SkemaNyMedNavigation_skema_skematabel");
+    if(table == null) {
+        return null;
+    }
 
     const days = table.lastChild.children;
 
