@@ -1,7 +1,7 @@
 import { ActivityIndicator, LogBox, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { useEffect, useState } from "react";
-import { getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
+import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
 import { getUnsecure, isAuthorized } from "../modules/api/Authentication";
 import { Day, Modul } from "../modules/api/scraper/SkemaScraper";
 import COLORS from "../modules/Themes";
@@ -217,6 +217,8 @@ export default function Skema({ navigation }: {
 
     const [modalVisible, setModalVisible] = useState(false);
 
+    const [ profile, setProfile ] = useState<Profile>();
+
     const daySelector = (t: "ADD" | "REMOVE") => {
         setSelectedDay((prev) => {
             const copy = new Date(prev);
@@ -257,6 +259,7 @@ export default function Skema({ navigation }: {
 
             setLoadWeekDate(loadDate);
             setDaysOfWeek(getDaysOfCurrentWeek(loadDate));
+            setProfile(await getProfile());
 
             getSkema(gymNummer, loadDate).then((skema) => {
                 setSkema(skema)
@@ -291,7 +294,7 @@ export default function Skema({ navigation }: {
                 <Text style={{
                     fontSize: 20,
                     color: COLORS.LIGHT,
-                }}>Godmorgen, Mads</Text>
+                }}>Godmorgen, {profile == undefined ? "..." : profile.name.split(' ')[0]}</Text>
 
                 <Text style={{
                     fontSize: 30,

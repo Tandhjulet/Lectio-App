@@ -17,10 +17,6 @@ export default function Header({ navigation, route, options, back }: {
 }) {
     const title = getHeaderTitle(options, route.name);
 
-    if(title == "Login" || title == "Settings" || title == "Mere" || title == "Skema") {
-        return null;
-    }
-
     if(title === "Schools") {
         return (<Fragment>
             <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>

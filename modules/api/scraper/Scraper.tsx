@@ -5,9 +5,11 @@ import { Fag, scrapeAbsence } from './AbsenceScraper';
 
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Message } from 'react-hook-form';
+import { LectioMessage, scrapeMessages } from './MessageScraper';
 
 
-export function SCRAPE_URLS(gymNummer?: String) {
+export function SCRAPE_URLS(gymNummer?: String, elevId?: string, selectedFolder: number = -70) {
     const _URLS = {
         "GYM_LIST": "https://www.lectio.dk/lectio/login_list.aspx?forcemobile=1",
         "LOGIN_URL": `https://www.lectio.dk/lectio/${gymNummer}/login.aspx`,
@@ -15,6 +17,7 @@ export function SCRAPE_URLS(gymNummer?: String) {
         "SKEMA": `https://www.lectio.dk/lectio/${gymNummer}/SkemaNy.aspx`,
         "LOG_UD": "https://www.lectio.dk/lectio/572/logout.aspx",
         "ABSENCE": "https://www.lectio.dk/lectio/572/subnav/fravaerelev.aspx",
+        "MESSAGES": `https://www.lectio.dk/lectio/572/beskeder2.aspx?type=&elevid=${elevId}&selectedfolderid=${selectedFolder}`,
     } as const;
 
     return _URLS;
@@ -110,7 +113,7 @@ export async function fetchProfile(): Promise<Profile> {
         realName = "";
         console.warn("getProfile called with no login!");
     }
-    realName = realName.firstChild.firstChild.text.split(", ")[0].replace("Eleven", "");
+    realName = realName.firstChild.firstChild.text.split(", ")[0].replace("Eleven ", "");
 
     return {
         name: realName,
@@ -142,9 +145,10 @@ export type Profile = {
     }
 }
 
+// this is so stupid, but it's the only way to get metro to stfu.
+
 let profile: Profile;
 
-// this is so stupid, but it's the only way to get metro to stfu.
 async function _getUnsecure(key: string) {
     const stringifiedValue = await AsyncStorage.getItem(key);
     if(stringifiedValue == null)
@@ -155,7 +159,7 @@ async function _getUnsecure(key: string) {
 export async function saveProfile(newProfile: Profile) {
     if(newProfile == null)
         return;
-    profile = newProfile;
+    //profile = newProfile;
 
     const stringifiedValue = JSON.stringify(newProfile);
     await AsyncStorage.setItem("profile", stringifiedValue);
@@ -165,7 +169,6 @@ async function getUsername() {
     const res = await SecureStore.getItemAsync("username");
     return res;
 }
-// end of stupidity.
 
 export async function getProfile(): Promise<Profile> {
     if(profile != null) {
@@ -186,6 +189,8 @@ export async function getProfile(): Promise<Profile> {
     return profile;
 }
 
+// end of stupidity.
+
 export async function getSkema(gymNummer: string, date: Date): Promise<Day[] | null> {
     const profile: Profile = await getProfile();
     
@@ -204,6 +209,26 @@ export async function getSkema(gymNummer: string, date: Date): Promise<Day[] | n
 
     return skema;
 }
+
+export async function getMessages(gymNummer: string): Promise<LectioMessage[] | null> {
+    const profile: Profile = await getProfile();
+
+    const res = await fetch(SCRAPE_URLS(gymNummer, profile.elevId).MESSAGES, {
+        method: "GET",
+        credentials: 'include',
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+        },
+    });
+
+    const text = await res.text();
+
+    const parser = DomSelector(text);
+    const messages = scrapeMessages(parser);
+
+    return messages;
+}
+
 
 export async function getAbsence(gymNummer: string): Promise<Fag[]> {
     const res = await fetch(SCRAPE_URLS(gymNummer).ABSENCE, {

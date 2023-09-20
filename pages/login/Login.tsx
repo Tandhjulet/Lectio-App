@@ -47,6 +47,7 @@ export default function Login({ route, navigation }: {
                 justifyContent: 'center',
                 alignItems: 'center',
 
+                paddingBottom: 75,
             }}>
 
                 <Text style={{
