@@ -2,12 +2,15 @@ import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, View } from "r
 import NavigationBar from "../components/Navbar";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import COLORS from "../modules/Themes";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { BellSnoozeIcon, UserMinusIcon, UsersIcon } from "react-native-heroicons/solid";
 import { getUnsecure, removeSecure, removeUnsecure, signOut } from "../modules/api/Authentication";
 import { Profile, getProfile, saveProfile } from "../modules/api/scraper/Scraper";
+import { AuthContext } from "../modules/Auth";
 
 export default function Mere({ navigation }: {navigation: any}) {
+    const { signOut } = useContext(AuthContext);
+
     const [loading, setLoading] = useState<boolean>(true);
 
     const [profile, setProfile] = useState<Profile>();
@@ -191,11 +194,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     await removeSecure("username");
                                     //await removeUnsecure("gym");
 
-                                    await getUnsecure("gym").then((gym: { gymNummer: string, gymName: string }) => {
-                                        navigation.navigate("Login", {
-                                            gym: [gym.gymName, gym.gymNummer]
-                                        })
-                                    })
+                                    signOut()
                                 })();
                             }}
                         />

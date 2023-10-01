@@ -1,13 +1,47 @@
-import { Text, View } from "react-native";
+import { Image, ScrollView, Text, View } from "react-native";
 import { LectioMessage } from "../../modules/api/scraper/MessageScraper";
 import { NavigationProp, RouteProp } from "@react-navigation/native";
 import COLORS from "../../modules/Themes";
+import { useEffect, useState } from "react";
+import { getPeople } from "../../modules/api/scraper/class/PeopleList";
+import { SCRAPE_URLS, getMessage } from "../../modules/api/scraper/Scraper";
+import { getUnsecure } from "../../modules/api/Authentication";
+import { UserIcon } from "react-native-heroicons/solid";
+
+const CLEAN_NAME = (name: string) => {
+    return name.replace(new RegExp(/ \(.*?\)/), "")
+}
 
 export default function BeskedView({ navigation, route }: {
     navigation: NavigationProp<any>,
     route: RouteProp<any>
 }) {
+    const [loading, setLoading] = useState<boolean>(true);
+
+    const [messageBody, setMessageBody] = useState<string>();
+
+    const [billedeId, setBilledeId] = useState<string>();
+    const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>();
+
     const message: LectioMessage = route.params?.message;
+
+    useEffect(() => {
+        (async () => {
+            const gym: { gymName: string, gymNummer: string } = await getUnsecure("gym");
+            setGym(gym);
+
+            const people = await getPeople();
+
+            if(people != null)
+                setBilledeId(people[CLEAN_NAME(route.params?.message.sender)]?.billedeId)
+
+            const body = await getMessage(gym.gymNummer, message.messageId);
+            if(body != null)
+                setMessageBody(body.body);
+            
+            setLoading(false)
+        })()
+    }, [])
 
     return (
         <View style={{
@@ -17,24 +51,96 @@ export default function BeskedView({ navigation, route }: {
             display: 'flex',
             justifyContent: 'center',
             paddingBottom: 200,
+
         }}>
-            <View style={{
+            <ScrollView style={{
                 paddingHorizontal: 10,
                 paddingVertical: 20,
 
                 backgroundColor: COLORS.DARK,
                 borderRadius: 5,
 
-                maxWidth: "100%",
                 marginHorizontal: 40,
+
+                flexGrow: 0,
+                maxHeight: "70%"
             }}>
-                <Text>
-                    {message.sender}
-                </Text>
-                <Text>
-                    {message.title}
-                </Text>
-            </View>
+                {!loading &&
+                    <View style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 10,
+                    }}>
+                        <View style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            gap: 10,
+
+                            alignItems: 'center',
+                        }}>
+                            {billedeId != undefined ? (
+                                <Image
+                                    style={{
+                                        borderRadius: 100,
+                                        width: 50,
+                                        height: 50,
+                                    }}
+                                    source={{
+                                        uri: SCRAPE_URLS(gym?.gymNummer, billedeId).PICTURE_HIGHQUALITY,
+                                        headers: {
+                                            "User-Agent": "Mozilla/5.0",
+                                            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                                        },
+                                    }}
+                                    crossOrigin="use-credentials"
+                                />
+                            ) : (
+                                <UserIcon style={{
+                                    borderRadius: 100,
+                                }} color={COLORS.WHITE} size={35} />
+                            )}
+                            <View style={{
+                                maxWidth: "80%",
+                            }}>
+                                <Text style={{
+                                    color: COLORS.WHITE,
+                                    fontWeight: 'bold',
+                                    fontSize: 12,
+
+                                    opacity: 0.8,
+                                }}>
+                                    {message.sender}
+                                </Text>
+
+                                <Text style={{
+                                    color: COLORS.WHITE,
+                                    fontWeight: 'bold',
+                                }}>
+                                    {message.title}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={{
+                            borderTopColor: COLORS.WHITE,
+                            borderTopWidth: 1,
+                            opacity: 0.5,
+                            marginHorizontal: 5,
+                        }} />
+
+                        <View style={{
+                            paddingHorizontal: 10,
+                            marginBottom: 50,
+                        }}>
+                            <Text style={{
+                                color: COLORS.WHITE,
+                            }}>
+                                {messageBody}
+                            </Text>
+                        </View>
+                    </View>
+                }
+            </ScrollView>
         </View>
     )
 }

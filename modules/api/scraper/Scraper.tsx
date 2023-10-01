@@ -6,18 +6,25 @@ import { Fag, scrapeAbsence } from './AbsenceScraper';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Message } from 'react-hook-form';
-import { LectioMessage, scrapeMessages } from './MessageScraper';
+import { LectioMessage, LectioMessageDetailed, scrapeMessage, scrapeMessages } from './MessageScraper';
 
 
-export function SCRAPE_URLS(gymNummer?: String, elevId?: string, selectedFolder: number = -70) {
+export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: string, type?: "bcstudent" | "bcteacher", selectedFolder: number = -70) {
     const _URLS = {
         "GYM_LIST": "https://www.lectio.dk/lectio/login_list.aspx?forcemobile=1",
         "LOGIN_URL": `https://www.lectio.dk/lectio/${gymNummer}/login.aspx`,
         "FORSIDE": `https://www.lectio.dk/lectio/${gymNummer}/forside.aspx`,
         "SKEMA": `https://www.lectio.dk/lectio/${gymNummer}/SkemaNy.aspx`,
-        "LOG_UD": "https://www.lectio.dk/lectio/572/logout.aspx",
-        "ABSENCE": "https://www.lectio.dk/lectio/572/subnav/fravaerelev.aspx",
-        "MESSAGES": `https://www.lectio.dk/lectio/572/beskeder2.aspx?type=&elevid=${elevId}&selectedfolderid=${selectedFolder}`,
+        "SKEMA_FOR": `https://www.lectio.dk/lectio/${gymNummer}/SkemaNy.aspx?type=${type}&elevid=${elevId}`,
+        "LOG_UD": `https://www.lectio.dk/lectio/${gymNummer}/logout.aspx`,
+        "ABSENCE": `https://www.lectio.dk/lectio/${gymNummer}/subnav/fravaerelev.aspx`,
+        "MESSAGES": `https://www.lectio.dk/lectio/${gymNummer}/beskeder2.aspx?type=&elevid=${elevId}&selectedfolderid=${selectedFolder}`,
+        "S_MESSAGE": `https://www.lectio.dk/lectio/${gymNummer}/beskeder2.aspx?type=showthread&elevid=${elevId}&selectedfolderid=${selectedFolder}&id=${klasseId}`,
+        "PEOPLE": `https://www.lectio.dk/lectio/${gymNummer}/cache/DropDown.aspx?type=${type}`,
+        "CLASS_LIST": `https://www.lectio.dk/lectio/${gymNummer}/FindSkema.aspx?type=stamklasse`,
+        "CLASS": `https://www.lectio.dk/lectio/${gymNummer}/subnav/members.aspx?klasseid=${klasseId}&showstudents=1&reporttype=withpics&showteachers=1`,
+        "PICTURE": `https://www.lectio.dk/lectio/${gymNummer}/GetImage.aspx?pictureid=${elevId}`,
+        "PICTURE_HIGHQUALITY": `https://www.lectio.dk/lectio/${gymNummer}/GetImage.aspx?pictureid=${elevId}&fullsize=1`
     } as const;
 
     return _URLS;
@@ -57,8 +64,8 @@ function parseASPHeaders(ASPHeader: any) {
     return parsedHeaders;
 }
 
-export async function getASPHeaders(gymNummer: string): Promise<{[id: string]: string}> {
-    const text = await (await fetch(SCRAPE_URLS(gymNummer).LOGIN_URL, {
+export async function getASPHeaders(url: string): Promise<{[id: string]: string}> {
+    const text = await (await fetch(url, {
         method: "GET",
         credentials: 'include',
         headers: {
@@ -208,6 +215,25 @@ export async function getSkema(gymNummer: string, date: Date): Promise<Day[] | n
     const skema: Day[] | null = scrapeSchema(parser);
 
     return skema;
+}
+
+export async function getMessage(gymNummer: string, messageId: string): Promise<LectioMessageDetailed | null> {
+    const profile: Profile = await getProfile();
+
+    const res = await fetch(SCRAPE_URLS(gymNummer, profile.elevId, messageId).S_MESSAGE, {
+        method: "GET",
+        credentials: 'include',
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+        },
+    });
+
+    const text = await res.text();
+
+    const parser = DomSelector(text);
+    const messageBody = scrapeMessage(parser);
+
+    return messageBody;
 }
 
 export async function getMessages(gymNummer: string): Promise<LectioMessage[] | null> {

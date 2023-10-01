@@ -4,6 +4,31 @@ export type LectioMessage = {
     editDate: Date | null,
 
     unread: boolean,
+
+    messageId: string,
+}
+
+export async function scrapeMessage(parser: any): Promise<LectioMessageDetailed | null> {
+    const ul = parser.getElementById("s_m_Content_Content_ThreadList");
+    if(ul == null) {
+        return {body: ""};
+    }
+
+    let out: string = "";
+
+    const content = ul.firstChild.lastChild;
+    for(let child in content.children) {
+        if(content.children[child].tagName == "br") {
+            out += "\n"
+        } else {
+            const text: string = content.children[child].text;
+            out += text.trim();
+        }
+    }
+
+    console.log(out);
+
+    return { body: out };
 }
 
 export async function scrapeMessages(parser: any): Promise<LectioMessage[] | null> {
@@ -26,10 +51,17 @@ export async function scrapeMessages(parser: any): Promise<LectioMessage[] | nul
             editDate: new Date(),
 
             unread: false,
+            messageId: "",
         }
 
         if(message.classList != null && message.classList.includes("unread")) {
             scaffOld.unread = true
+        }
+
+        const onclickId: string = message.children[3].firstChild.firstChild.attributes.onclick;
+        const idMatches = onclickId.match(new RegExp(/_MC_\$_\d+?&#/))
+        if(idMatches != null) {
+            scaffOld.messageId = idMatches[0].replace("_MC_$_", "").replace("&#", "");
         }
 
         const title: string = message.children[3].firstChild.firstChild.firstChild.text;

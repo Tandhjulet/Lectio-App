@@ -2,15 +2,16 @@ import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { SCRAPE_URLS, getASPHeaders } from './scraper/Scraper';
+import { SignInPayload } from '../../App';
 
-async function getValueFor(key: string) {
+export async function secureGet(key: string) {
   const res = await SecureStore.getItemAsync(key);
   return res;
 }
 
 export async function validate(gymNummer: string, username: string, password: string): Promise<boolean> {
     const payload: {[id: string]: string} = {
-        ...(await getASPHeaders(gymNummer)),
+        ...(await getASPHeaders(SCRAPE_URLS(gymNummer).LOGIN_URL)),
 
         "__EVENTTARGET": "m$Content$submitbtn2",
         "m$Content$username": username,
@@ -55,27 +56,17 @@ export async function _isAuthorized(gymNummer: string) {
             "User-Agent": "Mozilla/5.0",
         },
     })
+
     return !res.url.includes("login.aspx?prevurl")
 }
 
-export async function authorize(): Promise<boolean> {
-    const gym: { gymName: string, gymNummer: string } = await getUnsecure("gym");
+export async function authorize({ gym, password, username }: SignInPayload): Promise<boolean> {
 
-    //if(await _isAuthorized(gym.gymNummer)) {
-    //    return true;
-    //}
-
-    // det her gør åbenbart så man ikke kan logge ind umiddelbart efter
-    // flot lavet
-
-    const pswd = await getValueFor("password");
-    const username = await getValueFor("username");
-
-    if(gym == null || pswd == null || username == null) {
+    if(gym == null || password == null || username == null) {
         return false;
     }
     
-    return validate(gym.gymNummer, username, pswd);
+    return validate(gym.gymNummer, username, password);
 }
 
 export async function secureSave(key: string, value: string) {

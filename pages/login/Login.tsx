@@ -1,14 +1,26 @@
 import { Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle } from "react-native";
 import COLORS from "../../modules/Themes";
 import { ArrowRightCircleIcon, ChevronDoubleRightIcon } from "react-native-heroicons/solid";
-import { useState } from "react";
-import { isAuthorized, secureSave, validate } from "../../modules/api/Authentication";
+import { useContext, useState } from "react";
+import { getUnsecure, isAuthorized, secureSave, validate } from "../../modules/api/Authentication";
+import { SignInPayload } from "../../App";
+import { AuthContext } from "../../modules/Auth";
 
 export default function Login({ route, navigation }: {
     route: any,
     navigation: any,
 }) {
-    const { gym }: {gym: Array<string>} = route.params;
+    const { signIn } = useContext(AuthContext);
+
+    const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>({ gymName: "Vælg venligst et gymnasie.", gymNummer: "0" })
+
+    getUnsecure("gym").then((gym: { gymName: string, gymNummer: string }) => {
+        if(gym == null || gym == undefined) {
+            setGym({ gymName: "Vælg venligst et gymnasie.", gymNummer: "0" })
+            return;
+        }
+        setGym(gym)
+    })
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -16,21 +28,19 @@ export default function Login({ route, navigation }: {
     const [invalidCredentials, setInvalidCredentials] = useState(false);
 
     function validateAndContinue() {
-        if(password == "" || username == "") {
+        if(password == "" || username == "" || gym?.gymNummer == "0") {
             setInvalidCredentials(true);
             return;
         }
-        
-        validate(gym[1], username, password).then((res) => {
-            if(res) {
-                secureSave("username", username);
-                secureSave("password", password);
 
-                setTimeout(() => navigation.navigate("Skema"), 500);
-            } else {
-                setInvalidCredentials(true);
-            }
-        })
+        const payload: SignInPayload = {
+            password: password,
+            username: username,
+            gym: gym,
+        }
+        
+        if(!signIn(payload))
+            setInvalidCredentials(true)
     }
 
     return (
@@ -78,7 +88,7 @@ export default function Login({ route, navigation }: {
                             fontWeight: "bold",
 
                             maxWidth: 290,
-                        }}>{gym[0]}</Text>
+                        }}>{gym.gymName}</Text>
 
                         <ArrowRightCircleIcon color={COLORS.ACCENT} />
                     </View>

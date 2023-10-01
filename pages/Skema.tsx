@@ -8,6 +8,7 @@ import COLORS from "../modules/Themes";
 import { BackwardIcon, ChatBubbleBottomCenterTextIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";
 import getDaysOfCurrentWeek, { WeekDay, getDay, getNextWeek, getPrevWeek } from "../modules/Date";
 import GestureRecognizer from 'react-native-swipe-gestures';
+import { getPeople } from "../modules/api/scraper/class/PeopleList";
 
 function differenceBetweenDates(date1: Date, date2: Date) {
     const hours = date1.getHours() - date2.getHours();
@@ -252,6 +253,7 @@ export default function Skema({ navigation }: {
     }
 
     useEffect(() => {
+
         setLoading(true);
 
         (async () => {
