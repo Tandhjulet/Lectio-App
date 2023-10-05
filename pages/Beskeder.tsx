@@ -1,33 +1,34 @@
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import NavigationBar from "../components/Navbar";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getMessages } from "../modules/api/scraper/Scraper";
 import COLORS from "../modules/Themes";
 import { getUnsecure } from "../modules/api/Authentication";
 import { LectioMessage } from "../modules/api/scraper/MessageScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { ChevronRightIcon } from "react-native-heroicons/solid";
-import { NavigationProp } from "@react-navigation/native";
+import { NavigationProp, useFocusEffect, useIsFocused } from "@react-navigation/native";
 
 export default function Beskeder({ navigation }: {navigation: NavigationProp<any>}) {
     const [ loading, setLoading ] = useState<boolean>(true);
     const [ messages, setMessages ] = useState<LectioMessage[] | null>([]);
+    const [ headers, setHeaders ] = useState<{[id: string]: string}>();
 
     useEffect(() => {
-        setLoading(true);
-
         (async () => {
             const gymNummer = (await getUnsecure("gym")).gymNummer;
 
-            getMessages(gymNummer).then((messages) => {
-                setMessages(messages);
+            getMessages(gymNummer).then((fetchedMessages) => {
+                setMessages(fetchedMessages.messages);
+                setHeaders(fetchedMessages.headers);
+
                 setLoading(false);
             })
         })();
-    }, [])
+    }, []);
 
     return (
-    <View style={{height: '100%',width:'100%'}}>
+    <View style={{minHeight: '100%',minWidth:'100%'}}>
         {loading ? 
             <View style={{
                 position: "absolute",
@@ -70,15 +71,17 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                     paddingHorizontal: 20,
                 }}>
                     <Section roundedCorners={true} hideSurroundingSeparators={true}>
-                        {messages.map((message: LectioMessage) => {
+                        {messages.map((message: LectioMessage, index: number) => {
                             return (
                                 <Cell 
                                     key={message.sender + "-" + message.editDate + "-" + message.title + "-" + message.editDate}
                                     accessory="DisclosureIndicator"
                                     cellStyle="Subtitle"
-                                    title={message.sender}
+                                    title={message.sender.split(" (")[0]}
                                     titleTextStyle={{
-                                        fontWeight: message.unread ? "bold" : "normal"
+                                        fontWeight: message.unread ? "bold" : "normal",
+                                        maxWidth: "80%",
+                                        overflow: "hidden",
                                     }}
                                     detail={message.title}
                                     contentContainerStyle={{
@@ -114,10 +117,18 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                             />
                                         </View>
                                     }
+                                    
                                     onPress={() => {
-                                        navigation.navigate("BeskedView", {
-                                            message: message,
-                                        })
+                                        const copy = messages;
+                                        if(copy != null) {
+                                            copy[index].unread = false;
+                                            setMessages([...copy]);
+
+                                            navigation.navigate("BeskedView", {
+                                                message: message,
+                                                headers: headers,
+                                            })
+                                        }
                                     }}
                                 />
                             )
@@ -127,8 +138,6 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                 }
             </ScrollView>
         }
-
-        <NavigationBar currentTab={"Beskeder"} navigation={navigation} />
     </View>
     )
 }

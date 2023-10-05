@@ -23,13 +23,31 @@ export function scrapeSchema(parser: any): Day[] | null {
     //parseDay(days[1].firstChild, table)
 }
 
+const formatDate = (date: Date) => {
+    return date.getHours().toString().padStart(2, "0") + ":" + date.getMinutes().toString().padStart(2, "0");
+}
+
+function differenceBetweenDates(date1: Date, date2: Date) {
+    const hours = date1.getHours() - date2.getHours();
+    const minutes = date1.getMinutes() - date2.getMinutes();
+
+    const out = minutes + hours*60;
+    if (out <= 70) {
+        return 70;
+    }
+
+    return out;
+}
+
+
 export type Modul = {
-    team: String,
-    teacher: String[],
-    lokale: String,
+    team: string,
+    teacher: string[],
+    lokale: string,
     timeSpan: {
-        endDate: Date,
-        startDate: Date,
+        endDate: string,
+        startDate: string,
+        diff: number,
     }
 
     changed: boolean,
@@ -37,6 +55,9 @@ export type Modul = {
 
     comment: boolean,
     homework: boolean,
+
+    lektier?: string[],
+    note?: string,
 }
 
 export type Day = {
@@ -44,6 +65,8 @@ export type Day = {
     sortedKeys: string[],
     skemaNoter: String,
 }
+
+let DEBUG = false;
 
 function parseDay(htmlObject: any, table: any, dayNum: number): Day {
     const modulListe = htmlObject.getElementsByTagName("a");
@@ -53,10 +76,12 @@ function parseDay(htmlObject: any, table: any, dayNum: number): Day {
     const out: {[id: string]: Modul[]} = {}
     let moduleNum = 0;
 
-    modulListe.forEach((modul: any) => {
+    modulListe.forEach((modul: any, index: number) => {
         
         if("text" in modul.children[0] && modul.children[0].text == "Aktivitetsforside")
             return;
+
+        const lektier = parseLektieNote(modul);
 
         let height;
         const regExpHeight = /top:(?<height>([\d\.]*))em/gm.exec(modul.text);
@@ -92,6 +117,7 @@ function parseDay(htmlObject: any, table: any, dayNum: number): Day {
             team: string,
             changed: boolean,
             cancelled: boolean,
+            modul?: string,
         } = parseInfoString(brik.lastChild)
 
         const parsedIcons: {homework: boolean, comment: boolean} = parseIconString(brik.firstChild)
@@ -111,9 +137,12 @@ function parseDay(htmlObject: any, table: any, dayNum: number): Day {
             comment: parsedIcons.comment,
             
             timeSpan: {
-                endDate: timeSpan[0], //moduleDates[moduleNum][0],
-                startDate: timeSpan[1], //moduleDates[moduleNum][1],
-            }
+                endDate: formatDate(timeSpan[0]), //moduleDates[moduleNum][0],
+                startDate: formatDate(timeSpan[1]), //moduleDates[moduleNum][1],
+                diff: differenceBetweenDates(timeSpan[1], timeSpan[0])
+            },
+
+            ...lektier,
         })
 
         moduleNum++;
@@ -195,12 +224,13 @@ function parseIconString(info: any): {homework: boolean, comment: boolean} {
     return out;
 }
 
-function parseInfoString(info: any): {
+export function parseInfoString(info: any): {
     teacher: string[],
     lokale: string,
     team: string,
     changed: boolean,
     cancelled: boolean,
+    modul?: string,
 } {
 
     const out: {
@@ -209,6 +239,7 @@ function parseInfoString(info: any): {
         team: string,
         changed: boolean,
         cancelled: boolean,
+        modul?: string,
     } = {
         teacher: [],
         lokale: "",
@@ -229,6 +260,9 @@ function parseInfoString(info: any): {
 
     if("children" in info) {
         info.children.forEach((element: any) => {
+            if(element.text.endsWith(". modul - "))
+                out["modul"] = element.text.replace(". modul - ", "")
+
             if(element.text == " ▪ ") 
                 return;
 
@@ -252,7 +286,7 @@ function parseInfoString(info: any): {
         });
 
         if(info.firstChild.tagName == "span" && info.firstChild.attributes["data-lectioContextCard"] == undefined) {
-            out["team"] = info.firstChild.firstChild.text;
+            out["team"] = info.firstChild.firstChild.text.replaceAll("&amp;", "&");
         }
         if(out["lokale"].startsWith("...")) {
             out["lokale"] = out["lokale"].replace(/\.\.\./, "");
@@ -261,6 +295,41 @@ function parseInfoString(info: any): {
             out["lokale"] = "..."
         }
     }
+
+    return out;
+}
+
+function parseLektieNote(info: any) {
+    const out: {
+        lektier?: string[],
+        note?: string,
+    } = {};
+
+    let infoString: string = info.text.split("data-additionalInfo='")[1];
+    infoString = infoString.slice(0, infoString.length - 2)
+
+    let lektier = infoString.split("Lektier:- ", 2)[1];
+    if(lektier != undefined) {
+        const lektieOut: string[] = [];
+
+        for (let lektie of lektier.split(" [...]- ")) {
+            if(lektie.includes(" [...]")) {
+                lektieOut.push(lektie.split(" [...]")[0])
+                break;
+            } else {
+                lektieOut.push(lektie)
+            }
+        }
+
+        out.lektier = lektieOut;
+    }
+
+    const index = infoString.indexOf("Note:");
+    if(index == -1)
+        return out;
+
+    const note = infoString.substring(index+5).replaceAll("&amp;amp;", "&amp;").replaceAll("&amp;", "&")
+    out.note = note;
 
     return out;
 }

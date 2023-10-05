@@ -1,15 +1,16 @@
 // @ts-ignore
 import DomSelector from 'react-native-dom-parser';
 import { getUnsecure } from "../../Authentication"
-import { SCRAPE_URLS, getASPHeaders } from "../Scraper"
+import { SCRAPE_URLS, getASPHeaders } from '../Helpers';
 
 export type Person = {
     type: "LÆRER" | "ELEV"
     navn: string,
     billedeId: string,
+    klasse: string,
 }
 
-export async function scrapeStudentPictures(classId: string) {
+export async function scrapeStudentPictures(classId: string, className: string) {
     const gym: { gymName: string, gymNummer: string } =  await getUnsecure("gym")
 
     const payload: {[id: string]: string} = {
@@ -44,12 +45,12 @@ export async function scrapeStudentPictures(classId: string) {
         // not logged in.
         return null;
 
-    const out = await extractDataFromTable(table);
+    const out = await extractDataFromTable(table, className);
 
     return out;
 }
 
-async function extractDataFromTable(table: any): Promise<{ [id: string]: Person }> {
+export async function extractDataFromTable(table: any, className: string): Promise<{ [id: string]: Person }> {
     const out: { [id: string]: Person } = {};
 
     table.children.forEach((trElement: any, index: number) => {
@@ -73,6 +74,7 @@ async function extractDataFromTable(table: any): Promise<{ [id: string]: Person 
             billedeId: id,
             navn: navn,
             type: type,
+            klasse: className,
         };
     })
 

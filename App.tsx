@@ -2,7 +2,6 @@ import { NavigationContainer, NavigationProp, RouteProp, useNavigation, useRoute
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Skema from './pages/Skema';
 import Beskeder from './pages/Beskeder';
-import Lektier from './pages/Lektier';
 import Mere from './pages/Mere';
 import Header from './components/Header';
 
@@ -19,9 +18,21 @@ import { authorize, getUnsecure, secureGet, secureSave } from './modules/api/Aut
 import { getItemAsync } from 'expo-secure-store';
 import SplashScreen from './pages/SplashScreen';
 import { AuthContext } from './modules/Auth';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { CalendarIcon, ClockIcon, EllipsisHorizontalIcon, EnvelopeIcon } from 'react-native-heroicons/solid';
+import NavigationBar from './components/Navbar';
+import ModulView from './pages/skema/ModulView';
+import { scrapePeople } from './modules/api/scraper/class/PeopleList';
+import Afleveringer from './pages/Afleveringer';
+
 
 const AppStack = createNativeStackNavigator();
 const Settings = createNativeStackNavigator();
+const Messages = createNativeStackNavigator();
+const SkemaNav = createNativeStackNavigator();
+
+const Tab = createBottomTabNavigator();
+
 
 type AuthType = {
   type: "SIGN_IN" | "SIGN_OUT",
@@ -85,9 +96,11 @@ export default function App() {
       }
       // validation here
 
-      if(await authorize(payload))
+      if(await authorize(payload)) {
         dispatch({ type: 'SIGN_IN', payload: payload });
-      else
+
+        setTimeout(() => scrapePeople(), 5000);
+      } else
         dispatch({ type: 'SIGN_OUT' });
 
     })();
@@ -121,60 +134,99 @@ export default function App() {
   return (
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>
-        <AppStack.Navigator screenOptions={{
-          gestureEnabled: false,
-          contentStyle: {
-            backgroundColor: COLORS.BLACK
-          },
-          animation:'none',
-
-          headerStyle: {
-            backgroundColor: COLORS.BLACK,
-          },
-          headerTitleStyle: {
-            color: COLORS.WHITE,
-          },
-          headerBackVisible: false,
-        }}>
           {state.isLoading ? (
-            <AppStack.Screen name="Splash" component={SplashScreen} />
+
+            <AppStack.Navigator screenOptions={{
+              gestureEnabled: false,
+              contentStyle: {
+                backgroundColor: COLORS.BLACK
+              },
+              animation:'none',
+    
+              headerStyle: {
+                backgroundColor: COLORS.BLACK,
+              },
+              headerTitleStyle: {
+                color: COLORS.WHITE,
+              },
+              headerBackVisible: false,
+            }}>
+              <AppStack.Screen name="Splash" component={SplashScreen} options={{
+                header: () => <></>
+              }} />
+            </AppStack.Navigator>
           ) : (
             <>
               {!state.loggedIn ? (
-                <>
+                <AppStack.Navigator screenOptions={{
+                  gestureEnabled: false,
+                  contentStyle: {
+                    backgroundColor: COLORS.BLACK
+                  },
+                  animation:'none',
+        
+                  headerStyle: {
+                    backgroundColor: COLORS.BLACK,
+                  },
+                  headerTitleStyle: {
+                    color: COLORS.WHITE,
+                  },
+                  headerBackVisible: false,
+                }}>
                   <AppStack.Screen name="Login" component={Login} />
 
                   <AppStack.Screen name="Schools" component={Schools} options={{
                     header: ({ navigation, route, options, back }) => Header({ navigation, route, options, back })
                   }} />
-                </>
+                </AppStack.Navigator>
               ) : (
-                <>
-                  <AppStack.Screen name="Skema" component={Skema} options={{
+                <Tab.Navigator
+                  tabBar={props => <NavigationBar currentTab={props.state.key} navigation={props.navigation} />}
+                >
+                  <Tab.Screen name="SkemaNavigator" component={SkemaNavigator} options={{
                     header: () => <></>
                   }} />
         
-                  <AppStack.Screen name="Beskeder" component={BeskedNavigator} options={{
+                  <Tab.Screen name="Beskeder" component={BeskedNavigator} options={{
                     header: () => <></>
                   }} />
-                  <AppStack.Screen name="Lektier" component={Lektier} />
         
-                  <AppStack.Screen name="Mere" component={MereNavigator} options={{
+                  <Tab.Screen name="Mere" component={MereNavigator} options={{
                     header: () => <></>
                   }} />
-                </>
+                </Tab.Navigator>
               )}
             </>
           )}
-        </AppStack.Navigator>
       </NavigationContainer>
     </AuthContext.Provider>
   );
 }
 
+export function SkemaNavigator() {
+  return (
+    <SkemaNav.Navigator initialRouteName="Skema" screenOptions={{
+      gestureEnabled: true,
+      headerStyle: {
+        backgroundColor: COLORS.BLACK,
+      },
+      headerTitleStyle: {
+        color: COLORS.WHITE,
+      },
+      headerBackTitleVisible: false,
+      contentStyle: {backgroundColor: COLORS.BLACK},
+    }}>
+      <AppStack.Screen name={"Skema"} component={Skema} options={{
+        header: () => <></>
+      }} />
+      <AppStack.Screen name={"Modul View"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.team })} />
+    </SkemaNav.Navigator>
+  )
+}
+
 export function BeskedNavigator() {
   return (
-    <Settings.Navigator initialRouteName="BeskedList" screenOptions={{
+    <Messages.Navigator initialRouteName="BeskedList" screenOptions={{
       gestureEnabled: true,
       headerStyle: {
         backgroundColor: COLORS.BLACK,
@@ -187,7 +239,7 @@ export function BeskedNavigator() {
     }}>
       <AppStack.Screen name={"BeskedList"} component={Beskeder} options={{ title: "Beskeder" }} />
       <AppStack.Screen name={"BeskedView"} component={BeskedView} options={{ title: "Besked" }} />
-    </Settings.Navigator>
+    </Messages.Navigator>
   )
 }
 
@@ -204,11 +256,12 @@ export function MereNavigator() {
       headerBackTitleVisible: false,
       contentStyle: {backgroundColor: COLORS.BLACK}
     }}>
-      <AppStack.Screen name={"Settings"} component={Mere} />
+      <AppStack.Screen name={"Settings"} component={Mere} options={{title: "Indstillinger"}} />
 
-      <Settings.Screen name={"Absence"} component={Absence} />
-      <Settings.Screen name={"TruantOMeter"} component={TruantOMeter} />
-      <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} />
+      <Settings.Screen name={"Absence"} component={Absence} options={{title: "Fravær"}} />
+      <Settings.Screen name={"Afleveringer"} component={Afleveringer} options={{title: "Afleveringer"}} />
+      <Settings.Screen name={"TruantOMeter"} component={TruantOMeter} options={{title: "Pjæk-o'-meter"}} />
+      <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Lærere og elever"}} />
     </Settings.Navigator>
   )
 }

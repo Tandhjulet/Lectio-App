@@ -1,8 +1,8 @@
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { SCRAPE_URLS, getASPHeaders } from './scraper/Scraper';
 import { SignInPayload } from '../../App';
+import { SCRAPE_URLS, getASPHeaders } from './scraper/Helpers';
 
 export async function secureGet(key: string) {
   const res = await SecureStore.getItemAsync(key);

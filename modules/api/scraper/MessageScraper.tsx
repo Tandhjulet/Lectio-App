@@ -26,8 +26,6 @@ export async function scrapeMessage(parser: any): Promise<LectioMessageDetailed 
         }
     }
 
-    console.log(out);
-
     return { body: out };
 }
 

@@ -9,19 +9,10 @@ import { BackwardIcon, ChatBubbleBottomCenterTextIcon, ClipboardDocumentListIcon
 import getDaysOfCurrentWeek, { WeekDay, getDay, getNextWeek, getPrevWeek } from "../modules/Date";
 import GestureRecognizer from 'react-native-swipe-gestures';
 import { getPeople } from "../modules/api/scraper/class/PeopleList";
+import { NavigationProp } from "@react-navigation/native";
 
-function differenceBetweenDates(date1: Date, date2: Date) {
-    const hours = date1.getHours() - date2.getHours();
-    const minutes = date1.getMinutes() - date2.getMinutes();
-
-    const out = minutes + hours*60;
-    if (out <= 70) {
-        return 70;
-    }
-
-    return out;
-}
-function Module({ moduler, index }: {
+function Module({ navigation, moduler, index }: {
+    navigation: NavigationProp<any>,
     moduler: Modul[]
     index: number
 }): JSX.Element {
@@ -78,7 +69,7 @@ function Module({ moduler, index }: {
                 <Text style={{
                     color: COLORS.ACCENT,
                 }}>
-                    {moduler[moduler.length - 1].timeSpan.endDate.getHours().toString().padStart(2, "0")}:{moduler[moduler.length - 1].timeSpan.endDate.getMinutes().toString().padStart(2, "0")}
+                    {moduler[moduler.length - 1].timeSpan.endDate}
                 </Text>
 
                 <View style={{
@@ -104,69 +95,79 @@ function Module({ moduler, index }: {
             }}>
                 {moduler.map((modul: Modul) => {
                     return (
-                        <View key={moduler.indexOf(modul)} style={{
-                            backgroundColor: calcColor(0.5, modul),
-                            borderRadius: 5,
-                            opacity: 0.8,
-            
-                            paddingHorizontal: 10,
-                            paddingVertical: 10,
-            
-                            display: 'flex',
+                        <TouchableOpacity
+                            onPress={() => {
+                                navigation.navigate("Modul View", {
+                                    modul: modul,
+                                })
+                            }}
+                            style={{
+                                backgroundColor: calcColor(0.5, modul),
+                                borderRadius: 5,
+                                opacity: 0.8,
 
-                            position: 'relative',
-                            
-                            flexGrow: 1,
-                            flexBasis: 0,
-            
-                            height: differenceBetweenDates(modul.timeSpan.startDate, modul.timeSpan.endDate),
-                            overflow: "hidden",
-                        }}>
-                            <View style={{
-                                position: 'absolute',
-                                backgroundColor: calcColor(1, modul),
-
-                                minHeight: differenceBetweenDates(modul.timeSpan.startDate, modul.timeSpan.endDate),
-                                width: 4,
-
-                                left: 0,
-                            }} />
-
-                            <Text style={{
-                                color: calcColor(1, modul),
-                                fontWeight: "bold",
-                                fontSize: 12.5,
-                            }}>
-                                {modul.lokale}
-                            </Text>
-                            
-                            <Text style={{
-                                color: calcColor(1, modul),
-                                fontWeight: "bold",
-                                fontSize: 15,
-                            }}>
-                                {modul.teacher.length == 0 ? modul.team : (modul.team + " - " + modul.teacher.join(", "))}
-                            </Text>
-            
-                            <View style={{
                                 display: 'flex',
-                                flexDirection: 'row',
-                                gap: 5,
+
+                                flexGrow: 1,
+                                flexBasis: 0,
+                            }}
+                            key={moduler.indexOf(modul)}
+                        >
+                            <View style={{
+                                position: 'relative',
+                                overflow: "hidden",
+
+                                paddingHorizontal: 10,
+                                paddingVertical: 10,
+
+                                height: modul.timeSpan.diff,
                             }}>
-                                {modul.comment ?
-                                    <ChatBubbleBottomCenterTextIcon style={{
-                                        marginTop: 5,
-                                    }} color={calcColor(1, modul)} />
-                                : null}
-            
-                                {modul.homework ?
-                                    <InboxStackIcon style={{
-                                        marginTop: 5,
-                                    }} color={calcColor(1, modul)} />
-                                : null}
+                                <View style={{
+                                    position: 'absolute',
+                                    backgroundColor: calcColor(1, modul),
+
+                                    minHeight: modul.timeSpan.diff,
+                                    width: 4,
+
+                                    left: 0,
+                                }} />
+
+                                <Text style={{
+                                    color: calcColor(1, modul),
+                                    fontWeight: "bold",
+                                    fontSize: 12.5,
+                                }}>
+                                    {modul.lokale.replace("...", "").replace("▪", "").trim()}
+                                </Text>
                                 
+                                <Text style={{
+                                    color: calcColor(1, modul),
+                                    fontWeight: "bold",
+                                    fontSize: 15,
+                                }}>
+                                    {modul.teacher.length == 0 ? modul.team : (modul.team + " - " + modul.teacher.join(", "))}
+                                </Text>
+                
+                                <View style={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    gap: 5,
+                                }}>
+                                    {modul.comment ?
+                                        <ChatBubbleBottomCenterTextIcon style={{
+                                            marginTop: 5,
+                                        }} color={calcColor(1, modul)} />
+                                    : null}
+                
+                                    {modul.homework ?
+                                        <InboxStackIcon style={{
+                                            marginTop: 5,
+                                        }} color={calcColor(1, modul)} />
+                                    : null}
+                                    
+                                </View>
                             </View>
-                        </View>
+                        </TouchableOpacity>
                     )
                 })}
             </View>
@@ -185,7 +186,7 @@ function Module({ moduler, index }: {
                 <Text style={{
                     color: COLORS.ACCENT,
                 }}>
-                    {moduler[moduler.length - 1].timeSpan.startDate.getHours().toString().padStart(2, "0")}:{moduler[moduler.length - 1].timeSpan.startDate.getMinutes().toString().padStart(2, "0")}
+                    {moduler[moduler.length - 1].timeSpan.startDate}
                 </Text>
 
                 <View style={{
@@ -202,7 +203,7 @@ function Module({ moduler, index }: {
 }
 
 export default function Skema({ navigation }: {
-    navigation: any,
+    navigation: NavigationProp<any>,
 }) {
     const [ dayNum, setDayNum ] = useState<number>((getDay(new Date()).weekDayNumber));
 
@@ -439,6 +440,8 @@ export default function Skema({ navigation }: {
                 setSelectedDay(week);
                 return week;
             })
+        }} style={{
+            backgroundColor: COLORS.BLACK,
         }}>
             <View style={{
                 display: 'flex',
@@ -479,7 +482,13 @@ export default function Skema({ navigation }: {
             </View>
         </GestureRecognizer>
 
-        <GestureRecognizer onSwipeLeft={() => daySelector("ADD")} onSwipeRight={() => daySelector("REMOVE")}>
+        <GestureRecognizer 
+            onSwipeLeft={() => daySelector("ADD")}
+            onSwipeRight={() => daySelector("REMOVE")}
+            style={{
+                backgroundColor: COLORS.BLACK,
+            }}
+        >
             <View
                 style={{
                     borderTopColor: COLORS.ACCENT,
@@ -537,7 +546,7 @@ export default function Skema({ navigation }: {
                             </Text>
 
                         </View>}
-                        {skema != null && skema[dayNum - 1] == undefined ? (
+                        {skema != null && (skema[dayNum - 1] == undefined || Object.keys(skema[dayNum - 1].moduler).length == 0) ? (
                             <View style={{
                                 display: 'flex',
                                 justifyContent: 'center',
@@ -566,7 +575,7 @@ export default function Skema({ navigation }: {
                                 const moduler: Modul[] = skema[dayNum - 1].moduler[index];
 
                                 return (
-                                    <Module key={index.toString()} moduler={moduler} index={i} /> 
+                                    <Module key={index.toString()} navigation={navigation} moduler={moduler} index={i} /> 
                                 )
                             })}
                         </>
@@ -579,8 +588,6 @@ export default function Skema({ navigation }: {
                 }
             </View>
         </GestureRecognizer>
-
-        <NavigationBar currentTab={"Skema"} navigation={navigation} />
     </>
     )
 }

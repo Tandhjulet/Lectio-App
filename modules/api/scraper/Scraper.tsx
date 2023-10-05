@@ -5,30 +5,30 @@ import { Fag, scrapeAbsence } from './AbsenceScraper';
 
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Message } from 'react-hook-form';
 import { LectioMessage, LectioMessageDetailed, scrapeMessage, scrapeMessages } from './MessageScraper';
+import { extractDataFromTable } from './class/ClassPictureScraper';
+import { getPeople } from './class/PeopleList';
+import { saveUnsecure } from '../Authentication';
+import { Hold, holdScraper, scrapeHoldListe } from './hold/HoldScraper';
+import { SCRAPE_URLS, getASPHeaders, parseASPHeaders } from './Helpers';
+import { Opgave, scrapeOpgaver } from './OpgaveScraper';
 
+export async function scrapeHold(holdId: string, gymNummer: string) {
+    const res = await fetch(SCRAPE_URLS(gymNummer, holdId).HOLD, {
+        method: "GET",
+        credentials: 'include',
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+        },
+    });
 
-export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: string, type?: "bcstudent" | "bcteacher", selectedFolder: number = -70) {
-    const _URLS = {
-        "GYM_LIST": "https://www.lectio.dk/lectio/login_list.aspx?forcemobile=1",
-        "LOGIN_URL": `https://www.lectio.dk/lectio/${gymNummer}/login.aspx`,
-        "FORSIDE": `https://www.lectio.dk/lectio/${gymNummer}/forside.aspx`,
-        "SKEMA": `https://www.lectio.dk/lectio/${gymNummer}/SkemaNy.aspx`,
-        "SKEMA_FOR": `https://www.lectio.dk/lectio/${gymNummer}/SkemaNy.aspx?type=${type}&elevid=${elevId}`,
-        "LOG_UD": `https://www.lectio.dk/lectio/${gymNummer}/logout.aspx`,
-        "ABSENCE": `https://www.lectio.dk/lectio/${gymNummer}/subnav/fravaerelev.aspx`,
-        "MESSAGES": `https://www.lectio.dk/lectio/${gymNummer}/beskeder2.aspx?type=&elevid=${elevId}&selectedfolderid=${selectedFolder}`,
-        "S_MESSAGE": `https://www.lectio.dk/lectio/${gymNummer}/beskeder2.aspx?type=showthread&elevid=${elevId}&selectedfolderid=${selectedFolder}&id=${klasseId}`,
-        "PEOPLE": `https://www.lectio.dk/lectio/${gymNummer}/cache/DropDown.aspx?type=${type}`,
-        "CLASS_LIST": `https://www.lectio.dk/lectio/${gymNummer}/FindSkema.aspx?type=stamklasse`,
-        "CLASS": `https://www.lectio.dk/lectio/${gymNummer}/subnav/members.aspx?klasseid=${klasseId}&showstudents=1&reporttype=withpics&showteachers=1`,
-        "PICTURE": `https://www.lectio.dk/lectio/${gymNummer}/GetImage.aspx?pictureid=${elevId}`,
-        "PICTURE_HIGHQUALITY": `https://www.lectio.dk/lectio/${gymNummer}/GetImage.aspx?pictureid=${elevId}&fullsize=1`
-    } as const;
+    const text = await res.text();
+    const parser = DomSelector(text);
 
-    return _URLS;
-};
+    const hold = holdScraper(parser);
+
+    return hold;
+}
 
 export async function getSchools(): Promise<{[id: string]: string;}> {
 
@@ -56,36 +56,8 @@ export async function getSchools(): Promise<{[id: string]: string;}> {
     return parsedGyms;
 }
 
-function parseASPHeaders(ASPHeader: any) {
-    const parsedHeaders: any = {};
-    ASPHeader.children.forEach((i: any) => {
-        parsedHeaders[i.attributes.name] = i.attributes.value;
-    });
-    return parsedHeaders;
-}
-
-export async function getASPHeaders(url: string): Promise<{[id: string]: string}> {
-    const text = await (await fetch(url, {
-        method: "GET",
-        credentials: 'include',
-        headers: {
-            "User-Agent": "Mozilla/5.0",
-        },
-    })).text();
-
-    const parser = DomSelector(text);
-    const ASPHeaders = parser.getElementsByClassName("aspNetHidden");
-
-    let headers: {[id: string]: string} = {};
-    ASPHeaders.forEach((header: any) => {
-        headers = {...headers, ...parseASPHeaders(header)};
-    })
-
-    return headers;
-}
-
 export async function fetchProfile(): Promise<Profile> {
-    let gym: {gymName: string, gymNummer: string} = await _getUnsecure("gym");
+    let gym: {gymName: string, gymNummer: string} | null = await _getUnsecure("gym");
     if(gym == null)
         gym = { gymName: "", gymNummer: "" }
     
@@ -134,7 +106,9 @@ export async function fetchProfile(): Promise<Profile> {
             aflysteLektioner: true,
             ændredeLektioner: true,
             beskeder: true,
-        }
+        },
+
+        hold: await scrapeHoldListe(parser),
     }
 }
 
@@ -150,6 +124,8 @@ export type Profile = {
         ændredeLektioner: boolean,
         beskeder: boolean,
     }
+
+    hold: Hold[],
 }
 
 // this is so stupid, but it's the only way to get metro to stfu.
@@ -182,16 +158,21 @@ export async function getProfile(): Promise<Profile> {
         return profile;
     }
 
-    const savedProfile = await _getUnsecure("profile");
-    if(savedProfile != null) {
-        profile = savedProfile;
-        return savedProfile;
+    const profileFetchDate = await _getUnsecure("lastScrapeProfile");
+    if(profileFetchDate != null && ((new Date().valueOf() - profileFetchDate.date) < 604800000)) { // 7 dage 
+
+        const savedProfile = await _getUnsecure("profile");
+        if(savedProfile != null) {
+            profile = savedProfile;
+            return savedProfile;
+        }
     }
 
     // first login or maybe memory cleared. let's make a new profile and save it.
 
     profile = await fetchProfile();
     saveProfile(profile);
+    await saveUnsecure("lastScrapeProfile", { date: (new Date()).valueOf() })
 
     return profile;
 }
@@ -217,15 +198,37 @@ export async function getSkema(gymNummer: string, date: Date): Promise<Day[] | n
     return skema;
 }
 
-export async function getMessage(gymNummer: string, messageId: string): Promise<LectioMessageDetailed | null> {
+export async function getMessage(gymNummer: string, messageId: string, headers: {}): Promise<LectioMessageDetailed | null> {
+    const payload: {[id: string]: string} = {
+        ...headers,
+
+        "__EVENTTARGET": "__Page",
+        "__EVENTARGUMENT": "$LB2$_MC_$_"+messageId,
+        "s$m$ChooseTerm$term": "2023",
+        "s$m$searchinputfield": "",
+        "s$m$Content$Content$ListGridSelectionTree$folders": "-70",
+        "s$m$Content$Content$SPSearchText$tb": "",
+        "s$m$Content$Content$MarkChkDD": "-1",
+        "masterfootervalue": "X1!ÆØÅ",
+        "LectioPostbackId": "",
+    }
+
+    const parsedData = [];
+    for (const key in payload) {
+        parsedData.push(encodeURIComponent(key) + "=" + encodeURIComponent(payload[key]));
+    }
+    const stringifiedData = parsedData.join("&");
+
     const profile: Profile = await getProfile();
 
-    const res = await fetch(SCRAPE_URLS(gymNummer, profile.elevId, messageId).S_MESSAGE, {
-        method: "GET",
+    const res = await fetch(SCRAPE_URLS(gymNummer, profile.elevId).S_MESSAGE, {
+        method: "POST",
         credentials: 'include',
         headers: {
             "User-Agent": "Mozilla/5.0",
+            "Content-Type": "application/x-www-form-urlencoded"
         },
+        body: stringifiedData,
     });
 
     const text = await res.text();
@@ -236,7 +239,7 @@ export async function getMessage(gymNummer: string, messageId: string): Promise<
     return messageBody;
 }
 
-export async function getMessages(gymNummer: string): Promise<LectioMessage[] | null> {
+export async function getMessages(gymNummer: string): Promise<{ messages: LectioMessage[] | null, headers: {[id: string]: string}}> {
     const profile: Profile = await getProfile();
 
     const res = await fetch(SCRAPE_URLS(gymNummer, profile.elevId).MESSAGES, {
@@ -250,13 +253,58 @@ export async function getMessages(gymNummer: string): Promise<LectioMessage[] | 
     const text = await res.text();
 
     const parser = DomSelector(text);
-    const messages = scrapeMessages(parser);
+    
+    const ASPHeaders = parser.getElementsByClassName("aspNetHidden");
+    let headers: {[id: string]: string} = {};
+    ASPHeaders.forEach((header: any) => {
+        headers = {...headers, ...parseASPHeaders(header)};
+    })
 
-    return messages;
+    const messages = await scrapeMessages(parser);
+
+    return {messages: messages, headers: headers};
 }
 
+export async function getAfleveringer(gymNummer: string): Promise<Opgave[] | null> {
+    const payload: {[id: string]: string} = {
+        ...(await getASPHeaders(SCRAPE_URLS(gymNummer).OPGAVER)),
 
-export async function getAbsence(gymNummer: string): Promise<Fag[]> {
+        "__EVENTTARGET": "s$m$Content$Content$ShowThisTermOnlyCB",
+        "masterfootervalue": "X1!ÆØÅ",
+        "s$m$ChooseTerm$term": "2023",
+        "s$m$searchinputfield": "",
+        "s$m$Content$Content$ShowHoldElementDD": "",
+        "LectioPostbackId": "",
+    }
+
+    delete payload["s$m$Content$Content$CurrentExerciseFilterCB"]
+    delete payload["s$m$Content$Content$ShowThisTermOnlyCB"]
+    
+    const parsedData = [];
+    for (const key in payload) {
+        parsedData.push(encodeURIComponent(key) + "=" + encodeURIComponent(payload[key]));
+    }
+    const stringifiedData = parsedData.join("&");
+
+    const res = await fetch(SCRAPE_URLS(gymNummer).OPGAVER, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: stringifiedData,
+    });
+
+    const text = await res.text();
+
+    const parser = DomSelector(text);
+    const opgaver = scrapeOpgaver(parser);
+
+    return opgaver;
+}
+
+export async function getAbsence(gymNummer: string): Promise<Fag[] | null> {
     const res = await fetch(SCRAPE_URLS(gymNummer).ABSENCE, {
         method: "GET",
         credentials: 'include',
@@ -281,4 +329,13 @@ export function getWeekNumber(d: any): number {
     const weekNo: any = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
 
     return weekNo;
+}
+
+export function isRateLimited(parser: DomSelector) {
+    try {
+        const text = parser.getElementsByClassName("content-container")[0].firstChild.firstChild.firstChild.text;
+        return text.includes("403 - Forbidden");
+    } catch(e) {
+        return false;
+    }
 }

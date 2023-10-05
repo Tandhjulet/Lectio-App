@@ -90,33 +90,34 @@ export default function Absence({ navigation }: { navigation: any }) {
                 },
             }
 
-            getAbsence(gymNummer).then((fraværFag: Fag[]) => {
+            getAbsence(gymNummer).then((fraværFag: Fag[] | null) => {
                 // fuck noget rod
-                fraværFag.forEach((fag: Fag) => {
-                    if(fag.skriftligt.settled.absent > 0) {
-                        out.skriftligt.series.push(fag.skriftligt.settled.absent);
-                        out.skriftligt.teams.push(fag.skriftligt.team);
-                        out.skriftligt.colors.push(stringToColour(fag.skriftligt.team))
-                    }
+                if(fraværFag != null)
+                    fraværFag.forEach((fag: Fag) => {
+                        if(fag.skriftligt.settled.absent > 0) {
+                            out.skriftligt.series.push(fag.skriftligt.settled.absent);
+                            out.skriftligt.teams.push(fag.skriftligt.team);
+                            out.skriftligt.colors.push(stringToColour(fag.skriftligt.team))
+                        }
 
-                    if(fag.almindeligt.settled.absent > 0) {
-                        out.almindeligt.series.push(fag.almindeligt.settled.absent);
-                        out.almindeligt.teams.push(fag.almindeligt.team);
-                        out.almindeligt.colors.push(stringToColour(fag.almindeligt.team))
-                    }
+                        if(fag.almindeligt.settled.absent > 0) {
+                            out.almindeligt.series.push(fag.almindeligt.settled.absent);
+                            out.almindeligt.teams.push(fag.almindeligt.team);
+                            out.almindeligt.colors.push(stringToColour(fag.almindeligt.team))
+                        }
 
-                    out.almindeligt.yearly.collectiveModules += fag.almindeligt.yearly.total;
-                    out.almindeligt.settled.collectiveModules += fag.almindeligt.settled.total;
+                        out.almindeligt.yearly.collectiveModules += fag.almindeligt.yearly.total;
+                        out.almindeligt.settled.collectiveModules += fag.almindeligt.settled.total;
 
-                    out.almindeligt.yearly.collectiveAbsences += fag.almindeligt.yearly.absent;
-                    out.almindeligt.settled.collectiveAbsences += fag.almindeligt.settled.absent;
+                        out.almindeligt.yearly.collectiveAbsences += fag.almindeligt.yearly.absent;
+                        out.almindeligt.settled.collectiveAbsences += fag.almindeligt.settled.absent;
 
-                    out.skriftligt.yearly.collectiveModules += fag.skriftligt.yearly.total;
-                    out.skriftligt.settled.collectiveModules += fag.skriftligt.settled.total;
+                        out.skriftligt.yearly.collectiveModules += fag.skriftligt.yearly.total;
+                        out.skriftligt.settled.collectiveModules += fag.skriftligt.settled.total;
 
-                    out.skriftligt.yearly.collectiveAbsences += fag.skriftligt.yearly.absent;
-                    out.skriftligt.settled.collectiveAbsences += fag.skriftligt.settled.absent;
-                })
+                        out.skriftligt.yearly.collectiveAbsences += fag.skriftligt.yearly.absent;
+                        out.skriftligt.settled.collectiveAbsences += fag.skriftligt.settled.absent;
+                    })
                 
                 setChartedAbsence(out);
                 setLoading(false);
@@ -252,56 +253,58 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                         </View>
 
-                        <View style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignItems: 'center',
-
-                            gap: 10,
-                        }}>
-                            <PieChart
-                                widthAndHeight={widthAndHeight}
-                                /*
-                                // @ts-ignore */
-                                series={chartedAbsence.almindeligt.series}
-
-                                /*
-                                // @ts-ignore */
-                                sliceColor={chartedAbsence?.almindeligt.colors}
-                                coverRadius={0.55}
-                                coverFill={COLORS.BLACK}
-                            />
+                        {(chartedAbsence != null && chartedAbsence.almindeligt.series.reduce((a, b) => a + b, 0) > 0) &&
                             <View style={{
                                 display: 'flex',
-                                flexDirection: 'column',
-                            }}>
-                                {chartedAbsence?.almindeligt.colors.map((color: string, index: number) => (
-                                    <View key={color}>
-                                        <View style={{
-                                            display: 'flex',
-                                            flexDirection: 'row',
-                                            marginVertical: 2,
-                                            gap: 5,
+                                flexDirection: 'row',
+                                alignItems: 'center',
 
-                                            alignItems: 'center',
-                                        }}>
+                                gap: 10,
+                            }}>
+                                <PieChart
+                                    widthAndHeight={widthAndHeight}
+                                    /*
+                                    // @ts-ignore */
+                                    series={chartedAbsence.almindeligt.series}
+
+                                    /*
+                                    // @ts-ignore */
+                                    sliceColor={chartedAbsence?.almindeligt.colors}
+                                    coverRadius={0.55}
+                                    coverFill={COLORS.BLACK}
+                                />
+                                <View style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                }}>
+                                    {chartedAbsence?.almindeligt.colors.map((color: string, index: number) => (
+                                        <View key={color}>
                                             <View style={{
-                                                width: 10,
-                                                height: 10,
-                                                backgroundColor: color,
-                                            }} />
-                                            <Text ellipsizeMode="tail" numberOfLines={1} style={{
-                                                color: color,
-                                                maxWidth: 100,
-                                                
+                                                display: 'flex',
+                                                flexDirection: 'row',
+                                                marginVertical: 2,
+                                                gap: 5,
+
+                                                alignItems: 'center',
                                             }}>
-                                                {chartedAbsence.almindeligt.teams[index]}
-                                            </Text>
+                                                <View style={{
+                                                    width: 10,
+                                                    height: 10,
+                                                    backgroundColor: color,
+                                                }} />
+                                                <Text ellipsizeMode="tail" numberOfLines={1} style={{
+                                                    color: color,
+                                                    maxWidth: 100,
+                                                    
+                                                }}>
+                                                    {chartedAbsence.almindeligt.teams[index]}
+                                                </Text>
+                                            </View>
                                         </View>
-                                    </View>
-                                ))}
+                                    ))}
+                                </View>
                             </View>
-                        </View>
+                        }
                     </View>
 
                     <View style={{
@@ -403,62 +406,62 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                         </View>
 
-                        <View style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignItems: 'center',
-
-                            gap: 10,
-                        }}>
-                            <PieChart
-                                widthAndHeight={widthAndHeight}
-                                /*
-                                // @ts-ignore */
-                                series={chartedAbsence.skriftligt.series}
-
-                                /*
-                                // @ts-ignore */
-                                sliceColor={chartedAbsence?.skriftligt.colors}
-                                coverRadius={0.55}
-                                coverFill={COLORS.BLACK}
-                            />
+                        {(chartedAbsence != null && chartedAbsence.skriftligt.series.reduce((a, b) => a + b, 0) > 0) &&
                             <View style={{
                                 display: 'flex',
-                                flexDirection: 'column',
-                            }}>
-                                {chartedAbsence?.skriftligt.colors.map((color: string, index: number) => (
-                                    <View key={color}>
-                                        <View style={{
-                                            display: 'flex',
-                                            flexDirection: 'row',
-                                            marginVertical: 2,
-                                            gap: 5,
+                                flexDirection: 'row',
+                                alignItems: 'center',
 
-                                            alignItems: 'center',
-                                        }}>
+                                gap: 10,
+                            }}>
+                                <PieChart
+                                    widthAndHeight={widthAndHeight}
+                                    /*
+                                    // @ts-ignore */
+                                    series={chartedAbsence.skriftligt.series}
+
+                                    /*
+                                    // @ts-ignore */
+                                    sliceColor={chartedAbsence?.skriftligt.colors}
+                                    coverRadius={0.55}
+                                    coverFill={COLORS.BLACK}
+                                />
+                                <View style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                }}>
+                                    {chartedAbsence?.skriftligt.colors.map((color: string, index: number) => (
+                                        <View key={color}>
                                             <View style={{
-                                                width: 10,
-                                                height: 10,
-                                                backgroundColor: color,
-                                            }} />
-                                            <Text ellipsizeMode="tail" numberOfLines={1} style={{
-                                                color: color,
-                                                maxWidth: 100,
-                                                
+                                                display: 'flex',
+                                                flexDirection: 'row',
+                                                marginVertical: 2,
+                                                gap: 5,
+
+                                                alignItems: 'center',
                                             }}>
-                                                {chartedAbsence.skriftligt.teams[index]}
-                                            </Text>
+                                                <View style={{
+                                                    width: 10,
+                                                    height: 10,
+                                                    backgroundColor: color,
+                                                }} />
+                                                <Text ellipsizeMode="tail" numberOfLines={1} style={{
+                                                    color: color,
+                                                    maxWidth: 100,
+                                                    
+                                                }}>
+                                                    {chartedAbsence.skriftligt.teams[index]}
+                                                </Text>
+                                            </View>
                                         </View>
-                                    </View>
-                                ))}
+                                    ))}
+                                </View>
                             </View>
-                        </View>
+                        }
                     </View>
                 </View>
             </ScrollView>
         }
-
-        <NavigationBar currentTab={"Mere"} navigation={navigation} />
     </View>
     )
 }

@@ -1,12 +1,13 @@
-import { Image, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Image, ScrollView, Text, View } from "react-native";
 import { LectioMessage } from "../../modules/api/scraper/MessageScraper";
 import { NavigationProp, RouteProp } from "@react-navigation/native";
 import COLORS from "../../modules/Themes";
 import { useEffect, useState } from "react";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
-import { SCRAPE_URLS, getMessage } from "../../modules/api/scraper/Scraper";
+import { getMessage } from "../../modules/api/scraper/Scraper";
 import { getUnsecure } from "../../modules/api/Authentication";
 import { UserIcon } from "react-native-heroicons/solid";
+import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 
 const CLEAN_NAME = (name: string) => {
     return name.replace(new RegExp(/ \(.*?\)/), "")
@@ -24,6 +25,7 @@ export default function BeskedView({ navigation, route }: {
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>();
 
     const message: LectioMessage = route.params?.message;
+    const headers = route.params?.headers;
 
     useEffect(() => {
         (async () => {
@@ -35,7 +37,7 @@ export default function BeskedView({ navigation, route }: {
             if(people != null)
                 setBilledeId(people[CLEAN_NAME(route.params?.message.sender)]?.billedeId)
 
-            const body = await getMessage(gym.gymNummer, message.messageId);
+            const body = await getMessage(gym.gymNummer, message.messageId, headers);
             if(body != null)
                 setMessageBody(body.body);
             
@@ -53,7 +55,7 @@ export default function BeskedView({ navigation, route }: {
             paddingBottom: 200,
 
         }}>
-            <ScrollView style={{
+            <View style={{
                 paddingHorizontal: 10,
                 paddingVertical: 20,
 
@@ -65,7 +67,20 @@ export default function BeskedView({ navigation, route }: {
                 flexGrow: 0,
                 maxHeight: "70%"
             }}>
-                {!loading &&
+                {loading ? 
+                    <View style={{
+                        position: "absolute",
+
+                        top: "20%",
+                        left: "50%",
+
+                        transform: [{
+                            translateX: -12.5,
+                        }]
+                    }}>
+                        <ActivityIndicator size={"small"} color={COLORS.ACCENT} />
+                    </View>
+                    :
                     <View style={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -128,19 +143,21 @@ export default function BeskedView({ navigation, route }: {
                             marginHorizontal: 5,
                         }} />
 
-                        <View style={{
+                        <ScrollView style={{
                             paddingHorizontal: 10,
-                            marginBottom: 50,
-                        }}>
+                            overflow: "hidden",
+
+                            maxHeight: "80%",
+                        }} persistentScrollbar>
                             <Text style={{
                                 color: COLORS.WHITE,
                             }}>
                                 {messageBody}
                             </Text>
-                        </View>
+                        </ScrollView>
                     </View>
                 }
-            </ScrollView>
+            </View>
         </View>
     )
 }

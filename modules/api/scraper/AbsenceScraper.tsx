@@ -1,5 +1,7 @@
-export function scrapeAbsence(parser: any): Fag[] {
+export function scrapeAbsence(parser: any): Fag[] | null {
     const table = parser.getElementById("s_m_Content_Content_SFTabStudentAbsenceDataTable");
+    if(table == null)
+        return null;
 
     const tableData = table.children;
 
@@ -96,7 +98,7 @@ function scrapeCell(cell: any): {
     const data: string[] = cell.firstChild.text.split("/");
 
     return {
-        absent: parseInt(data[0]),
-        total: parseInt(data[1]),
+        absent: parseFloat(data[0].replace(",", ".")),
+        total: parseFloat(data[1].replace(",", ".")),
     };
 }

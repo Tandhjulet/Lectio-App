@@ -5,8 +5,8 @@ import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import COLORS from "../../modules/Themes";
-import { SCRAPE_URLS } from "../../modules/api/scraper/Scraper";
 import { getUnsecure } from "../../modules/api/Authentication";
+import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 //import { Image } from "@rneui/themed";
 
 const sort = (obj: any) => Object.keys(obj).sort()
@@ -151,7 +151,7 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                         padding: 5,
                         borderRadius: 5,
 
-                        marginBottom: 10,
+                        marginVertical: 10,
                     }} />
 
                     <TableView style={{
@@ -344,8 +344,6 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                     </Modal>
                 </>
             }
-
-            <NavigationBar currentTab={"Mere"} navigation={navigation} />
         </View>
     )
 }

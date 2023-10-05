@@ -3,7 +3,7 @@ import NavigationBar from "../components/Navbar";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import COLORS from "../modules/Themes";
 import { useContext, useEffect, useState } from "react";
-import { BellSnoozeIcon, UserMinusIcon, UsersIcon } from "react-native-heroicons/solid";
+import { AcademicCapIcon, BellSnoozeIcon, BuildingLibraryIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon } from "react-native-heroicons/solid";
 import { getUnsecure, removeSecure, removeUnsecure, signOut } from "../modules/api/Authentication";
 import { Profile, getProfile, saveProfile } from "../modules/api/scraper/Scraper";
 import { AuthContext } from "../modules/Auth";
@@ -33,7 +33,7 @@ export default function Mere({ navigation }: {navigation: any}) {
     }, [])
 
     return (
-    <View style={{height: '100%',width:'100%'}}>
+    <View style={{minHeight: '100%',minWidth:'100%'}}>
 
         {loading ?
             <View style={{
@@ -86,6 +86,19 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                         <Cell
                             cellStyle="Basic"
+                            title="Afleveringer"
+                            titleTextColor={COLORS.WHITE}
+                            image={
+                                <ClockIcon color={COLORS.LIGHT} />
+                            }
+                            accessory="DisclosureIndicator"
+                            onPress={() => {
+                                navigation.navigate("Afleveringer")
+                            }}
+                        />
+
+                        <Cell
+                            cellStyle="Basic"
                             title="Pjæk-o'-meter"
                             titleTextColor={COLORS.WHITE}
                             image={
@@ -108,6 +121,50 @@ export default function Mere({ navigation }: {navigation: any}) {
                             onPress={() => {
                                 navigation.navigate("TeachersAndStudents")
                             }}
+                        />
+
+                        <Cell
+                            cellStyle="Basic"
+                            title="Karakterer"
+                            titleTextColor={COLORS.WHITE}
+                            image={
+                                <AcademicCapIcon color={COLORS.LIGHT} />
+                            }
+                            accessory="DisclosureIndicator"
+                            isDisabled
+                        />
+
+                        <Cell
+                            cellStyle="Basic"
+                            title="Modulregnskab"
+                            titleTextColor={COLORS.WHITE}
+                            image={
+                                <BuildingLibraryIcon color={COLORS.LIGHT} />
+                            }
+                            accessory="DisclosureIndicator"
+                            isDisabled
+                        />
+
+                        <Cell
+                            cellStyle="Basic"
+                            title="Spørgeskemaer"
+                            titleTextColor={COLORS.WHITE}
+                            image={
+                                <ClipboardDocumentListIcon color={COLORS.LIGHT} />
+                            }
+                            accessory="DisclosureIndicator"
+                            isDisabled
+                        />
+
+                        <Cell
+                            cellStyle="Basic"
+                            title="Dokumenter"
+                            titleTextColor={COLORS.WHITE}
+                            image={
+                                <Square2StackIcon color={COLORS.LIGHT} />
+                            }
+                            accessory="DisclosureIndicator"
+                            isDisabled
                         />
                     </Section>
 
@@ -198,12 +255,46 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 })();
                             }}
                         />
+
+                        <Cell 
+                            cellStyle="Basic"
+                            title="Slet data"
+
+                            titleTextColor={COLORS.RED}
+                            titleTextStyle={{
+                                fontWeight: "bold",
+                            }}
+                            accessory="DisclosureIndicator"
+
+                            onPress={() => {
+                                (async () => {
+                                    await removeSecure("password");
+                                    await removeSecure("username");
+
+                                    await removeUnsecure("lastScrape");
+                                    await removeUnsecure("peopleList");
+                                    await removeUnsecure("peopleListBackup");
+                                    await removeUnsecure("gym");
+
+                                    signOut();
+                                })();
+                            }}
+                        />
                     </Section>
+
+                    <Text style={{
+                        color: COLORS.WHITE,
+                        opacity: 0.5,
+                    }}>
+                        BETA (v0.0.1) - Mads B. Mortensen
+                    </Text>
+
+                    <View style={{
+                        paddingVertical: 100,
+                    }} />
                 </TableView>
             </ScrollView>
         }
-
-        <NavigationBar currentTab={"Mere"} navigation={navigation} />
     </View>
     )
 }

@@ -12,13 +12,9 @@ export default function Login({ route, navigation }: {
 }) {
     const { signIn } = useContext(AuthContext);
 
-    const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>({ gymName: "Vælg venligst et gymnasie.", gymNummer: "0" })
+    const [gym, setGym] = useState<{ gymName: string, gymNummer: string } | null>()
 
-    getUnsecure("gym").then((gym: { gymName: string, gymNummer: string }) => {
-        if(gym == null || gym == undefined) {
-            setGym({ gymName: "Vælg venligst et gymnasie.", gymNummer: "0" })
-            return;
-        }
+    getUnsecure("gym").then((gym: { gymName: string, gymNummer: string } | null) => {
         setGym(gym)
     })
 
@@ -28,7 +24,7 @@ export default function Login({ route, navigation }: {
     const [invalidCredentials, setInvalidCredentials] = useState(false);
 
     function validateAndContinue() {
-        if(password == "" || username == "" || gym?.gymNummer == "0") {
+        if(password == "" || username == "" || gym == null) {
             setInvalidCredentials(true);
             return;
         }
@@ -88,7 +84,7 @@ export default function Login({ route, navigation }: {
                             fontWeight: "bold",
 
                             maxWidth: 290,
-                        }}>{gym.gymName}</Text>
+                        }}>{gym == null ? "Vælg venligst et gymnasie" : gym.gymName}</Text>
 
                         <ArrowRightCircleIcon color={COLORS.ACCENT} />
                     </View>

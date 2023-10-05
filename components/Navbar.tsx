@@ -24,10 +24,8 @@ const styles = StyleSheet.create({
     paddingTop: 15,
 
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-evenly',
     flexDirection: 'row',
-
-    gap: 30,
   },
   iconContainer: {
     display: 'flex',
@@ -61,9 +59,6 @@ const navTabs: NavbarTab[] = [{
 }, {
   "icon": EnvelopeIcon,
   "slug": "Beskeder",
-}, {
-  "icon": ClockIcon,
-  "slug": "Lektier",
 }, {
   "icon": EllipsisHorizontalIcon,
   "slug": "Mere",

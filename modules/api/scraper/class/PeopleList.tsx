@@ -2,15 +2,17 @@ import { getUnsecure, removeUnsecure, saveUnsecure } from "../../Authentication"
 import { Person, scrapeStudentPictures } from "./ClassPictureScraper";
 import { Klasse, getClasses } from "./ClassScraper";
 
-export async function getPeople(): Promise<{ [id: string]: Person } | null> {
+export async function scrapePeople(force: boolean = false) {
+    const lastScrape: {date: number} | null = await getUnsecure("lastScrape");
+    if(!force && lastScrape != null && ((new Date().valueOf() - lastScrape.date) < 604800000)) // 7 dage
+        return;
+
     const done = async (res: { [id: string]: Person }) => {
         await removeUnsecure("peopleListBackup");
         await saveUnsecure("peopleList", res)
-    }
 
-    const savedPeopleList: { [id: string]: Person } = await getUnsecure("peopleList");
-    if(savedPeopleList != null)
-        return savedPeopleList;
+        await saveUnsecure("lastScrape", { date: new Date().valueOf() })
+    }
 
     const klasser = await getClasses();
     if(klasser == null)
@@ -29,14 +31,10 @@ export async function getPeople(): Promise<{ [id: string]: Person } | null> {
             if(ERROR)
                 return;
 
-            const cId = klasser[i].classId;
-
-            const pictureData = (await scrapeStudentPictures(cId));
+            const pictureData = (await scrapeStudentPictures(klasser[i].classId, klasser[i].name));
             if(pictureData == null) {
                 // save current stage. probably rate limited?
                 await saveUnsecure("peopleListBackup", { stage: i, data: out })
-
-                //console.log("rate limited")
 
                 ERROR = true;
                 return;
@@ -45,11 +43,18 @@ export async function getPeople(): Promise<{ [id: string]: Person } | null> {
 
             if(i + 1 == klasser.length) {
                 done(out);
-            } /*else {
-                console.log("Scraped class " + klasser[i].name + " (" + i + ")")
-            }*/
+            } else {
+                // save current stage in case app gets shut down.
+                await saveUnsecure("peopleListBackup", { stage: i, data: out })
+            }
         }, ((i - (oldData == null ? 0 : oldData.stage)) + 1) * 2000)
     }
+}
 
-    return null;
+export async function getPeople(): Promise<{ [id: string]: Person } | null> {
+    const savedPeopleList: { [id: string]: Person } = await getUnsecure("peopleList");
+    if(savedPeopleList != null)
+        return savedPeopleList;
+
+    return (await getUnsecure("peopleListBackup")).data;
 }
