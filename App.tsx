@@ -21,6 +21,7 @@ import ModulView from './pages/skema/ModulView';
 import { scrapePeople } from './modules/api/scraper/class/PeopleList';
 import Afleveringer from './pages/Afleveringer';
 import AfleveringView from './pages/afleveringer/AfleveringView';
+import ModulRegnskab from './pages/mere/ModulRegnskab';
 
 
 const AppStack = createNativeStackNavigator();
@@ -272,6 +273,7 @@ export function MereNavigator() {
 
       <Settings.Screen name={"Absence"} component={Absence} options={{title: "Fravær"}} />
       <Settings.Screen name={"Afleveringer"} component={AfleveringNavigator} />
+      <Settings.Screen name={"ModulRegnskab"} component={ModulRegnskab} options={{title: "Modulregnskab"}} />
       <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Lærere og elever"}} />
     </Settings.Navigator>
   )

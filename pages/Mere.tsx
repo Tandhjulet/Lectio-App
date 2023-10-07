@@ -112,21 +112,23 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                         <Cell
                             cellStyle="Basic"
-                            title="Karakterer"
-                            titleTextColor={COLORS.WHITE}
-                            image={
-                                <AcademicCapIcon color={COLORS.LIGHT} />
-                            }
-                            accessory="DisclosureIndicator"
-                            isDisabled
-                        />
-
-                        <Cell
-                            cellStyle="Basic"
                             title="Modulregnskab"
                             titleTextColor={COLORS.WHITE}
                             image={
                                 <BuildingLibraryIcon color={COLORS.LIGHT} />
+                            }
+                            accessory="DisclosureIndicator"
+                            onPress={() => {
+                                navigation.navigate("ModulRegnskab")
+                            }}
+                        />
+
+                        <Cell
+                            cellStyle="Basic"
+                            title="Karakterer"
+                            titleTextColor={COLORS.WHITE}
+                            image={
+                                <AcademicCapIcon color={COLORS.LIGHT} />
                             }
                             accessory="DisclosureIndicator"
                             isDisabled

@@ -1,7 +1,9 @@
 mangler:
-- spørgeskemaer
-- modulregnskab
-- dokumenter
+- send beskeder
+- sorter i opgaver
+- fix skema lektier + note newlines
+
+- gem gamle resultater og vis mens de nye hentes
 
 kan ikke lave endnu:
 - push notifs
@@ -10,3 +12,7 @@ kan ikke lave endnu:
 todo:
 - evt. optimer performance af lærer og elever side. det lagger når man klikker ind (sectionlisten loader først sit batch før klikket registreres, ret træls)
 - login er lidt langsomt, lav js performance åbenbart (?)
+- evt. så modulregnskab hentes i baggrunden?
+
+- spørgeskemaer
+- dokumenter

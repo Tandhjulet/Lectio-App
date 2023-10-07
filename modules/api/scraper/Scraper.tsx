@@ -6,12 +6,11 @@ import { Fag, scrapeAbsence } from './AbsenceScraper';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LectioMessage, LectioMessageDetailed, scrapeMessage, scrapeMessages } from './MessageScraper';
-import { extractDataFromTable } from './class/ClassPictureScraper';
-import { getPeople } from './class/PeopleList';
 import { saveUnsecure } from '../Authentication';
 import { Hold, holdScraper, scrapeHoldListe } from './hold/HoldScraper';
 import { SCRAPE_URLS, getASPHeaders, parseASPHeaders } from './Helpers';
 import { Opgave, OpgaveDetails, scrapeOpgave, scrapeOpgaver } from './OpgaveScraper';
+import { modulRegnskabScraper, Modulregnskab } from './hold/ModulRegnskabScraper';
 
 export async function scrapeHold(holdId: string, gymNummer: string) {
     const res = await fetch(SCRAPE_URLS(gymNummer, holdId).HOLD, {
@@ -26,6 +25,23 @@ export async function scrapeHold(holdId: string, gymNummer: string) {
     const parser = DomSelector(text);
 
     const hold = holdScraper(parser);
+
+    return hold;
+}
+
+export async function scrapeModulRegnskab(gymNummer: string, holdId: string): Promise<Modulregnskab | null> {
+    const res = await fetch(SCRAPE_URLS(gymNummer, holdId).MODUL_REGNSKAB, {
+        method: "GET",
+        credentials: 'include',
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+        },
+    });
+
+    const text = await res.text();
+    const parser = DomSelector(text);
+
+    const hold = await modulRegnskabScraper(parser);
 
     return hold;
 }
