@@ -8,9 +8,12 @@ import { LectioMessage } from "../modules/api/scraper/MessageScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { ChevronRightIcon } from "react-native-heroicons/solid";
 import { NavigationProp, useFocusEffect, useIsFocused } from "@react-navigation/native";
+import RateLimit from "../components/RateLimit";
 
 export default function Beskeder({ navigation }: {navigation: NavigationProp<any>}) {
     const [ loading, setLoading ] = useState<boolean>(true);
+
+    const [ rateLimited, setRateLimited ] = useState<boolean>(false);
     const [ messages, setMessages ] = useState<LectioMessage[] | null>([]);
     const [ headers, setHeaders ] = useState<{[id: string]: string}>();
 
@@ -18,10 +21,11 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
         (async () => {
             const gymNummer = (await getUnsecure("gym")).gymNummer;
 
-            getMessages(gymNummer).then((fetchedMessages) => {
-                setMessages(fetchedMessages.messages);
-                setHeaders(fetchedMessages.headers);
+            getMessages(gymNummer).then(({payload, rateLimited}): any => {
+                setMessages(payload.messages);
+                setHeaders(payload.headers);
 
+                setRateLimited(rateLimited);
                 setLoading(false);
             })
         })();
@@ -138,6 +142,8 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                 }
             </ScrollView>
         }
+
+        {rateLimited && <RateLimit />}
     </View>
     )
 }

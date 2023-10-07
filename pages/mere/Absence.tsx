@@ -6,6 +6,7 @@ import { getUnsecure } from "../../modules/api/Authentication";
 import COLORS from "../../modules/Themes";
 import { Fag } from "../../modules/api/scraper/AbsenceScraper";
 import PieChart from "react-native-pie-chart";
+import RateLimit from "../../components/RateLimit";
 
 type ChartedAbsence = {
     almindeligt: {
@@ -54,6 +55,7 @@ function stringToColour(str: string): string {
 export default function Absence({ navigation }: { navigation: any }) {
     const [ chartedAbsence, setChartedAbsence ] = useState<ChartedAbsence>();
     const [ loading, setLoading ] = useState(true);
+    const [ rateLimited, setRateLimited ] = useState(false);
 
     useEffect(() => {
         (async () => {
@@ -90,10 +92,12 @@ export default function Absence({ navigation }: { navigation: any }) {
                 },
             }
 
-            getAbsence(gymNummer).then((fraværFag: Fag[] | null) => {
+            getAbsence(gymNummer).then(({ payload, rateLimited }): any => {
+                setRateLimited(rateLimited)
+
                 // fuck noget rod
-                if(fraværFag != null)
-                    fraværFag.forEach((fag: Fag) => {
+                if(payload != null)
+                    payload.forEach((fag: Fag) => {
                         if(fag.skriftligt.settled.absent > 0) {
                             out.skriftligt.series.push(fag.skriftligt.settled.absent);
                             out.skriftligt.teams.push(fag.skriftligt.team);
@@ -462,6 +466,8 @@ export default function Absence({ navigation }: { navigation: any }) {
                 </View>
             </ScrollView>
         }
+
+        {rateLimited && <RateLimit />}
     </View>
     )
 }

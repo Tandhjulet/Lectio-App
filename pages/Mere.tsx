@@ -99,19 +99,6 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                         <Cell
                             cellStyle="Basic"
-                            title="Pjæk-o'-meter"
-                            titleTextColor={COLORS.WHITE}
-                            image={
-                                <UserMinusIcon color={COLORS.LIGHT} />
-                            }
-                            accessory="DisclosureIndicator"
-                            onPress={() => {
-                                navigation.navigate("TruantOMeter")
-                            }}
-                        />
-
-                        <Cell
-                            cellStyle="Basic"
                             title="Lærere og elever"
                             titleTextColor={COLORS.WHITE}
                             image={
@@ -252,31 +239,6 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     //await removeUnsecure("gym");
 
                                     signOut()
-                                })();
-                            }}
-                        />
-
-                        <Cell 
-                            cellStyle="Basic"
-                            title="Slet data"
-
-                            titleTextColor={COLORS.RED}
-                            titleTextStyle={{
-                                fontWeight: "bold",
-                            }}
-                            accessory="DisclosureIndicator"
-
-                            onPress={() => {
-                                (async () => {
-                                    await removeSecure("password");
-                                    await removeSecure("username");
-
-                                    await removeUnsecure("lastScrape");
-                                    await removeUnsecure("peopleList");
-                                    await removeUnsecure("peopleListBackup");
-                                    await removeUnsecure("gym");
-
-                                    signOut();
                                 })();
                             }}
                         />

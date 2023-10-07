@@ -10,25 +10,23 @@ import Schools from './pages/login/Schools';
 import COLORS from './modules/Themes';
 import Absence from './pages/mere/Absence';
 import TeachersAndStudents from './pages/mere/TeachersAndStudents';
-import TruantOMeter from './pages/mere/TruantOMeter';
-import { LogBox, Text, View } from 'react-native';
 import BeskedView from './pages/beskeder/BeskedView';
-import { createContext, useEffect, useMemo, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import { authorize, getUnsecure, secureGet, secureSave } from './modules/api/Authentication';
-import { getItemAsync } from 'expo-secure-store';
 import SplashScreen from './pages/SplashScreen';
 import { AuthContext } from './modules/Auth';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { CalendarIcon, ClockIcon, EllipsisHorizontalIcon, EnvelopeIcon } from 'react-native-heroicons/solid';
 import NavigationBar from './components/Navbar';
 import ModulView from './pages/skema/ModulView';
 import { scrapePeople } from './modules/api/scraper/class/PeopleList';
 import Afleveringer from './pages/Afleveringer';
+import AfleveringView from './pages/afleveringer/AfleveringView';
 
 
 const AppStack = createNativeStackNavigator();
 const Settings = createNativeStackNavigator();
 const Messages = createNativeStackNavigator();
+const Opgaver = createNativeStackNavigator();
 const SkemaNav = createNativeStackNavigator();
 
 const Tab = createBottomTabNavigator();
@@ -109,14 +107,14 @@ export default function App() {
   const authContext = useMemo(
     () => ({
       signIn: async (payload: SignInPayload) => {
-        if(payload.username == null || payload.password == null || payload.gym == null || (payload.gym.gymNummer == "0" && payload.gym.gymName == "Vælg venligst et gymnasie."))
+        if(payload.username == null || payload.password == null || payload.gym == null)
           return false;
 
         if(await authorize(payload)) {
           secureSave("username", payload.username);
           secureSave("password", payload.password);
 
-          setTimeout(() => dispatch({ type: 'SIGN_IN', payload: payload }), 250);
+          setTimeout(() => dispatch({ type: 'SIGN_IN', payload: payload }), 200);
           return true;
         }
 
@@ -243,6 +241,20 @@ export function BeskedNavigator() {
   )
 }
 
+export function AfleveringNavigator() {
+  return (
+    <Opgaver.Navigator initialRouteName="AfleveringList" screenOptions={{
+      gestureEnabled: true,
+      contentStyle: {backgroundColor: COLORS.BLACK},
+      headerShown: false,
+    }}>
+      <AppStack.Screen name={"AfleveringList"} component={Afleveringer} />
+
+      <AppStack.Screen name={"AfleveringView"} component={AfleveringView} />
+    </Opgaver.Navigator>
+  )
+}
+
 export function MereNavigator() {
   return (
     <Settings.Navigator initialRouteName="Settings" screenOptions={{
@@ -259,8 +271,7 @@ export function MereNavigator() {
       <AppStack.Screen name={"Settings"} component={Mere} options={{title: "Indstillinger"}} />
 
       <Settings.Screen name={"Absence"} component={Absence} options={{title: "Fravær"}} />
-      <Settings.Screen name={"Afleveringer"} component={Afleveringer} options={{title: "Afleveringer"}} />
-      <Settings.Screen name={"TruantOMeter"} component={TruantOMeter} options={{title: "Pjæk-o'-meter"}} />
+      <Settings.Screen name={"Afleveringer"} component={AfleveringNavigator} />
       <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Lærere og elever"}} />
     </Settings.Navigator>
   )

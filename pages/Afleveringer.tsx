@@ -7,8 +7,9 @@ import { Opgave, STATUS } from "../modules/api/scraper/OpgaveScraper";
 import COLORS from "../modules/Themes";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { ChevronRightIcon } from "react-native-heroicons/solid";
+import RateLimit from "../components/RateLimit";
 
-const formatDate = (date: Date) => {
+export const formatDate = (date: Date) => {
     const weekday = ["Søndag","Mandag","Tirsdag","Onsdag","Torsdag","Fredag","Lørdag"];
     const dateName = weekday[date.getDay()];
 
@@ -19,11 +20,11 @@ const formatData = (data: Opgave[] | null) => {
     const out: {[id:string]: Opgave[]} = {}
 
     data?.forEach((opgave) => {
-        if(!(formatDate(opgave.date) in out)) {
-            out[formatDate(opgave.date)] = [];
+        if(!(formatDate(new Date(opgave.date)) in out)) {
+            out[formatDate(new Date(opgave.date))] = [];
         }
 
-        out[formatDate(opgave.date)].push(opgave)
+        out[formatDate(new Date(opgave.date))].push(opgave)
     })
 
     return out;
@@ -100,6 +101,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
         [id: string]: Opgave[];
     }>({})
     const [loading, setLoading] = useState<boolean>(false)
+    const [rateLimited, setRateLimited] = useState<boolean>(false)
 
     useEffect(() => {
         (async () => {
@@ -107,11 +109,12 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
             const gymNummer = (await getUnsecure("gym")).gymNummer;
 
-            getAfleveringer(gymNummer).then((data: Opgave[] | null) => {
-                const formattedData = formatData(data);
+            getAfleveringer(gymNummer).then(({payload, rateLimited}): any => {
+                const formattedData = formatData(payload);
 
                 setRawAfleveringer(formattedData)
                 setAfleveringer(filterData(formattedData, STATUS.VENTER))
+                setRateLimited(rateLimited)
                 setLoading(false);
             })
         })();
@@ -165,7 +168,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                                     paddingVertical: 5,
                                                 }}>
                                                     <View style={{
-                                                        backgroundColor: calculateColor(opgave.date),
+                                                        backgroundColor: calculateColor(new Date(opgave.date)),
                                                         height: "100%",
                                                         width: 7.5,
 
@@ -211,7 +214,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                                         <Text style={{
                                                             color: COLORS.WHITE,
                                                         }}>
-                                                            {countdown(opgave.date)}
+                                                            {countdown(new Date(opgave.date))}
                                                         </Text>
                                                     </View>
 
@@ -226,6 +229,12 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                                 </View>
                                             </View>
                                         }
+
+                                        onPress={() => {
+                                            navigation.navigate("AfleveringView", {
+                                                opgave: opgave,
+                                            })
+                                        }}
                                     />
                                 ))}
                             </Section>
@@ -239,6 +248,8 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                     </TableView>
                 </ScrollView>
             }
+
+            {rateLimited && <RateLimit />}
         </View>
     )
 }

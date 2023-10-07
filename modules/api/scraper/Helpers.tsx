@@ -20,6 +20,7 @@ export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: stri
         "LEKTIE": `https://www.lectio.dk/lectio/${gymNummer}/material_lektieoversigt.aspx`,
         "HOLD": `https://www.lectio.dk/lectio/${gymNummer}/subnav/members.aspx?holdelementid=${elevId}&showteachers=1&showstudents=1`,
         "OPGAVER": `https://www.lectio.dk/lectio/${gymNummer}/OpgaverElev.aspx`,
+        "S_OPGAVE": `https://www.lectio.dk/lectio/${gymNummer}/ElevAflevering.aspx?elevid=${elevId}&exerciseid=${klasseId}&prevurl=OpgaverElev.aspx`
     } as const;
 
     return _URLS;

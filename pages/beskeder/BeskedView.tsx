@@ -9,7 +9,7 @@ import { getUnsecure } from "../../modules/api/Authentication";
 import { UserIcon } from "react-native-heroicons/solid";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 
-const CLEAN_NAME = (name: string) => {
+export const CLEAN_NAME = (name: string) => {
     return name.replace(new RegExp(/ \(.*?\)/), "")
 }
 

@@ -1,4 +1,4 @@
-import { Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle } from "react-native";
+import { ActivityIndicator, Keyboard, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle } from "react-native";
 import COLORS from "../../modules/Themes";
 import { ArrowRightCircleIcon, ChevronDoubleRightIcon } from "react-native-heroicons/solid";
 import { useContext, useState } from "react";
@@ -22,12 +22,14 @@ export default function Login({ route, navigation }: {
     const [password, setPassword] = useState("");
 
     const [invalidCredentials, setInvalidCredentials] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
-    function validateAndContinue() {
+    async function validateAndContinue() { 
         if(password == "" || username == "" || gym == null) {
             setInvalidCredentials(true);
             return;
         }
+        setLoading(true)
 
         const payload: SignInPayload = {
             password: password,
@@ -35,12 +37,14 @@ export default function Login({ route, navigation }: {
             gym: gym,
         }
         
-        if(!signIn(payload))
+        if(!(await signIn(payload))) {
             setInvalidCredentials(true)
+            setLoading(false)
+        }
     }
 
     return (
-        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={{
                 height: '100%',
                 width: '100%',
@@ -62,7 +66,7 @@ export default function Login({ route, navigation }: {
                     fontWeight: "bold",
                 }}>Log ind</Text>
 
-                <TouchableOpacity onPress={() => {
+                <Pressable onPress={() => {
                     navigation.navigate("Schools")
                 }}>
                     <View style={{
@@ -88,7 +92,7 @@ export default function Login({ route, navigation }: {
 
                         <ArrowRightCircleIcon color={COLORS.ACCENT} />
                     </View>
-                </TouchableOpacity>
+                </Pressable>
 
                 <View style={{
                     display: 'flex',
@@ -96,29 +100,44 @@ export default function Login({ route, navigation }: {
                     marginTop: 25,
                     gap: 15,
                 }}>
-                    <TextInput onFocus={() => setInvalidCredentials(false)} onChangeText={(updated) => setUsername(updated)} placeholder="Brugernavn" style={{
-                        ...styles.textInput,
-                        shadowColor: (invalidCredentials) ? COLORS.RED : undefined,
-                        shadowRadius: 4,
-                        shadowOpacity: 0.6,
+                    <TextInput
+                        onFocus={() => setInvalidCredentials(false)}
+                        onChangeText={(updated) => setUsername(updated)}
+                        placeholder="Brugernavn"
+                        style={{
+                            ...styles.textInput,
+                            shadowColor: (invalidCredentials) ? COLORS.RED : undefined,
+                            shadowRadius: 4,
+                            shadowOpacity: 0.6,
 
-                        shadowOffset: {
-                            width: 0,
-                            height: 0,
-                        },
-                    }} />
+                            shadowOffset: {
+                                width: 0,
+                                height: 0,
+                            },
+                        }}
+                        textContentType="username"
+                        autoComplete="username"
+                    />
 
-                    <TextInput onFocus={() => setInvalidCredentials(false)} onChangeText={(updated) => setPassword(updated)} placeholder="Password" secureTextEntry={true} style={{
-                        ...styles.textInput,
-                        shadowColor: (invalidCredentials) ? COLORS.RED : undefined,
-                        shadowRadius: 4,
-                        shadowOpacity: 0.6,
+                    <TextInput
+                        onFocus={() => setInvalidCredentials(false)}
+                        onChangeText={(updated) => setPassword(updated)}
+                        placeholder="Password"
+                        secureTextEntry={true}
+                        style={{
+                            ...styles.textInput,
+                            shadowColor: (invalidCredentials) ? COLORS.RED : undefined,
+                            shadowRadius: 4,
+                            shadowOpacity: 0.6,
 
-                        shadowOffset: {
-                            width: 0,
-                            height: 0,
-                        },
-                    }} />
+                            shadowOffset: {
+                                width: 0,
+                                height: 0,
+                            },
+                        }}
+                        textContentType="password"
+                        autoComplete="current-password"
+                    />
                 </View>
 
                 <Text style={{
@@ -127,10 +146,12 @@ export default function Login({ route, navigation }: {
                     opacity: invalidCredentials ? 1 : 0,
                 }}>Dine oplysninger er ikke gyldige.</Text>
 
-                <TouchableOpacity onPress={() => {Keyboard.dismiss(); validateAndContinue()}}>
+                <Pressable
+                    onPress={validateAndContinue}
+                >
                     <View style={{
-                        marginTop: 50,
-                        marginBottom: 125,
+                        marginTop: 20,
+                        marginBottom: 200,
 
                         paddingHorizontal: 30,
                         paddingVertical: 20,
@@ -144,20 +165,26 @@ export default function Login({ route, navigation }: {
                         alignItems: 'center',
                         gap: 5,
                     }}>
-                        <ChevronDoubleRightIcon size={25} style={{
-                            // @ts-ignore
-                            color: COLORS.WHITE,
-                        }} />
+                        {!loading ? 
+                            <>
+                                <ChevronDoubleRightIcon size={25} style={{
+                                    // @ts-ignore
+                                    color: COLORS.WHITE,
+                                }} />
 
-                        <Text style={{
-                            color: COLORS.WHITE,
-                            fontSize: 17,
-                            fontWeight: "bold",
-                        }}>
-                            Fortsæt
-                        </Text>
+                                <Text style={{
+                                    color: COLORS.WHITE,
+                                    fontSize: 17,
+                                    fontWeight: "bold",
+                                }}>
+                                    Fortsæt
+                                </Text>
+                            </>
+                        :
+                            <ActivityIndicator color={COLORS.WHITE} />
+                        }
                     </View>
-                </TouchableOpacity>
+                </Pressable>
             </View>
         </TouchableWithoutFeedback>
     )

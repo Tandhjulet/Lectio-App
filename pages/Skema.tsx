@@ -10,6 +10,7 @@ import getDaysOfCurrentWeek, { WeekDay, getDay, getNextWeek, getPrevWeek } from 
 import GestureRecognizer from 'react-native-swipe-gestures';
 import { getPeople } from "../modules/api/scraper/class/PeopleList";
 import { NavigationProp } from "@react-navigation/native";
+import RateLimit from "../components/RateLimit";
 
 function Module({ navigation, moduler, index }: {
     navigation: NavigationProp<any>,
@@ -218,6 +219,7 @@ export default function Skema({ navigation }: {
     const [ loading, setLoading ] = useState(true);
 
     const [modalVisible, setModalVisible] = useState(false);
+    const [rateLimited, setRateLimited] = useState(false);
 
     const [ profile, setProfile ] = useState<Profile>();
 
@@ -264,9 +266,11 @@ export default function Skema({ navigation }: {
             setDaysOfWeek(getDaysOfCurrentWeek(loadDate));
             setProfile(await getProfile());
 
-            getSkema(gymNummer, loadDate).then((skema) => {
-                setSkema(skema)
+            getSkema(gymNummer, loadDate).then(({ payload, rateLimited }) => {
+                setSkema(payload)
                 setLoading(false);
+
+                setRateLimited(rateLimited)
             })
         })();
 
@@ -588,6 +592,8 @@ export default function Skema({ navigation }: {
                 }
             </View>
         </GestureRecognizer>
+
+        {rateLimited && <RateLimit />}
     </>
     )
 }

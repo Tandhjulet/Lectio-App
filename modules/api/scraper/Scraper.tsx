@@ -11,7 +11,7 @@ import { getPeople } from './class/PeopleList';
 import { saveUnsecure } from '../Authentication';
 import { Hold, holdScraper, scrapeHoldListe } from './hold/HoldScraper';
 import { SCRAPE_URLS, getASPHeaders, parseASPHeaders } from './Helpers';
-import { Opgave, scrapeOpgaver } from './OpgaveScraper';
+import { Opgave, OpgaveDetails, scrapeOpgave, scrapeOpgaver } from './OpgaveScraper';
 
 export async function scrapeHold(holdId: string, gymNummer: string) {
     const res = await fetch(SCRAPE_URLS(gymNummer, holdId).HOLD, {
@@ -179,7 +179,7 @@ export async function getProfile(): Promise<Profile> {
 
 // end of stupidity.
 
-export async function getSkema(gymNummer: string, date: Date): Promise<Day[] | null> {
+export async function getSkema(gymNummer: string, date: Date): Promise<{ payload: Day[] | null, rateLimited: boolean }> {
     const profile: Profile = await getProfile();
     
     const res = await fetch(SCRAPE_URLS(gymNummer).SKEMA + `?type=elev&elevid=${profile.elevId}&week=${getWeekNumber(date).toString().padStart(2, "0")}${date.getFullYear()}`, {
@@ -195,7 +195,10 @@ export async function getSkema(gymNummer: string, date: Date): Promise<Day[] | n
     const parser = DomSelector(text);
     const skema: Day[] | null = scrapeSchema(parser);
 
-    return skema;
+    return {
+        payload: skema,
+        rateLimited: isRateLimited(parser),
+    };
 }
 
 export async function getMessage(gymNummer: string, messageId: string, headers: {}): Promise<LectioMessageDetailed | null> {
@@ -239,7 +242,7 @@ export async function getMessage(gymNummer: string, messageId: string, headers: 
     return messageBody;
 }
 
-export async function getMessages(gymNummer: string): Promise<{ messages: LectioMessage[] | null, headers: {[id: string]: string}}> {
+export async function getMessages(gymNummer: string): Promise<{ payload: { messages: LectioMessage[] | null, headers: {[id: string]: string}}, rateLimited: boolean }> {
     const profile: Profile = await getProfile();
 
     const res = await fetch(SCRAPE_URLS(gymNummer, profile.elevId).MESSAGES, {
@@ -262,10 +265,35 @@ export async function getMessages(gymNummer: string): Promise<{ messages: Lectio
 
     const messages = await scrapeMessages(parser);
 
-    return {messages: messages, headers: headers};
+    return {
+        payload: {
+            messages: messages,
+            headers: headers
+        },
+        rateLimited: isRateLimited(parser),
+    };
 }
 
-export async function getAfleveringer(gymNummer: string): Promise<Opgave[] | null> {
+export async function getAflevering(gymNummer: string, id: string): Promise<OpgaveDetails | null> {
+    const profile = await getProfile();
+
+    const res = await fetch(SCRAPE_URLS(gymNummer, profile.elevId, id).S_OPGAVE, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+        },
+    });
+
+    const text = await res.text();
+
+    const parser = DomSelector(text);
+    const opgaver = scrapeOpgave(parser);
+
+    return opgaver;
+}
+
+export async function getAfleveringer(gymNummer: string): Promise<{ payload: Opgave[] | null, rateLimited: boolean }> {
     const payload: {[id: string]: string} = {
         ...(await getASPHeaders(SCRAPE_URLS(gymNummer).OPGAVER)),
 
@@ -301,10 +329,13 @@ export async function getAfleveringer(gymNummer: string): Promise<Opgave[] | nul
     const parser = DomSelector(text);
     const opgaver = scrapeOpgaver(parser);
 
-    return opgaver;
+    return {
+        payload: opgaver,
+        rateLimited: isRateLimited(parser),
+    };
 }
 
-export async function getAbsence(gymNummer: string): Promise<Fag[] | null> {
+export async function getAbsence(gymNummer: string): Promise<{ payload: Fag[] | null, rateLimited: boolean}> {
     const res = await fetch(SCRAPE_URLS(gymNummer).ABSENCE, {
         method: "GET",
         credentials: 'include',
@@ -318,7 +349,10 @@ export async function getAbsence(gymNummer: string): Promise<Fag[] | null> {
     const parser = DomSelector(text);
     const absence = scrapeAbsence(parser);
 
-    return absence;
+    return {
+        payload: absence,
+        rateLimited: isRateLimited(parser),
+    };
 }
 
 export function getWeekNumber(d: any): number {
@@ -331,7 +365,7 @@ export function getWeekNumber(d: any): number {
     return weekNo;
 }
 
-export function isRateLimited(parser: DomSelector) {
+export function isRateLimited(parser: DomSelector): boolean {
     try {
         const text = parser.getElementsByClassName("content-container")[0].firstChild.firstChild.firstChild.text;
         return text.includes("403 - Forbidden");

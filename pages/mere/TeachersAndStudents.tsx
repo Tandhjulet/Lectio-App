@@ -104,7 +104,7 @@ const UserCell = memo(function UserCell({ uri, index, item, section, setModalDat
 
 export default function TeachersAndStudents({ navigation }: { navigation: any }) {
     const [loading, setLoading] = useState<boolean>(true);
-
+    
     const [modalVisible, setModalVisible] = useState(false);
     const [modalData, setModalData] = useState<Person>();
 
