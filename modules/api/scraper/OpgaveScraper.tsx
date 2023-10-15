@@ -1,3 +1,5 @@
+import { replaceHTMLEntities } from "./SkemaScraper";
+
 export enum STATUS {
     AFLEVERET,
     IKKE_AFLEVERET,
@@ -67,11 +69,11 @@ export async function scrapeOpgave(parser: any): Promise<OpgaveDetails | null> {
     try {
         table.forEach((child: any) => {
             if(child.firstChild.firstChild.text == "Ansvarlig:") {
-                out.ansvarlig = scrapeOpgaveDetails(child);
+                out.ansvarlig = replaceHTMLEntities(scrapeOpgaveDetails(child));
             } else if(child.firstChild.firstChild.text == "Karakterskala:") {
-                out.karakterSkala = scrapeOpgaveDetails(child);
+                out.karakterSkala = replaceHTMLEntities(scrapeOpgaveDetails(child));
             } else if(child.firstChild.firstChild.text == "Opgavenote:") {
-                out.note = scrapeOpgaveDetails(child);
+                out.note = replaceHTMLEntities(scrapeOpgaveDetails(child));
             }
         })
     } catch {

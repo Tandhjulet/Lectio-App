@@ -4,6 +4,7 @@ import Skema from './pages/Skema';
 import Beskeder from './pages/Beskeder';
 import Mere from './pages/Mere';
 import Header from './components/Header';
+import { HeaderBackButton } from "@react-navigation/elements";
 
 import Login from './pages/login/Login';
 import Schools from './pages/login/Schools';
@@ -22,11 +23,15 @@ import { scrapePeople } from './modules/api/scraper/class/PeopleList';
 import Afleveringer from './pages/Afleveringer';
 import AfleveringView from './pages/afleveringer/AfleveringView';
 import ModulRegnskab from './pages/mere/ModulRegnskab';
+import { Button, Pressable, Text, View } from 'react-native';
+import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronLeftIcon, PencilSquareIcon } from 'react-native-heroicons/solid';
+import NyBesked from './pages/beskeder/NyBesked';
+import { HeaderStyleInterpolators, TransitionPresets, createStackNavigator } from '@react-navigation/stack';
 
 
 const AppStack = createNativeStackNavigator();
 const Settings = createNativeStackNavigator();
-const Messages = createNativeStackNavigator();
+const Messages = createStackNavigator();
 const Opgaver = createNativeStackNavigator();
 const SkemaNav = createNativeStackNavigator();
 
@@ -215,10 +220,10 @@ export function SkemaNavigator() {
       headerBackTitleVisible: false,
       contentStyle: {backgroundColor: COLORS.BLACK},
     }}>
-      <AppStack.Screen name={"Skema"} component={Skema} options={{
+      <SkemaNav.Screen name={"Skema"} component={Skema} options={{
         header: () => <></>
       }} />
-      <AppStack.Screen name={"Modul View"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.team })} />
+      <SkemaNav.Screen name={"Modul View"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.team })} />
     </SkemaNav.Navigator>
   )
 }
@@ -229,15 +234,41 @@ export function BeskedNavigator() {
       gestureEnabled: true,
       headerStyle: {
         backgroundColor: COLORS.BLACK,
+        shadowColor: "rgba(255, 255, 255, 0.2)",
       },
       headerTitleStyle: {
         color: COLORS.WHITE,
+        fontSize: 17,
       },
       headerBackTitleVisible: false,
-      contentStyle: {backgroundColor: COLORS.BLACK},
+      headerStatusBarHeight: 47,
+
     }}>
-      <AppStack.Screen name={"BeskedList"} component={Beskeder} options={{ title: "Beskeder" }} />
-      <AppStack.Screen name={"BeskedView"} component={BeskedView} options={{ title: "Besked" }} />
+      <Messages.Screen name={"BeskedList"} component={Beskeder} options={{
+        title: "Beskeder",
+        headerLeft: () => (
+          <View style={{
+            marginLeft: 15,
+          }}>
+            <Pressable
+              style={{
+                  padding: 4,
+
+                  backgroundColor: "rgba(0,122,255,0.2)",
+                  borderRadius: 100,
+              }}>
+                  <PencilSquareIcon color={"rgba(0,122,255,1)"} />
+            </Pressable>
+          </View>
+        )
+      }} />
+
+      <Messages.Screen name={"NyBesked"} component={NyBesked} options={{
+        title: "Ny Besked",
+      }} />
+      <Messages.Screen name={"BeskedView"} component={BeskedView} options={{
+        title: "Besked",
+      }} />
     </Messages.Navigator>
   )
 }
@@ -246,12 +277,54 @@ export function AfleveringNavigator() {
   return (
     <Opgaver.Navigator initialRouteName="AfleveringList" screenOptions={{
       gestureEnabled: true,
-      contentStyle: {backgroundColor: COLORS.BLACK},
-      headerShown: false,
+      headerStyle: {
+        backgroundColor: COLORS.BLACK,
+      },
+      headerTitleStyle: {
+        color: COLORS.WHITE,
+      },
+      headerBackTitleVisible: false,
+      contentStyle: {backgroundColor: COLORS.BLACK}
     }}>
-      <AppStack.Screen name={"AfleveringList"} component={Afleveringer} />
+      <Opgaver.Screen name={"AfleveringList"} component={Afleveringer} options={({ navigation, route }) => ({
+        headerRight: () => (
+          <Pressable
+            style={{
+                padding: 4,
 
-      <AppStack.Screen name={"AfleveringView"} component={AfleveringView} />
+                backgroundColor: "rgba(0,122,255,0.2)",
+                borderRadius: 100,
+            }}
+          >
+            <View style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+            }}>
+                <AdjustmentsVerticalIcon color={"rgba(0,122,255,1)"} />
+                  <Text style={{
+                      color: "rgba(0,122,255,1)",
+                      marginLeft: 2.5,
+                      marginRight: 1,
+                  }}>
+                    Venter
+                  </Text>
+            </View>
+          </Pressable>
+        ),
+        headerLeft: () => (
+          <View style={{
+            position: "absolute",
+            left: 0,
+          }}>
+            <HeaderBackButton labelVisible={false} onPress={() => {
+              navigation.goBack();
+            }} />
+          </View>
+        ),
+        headerTitle: "Afleveringer",
+      })} />
+      <Opgaver.Screen name={"AfleveringView"} component={AfleveringView} />
     </Opgaver.Navigator>
   )
 }
@@ -269,10 +342,12 @@ export function MereNavigator() {
       headerBackTitleVisible: false,
       contentStyle: {backgroundColor: COLORS.BLACK}
     }}>
-      <AppStack.Screen name={"Settings"} component={Mere} options={{title: "Indstillinger"}} />
+      <Settings.Screen name={"Settings"} component={Mere} options={{title: "Indstillinger"}} />
 
       <Settings.Screen name={"Absence"} component={Absence} options={{title: "Fravær"}} />
-      <Settings.Screen name={"Afleveringer"} component={AfleveringNavigator} />
+      <Settings.Screen name={"Afleveringer"} component={AfleveringNavigator} options={({ navigation, route }) => ({
+        headerShown: false,
+      })} />
       <Settings.Screen name={"ModulRegnskab"} component={ModulRegnskab} options={{title: "Modulregnskab"}} />
       <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Lærere og elever"}} />
     </Settings.Navigator>

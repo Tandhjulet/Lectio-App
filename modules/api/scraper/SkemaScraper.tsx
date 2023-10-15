@@ -1,4 +1,4 @@
-export function scrapeSchema(parser: any): Day[] | null {
+export function scrapeSchema(parser: any, raw: string): Day[] | null {
 
     const table = parser.getElementById("s_m_Content_Content_SkemaNyMedNavigation_skema_skematabel");
     if(table == null) {
@@ -15,7 +15,7 @@ export function scrapeSchema(parser: any): Day[] | null {
         if(index == 0) 
             return;
         
-        out.push(parseDay(element.firstChild, table, index));
+        out.push(parseDay(element.firstChild, table, index, raw));
     });
 
     return out;
@@ -58,6 +58,7 @@ export type Modul = {
 
     lektier?: string[],
     note?: string,
+    lærerNavn?: string,
 }
 
 export type Day = {
@@ -68,7 +69,7 @@ export type Day = {
 
 let DEBUG = false;
 
-function parseDay(htmlObject: any, table: any, dayNum: number): Day {
+function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day {
     const modulListe = htmlObject.getElementsByTagName("a");
 
     const skemaNoter = getSkemaNote(table, dayNum);
@@ -81,7 +82,7 @@ function parseDay(htmlObject: any, table: any, dayNum: number): Day {
         if("text" in modul.children[0] && modul.children[0].text == "Aktivitetsforside")
             return;
 
-        const lektier = parseLektieNote(modul);
+        const lektier = parseLektieNote(modul.attributes.href, raw);
 
         let height;
         const regExpHeight = /top:(?<height>([\d\.]*))em/gm.exec(modul.text);
@@ -299,37 +300,87 @@ export function parseInfoString(info: any): {
     return out;
 }
 
-function parseLektieNote(info: any) {
+function parseMatch(match: string) {
     const out: {
         lektier?: string[],
         note?: string,
+        lærerNavn?: string,
     } = {};
 
-    let infoString: string = info.text.split("data-additionalInfo='")[1];
-    infoString = infoString.slice(0, infoString.length - 2)
+    if(match.includes("Lektier:\n")) {
+        const lektier = match.split("Lektier:\n")[1].split("\n\n")[0].split(" [...]\n");
+        const lektierParsed: string[] = []
 
-    let lektier = infoString.split("Lektier:- ", 2)[1];
-    if(lektier != undefined) {
-        const lektieOut: string[] = [];
+        lektier.forEach((lektie) => {
+            if(lektie.startsWith("- "))
+                lektie = lektie.slice(2);
+            if(lektie.endsWith(" [...]"))
+                lektie = lektie.slice(0, -5)
+            lektierParsed.push(replaceHTMLEntities(lektie.trim()))
+        })
 
-        for (let lektie of lektier.split(" [...]- ")) {
-            if(lektie.includes(" [...]")) {
-                lektieOut.push(lektie.split(" [...]")[0])
-                break;
-            } else {
-                lektieOut.push(lektie)
-            }
-        }
-
-        out.lektier = lektieOut;
+        out.lektier = lektierParsed;
     }
 
-    const index = infoString.indexOf("Note:");
-    if(index == -1)
-        return out;
+    if(match.includes("Note:\n")) {
+        const noter = match.split("Note:\n")[1]
+        out.note = replaceHTMLEntities(noter);
+    }
 
-    const note = infoString.substring(index+5).replaceAll("&amp;amp;", "&amp;").replaceAll("&amp;", "&")
-    out.note = note;
+    if(match.includes("\nLærer: ")) {
+        const lærer = match.split("\nLærer: ")[1].split("\n")[0]
+        if(!(lærer.includes(", ")))
+            out.lærerNavn = replaceHTMLEntities(lærer);
+    }
 
     return out;
+}
+
+function parseLektieNote(href: string, raw: string) {
+    let out: {
+        lektier?: string[],
+        note?: string,
+        lærerNavn?: string,
+    } = {};
+
+    const regExp = new RegExp(`<a href=${fixString(href)}.*?>`, "gms");
+    let matches;
+
+    while((matches = regExp.exec(raw)) != null) {
+        if (matches.index === regExp.lastIndex) {
+            regExp.lastIndex++;
+        }
+        
+        // The result can be accessed through the `m`-variable.
+        matches.forEach((match, groupIndex) => {
+            if(!match.includes("data-additionalInfo"))
+                return;
+
+            let info = match.split("data-additionalInfo=")[1];
+            if(info.startsWith("'") || info.startsWith("\"")) {
+                info = info.substring(1);
+            }
+
+            if(info.endsWith("'>") || info.endsWith("\">")) {
+                info = info.slice(0, -2);
+            }
+
+            out = parseMatch(info);
+        });
+    }
+
+    return out;
+}
+
+export const replaceHTMLEntities = (toFix: string) => {
+    return (decodeURIComponent(toFix)
+        .replaceAll("&amp;", "&")
+        .replaceAll("&lt;", "<")
+        .replaceAll("&gt;", ">")
+        .replaceAll("&quot;", "\"")
+        .replaceAll("&apos;", "'"));
+}
+
+const fixString = (toFix: string) => {
+    return toFix.replaceAll("'", "[\"\']").replaceAll("/", "\\/").replaceAll(".", "\\.").replaceAll("?", "\\?");
 }

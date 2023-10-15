@@ -1,4 +1,4 @@
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, Text, TouchableWithoutFeedback, View } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { useCallback, useEffect, useState } from "react";
 import { getMessages } from "../modules/api/scraper/Scraper";
@@ -6,7 +6,7 @@ import COLORS from "../modules/Themes";
 import { getUnsecure } from "../modules/api/Authentication";
 import { LectioMessage } from "../modules/api/scraper/MessageScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import { ChevronRightIcon } from "react-native-heroicons/solid";
+import { ArrowUpOnSquareStackIcon, ChevronRightIcon, PencilSquareIcon } from "react-native-heroicons/solid";
 import { NavigationProp, useFocusEffect, useIsFocused } from "@react-navigation/native";
 import RateLimit from "../components/RateLimit";
 
@@ -16,6 +16,44 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
     const [ rateLimited, setRateLimited ] = useState<boolean>(false);
     const [ messages, setMessages ] = useState<LectioMessage[] | null>([]);
     const [ headers, setHeaders ] = useState<{[id: string]: string}>();
+
+    useEffect(() => {
+        navigation.setOptions({
+            headerLeft: () => (
+                <View style={{
+                    marginLeft: 15,
+                }}>
+                    <Pressable
+                        onPress={() => {
+                            navigation.navigate("NyBesked")
+                        }}
+                        style={{
+                            paddingVertical: 4,
+                            paddingHorizontal: 6,
+
+                            backgroundColor: "rgba(0,122,255,0.2)",
+                            borderRadius: 100,
+
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 5,
+                        }}
+                    >
+                        <PencilSquareIcon
+                            color={"rgba(0,122,255,1)"}
+                            size="22.5"
+                        />
+                        <Text style={{
+                            color: "rgba(0,122,255,1)",
+                        }}>
+                            Ny besked
+                        </Text>
+                    </Pressable>
+                </View>
+            )
+        })
+    }, [navigation])
 
     useEffect(() => {
         (async () => {
@@ -32,7 +70,11 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
     }, []);
 
     return (
-    <View style={{minHeight: '100%',minWidth:'100%'}}>
+    <View style={{
+        minHeight: '100%',
+        minWidth:'100%',
+        backgroundColor: COLORS.BLACK,
+    }}>
         {loading ? 
             <View style={{
                 position: "absolute",

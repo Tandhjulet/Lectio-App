@@ -293,6 +293,7 @@ export default function Skema({ navigation }: {
             flexDirection: 'row',
 
             maxWidth: "100%",
+            minWidth: "100%",
         }}>
             <View style={{
                 paddingHorizontal: 20,

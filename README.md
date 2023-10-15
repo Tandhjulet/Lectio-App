@@ -1,9 +1,10 @@
 mangler:
 - send beskeder
-- sorter i opgaver
-- fix skema lektier + note newlines
 
-- gem gamle resultater og vis mens de nye hentes
+- gem gamle resultater og vis dem mens de nye hentes
+- fix så skemaet ikke er så røv grimt
+
+- queue system til fetches?
 
 kan ikke lave endnu:
 - push notifs

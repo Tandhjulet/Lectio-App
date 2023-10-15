@@ -54,6 +54,8 @@ export default function BeskedView({ navigation, route }: {
             justifyContent: 'center',
             paddingBottom: 200,
 
+            backgroundColor: COLORS.BLACK,
+
         }}>
             <View style={{
                 paddingHorizontal: 10,

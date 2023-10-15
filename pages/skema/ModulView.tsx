@@ -1,7 +1,7 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native";
 import { ActivityIndicator, Image, ScrollView, Text, View } from "react-native";
 import COLORS from "../../modules/Themes";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Modul } from "../../modules/api/scraper/SkemaScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { getProfile, scrapeHold } from "../../modules/api/scraper/Scraper";
@@ -9,6 +9,9 @@ import { getUnsecure } from "../../modules/api/Authentication";
 import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
 import { Hold } from "../../modules/api/scraper/hold/HoldScraper";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
+import { CLEAN_NAME } from "../beskeder/BeskedView";
+import { getPeople } from "../../modules/api/scraper/class/PeopleList";
+import { UserIcon } from "react-native-heroicons/solid";
 
 const getStatus = (modul: Modul) => {
     if(modul.cancelled)
@@ -27,6 +30,8 @@ export default function ModulView({ navigation, route }: {
     const [members, setMembers] = useState<{ [id: string]: Person }>({})
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>();
 
+    const [ billedeId, setBilledeId ] = useState<string>();
+
     const [loading, setLoading] = useState<boolean>(false)
 
     useEffect(() => {
@@ -36,6 +41,11 @@ export default function ModulView({ navigation, route }: {
             const profile = await getProfile();
             const gym: { gymName: string, gymNummer: string } = await getUnsecure("gym")
             setGym(gym);
+
+            const people = await getPeople();
+            if(people != null && modul.lærerNavn != null)
+                if(people[CLEAN_NAME(modul.lærerNavn)] != null)
+                    setBilledeId(people[CLEAN_NAME(modul.lærerNavn)].billedeId);
 
             profile.hold.forEach((hold: Hold) => {
 
@@ -124,9 +134,7 @@ export default function ModulView({ navigation, route }: {
                                         <Text style={{
                                             color: COLORS.WHITE,
                                         }}>
-                                            {modul.note.replace(/[\., \), \!, \,]\w/g, (match: string) => {
-                                                return match.replace(".", ". ").replace(")", ") ").replace("!", " !").replace(",", ", ");
-                                            })}
+                                            {modul.note}
                                         </Text>
                                     </>
                                 }
@@ -158,7 +166,54 @@ export default function ModulView({ navigation, route }: {
 
                     {!loading && 
                         <Section header="MEDLEMMER" roundedCorners={true} hideSurroundingSeparators={true}>
+                            {modul.lærerNavn != null &&
+                                <Cell
+                                    cellStyle="Subtitle"
+
+                                    title={CLEAN_NAME(modul.lærerNavn)}
+                                    detail={"Lærer"}
+
+                                    cellImageView={
+                                        <>
+                                            {billedeId != null ?
+                                                <Image
+                                                    style={{
+                                                        borderRadius: 100,
+                                                        width: 35,
+                                                        height: 35,
+
+                                                        marginRight: 10,
+                                                    }}
+                                                    source={{
+                                                        uri: SCRAPE_URLS(gym?.gymNummer, billedeId).PICTURE_HIGHQUALITY,
+                                                        headers: {
+                                                            "User-Agent": "Mozilla/5.0",
+                                                            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                                                        },
+                                                    }}
+                                                    crossOrigin="use-credentials"
+                                                />
+                                                :
+                                                <View style={{
+                                                    display: "flex",
+                                                    height: 35,
+                                                    width: 35,
+                                                    borderRadius: 100,
+
+                                                    justifyContent: "center",
+                                                    alignItems: "center",
+                                                }}>
+                                                    <UserIcon color={COLORS.ACCENT} />
+                                                </View>
+                                            }
+                                        </>
+                                    }
+                                />
+                            }
                             {Object.keys(members).map((navn: string, index: number) => {
+                                if(members[navn].type == "LÆRER")
+                                    return <Fragment key={index}></Fragment>;
+
                                 return (
                                     <Cell 
                                         key={index}

@@ -1,12 +1,12 @@
 import { NavigationProp } from "@react-navigation/native";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 import { getUnsecure } from "../modules/api/Authentication";
 import { getAfleveringer } from "../modules/api/scraper/Scraper";
 import { Opgave, STATUS } from "../modules/api/scraper/OpgaveScraper";
 import COLORS from "../modules/Themes";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import { ChevronRightIcon } from "react-native-heroicons/solid";
+import { AdjustmentsVerticalIcon, ChevronRightIcon } from "react-native-heroicons/solid";
 import RateLimit from "../components/RateLimit";
 
 export const formatDate = (date: Date) => {
@@ -57,7 +57,7 @@ const calculateColor = (date: Date) => {
 
     const diff = date.valueOf() - new Date().valueOf();
     const hours = Math.floor(diff / (1000*60*60));
-    if(hours > 24*14)
+    if(hours > 24*14 || hours < 0)
         return COLORS.WHITE;
 
 
@@ -70,6 +70,39 @@ const calculateColor = (date: Date) => {
                 ]
 
     return `rgb(${res[0]}, ${res[1]}, ${res[2]})`;
+}
+
+const countOpgaver = (data: Opgave[] | null) => {
+    const out: {
+        alle: number,
+        venter: number,
+        mangler: number,
+        afleveret: number,
+    } = {
+        alle: 0,
+        venter: 0,
+        mangler: 0,
+        afleveret: 0,
+    }
+    if(data == null)
+        return out;
+
+    data.forEach((opgave) => {
+        switch(opgave.status) {
+            case STATUS.VENTER:
+                out.venter += 1
+                break;
+            case STATUS.AFLEVERET:
+                out.afleveret += 1
+                break;
+            case STATUS.IKKE_AFLEVERET:
+                out.mangler += 1
+                break;
+        }
+        out.alle += 1
+    })
+
+    return out;
 }
 
 const filterData = (data: {
@@ -100,8 +133,252 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
     const [rawAfleveringer, setRawAfleveringer] = useState<{
         [id: string]: Opgave[];
     }>({})
+
+    const [ opgaveCount, setOpgaveCount ] = useState<{
+        alle: number,
+        venter: number,
+        mangler: number,
+        afleveret: number,
+    }>()
+    const [ sortedBy, setSortedBy ] = useState<string>("Venter");
+
     const [loading, setLoading] = useState<boolean>(false)
     const [rateLimited, setRateLimited] = useState<boolean>(false)
+
+    const [modalVisible, setModalVisible] = useState<boolean>(false);
+
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <View>
+                    <Pressable
+                        onPress={() => {
+                            setModalVisible(true)
+                        }}
+                        style={{
+                            padding: 4,
+
+                            backgroundColor: "rgba(0,122,255,0.2)",
+                            borderRadius: 100,
+                        }}>
+                            <View style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                alignItems: "center",
+                            }}>
+                                <AdjustmentsVerticalIcon color={"rgba(0,122,255,1)"} />
+
+                                {(sortedBy != null) &&
+                                    <Text style={{
+                                        color: "rgba(0,122,255,1)",
+                                        marginLeft: 2.5,
+                                        marginRight: 1,
+                                    }}>
+                                        {sortedBy}
+                                    </Text>
+                                }
+                            </View>
+                    </Pressable>
+
+                    <Modal
+                        transparent
+                        visible={modalVisible}
+                        onRequestClose={() => {
+                            setModalVisible(!modalVisible)
+                        }}
+                        style={{
+                            position: "relative",
+
+                            bottom: 0,
+                            right: 0,
+                        }}
+                    >
+                        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+                            <View style={{
+                                position: 'absolute',
+                                top: 0,
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                backgroundColor: 'rgba(0,0,0,0.5)'
+                            }} />
+                        </TouchableWithoutFeedback>
+
+                        <View style={{
+                            position: "absolute",
+                            right: 50,
+                            top: 50,
+
+                            borderRadius: 7.5,
+                            backgroundColor: COLORS.BLACK,
+
+                            paddingVertical: 10,
+                        }}>
+                            <Pressable onPress={() => {
+                                setModalVisible(false);
+                                setAfleveringer(filterData(rawAfleveringer, "ALL"))
+                                setSortedBy("Alle")
+                            }}>
+                                <View style={{
+                                    paddingLeft: 10,
+                                    paddingRight: 15,
+
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+
+                                    marginVertical: 7.5,
+
+                                    gap: 40,
+                                }}>
+                                    <Text style={{
+                                        color: COLORS.WHITE,
+                                        fontSize: 15,
+                                    }}>
+                                        Alle
+                                    </Text>
+                                    <Text style={{
+                                        color: COLORS.WHITE,
+                                        fontSize: 12.5,
+                                        opacity: 0.6,
+                                    }}>
+                                        {opgaveCount?.alle} opgaver
+                                    </Text>
+                                </View>
+                            </Pressable>
+                            <View style={{
+                                borderBottomWidth: StyleSheet.hairlineWidth,
+                                borderBottomColor: COLORS.WHITE,
+                                opacity: 0.6,
+
+                                marginHorizontal: 10,
+                                marginVertical: 5,
+                            }} />
+
+                            <Pressable onPress={() => {
+                                setModalVisible(false);
+                                setAfleveringer(filterData(rawAfleveringer, STATUS.VENTER))
+                                setSortedBy("Venter")
+                            }}>
+                                <View style={{
+                                    paddingLeft: 10,
+                                    paddingRight: 15,
+
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+
+                                    marginVertical: 7.5,
+
+                                    gap: 40,
+                                }}>
+                                    <Text style={{
+                                        color: COLORS.WHITE,
+                                        fontSize: 15,
+                                    }}>
+                                        Venter
+                                    </Text>
+                                    <Text style={{
+                                        color: COLORS.WHITE,
+                                        fontSize: 12.5,
+                                        opacity: 0.6,
+                                    }}>
+                                        {opgaveCount?.venter} opgaver
+                                    </Text>
+                                </View>
+                            </Pressable>
+                            <View style={{
+                                borderBottomWidth: StyleSheet.hairlineWidth,
+                                borderBottomColor: COLORS.WHITE,
+                                opacity: 0.6,
+
+                                marginHorizontal: 10,
+                                marginVertical: 5,
+                            }} />
+
+                            <Pressable onPress={() => {
+                                setModalVisible(false);
+                                setAfleveringer(filterData(rawAfleveringer, STATUS.AFLEVERET))
+                                setSortedBy("Afleveret")
+                            }}>
+                                <View style={{
+                                    paddingLeft: 10,
+                                    paddingRight: 15,
+
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    
+                                    marginVertical: 7.5,
+
+                                    gap: 40,
+                                }}>
+                                    <Text style={{
+                                        color: COLORS.WHITE,
+                                        fontSize: 15,
+                                    }}>
+                                        Afleveret
+                                    </Text>
+                                    <Text style={{
+                                        color: COLORS.WHITE,
+                                        fontSize: 12.5,
+                                        opacity: 0.6,
+                                    }}>
+                                        {opgaveCount?.afleveret} opgaver
+                                    </Text>
+                                </View>
+                            </Pressable>
+                            <View style={{
+                                borderBottomWidth: StyleSheet.hairlineWidth,
+                                borderBottomColor: COLORS.WHITE,
+                                opacity: 0.6,
+
+                                marginHorizontal: 10,
+                                marginVertical: 5,
+                            }} />
+
+                            <Pressable onPress={() => {
+                                setModalVisible(false);
+                                setAfleveringer(filterData(rawAfleveringer, STATUS.IKKE_AFLEVERET))
+                                setSortedBy("Mangler")
+                            }}>
+                                <View style={{
+                                    paddingLeft: 10,
+                                    paddingRight: 15,
+
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+
+                                    marginVertical: 7.5,
+
+                                    gap: 40,
+                                }}>
+                                    <Text style={{
+                                        color: COLORS.WHITE,
+                                        fontSize: 15,
+                                    }}>
+                                        Mangler
+                                    </Text>
+                                    <Text style={{
+                                        color: COLORS.WHITE,
+                                        fontSize: 12.5,
+                                        opacity: 0.6,
+                                    }}>
+                                        {opgaveCount?.mangler} opgaver
+                                    </Text>
+                                </View>
+                            </Pressable>
+                        </View>
+                    </Modal>
+                </View>
+            )
+        })
+    }, [navigation, modalVisible])
 
     useEffect(() => {
         (async () => {
@@ -110,6 +387,8 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
             const gymNummer = (await getUnsecure("gym")).gymNummer;
 
             getAfleveringer(gymNummer).then(({payload, rateLimited}): any => {
+                setOpgaveCount(countOpgaver(payload));
+
                 const formattedData = formatData(payload);
 
                 setRawAfleveringer(formattedData)

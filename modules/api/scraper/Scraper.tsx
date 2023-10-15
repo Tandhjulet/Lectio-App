@@ -209,7 +209,7 @@ export async function getSkema(gymNummer: string, date: Date): Promise<{ payload
     const text = await res.text();
 
     const parser = DomSelector(text);
-    const skema: Day[] | null = scrapeSchema(parser);
+    const skema: Day[] | null = scrapeSchema(parser, text);
 
     return {
         payload: skema,
