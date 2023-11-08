@@ -1,8 +1,12 @@
+// @ts-ignore
+import DomSelector from 'react-native-dom-parser';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { SignInPayload } from '../../App';
 import { SCRAPE_URLS, getASPHeaders } from './scraper/Helpers';
+import { Key, saveFetch } from './storage/Storage';
+import { abort } from './scraper/class/PeopleList';
 
 export async function secureGet(key: string) {
   const res = await SecureStore.getItemAsync(key);
@@ -10,6 +14,8 @@ export async function secureGet(key: string) {
 }
 
 export async function validate(gymNummer: string, username: string, password: string): Promise<boolean> {
+    console.log("validate called, sending request...")
+
     const payload: {[id: string]: string} = {
         ...(await getASPHeaders(SCRAPE_URLS(gymNummer).LOGIN_URL)),
 
@@ -49,24 +55,36 @@ export async function isAuthorized() {
 }
 
 export async function _isAuthorized(gymNummer: string) {
+    
     const res = await fetch(SCRAPE_URLS(gymNummer).FORSIDE, {
         method: "GET",
         credentials: 'include',
         headers: {
             "User-Agent": "Mozilla/5.0",
         },
-    })
+    });
 
-    return !res.url.includes("login.aspx?prevurl")
+    const isAuth = !res.url.includes("login.aspx?prevurl");
+
+    if(isAuth) {
+        await saveFetch(Key.FORSIDE, {
+            body: await res.text(),
+        })
+    }
+
+    console.log("validation process finished.\nresult: " + isAuth)
+
+    return isAuth;
 }
 
 export async function authorize({ gym, password, username }: SignInPayload): Promise<boolean> {
+    console.log("authorize called!")
 
     if(gym == null || password == null || username == null) {
         return false;
     }
     
-    return validate(gym.gymNummer, username, password);
+    return await validate(gym.gymNummer, username, password);
 }
 
 export async function secureSave(key: string, value: string) {
@@ -86,7 +104,7 @@ export async function saveUnsecure(key: string, value: object) {
     await AsyncStorage.setItem(key, stringifiedValue);
 }
 
-export async function getUnsecure(key: string) {
+export async function getUnsecure(key: string): Promise<any> {
     const stringifiedValue = await AsyncStorage.getItem(key);
     if(stringifiedValue == null)
         return null;

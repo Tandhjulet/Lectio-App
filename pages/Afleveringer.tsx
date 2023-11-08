@@ -6,7 +6,7 @@ import { getAfleveringer } from "../modules/api/scraper/Scraper";
 import { Opgave, STATUS } from "../modules/api/scraper/OpgaveScraper";
 import COLORS from "../modules/Themes";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import { AdjustmentsVerticalIcon, ChevronRightIcon } from "react-native-heroicons/solid";
+import { AcademicCapIcon, AdjustmentsVerticalIcon, ChevronRightIcon } from "react-native-heroicons/solid";
 import RateLimit from "../components/RateLimit";
 
 export const formatDate = (date: Date) => {
@@ -150,7 +150,14 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
     useEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <View>
+                <View style={{
+                    position: "absolute",
+                    right: 0,
+
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "flex-end"
+                }}>
                     <Pressable
                         onPress={() => {
                             setModalVisible(true)
@@ -420,6 +427,32 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
             :
                 <ScrollView>
                     <TableView>
+                        {Object.keys(afleveringer).length == 0 && (
+                            <View style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+
+                                flexDirection: 'column-reverse',
+
+                                minHeight: '80%',
+
+                                gap: 5,
+                            }}>
+                                <Text style={{
+                                    color: COLORS.ACCENT,
+                                    textAlign: 'center'
+                                }}>
+                                    {sortedBy == "Alle" ?
+                                        "Du har ingen opgaver"
+                                    :
+                                        `Du har ingen opgaver der ${sortedBy.toLowerCase()}.`
+                                    }
+                                </Text>
+                                <AcademicCapIcon size={40} color={COLORS.WHITE} />
+                            </View>
+                        )}
+
                         {Object.keys(afleveringer).map((dato) => (
                             <Section
                                 key={dato}

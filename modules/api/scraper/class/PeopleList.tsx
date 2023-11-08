@@ -1,10 +1,15 @@
 import { getUnsecure, removeUnsecure, saveUnsecure } from "../../Authentication";
+import { Timespan } from "../../storage/Timespan";
 import { Person, scrapeStudentPictures } from "./ClassPictureScraper";
 import { Klasse, getClasses } from "./ClassScraper";
 
+let IDS: number[] = []
+
 export async function scrapePeople(force: boolean = false) {
+
     const lastScrape: {date: number} | null = await getUnsecure("lastScrape");
-    if(!force && lastScrape != null && ((new Date().valueOf() - lastScrape.date) < 604800000)) // 7 dage
+
+    if(!force && lastScrape != null && (new Date().valueOf() < (lastScrape.date + Timespan.DAY * 7)))
         return;
 
     const done = async (res: { [id: string]: Person }) => {
@@ -26,8 +31,11 @@ export async function scrapePeople(force: boolean = false) {
 
     let ERROR = false;
 
+    console.log("Starting background fetch...")
+
+    IDS = [];
     for(let i = (oldData == null ? 0 : oldData.stage); i < klasser.length; i++) {
-        setTimeout(async () => {
+        IDS.push(setTimeout(async () => {
             if(ERROR)
                 return;
 
@@ -43,12 +51,21 @@ export async function scrapePeople(force: boolean = false) {
 
             if(i + 1 == klasser.length) {
                 done(out);
+                console.log("Done scraping!")
             } else {
                 // save current stage in case app gets shut down.
                 await saveUnsecure("peopleListBackup", { stage: i, data: out })
+                //console.log("Saved stage " + i + "/" + klasser.length)
             }
-        }, ((i - (oldData == null ? 0 : oldData.stage)) + 1) * 2000)
+        }, ((i - (oldData == null ? 0 : oldData.stage)) + 1) * 1000))
     }
+}
+
+export async function abort() {
+    IDS.forEach((id: number) => {
+        clearTimeout(id);
+    })
+    console.log("Aborted background fetch.")
 }
 
 export async function getPeople(): Promise<{ [id: string]: Person } | null> {

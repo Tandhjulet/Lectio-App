@@ -13,7 +13,7 @@ import Absence from './pages/mere/Absence';
 import TeachersAndStudents from './pages/mere/TeachersAndStudents';
 import BeskedView from './pages/beskeder/BeskedView';
 import { useEffect, useMemo, useReducer, useState } from 'react';
-import { authorize, getUnsecure, secureGet, secureSave } from './modules/api/Authentication';
+import { authorize, getUnsecure, saveUnsecure, secureGet, secureSave } from './modules/api/Authentication';
 import SplashScreen from './pages/SplashScreen';
 import { AuthContext } from './modules/Auth';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -25,8 +25,8 @@ import AfleveringView from './pages/afleveringer/AfleveringView';
 import ModulRegnskab from './pages/mere/ModulRegnskab';
 import { Button, Pressable, Text, View } from 'react-native';
 import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronLeftIcon, PencilSquareIcon } from 'react-native-heroicons/solid';
-import NyBesked from './pages/beskeder/NyBesked';
 import { HeaderStyleInterpolators, TransitionPresets, createStackNavigator } from '@react-navigation/stack';
+import { cleanUp } from './modules/api/storage/Storage';
 
 
 const AppStack = createNativeStackNavigator();
@@ -37,6 +37,8 @@ const SkemaNav = createNativeStackNavigator();
 
 const Tab = createBottomTabNavigator();
 
+import { LogBox } from 'react-native';
+LogBox.ignoreLogs(["Sending"])
 
 type AuthType = {
   type: "SIGN_IN" | "SIGN_OUT",
@@ -61,7 +63,6 @@ export default function App() {
           return {
             ...prevState,
             loggedIn: true,
-            payload: action.payload,
             isLoading: false,
           };
 
@@ -81,6 +82,8 @@ export default function App() {
   );
 
   useEffect(() => {
+    cleanUp();
+
     (async () => {
       let payload: SignInPayload = {
         gym: null,
@@ -101,9 +104,9 @@ export default function App() {
       // validation here
 
       if(await authorize(payload)) {
-        dispatch({ type: 'SIGN_IN', payload: payload });
+        dispatch({ type: 'SIGN_IN' });
 
-        setTimeout(() => scrapePeople(), 5000);
+        setTimeout(() => scrapePeople(), 500);
       } else
         dispatch({ type: 'SIGN_OUT' });
 
@@ -117,10 +120,12 @@ export default function App() {
           return false;
 
         if(await authorize(payload)) {
-          secureSave("username", payload.username);
-          secureSave("password", payload.password);
+          await secureSave("username", payload.username);
+          await secureSave("password", payload.password);
+          
+          console.log("authorized.")
 
-          setTimeout(() => dispatch({ type: 'SIGN_IN', payload: payload }), 200);
+          dispatch({ type: 'SIGN_IN' })
           return true;
         }
 
@@ -260,12 +265,9 @@ export function BeskedNavigator() {
                   <PencilSquareIcon color={"rgba(0,122,255,1)"} />
             </Pressable>
           </View>
-        )
+        ),
       }} />
 
-      <Messages.Screen name={"NyBesked"} component={NyBesked} options={{
-        title: "Ny Besked",
-      }} />
       <Messages.Screen name={"BeskedView"} component={BeskedView} options={{
         title: "Besked",
       }} />

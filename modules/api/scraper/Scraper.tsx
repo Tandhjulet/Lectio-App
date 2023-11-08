@@ -1,6 +1,6 @@
 // @ts-ignore
 import DomSelector from 'react-native-dom-parser';
-import { Day, scrapeSchema } from './SkemaScraper';
+import { Day, Week, scrapeSchema } from './SkemaScraper';
 import { Fag, scrapeAbsence } from './AbsenceScraper';
 
 import * as SecureStore from 'expo-secure-store';
@@ -8,9 +8,37 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LectioMessage, LectioMessageDetailed, scrapeMessage, scrapeMessages } from './MessageScraper';
 import { saveUnsecure } from '../Authentication';
 import { Hold, holdScraper, scrapeHoldListe } from './hold/HoldScraper';
-import { SCRAPE_URLS, getASPHeaders, parseASPHeaders } from './Helpers';
+import { HEADERS, SCRAPE_URLS, getASPHeaders, parseASPHeaders } from './Helpers';
 import { Opgave, OpgaveDetails, scrapeOpgave, scrapeOpgaver } from './OpgaveScraper';
 import { modulRegnskabScraper, Modulregnskab } from './hold/ModulRegnskabScraper';
+import { Key, getSaved, saveFetch } from '../storage/Storage';
+import { Timespan } from '../storage/Timespan';
+import { CacheParams, scrapePeople, stringifyCacheParams } from './cache/CacheScraper';
+import { Person } from './class/ClassPictureScraper';
+
+export async function scrapeCache(gymNummer: string, params?: CacheParams): Promise<Person[]> {
+    const saved = await getSaved(Key.CACHE_PEOPLE);
+    if(saved.valid && saved.value != null) {
+        return saved.value;
+    }
+
+    const url = SCRAPE_URLS(gymNummer).CACHE + (params == undefined ? "" : ("?" + stringifyCacheParams(params)));
+
+    const res = await fetch(url, {
+        method: "GET",
+        credentials: 'include',
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+        },
+    });
+
+    const text = await res.text();
+    const people = scrapePeople(text)
+
+    await saveFetch(Key.CACHE_PEOPLE, people, Timespan.HOUR * 3, params == undefined ? "" : ("?" + stringifyCacheParams(params)));
+
+    return people;
+}
 
 export async function scrapeHold(holdId: string, gymNummer: string) {
     const res = await fetch(SCRAPE_URLS(gymNummer, holdId).HOLD, {
@@ -30,6 +58,11 @@ export async function scrapeHold(holdId: string, gymNummer: string) {
 }
 
 export async function scrapeModulRegnskab(gymNummer: string, holdId: string): Promise<Modulregnskab | null> {
+    const saved = await getSaved(Key.MODULREGNSKAB, holdId);
+    if(saved.valid && saved.value != null) {
+        return saved.value;
+    }
+
     const res = await fetch(SCRAPE_URLS(gymNummer, holdId).MODUL_REGNSKAB, {
         method: "GET",
         credentials: 'include',
@@ -43,10 +76,17 @@ export async function scrapeModulRegnskab(gymNummer: string, holdId: string): Pr
 
     const hold = await modulRegnskabScraper(parser);
 
+    if(hold != null)
+        await saveFetch(Key.MODULREGNSKAB, hold, Timespan.HOUR * 3, holdId);
+    
     return hold;
 }
 
 export async function getSchools(): Promise<{[id: string]: string;}> {
+    const saved = await getSaved(Key.SCHOOLS);
+    if(saved.valid && saved.value != null) {
+        return saved.value;
+    }
 
     const text = await (await fetch(SCRAPE_URLS().GYM_LIST, {
         method: "GET",
@@ -69,10 +109,14 @@ export async function getSchools(): Promise<{[id: string]: string;}> {
         parsedGyms[text] = href.replace(/\D/g, "")
     });
 
+    await saveFetch(Key.SCHOOLS, parsedGyms, Timespan.DAY * 7);
     return parsedGyms;
 }
 
 export async function fetchProfile(): Promise<Profile> {
+    let ERROR = false;
+    console.log("Fetching profile...")
+
     let gym: {gymName: string, gymNummer: string} | null = await _getUnsecure("gym");
     if(gym == null)
         gym = { gymName: "", gymNummer: "" }
@@ -81,14 +125,23 @@ export async function fetchProfile(): Promise<Profile> {
     if(username == null)
         username = "";
 
-    const res = await fetch(SCRAPE_URLS(gym.gymNummer).FORSIDE, {
-        method: "GET",
-        credentials: 'include',
-        headers: {
-            "User-Agent": "Mozilla/5.0",
-        },
-    })
-    const text = await res.text();
+    const authFetch = await getSaved(Key.FORSIDE);
+    let text;
+
+    if(!authFetch.valid || authFetch.value == null) {
+        const res = await fetch(SCRAPE_URLS(gym.gymNummer).FORSIDE, {
+            method: "GET",
+            credentials: 'include',
+            headers: {
+                "User-Agent": "Mozilla/5.0",
+            },
+        })
+        text = await res.text();
+        console.log("Sending request, nothing stored...")
+    } else {
+        text = authFetch.value.body;
+    }
+
     const parser = DomSelector(text);
 
     let elevID = parser.getElementsByName("msapplication-starturl")[0];
@@ -99,16 +152,21 @@ export async function fetchProfile(): Promise<Profile> {
         elevID = "";
     }
     if(elevID == "/lectio/" + gym.gymNummer + "/default.aspx") {
-        console.warn("getElevID called without login.")
+        ERROR = true;
         elevID = "";
     }
 
     let realName = parser.getElementById("s_m_HeaderContent_MainTitle");
     if(realName == null) {
         realName = "";
-        console.warn("getProfile called with no login!");
+        ERROR = true;
+    } else {
+       realName = realName.firstChild.firstChild.text.split(", ")[0].replace("Eleven ", "");
     }
-    realName = realName.firstChild.firstChild.text.split(", ")[0].replace("Eleven ", "");
+
+    if(ERROR)
+        console.warn("getProfile called without login.")
+    console.log("Profile fetched!")
 
     return {
         name: realName,
@@ -175,7 +233,7 @@ export async function getProfile(): Promise<Profile> {
     }
 
     const profileFetchDate = await _getUnsecure("lastScrapeProfile");
-    if(profileFetchDate != null && ((new Date().valueOf() - profileFetchDate.date) < 604800000)) { // 7 dage 
+    if(profileFetchDate != null && ((new Date().valueOf() - profileFetchDate.date) < Timespan.DAY)) {
 
         const savedProfile = await _getUnsecure("profile");
         if(savedProfile != null) {
@@ -195,21 +253,40 @@ export async function getProfile(): Promise<Profile> {
 
 // end of stupidity.
 
-export async function getSkema(gymNummer: string, date: Date): Promise<{ payload: Day[] | null, rateLimited: boolean }> {
-    const profile: Profile = await getProfile();
-    
-    const res = await fetch(SCRAPE_URLS(gymNummer).SKEMA + `?type=elev&elevid=${profile.elevId}&week=${getWeekNumber(date).toString().padStart(2, "0")}${date.getFullYear()}`, {
+export async function getSkema(gymNummer: string, date: Date): Promise<{ payload: Week | null, rateLimited: boolean }> {
+    console.log("Fetching schema...")
+
+    const res = await fetch(SCRAPE_URLS(gymNummer).SKEMA + `?week=${getWeekNumber(date).toString().padStart(2, "0")}${date.getFullYear()}`, {
         method: "GET",
         credentials: 'include',
         headers: {
-            "User-Agent": "Mozilla/5.0",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Language": "da-DK,da;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+            "Referer": "https://www.lectio.dk/lectio/572/SkemaNy.aspx",
+            "Sec-Ch-Ua": `"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"`,
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": `"Windows"`,
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "same-origin",
+            "Sec-Fetch-User": "?1",
+            "Upgrade-Insecure-Requests": "1",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
         },
     });
 
     const text = await res.text();
 
     const parser = DomSelector(text);
-    const skema: Day[] | null = scrapeSchema(parser, text);
+    const skema: Week | null = scrapeSchema(parser, text);
+
+    if(skema != null)
+        await saveFetch(Key.SKEMA, skema, Timespan.HOUR, getWeekNumber(date).toString());
+
+    console.log("Fetched skema!")
 
     return {
         payload: skema,
@@ -218,6 +295,11 @@ export async function getSkema(gymNummer: string, date: Date): Promise<{ payload
 }
 
 export async function getMessage(gymNummer: string, messageId: string, headers: {}): Promise<LectioMessageDetailed | null> {
+    const saved = await getSaved(Key.S_BESKED, messageId);
+    if(saved.valid && saved.value != null) {
+        return saved.value;
+    }
+
     const payload: {[id: string]: string} = {
         ...headers,
 
@@ -238,9 +320,7 @@ export async function getMessage(gymNummer: string, messageId: string, headers: 
     }
     const stringifiedData = parsedData.join("&");
 
-    const profile: Profile = await getProfile();
-
-    const res = await fetch(SCRAPE_URLS(gymNummer, profile.elevId).S_MESSAGE, {
+    const res = await fetch(SCRAPE_URLS(gymNummer, messageId).S_MESSAGE, {
         method: "POST",
         credentials: 'include',
         headers: {
@@ -253,15 +333,26 @@ export async function getMessage(gymNummer: string, messageId: string, headers: 
     const text = await res.text();
 
     const parser = DomSelector(text);
-    const messageBody = scrapeMessage(parser);
-
+    const messageBody = await scrapeMessage(parser);
+    
+    if( messageBody != null &&
+        messageBody.body != null &&
+        messageBody.body.length > 0)
+        
+        await saveFetch(Key.S_BESKED, messageBody, Timespan.HOUR * 6, messageId)
     return messageBody;
 }
 
-export async function getMessages(gymNummer: string): Promise<{ payload: { messages: LectioMessage[] | null, headers: {[id: string]: string}}, rateLimited: boolean }> {
-    const profile: Profile = await getProfile();
+export async function getMessages(gymNummer: string, mappeId: number = -70): Promise<{ payload: { messages: LectioMessage[] | null, headers: {[id: string]: string}}, rateLimited: boolean }> {
+    const saved = await getSaved(Key.BESKEDER, mappeId.toString());
+    if(saved.valid && saved.value != null) {
+        return {
+            payload: saved.value,
+            rateLimited: false,
+        };
+    }
 
-    const res = await fetch(SCRAPE_URLS(gymNummer, profile.elevId).MESSAGES, {
+    const res = await fetch(SCRAPE_URLS(gymNummer, undefined, undefined, undefined, mappeId).MESSAGES, {
         method: "GET",
         credentials: 'include',
         headers: {
@@ -281,6 +372,12 @@ export async function getMessages(gymNummer: string): Promise<{ payload: { messa
 
     const messages = await scrapeMessages(parser);
 
+    if(messages != null && headers != null)
+        await saveFetch(Key.BESKEDER, {
+            messages: messages,
+            headers: headers
+        }, Timespan.MINUTE * 5, mappeId.toString())
+
     return {
         payload: {
             messages: messages,
@@ -291,6 +388,11 @@ export async function getMessages(gymNummer: string): Promise<{ payload: { messa
 }
 
 export async function getAflevering(gymNummer: string, id: string): Promise<OpgaveDetails | null> {
+    const saved = await getSaved(Key.S_AFLEVERING, id);
+    if(saved.valid && saved.value != null) {
+        return saved.value;
+    }
+
     const profile = await getProfile();
 
     const res = await fetch(SCRAPE_URLS(gymNummer, profile.elevId, id).S_OPGAVE, {
@@ -306,10 +408,20 @@ export async function getAflevering(gymNummer: string, id: string): Promise<Opga
     const parser = DomSelector(text);
     const opgaver = scrapeOpgave(parser);
 
+    await saveFetch(Key.S_AFLEVERING, opgaver, Timespan.HOUR * 6, id)
+
     return opgaver;
 }
 
 export async function getAfleveringer(gymNummer: string): Promise<{ payload: Opgave[] | null, rateLimited: boolean }> {
+    const saved = await getSaved(Key.AFLEVERINGER);
+    if(saved.valid && saved.value != null) {
+        return {
+            payload: saved.value,
+            rateLimited: false,
+        };
+    }
+
     const payload: {[id: string]: string} = {
         ...(await getASPHeaders(SCRAPE_URLS(gymNummer).OPGAVER)),
 
@@ -345,6 +457,9 @@ export async function getAfleveringer(gymNummer: string): Promise<{ payload: Opg
     const parser = DomSelector(text);
     const opgaver = scrapeOpgaver(parser);
 
+    if(opgaver != null)
+        await saveFetch(Key.S_AFLEVERING, opgaver, Timespan.MINUTE * 5)
+
     return {
         payload: opgaver,
         rateLimited: isRateLimited(parser),
@@ -352,6 +467,14 @@ export async function getAfleveringer(gymNummer: string): Promise<{ payload: Opg
 }
 
 export async function getAbsence(gymNummer: string): Promise<{ payload: Fag[] | null, rateLimited: boolean}> {
+    const saved = await getSaved(Key.FRAVÆR);
+    if(saved.valid && saved.value != null) {
+        return {
+            payload: saved.value,
+            rateLimited: false,
+        };
+    }
+
     const res = await fetch(SCRAPE_URLS(gymNummer).ABSENCE, {
         method: "GET",
         credentials: 'include',
@@ -364,6 +487,9 @@ export async function getAbsence(gymNummer: string): Promise<{ payload: Fag[] | 
 
     const parser = DomSelector(text);
     const absence = scrapeAbsence(parser);
+
+    if(absence != null)
+        await saveFetch(Key.S_AFLEVERING, absence, Timespan.MINUTE * 5)
 
     return {
         payload: absence,

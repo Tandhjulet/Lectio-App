@@ -7,6 +7,8 @@ import { AcademicCapIcon, BellSnoozeIcon, BuildingLibraryIcon, ClipboardDocument
 import { getUnsecure, removeSecure, removeUnsecure, signOut } from "../modules/api/Authentication";
 import { Profile, getProfile, saveProfile } from "../modules/api/scraper/Scraper";
 import { AuthContext } from "../modules/Auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { abort } from "../modules/api/scraper/class/PeopleList";
 
 export default function Mere({ navigation }: {navigation: any}) {
     const { signOut } = useContext(AuthContext);
@@ -18,6 +20,8 @@ export default function Mere({ navigation }: {navigation: any}) {
     const [aflysteLektioner, setAflysteLektioner] = useState<boolean>();
     const [ændredeLektioner, setÆndredeLektioner] = useState<boolean>();
     const [beskeder, setBeskeder] = useState<boolean>();
+
+    const [development, setDevelopment] = useState<boolean>(false);
 
     useEffect(() => {
         (async () => {
@@ -224,6 +228,33 @@ export default function Mere({ navigation }: {navigation: any}) {
                     <Section header={"KONTROLPANEL"} roundedCorners={true} hideSurroundingSeparators={true} >
                         <Cell
                             cellStyle="Basic"
+                            title="Udvikler tilstand"
+                            titleTextColor={COLORS.WHITE}
+                            cellAccessoryView={<Switch 
+                                trackColor={{false: '#767577', true: "#4ca300"}}
+
+                                onValueChange={() => setDevelopment((prev) => !prev)}
+                                value={development}
+                            />}
+                        />
+
+                        {development && (
+                            <Cell
+                                cellStyle="Basic"
+                                title="Slet data"
+
+                                titleTextColor={COLORS.RED}
+                                accessory="DisclosureIndicator"
+
+                                onPress={() => {
+                                    AsyncStorage.clear();
+                                    abort();
+                                }}
+                            />
+                        )}
+
+                        <Cell
+                            cellStyle="Basic"
                             title="Log ud"
 
                             titleTextStyle={{
@@ -240,7 +271,8 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     await removeSecure("username");
                                     //await removeUnsecure("gym");
 
-                                    signOut()
+                                    signOut();
+                                    abort();
                                 })();
                             }}
                         />

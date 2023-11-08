@@ -1,10 +1,11 @@
 import { ActivityIndicator, Keyboard, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle } from "react-native";
 import COLORS from "../../modules/Themes";
 import { ArrowRightCircleIcon, ChevronDoubleRightIcon } from "react-native-heroicons/solid";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { getUnsecure, isAuthorized, secureSave, validate } from "../../modules/api/Authentication";
 import { SignInPayload } from "../../App";
 import { AuthContext } from "../../modules/Auth";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function Login({ route, navigation }: {
     route: any,
@@ -14,8 +15,10 @@ export default function Login({ route, navigation }: {
 
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string } | null>()
 
-    getUnsecure("gym").then((gym: { gymName: string, gymNummer: string } | null) => {
-        setGym(gym)
+    useFocusEffect(() => {
+        getUnsecure("gym").then((gym: { gymName: string, gymNummer: string } | null) => {
+            setGym(gym)
+        })
     })
 
     const [username, setUsername] = useState("");

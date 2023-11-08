@@ -1,24 +1,29 @@
-export function scrapeSchema(parser: any, raw: string): Day[] | null {
+export function scrapeSchema(parser: any, raw: string): Week | null {
 
     const table = parser.getElementById("s_m_Content_Content_SkemaNyMedNavigation_skema_skematabel");
     if(table == null) {
         return null;
     }
 
-    const days = table.lastChild.children;
+    const schema = table.lastChild.children;
 
     //delete days[0];
 
-    const out: Day[] = [];
+    let modules: ModulDate[] = [];
+    const days: Day[] = [];
 
-    days.forEach((element: any, index: number) => {
-        if(index == 0) 
-            return;
-        
-        out.push(parseDay(element.firstChild, table, index, raw));
+    schema.forEach((element: any, index: number) => {
+        if(index == 0) {
+            modules = parseModule(element.firstChild);
+        } else {
+            days.push(parseDay(element.firstChild, table, index, raw));
+        }
     });
 
-    return out;
+    return {
+        days: days,
+        modul: modules,
+    };
 
     //parseDay(days[1].firstChild, table)
 }
@@ -67,7 +72,53 @@ export type Day = {
     skemaNoter: String,
 }
 
+export type ModulDate = {
+    start: string,
+    startNum: number,
+
+    end: string,
+    endNum: number,
+}
+
+export type Week = {
+    modul: ModulDate[],
+    days: Day[],
+}
+
 let DEBUG = false;
+
+function parseStringifiedTime(stringifiedDate: string): Date {
+    const hours = parseInt(stringifiedDate.split(":")[0]);
+    const minutes = parseInt(stringifiedDate.split(":")[1]);
+
+    const d = new Date();
+    d.setHours(hours);
+    d.setMinutes(minutes);
+
+    return d;
+}
+
+function parseModule(htmlObject: any): ModulDate[] {
+    const out: ModulDate[] = [];
+
+    const modulListe = htmlObject.getElementsByClassName("s2module-info");
+    modulListe.forEach((modul: any) => {
+        const dateString = modul.firstChild.lastChild.text;
+
+        const start = parseStringifiedTime(dateString.split(" - ")[0]);
+        const end = parseStringifiedTime(dateString.split(" - ")[1]);
+
+        out.push({
+            start: dateString.split(" - ")[0],
+            startNum: parseInt(start.getHours().toString() + start.getMinutes().toString()),
+
+            end: dateString.split(" - ")[1],
+            endNum: parseInt(end.getHours().toString() + end.getMinutes().toString()),
+        })
+    });
+
+    return out;
+}
 
 function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day {
     const modulListe = htmlObject.getElementsByTagName("a");
@@ -79,7 +130,7 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
 
     modulListe.forEach((modul: any, index: number) => {
         
-        if("text" in modul.children[0] && modul.children[0].text == "Aktivitetsforside")
+        if("text" in modul.children[0] && (modul.children[0].text == "Aktivitetsforside" || modul.children[0].text == "Vis prøvehold"))
             return;
 
         const lektier = parseLektieNote(modul.attributes.href, raw);

@@ -82,7 +82,11 @@ const Schools = ({ navigation }: any) => {
             </View>
         }
 
-        <ScrollView contentContainerStyle={styles.stage}>
+        <ScrollView
+          contentContainerStyle={styles.stage}
+          keyboardDismissMode='on-drag'
+          keyboardShouldPersistTaps="always"
+        >
           <TableView>
 
             {Object.keys(schools).map((key: string) => {

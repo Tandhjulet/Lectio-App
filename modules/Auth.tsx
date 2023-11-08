@@ -6,6 +6,10 @@ type AuthState = {
 }
 
 export const AuthContext = createContext<AuthState>({
-    signIn: () => {},
-    signOut: () => {},
+    signIn: () => {
+        console.log("wrong auth context called.")
+    },
+    signOut: () => {
+        console.log("wrong auth context called.")
+    },
   });

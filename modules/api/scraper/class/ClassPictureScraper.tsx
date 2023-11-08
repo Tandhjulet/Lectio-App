@@ -6,8 +6,11 @@ import { SCRAPE_URLS, getASPHeaders } from '../Helpers';
 export type Person = {
     type: "LÆRER" | "ELEV"
     navn: string,
-    billedeId: string,
-    klasse: string,
+    rawName: string,
+
+    billedeId?: string,
+    personId?: string,
+    klasse?: string,
 }
 
 export async function scrapeStudentPictures(classId: string, className: string) {
@@ -66,14 +69,28 @@ export async function extractDataFromTable(table: any, className: string): Promi
 
         const type: "ELEV" | "LÆRER" = trElement.children[1].firstChild.text.toUpperCase();
 
+        let personId;
+        const link = trElement.children[3].firstChild.firstChild.attributes.href;
+
+        if(type == "ELEV") {
+            const matches = link.match(new RegExp('elevid=(\\d+)', "gm"));
+            personId = matches[0].replace("elevid=", "");
+        } else {
+            const matches = link.match(new RegExp('laererid=(\\d+)', "gm"));
+            personId = matches[0].replace("laererid=", "");
+        }
+
         const fornavn = trElement.children[3].firstChild.firstChild.firstChild.text;
         const efternavn = trElement.children[4].firstChild.firstChild.text;
         const navn = fornavn + " " + efternavn;
+        const fullID = navn + " (" + trElement.children[2].firstChild.firstChild.text + ")";
 
         out[navn] = {
             billedeId: id,
             navn: navn,
+            rawName: fullID,
             type: type,
+            personId: personId,
             klasse: className,
         };
     })

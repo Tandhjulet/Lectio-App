@@ -215,7 +215,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         color: COLORS.WHITE,
                                         opacity: 0.8,
                                     }}>
-                                        {chartedAbsence?.almindeligt.settled?.collectiveAbsences} / {chartedAbsence?.almindeligt.settled?.collectiveModules}
+                                        {chartedAbsence?.almindeligt.settled?.collectiveAbsences.toString().replace(".", ",")} / {chartedAbsence?.almindeligt.settled?.collectiveModules.toString().replace(".", ",")}
                                     </Text>
                                 </View>
 
@@ -243,7 +243,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         color: COLORS.WHITE,
                                         opacity: 0.8,
                                     }}>
-                                        {chartedAbsence?.almindeligt.yearly.collectiveAbsences} / {chartedAbsence?.almindeligt.yearly.collectiveModules}
+                                        {chartedAbsence?.almindeligt.yearly.collectiveAbsences.toString().replace(".", ",")} / {chartedAbsence?.almindeligt.yearly.collectiveModules.toString().replace(".", ",")}
                                     </Text>
                                 </View>
                             </View>
@@ -368,7 +368,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         color: COLORS.WHITE,
                                         opacity: 0.8,
                                     }}>
-                                        {chartedAbsence?.skriftligt.settled?.collectiveAbsences} / {chartedAbsence?.skriftligt.settled?.collectiveModules}
+                                        {chartedAbsence?.skriftligt.settled?.collectiveAbsences.toString().replace(".", ",")} / {chartedAbsence?.skriftligt.settled?.collectiveModules.toString().replace(".", ",")}
                                     </Text>
                                 </View>
 
@@ -396,7 +396,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         color: COLORS.WHITE,
                                         opacity: 0.8,
                                     }}>
-                                        {chartedAbsence?.skriftligt.yearly.collectiveAbsences} / {chartedAbsence?.skriftligt.yearly.collectiveModules}
+                                        {chartedAbsence?.skriftligt.yearly.collectiveAbsences.toString().replace(".", ",")} / {chartedAbsence?.skriftligt.yearly.collectiveModules.toString().replace(".", ",")}
                                     </Text>
                                 </View>
                             </View>

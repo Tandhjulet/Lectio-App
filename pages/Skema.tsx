@@ -3,14 +3,15 @@ import NavigationBar from "../components/Navbar";
 import { useEffect, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
 import { getUnsecure, isAuthorized } from "../modules/api/Authentication";
-import { Day, Modul } from "../modules/api/scraper/SkemaScraper";
-import COLORS from "../modules/Themes";
-import { BackwardIcon, ChatBubbleBottomCenterTextIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";
+import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
+import COLORS, { hexToRgb } from "../modules/Themes";
+import { AcademicCapIcon, BackwardIcon, ChatBubbleBottomCenterTextIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";
 import getDaysOfCurrentWeek, { WeekDay, getDay, getNextWeek, getPrevWeek } from "../modules/Date";
 import GestureRecognizer from 'react-native-swipe-gestures';
 import { getPeople } from "../modules/api/scraper/class/PeopleList";
 import { NavigationProp } from "@react-navigation/native";
 import RateLimit from "../components/RateLimit";
+import { Key, getSaved } from "../modules/api/storage/Storage";
 
 function Module({ navigation, moduler, index }: {
     navigation: NavigationProp<any>,
@@ -47,10 +48,8 @@ function Module({ navigation, moduler, index }: {
                     borderTopRightRadius: 10,
                 }}>
                     <Text style={{
-                        color: COLORS.WHITE,
+                        color: hexToRgb(COLORS.WHITE, 1),
                         fontWeight: "bold",
-
-                        opacity: 0.9,
                     }}>
                         {index + 1}.
                     </Text>
@@ -103,10 +102,6 @@ function Module({ navigation, moduler, index }: {
                                 })
                             }}
                             style={{
-                                backgroundColor: calcColor(0.5, modul),
-                                borderRadius: 5,
-                                opacity: 0.8,
-
                                 display: 'flex',
 
                                 flexGrow: 1,
@@ -115,6 +110,8 @@ function Module({ navigation, moduler, index }: {
                             key={moduler.indexOf(modul)}
                         >
                             <View style={{
+                                backgroundColor: calcColor(0.5, modul),
+
                                 position: 'relative',
                                 overflow: "hidden",
 
@@ -122,6 +119,7 @@ function Module({ navigation, moduler, index }: {
                                 paddingVertical: 10,
 
                                 height: modul.timeSpan.diff,
+                                borderRadius: 5,
                             }}>
                                 <View style={{
                                     position: 'absolute',
@@ -216,6 +214,7 @@ export default function Skema({ navigation }: {
     const [ loadDate, setLoadDate ] = useState<Date>(new Date());
 
     const [ skema, setSkema ] = useState<Day[] | null>([]);
+    const [ modulTimings, setModulTimings ] = useState<ModulDate[]>([]);
     const [ loading, setLoading ] = useState(true);
 
     const [modalVisible, setModalVisible] = useState(false);
@@ -257,9 +256,16 @@ export default function Skema({ navigation }: {
 
     useEffect(() => {
 
-        setLoading(true);
-
         (async () => {
+            const saved = await getSaved(Key.SKEMA, getWeekNumber(loadDate).toString());
+            let hasCache = false;
+            if(saved.valid && saved.value != null) {
+                setSkema(saved.value);
+                hasCache = true;
+            } else {
+                setLoading(true);
+            }
+
             const gymNummer = (await getUnsecure("gym")).gymNummer;
 
             setLoadWeekDate(loadDate);
@@ -267,7 +273,17 @@ export default function Skema({ navigation }: {
             setProfile(await getProfile());
 
             getSkema(gymNummer, loadDate).then(({ payload, rateLimited }) => {
-                setSkema(payload)
+                if(!rateLimited && payload != null) {
+
+                    // TODO: remember to fix this.
+                    setModulTimings([{"end": "9:30", "endNum": 930, "start": "8:00", "startNum": 80}, {"end": "11:20", "endNum": 1120, "start": "9:50", "startNum": 950}, {"end": "13:20", "endNum": 1320, "start": "11:50", "startNum": 1150}, {"end": "15:00", "endNum": 150, "start": "13:30", "startNum": 1330}, {"end": "15:55", "endNum": 1555, "start": "15:10", "startNum": 1510}]);
+                    setSkema([...payload.days]);
+
+                    console.log(payload.modul);
+                } else {
+                    if(!hasCache)
+                        setSkema(null);
+                }
                 setLoading(false);
 
                 setRateLimited(rateLimited)
@@ -561,7 +577,7 @@ export default function Skema({ navigation }: {
 
                                 minHeight: '40%',
 
-                                gap: 20,
+                                gap: 5,
                             }}>
                                 <Text style={{
                                     color: COLORS.ACCENT,
@@ -571,7 +587,7 @@ export default function Skema({ navigation }: {
                                     {"\n"}
                                     Nyd din dag!
                                 </Text>
-
+                                <AcademicCapIcon size={40} color={COLORS.WHITE} />
                             </View>
                         )
                         :

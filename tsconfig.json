@@ -1,4 +1,6 @@
 {
-  "compilerOptions": {},
+  "compilerOptions": {
+    "noImplicitThis": false,
+  },
   "extends": "@tsconfig/react-native/tsconfig.json"
 }

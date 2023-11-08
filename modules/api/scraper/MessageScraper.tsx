@@ -8,25 +8,36 @@ export type LectioMessage = {
     messageId: string,
 }
 
-export async function scrapeMessage(parser: any): Promise<LectioMessageDetailed | null> {
-    const ul = parser.getElementById("s_m_Content_Content_ThreadList");
-    if(ul == null) {
-        return {body: ""};
-    }
-
+function scrapeHelper(elements:any) {
     let out: string = "";
-
-    const content = ul.firstChild.lastChild;
-    for(let child in content.children) {
-        if(content.children[child].tagName == "br") {
+    for(let child of elements) {
+        if(child.tagName == "br") {
             out += "\n"
+        } else if ( child.tagName == "a" ||
+                    (child.classList != null && (
+                        child.classList.includes("'bb_b'") ||
+                        child.classList.includes("'bb_i'") ||
+                        child.classList.includes("'bb_u'") ||
+                        child.classList.includes("message-attachements")
+                    ))) // nemt at forstå 
+        {
+            out += scrapeHelper(child.children);
         } else {
-            const text: string = content.children[child].text;
+            const text: string = child.text;
             out += text.trim();
         }
     }
+    return out;
+}
 
-    return { body: out };
+export async function scrapeMessage(parser: any): Promise<LectioMessageDetailed | null> {
+    const ul = parser.getElementsByClassName("message-thread-message-content");
+
+    if(ul.length == 0) {
+        return {body: ""};
+    }
+
+    return { body: scrapeHelper(ul[0].children) };
 }
 
 export async function scrapeMessages(parser: any): Promise<LectioMessage[] | null> {
