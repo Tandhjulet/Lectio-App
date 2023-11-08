@@ -78,6 +78,8 @@ export type ModulDate = {
 
     end: string,
     endNum: number,
+
+    diff: number,
 }
 
 export type Week = {
@@ -87,17 +89,6 @@ export type Week = {
 
 let DEBUG = false;
 
-function parseStringifiedTime(stringifiedDate: string): Date {
-    const hours = parseInt(stringifiedDate.split(":")[0]);
-    const minutes = parseInt(stringifiedDate.split(":")[1]);
-
-    const d = new Date();
-    d.setHours(hours);
-    d.setMinutes(minutes);
-
-    return d;
-}
-
 function parseModule(htmlObject: any): ModulDate[] {
     const out: ModulDate[] = [];
 
@@ -105,15 +96,18 @@ function parseModule(htmlObject: any): ModulDate[] {
     modulListe.forEach((modul: any) => {
         const dateString = modul.firstChild.lastChild.text;
 
-        const start = parseStringifiedTime(dateString.split(" - ")[0]);
-        const end = parseStringifiedTime(dateString.split(" - ")[1]);
+        const start = parseDate(dateString.split(" - ")[0]);
+        const end = parseDate(dateString.split(" - ")[1]);
 
+        
         out.push({
             start: dateString.split(" - ")[0],
-            startNum: parseInt(start.getHours().toString() + start.getMinutes().toString()),
+            startNum: parseInt(start.getHours().toString().padStart(2,"0") + start.getMinutes().toString().padStart(2,"0")),
 
             end: dateString.split(" - ")[1],
-            endNum: parseInt(end.getHours().toString() + end.getMinutes().toString()),
+            endNum: parseInt(end.getHours().toString().padStart(2,"0") + end.getMinutes().toString().padStart(2,"0")),
+
+            diff: differenceBetweenDates(end, start),
         })
     });
 

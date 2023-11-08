@@ -260,7 +260,8 @@ export default function Skema({ navigation }: {
             const saved = await getSaved(Key.SKEMA, getWeekNumber(loadDate).toString());
             let hasCache = false;
             if(saved.valid && saved.value != null) {
-                setSkema(saved.value);
+                setSkema(saved.value.days);
+                setModulTimings(saved.value.modul);
                 hasCache = true;
             } else {
                 setLoading(true);
@@ -276,13 +277,13 @@ export default function Skema({ navigation }: {
                 if(!rateLimited && payload != null) {
 
                     // TODO: remember to fix this.
-                    setModulTimings([{"end": "9:30", "endNum": 930, "start": "8:00", "startNum": 80}, {"end": "11:20", "endNum": 1120, "start": "9:50", "startNum": 950}, {"end": "13:20", "endNum": 1320, "start": "11:50", "startNum": 1150}, {"end": "15:00", "endNum": 150, "start": "13:30", "startNum": 1330}, {"end": "15:55", "endNum": 1555, "start": "15:10", "startNum": 1510}]);
+                    setModulTimings([...payload.modul]);
                     setSkema([...payload.days]);
 
                     console.log(payload.modul);
                 } else {
-                    if(!hasCache)
-                        setSkema(null);
+                    setSkema(null);
+                    setModulTimings([]);
                 }
                 setLoading(false);
 
