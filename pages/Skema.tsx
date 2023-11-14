@@ -1,4 +1,4 @@
-import { ActivityIndicator, LogBox, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, DimensionValue, LogBox, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { useEffect, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
@@ -13,197 +13,66 @@ import { NavigationProp } from "@react-navigation/native";
 import RateLimit from "../components/RateLimit";
 import { Key, getSaved } from "../modules/api/storage/Storage";
 
-function Module({ navigation, moduler, index }: {
-    navigation: NavigationProp<any>,
-    moduler: Modul[]
-    index: number
-}): JSX.Element {
-    const calcColor = (opacity: number, modul: Modul) => (modul.changed || modul.cancelled) ? (modul.changed ? `rgba(255, 255, 0, ${opacity})` : `rgba(255, 0, 34, ${opacity})`) : `rgba(34, 255, 0, ${opacity})`;
+function findExtremumDates(moduler: Modul[], fallbackValues: {
+    min: ModulDate,
+    max: ModulDate,
+}): {
+    min: ModulDate,
+    max: ModulDate,
+} {
+    let smallest: ModulDate = fallbackValues.min;
+    let biggest: ModulDate = fallbackValues.max;
 
-    return (
-        <View style={{
-            marginTop: 30,
-            display: 'flex',
+    moduler.forEach((modul: Modul) => {
 
-            position: 'relative'
-        }}>
-            <View style={{
-                position: 'absolute',
+        if(modul.timeSpan.startNum < smallest.startNum) {
+            smallest = modul.timeSpan;
+        }
 
-                height: "100%",
+        if(modul.timeSpan.endNum > biggest.endNum) {
+            biggest = modul.timeSpan;
+        }
+    })
 
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}>
-                <View style={{
-                    paddingVertical: 7.5,
+    return {
+        min: smallest,
+        max: biggest,
+    };
+}
 
-                    paddingLeft: 30,
-                    paddingRight: 7.5,
+function formatDate(dateString: string) {
+    const padded = dateString.padStart(4, "0");
+    const minutes = padded.slice(2);
+    const hours = padded.slice(0,2);
 
-                    backgroundColor: COLORS.LIGHT,
+    const date = new Date();
+    date.setMinutes(parseInt(minutes));
+    date.setHours(parseInt(hours));
 
-                    borderBottomRightRadius: 10,
-                    borderTopRightRadius: 10,
-                }}>
-                    <Text style={{
-                        color: hexToRgb(COLORS.WHITE, 1),
-                        fontWeight: "bold",
-                    }}>
-                        {index + 1}.
-                    </Text>
-                </View>
-            </View>
+    return date;
+}
 
-            <View style={{
-                display: 'flex',
-                flexDirection: 'row',
+function hoursBetweenDates(dates: {
+    min: ModulDate,
+    max: ModulDate,
+}, padding: number = 0) {
 
-                alignItems: 'center',
-                maxWidth: '100%',
+    const min: Date = formatDate(dates.min.startNum.toString())
+    const max: Date = formatDate(dates.max.endNum.toString());
 
-                marginHorizontal: 10,
-                gap: 10,
-            }}>
-                <Text style={{
-                    color: COLORS.ACCENT,
-                }}>
-                    {moduler[moduler.length - 1].timeSpan.endDate}
-                </Text>
+    const out: number[] = [];
+    for(let i = min.getHours()-padding; i <= max.getHours()+padding; i++) {
+        out.push(i);
+    }
 
-                <View style={{
-                    borderBottomColor: COLORS.DARK,
-                    borderBottomWidth: 1,
-
-                    borderRadius: 5,
-                    flex: 1,
-                }}/>
-            </View>
-
-            <View style={{
-                display: 'flex',
-                flexDirection: 'row',
-
-                marginLeft: 40 + (10 * 2) + 5,
-                marginRight: 15,
-                marginVertical: -15,
-
-                zIndex: 5,
-                
-                gap: 10,
-            }}>
-                {moduler.map((modul: Modul) => {
-                    return (
-                        <TouchableOpacity
-                            onPress={() => {
-                                navigation.navigate("Modul View", {
-                                    modul: modul,
-                                })
-                            }}
-                            style={{
-                                display: 'flex',
-
-                                flexGrow: 1,
-                                flexBasis: 0,
-                            }}
-                            key={moduler.indexOf(modul)}
-                        >
-                            <View style={{
-                                backgroundColor: calcColor(0.5, modul),
-
-                                position: 'relative',
-                                overflow: "hidden",
-
-                                paddingHorizontal: 10,
-                                paddingVertical: 10,
-
-                                height: modul.timeSpan.diff,
-                                borderRadius: 5,
-                            }}>
-                                <View style={{
-                                    position: 'absolute',
-                                    backgroundColor: calcColor(1, modul),
-
-                                    minHeight: modul.timeSpan.diff,
-                                    width: 4,
-
-                                    left: 0,
-                                }} />
-
-                                <Text style={{
-                                    color: calcColor(1, modul),
-                                    fontWeight: "bold",
-                                    fontSize: 12.5,
-                                }}>
-                                    {modul.lokale.replace("...", "").replace("▪", "").trim()}
-                                </Text>
-                                
-                                <Text style={{
-                                    color: calcColor(1, modul),
-                                    fontWeight: "bold",
-                                    fontSize: 15,
-                                }}>
-                                    {modul.teacher.length == 0 ? modul.team : (modul.team + " - " + modul.teacher.join(", "))}
-                                </Text>
-                
-                                <View style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    gap: 5,
-                                }}>
-                                    {modul.comment ?
-                                        <ChatBubbleBottomCenterTextIcon style={{
-                                            marginTop: 5,
-                                        }} color={calcColor(1, modul)} />
-                                    : null}
-                
-                                    {modul.homework ?
-                                        <InboxStackIcon style={{
-                                            marginTop: 5,
-                                        }} color={calcColor(1, modul)} />
-                                    : null}
-                                    
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    )
-                })}
-            </View>
-            
-
-            <View style={{
-                display: 'flex',
-                flexDirection: 'row',
-
-                alignItems: 'center',
-                maxWidth: '100%',
-
-                marginHorizontal: 10,
-                gap: 10,
-            }}>
-                <Text style={{
-                    color: COLORS.ACCENT,
-                }}>
-                    {moduler[moduler.length - 1].timeSpan.startDate}
-                </Text>
-
-                <View style={{
-                    borderBottomColor: COLORS.DARK,
-                    borderBottomWidth: 1,
-
-                    borderRadius: 5,
-                    flex: 1,
-                }} />
-
-            </View>
-        </View>
-    )
+    return out;
 }
 
 export default function Skema({ navigation }: {
     navigation: NavigationProp<any>,
 }) {
+    const calcColor = (opacity: number, modul: Modul) => (modul.changed || modul.cancelled) ? (modul.changed ? `rgba(255, 255, 0, ${opacity})` : `rgba(255, 0, 34, ${opacity})`) : `rgba(34, 255, 0, ${opacity})`;
+
     const [ dayNum, setDayNum ] = useState<number>((getDay(new Date()).weekDayNumber));
 
     const [ selectedDay, setSelectedDay ] = useState<Date>(new Date());
@@ -214,8 +83,18 @@ export default function Skema({ navigation }: {
     const [ loadDate, setLoadDate ] = useState<Date>(new Date());
 
     const [ skema, setSkema ] = useState<Day[] | null>([]);
+    const [ day, setDay ] = useState<{
+        modul: Modul,
+
+        width: string,
+        left: string,
+    }[]>([]);
+
     const [ modulTimings, setModulTimings ] = useState<ModulDate[]>([]);
+    const [ hoursToMap, setHoursToMap ] = useState<number[]>([]);
     const [ loading, setLoading ] = useState(true);
+
+    const [ height, setHeight ] = useState<number>(0);
 
     const [modalVisible, setModalVisible] = useState(false);
     const [rateLimited, setRateLimited] = useState(false);
@@ -254,8 +133,19 @@ export default function Skema({ navigation }: {
         });
     }
 
-    useEffect(() => {
+    function parseSkema(skema: Day[]) {
+        if(skema == null)
+            return;
 
+        const out = calculateIntersects(skema[dayNum - 1].moduler)
+        const depthAssigned = assignDepth(out);
+
+        const flattened = flatten(depthAssigned);
+
+        setDay(flattened);
+    }
+
+    useEffect(() => {
         (async () => {
             const saved = await getSaved(Key.SKEMA, getWeekNumber(loadDate).toString());
             let hasCache = false;
@@ -275,28 +165,196 @@ export default function Skema({ navigation }: {
 
             getSkema(gymNummer, loadDate).then(({ payload, rateLimited }) => {
                 if(!rateLimited && payload != null) {
-
-                    // TODO: remember to fix this.
-                    setModulTimings([...payload.modul]);
                     setSkema([...payload.days]);
-
-                    console.log(payload.modul);
+                    setModulTimings([...payload.modul]);
                 } else {
-                    setSkema(null);
-                    setModulTimings([]);
+                    if(!hasCache) {
+                        setSkema(null);
+                        setModulTimings([]);
+                    }
                 }
                 setLoading(false);
-
                 setRateLimited(rateLimited)
             })
         })();
 
     }, [loadDate])
 
+    useEffect(() => {
+        if(skema == null || skema.length == 0 || skema[dayNum - 1] == null) 
+            return;
+
+        const extrenumDates = findExtremumDates(skema[dayNum - 1].moduler, {
+            min: modulTimings[0],
+            max: modulTimings[modulTimings.length - 1],
+        })
+        if(extrenumDates == null)
+            return;
+        
+        const hoursBetween = hoursBetweenDates(extrenumDates, 1)
+        setHoursToMap(hoursBetween)
+
+        parseSkema(skema)
+    }, [modulTimings, dayNum])
+
     const dateCompare = (d1: Date, d2: Date) => {
         return (d1.getMonth() == d2.getMonth() &&
                 d1.getDate() == d2.getDate() &&
                 d1.getFullYear() == d2.getFullYear())
+    }
+
+    function calculateTop(date: ModulDate) {
+        const min: Date = formatDate(date.startNum.toString())
+        const out = ((min.getHours() - Math.min(...hoursToMap))*60 + min.getMinutes());
+        return (out == Infinity || out == -Infinity) ? 0 : out;
+    }
+
+    function searchDateDict(dict: {[id: string]: any}, startDate: number, endDate: number): string | null {
+        const xmin1 = formatDate(startDate.toString())
+        const xmax1 = formatDate(endDate.toString())
+
+        for(let key of Object.keys(dict)) {
+            const xmin2 = formatDate(key.split("-")[0]);
+            const xmax2 = formatDate(key.split("-")[1]);
+
+            if(xmax1 >= xmin2 && xmax2 >= xmin1) { // if true timestamps are overlapping
+                return key
+            }
+        }
+        return null;
+    }
+
+    function _depth(intersections: {[id: string]: {
+        moduler: Modul[],
+        contains: any,
+
+        depth?: number,
+        maxDepth?: number,
+    }}, depth = 1) {
+        const out = intersections;
+
+        for(let key in intersections) {
+            out[key].depth = depth + (out[key].moduler.length - 1);
+            _depth(out[key].contains, depth + (out[key].moduler.length - 1) + 1)
+        }
+
+        return out;
+    }
+
+    let MAXDEPTH = 0;
+    function _maxDepth(intersections: {[id: string]: {
+        moduler: Modul[],
+        contains: any,
+
+        depth?: number,
+        maxDepth?: number,
+    }}) {
+        const out = intersections;
+
+        for(let key in intersections) {
+            if((out[key].depth ?? 0) > MAXDEPTH) {
+                MAXDEPTH = out[key].depth ?? MAXDEPTH;
+            }
+            _maxDepth(out[key].contains)
+        }
+
+        return MAXDEPTH;
+    }
+
+    function flatten(depthAssigned: {[id: string]: {
+        moduler: Modul[],
+        contains: any,
+
+        depth?: number,
+        maxDepth?: number,
+    }}) {
+        let out: {
+            modul: Modul,
+
+            width: string,
+            left: string,
+        }[] = []
+
+        for(let key in depthAssigned) {
+            const width = Math.floor(1/(depthAssigned[key].maxDepth ?? 1)*100).toString() + "%";
+
+            depthAssigned[key].moduler.forEach((modul: Modul, index: number) => {
+                const left = Math.floor((1-((depthAssigned[key].depth ?? 0)-index)/(depthAssigned[key].maxDepth ?? 1))*100) + "%";
+
+                out.push({
+                    modul: modul,
+                    width: width,
+                    left: left,
+                })
+            })
+
+            out = [
+                ...out,
+                ...flatten(depthAssigned[key].contains),
+            ]
+        }
+
+        return out;
+    }
+
+    function assignDepth(intersections: {[id: string]: {
+        moduler: Modul[],
+        contains: any,
+
+        depth?: number,
+        maxDepth?: number,
+    }}, calcDepth: boolean = true, maxDepth: number = 0) {
+        let out = intersections;
+
+        if(calcDepth) {
+            out = _depth(intersections);
+        }
+
+        for(let key in out) {
+            MAXDEPTH = 0;
+            maxDepth = _maxDepth(out[key].contains);
+            if(maxDepth == 0) {
+                maxDepth = out[key].depth ?? 0;
+            }
+            out[key].maxDepth = maxDepth
+
+            assignDepth(out[key].contains, false, maxDepth)
+        }
+
+        return out;
+    }   
+
+    function calculateIntersects(modules: Modul[]) {
+        const out: {[id: string]: {
+            moduler: Modul[],
+            contains: any,
+        }} = {}
+
+        const sortedModules = modules.sort((a,b) => {
+            return (a.timeSpan.diff - b.timeSpan.diff)
+        }).reverse();
+
+        sortedModules.forEach((modul: Modul) => {
+            const key = searchDateDict(out, modul.timeSpan.startNum, modul.timeSpan.endNum)
+            if(key == null) {
+                out[`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}`] = {
+                    contains: {},
+                    moduler: [modul],
+                }
+            } else {
+                if(`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}` == key) {
+                    out[`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}`].moduler.push(modul)
+                } else {
+                    const intersects = calculateIntersects([modul]);
+                    out[key].contains = { 
+                        ...out[key].contains,
+                        ...intersects,
+                    }
+                }
+            }
+        })
+
+        return out
     }
 
     return (
@@ -545,29 +603,37 @@ export default function Skema({ navigation }: {
                         <ActivityIndicator size={"small"} color={COLORS.ACCENT} />
                     </View>
                     :
-                    <ScrollView>
-                        {skema == null && 
+                    <ScrollView style={{
+                        flex: 1,
+                    }}>
                         <View style={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
+                            paddingTop: 20,
+                        }} /> 
 
-                            flexDirection: 'column-reverse',
+                        {skema == null && 
+                            <View style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
 
-                            minHeight: '40%',
+                                flexDirection: 'column-reverse',
 
-                            gap: 20,
-                        }}>
-                            <Text style={{
-                                color: COLORS.RED,
-                                textAlign: 'center'
+                                minHeight: '40%',
+
+                                gap: 20,
                             }}>
-                                Der opstod en fejl.
-                                {"\n"}
-                                Du kan prøve igen ved at genstarte appen.
-                            </Text>
+                                <Text style={{
+                                    color: COLORS.RED,
+                                    textAlign: 'center'
+                                }}>
+                                    Der opstod en fejl.
+                                    {"\n"}
+                                    Du kan prøve igen ved at genstarte appen.
+                                </Text>
 
-                        </View>}
+                            </View>
+                        }
+
                         {skema != null && (skema[dayNum - 1] == undefined || Object.keys(skema[dayNum - 1].moduler).length == 0) ? (
                             <View style={{
                                 display: 'flex',
@@ -592,20 +658,169 @@ export default function Skema({ navigation }: {
                             </View>
                         )
                         :
-                        <>
-                            {skema != null && skema[dayNum - 1].sortedKeys.map((index: string, i: number) => {
-                                const moduler: Modul[] = skema[dayNum - 1].moduler[index];
-
+                        <View>
+                            {hoursToMap.map((hour: number, index: number) => {
                                 return (
-                                    <Module key={index.toString()} navigation={navigation} moduler={moduler} index={i} /> 
+                                    <View key={index} style={{
+                                        position: "absolute",
+                                        top: (hour - Math.min(...hoursToMap)) * 60,
+
+                                        display: "flex",
+                                        flexDirection: "row",
+                                        alignItems: "center",
+
+                                        left: 40,
+                                        paddingRight: 41,
+                                        gap: 7.5,
+
+                                        transform: [{
+                                            translateY: -(17 / 2),
+                                        }],
+
+                                        zIndex: 1,
+                                    }}>
+                                        <Text style={{
+                                            color: hexToRgb(COLORS.WHITE, 0.8),
+                                            width: 39,
+
+                                            textAlign: "center",
+                                            textAlignVertical: "center",
+                                        }}>
+                                            {hour.toString().padStart(2, "0")}:00
+                                        </Text>
+                                        <View style={{
+                                            height: StyleSheet.hairlineWidth,
+                                            backgroundColor: hexToRgb(COLORS.WHITE, 0.6),
+                                            flex: 1,
+                                        }} />
+                                    </View>
                                 )
                             })}
-                        </>
-                        }
 
-                        <View style={{
-                            marginVertical: 80,
-                        }} />
+                            {modulTimings.map((modulTiming: ModulDate, index: number) => {
+                                return (
+                                    <View key={index} style={{
+                                        position: "absolute",
+                                        height: modulTiming.diff,
+                                        width: 30,
+
+                                        borderTopRightRadius: 7.5,
+                                        borderBottomRightRadius: 7.5,
+
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+
+                                        backgroundColor: hexToRgb(COLORS.ACCENT, 0.5),
+
+                                        top: calculateTop(modulTiming)
+                                    }}>
+                                        <Text>
+                                            {index+1}.
+                                        </Text>
+                                    </View>
+                                )
+                            })}
+
+                            <View style={{
+                                position: "relative",
+                                marginLeft: 40 + 7.5 + 38,
+
+                                zIndex: 5,
+                            }}>
+                                {day != null && day.map(({ modul, width, left}, index: number) => {
+                                    const widthNum = parseInt(width.replace("%", ""));
+
+                                    return (
+                                        <View key={index} style={{
+                                            position:"absolute",
+
+                                            top: calculateTop(modul.timeSpan),
+                                            height: modul.timeSpan.diff,
+                                            
+                                            width: width as DimensionValue,
+                                            left: left as DimensionValue,
+
+                                            zIndex: 5,
+                                        }}>
+                                            <View style={{
+                                                width: "100%",
+                                            }}>
+                                                <View style={{
+                                                    backgroundColor: calcColor(0.5, modul),
+                                                    borderRadius: 5,
+
+                                                    width: "100%",
+                                                    height: "100%",
+
+                                                    overflow: "hidden",
+
+                                                    paddingHorizontal: 10,
+                                                    paddingVertical: modul.timeSpan.diff > 25 ? 5 : 2.5,
+                                                }}>
+                                                    <View style={{
+                                                        position: 'absolute',
+                                                        backgroundColor: calcColor(1, modul),
+
+                                                        borderRadius: 100,
+
+                                                        minHeight: modul.timeSpan.diff,
+                                                        width: 4,
+
+                                                        left: 0,
+                                                    }} />
+
+                                                    {modul.timeSpan.diff > 30 && (
+                                                        <Text style={{
+                                                            color: calcColor(1, modul),
+                                                            fontSize: 12.5,
+                                                        }}>
+                                                            {modul.lokale.replace("...", "").replace("▪", "").trim()}
+                                                        </Text>
+                                                    )}
+
+                                                    <Text style={{
+                                                        color: calcColor(1, modul),
+                                                        fontWeight: "bold",
+                                                    }}>
+                                                        {modul.teacher.length == 0 ? modul.team : (modul.team + " - " + modul.teacher.join(", "))}
+                                                    </Text>
+
+                                                    {modul.timeSpan.diff > 70 && (
+                                                        <View style={{
+                                                            position: "absolute",
+                                                            top: widthNum > 75 ? 0 : undefined,
+                                                            bottom: widthNum > 75 ? undefined : 0,
+                                                            right: 0,
+
+                                                            display: 'flex',
+                                                            flexDirection: 'row',
+                                                            gap: 5,
+                                                            
+                                                            margin: 5,
+                                                        }}>
+                                                            {modul.comment ?
+                                                                <ChatBubbleBottomCenterTextIcon color={calcColor(1, modul)} />
+                                                            : null}
+                                        
+                                                            {modul.homework ?
+                                                                <InboxStackIcon color={calcColor(1, modul)} />
+                                                            : null}
+                                                            
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            </View>
+                                        </View>
+                                    )
+                                })}
+                            </View>
+
+                            <View style={{
+                                paddingBottom: hoursToMap.length * 60 + 100,
+                            }} /> 
+                        </View>
+                        }
                     </ScrollView>
                 }
             </View>

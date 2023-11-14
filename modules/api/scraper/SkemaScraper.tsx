@@ -37,10 +37,6 @@ function differenceBetweenDates(date1: Date, date2: Date) {
     const minutes = date1.getMinutes() - date2.getMinutes();
 
     const out = minutes + hours*60;
-    if (out <= 70) {
-        return 70;
-    }
-
     return out;
 }
 
@@ -49,11 +45,9 @@ export type Modul = {
     team: string,
     teacher: string[],
     lokale: string,
-    timeSpan: {
-        endDate: string,
-        startDate: string,
-        diff: number,
-    }
+    timeSpan: ModulDate,
+
+    href: string,
 
     changed: boolean,
     cancelled: boolean,
@@ -67,8 +61,7 @@ export type Modul = {
 }
 
 export type Day = {
-    moduler: {[id: string]: Modul[]}
-    sortedKeys: string[],
+    moduler: Modul[]
     skemaNoter: String,
 }
 
@@ -99,13 +92,15 @@ function parseModule(htmlObject: any): ModulDate[] {
         const start = parseDate(dateString.split(" - ")[0]);
         const end = parseDate(dateString.split(" - ")[1]);
 
-        
-        out.push({
-            start: dateString.split(" - ")[0],
-            startNum: parseInt(start.getHours().toString().padStart(2,"0") + start.getMinutes().toString().padStart(2,"0")),
+        const startNum = parseInt(start.getHours().toString().padStart(2,"0") + start.getMinutes().toString().padStart(2,"0"));
+        const endNum = parseInt(end.getHours().toString().padStart(2,"0") + end.getMinutes().toString().padStart(2,"0"));
 
-            end: dateString.split(" - ")[1],
-            endNum: parseInt(end.getHours().toString().padStart(2,"0") + end.getMinutes().toString().padStart(2,"0")),
+        out.push({
+            start: startNum > endNum ? dateString.split(" - ")[1] : dateString.split(" - ")[0],
+            startNum: startNum > endNum ? endNum : startNum,
+
+            end: startNum > endNum ? dateString.split(" - ")[0] : dateString.split(" - ")[1],
+            endNum: startNum > endNum ? startNum : endNum,
 
             diff: differenceBetweenDates(end, start),
         })
@@ -119,7 +114,7 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
 
     const skemaNoter = getSkemaNote(table, dayNum);
 
-    const out: {[id: string]: Modul[]} = {}
+    const out: Modul[] = [];
     let moduleNum = 0;
 
     modulListe.forEach((modul: any, index: number) => {
@@ -129,12 +124,19 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
 
         const lektier = parseLektieNote(modul.attributes.href, raw);
 
+        let width;
+        const regExpWidth = /width:(?<width>([\d\.]*))em/gm.exec(modul.text);
+        if(regExpWidth != null)
+            width = regExpWidth[1];
+        else
+            width = "13.82";
+
         let height;
-        const regExpHeight = /top:(?<height>([\d\.]*))em/gm.exec(modul.text);
+        const regExpHeight = /height:(?<height>([\d\.]*))em/gm.exec(modul.text);
         if(regExpHeight != null)
             height = regExpHeight[1];
         else
-            height = "0";
+            height = "5.73";
 
         let timeSpan: [Date, Date];
         const regExpTimespan = modul.text.match(new RegExp('\\d{2}:\\d{2}', "gm"));
@@ -168,10 +170,10 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
 
         const parsedIcons: {homework: boolean, comment: boolean} = parseIconString(brik.firstChild)
 
-        if(out[height] == null)
-            out[height] = [];
+        const startNum = parseInt(timeSpan[1].getHours().toString().padStart(2,"0") + timeSpan[1].getMinutes().toString().padStart(2,"0"));
+        const endNum = parseInt(timeSpan[0].getHours().toString().padStart(2,"0") + timeSpan[0].getMinutes().toString().padStart(2,"0"));
 
-        out[height].push({
+        out.push({
             changed: parsedInfoString.changed,
             cancelled: parsedInfoString.cancelled,
 
@@ -179,13 +181,19 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
             team: parsedInfoString.team,
             teacher: parsedInfoString.teacher,
 
+            href: modul.attributes.href.replaceAll("'", "").replaceAll("\"", ""),
+
             homework: parsedIcons.homework,
             comment: parsedIcons.comment,
             
             timeSpan: {
-                endDate: formatDate(timeSpan[0]), //moduleDates[moduleNum][0],
-                startDate: formatDate(timeSpan[1]), //moduleDates[moduleNum][1],
-                diff: differenceBetweenDates(timeSpan[1], timeSpan[0])
+                start: startNum > endNum ? formatDate(timeSpan[1]) : formatDate(timeSpan[0]),
+                startNum: startNum > endNum ? endNum : startNum,
+    
+                end: startNum > endNum ? formatDate(timeSpan[0]) : formatDate(timeSpan[1]),
+                endNum: startNum > endNum ? startNum : endNum,
+    
+                diff: differenceBetweenDates(timeSpan[1], timeSpan[0]),
             },
 
             ...lektier,
@@ -194,12 +202,8 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
         moduleNum++;
     });
 
-    const keys = Object.keys(out);
-    keys.sort((a,b) => parseInt(a) - parseInt(b))
-
     return { 
         moduler: out,
-        sortedKeys: keys,
         skemaNoter: skemaNoter,
     };
 }
