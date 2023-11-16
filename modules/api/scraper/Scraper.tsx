@@ -406,9 +406,10 @@ export async function getAflevering(gymNummer: string, id: string): Promise<Opga
     const text = await res.text();
 
     const parser = DomSelector(text);
-    const opgaver = scrapeOpgave(parser);
+    const opgaver = await scrapeOpgave(parser);
 
-    await saveFetch(Key.S_AFLEVERING, opgaver, Timespan.HOUR * 6, id)
+    if(opgaver != null)
+        await saveFetch(Key.S_AFLEVERING, opgaver, Timespan.HOUR * 6, id)
 
     return opgaver;
 }
@@ -458,7 +459,7 @@ export async function getAfleveringer(gymNummer: string): Promise<{ payload: Opg
     const opgaver = scrapeOpgaver(parser);
 
     if(opgaver != null)
-        await saveFetch(Key.S_AFLEVERING, opgaver, Timespan.MINUTE * 5)
+        await saveFetch(Key.AFLEVERINGER, opgaver, Timespan.MINUTE * 5)
 
     return {
         payload: opgaver,

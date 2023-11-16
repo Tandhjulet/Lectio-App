@@ -25,6 +25,8 @@ export default function AfleveringView({ navigation, route }: {
     const aflevering: Opgave = route.params?.opgave;
 
     useEffect(() => {
+        setLoading(true);
+
         (async () => {
             const gym: { gymName: string, gymNummer: string } = await getUnsecure("gym");
             setGym(gym);
@@ -40,6 +42,8 @@ export default function AfleveringView({ navigation, route }: {
                 setLoading(false);
             })
         })();
+
+        console.log("Running...")
     }, [])
 
     return (
@@ -121,7 +125,7 @@ export default function AfleveringView({ navigation, route }: {
                             <>
                                 {opgaveDetails != null &&
                                     <>
-                                        {(opgaveDetails.karakterSkala != null && opgaveDetails.karakterSkala != "Der gives ikke karakter") &&
+                                        {(opgaveDetails.karakterSkala != null && opgaveDetails.karakterSkala != "Der gives ikke karakter" && opgaveDetails.karakterSkala != "") &&
                                             <>
                                                 <Cell
                                                     cellStyle="RightDetail"
@@ -143,7 +147,7 @@ export default function AfleveringView({ navigation, route }: {
                                             </>
                                         }
 
-                                        {opgaveDetails.note != null &&
+                                        {(opgaveDetails.note != null && opgaveDetails.note != "") &&
                                             <>
                                                 <Cell
                                                     contentContainerStyle={{
@@ -182,7 +186,7 @@ export default function AfleveringView({ navigation, route }: {
                                             </>
                                         }
 
-                                        {opgaveDetails.ansvarlig != null &&
+                                        {(opgaveDetails.ansvarlig != null && opgaveDetails.ansvarlig != "") &&
                                             <Cell
                                                 contentContainerStyle={{
                                                     display: 'flex',
