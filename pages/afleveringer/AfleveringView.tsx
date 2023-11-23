@@ -42,8 +42,6 @@ export default function AfleveringView({ navigation, route }: {
                 setLoading(false);
             })
         })();
-
-        console.log("Running...")
     }, [])
 
     return (

@@ -1,4 +1,4 @@
-import { ActivityIndicator, DimensionValue, LogBox, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, DimensionValue, LogBox, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { useEffect, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
@@ -732,86 +732,92 @@ export default function Skema({ navigation }: {
                                     const widthNum = parseInt(width.replace("%", ""));
 
                                     return (
-                                        <View key={index} style={{
-                                            position:"absolute",
-
-                                            top: calculateTop(modul.timeSpan),
-                                            height: modul.timeSpan.diff,
-                                            
-                                            width: width as DimensionValue,
-                                            left: left as DimensionValue,
-
-                                            zIndex: 5,
+                                        <Pressable key={index} onPress={() => {
+                                            navigation.navigate("Modul View", {
+                                                modul: modul,
+                                            })
                                         }}>
                                             <View style={{
-                                                width: "100%",
+                                                position:"absolute",
+
+                                                top: calculateTop(modul.timeSpan),
+                                                height: modul.timeSpan.diff,
+                                                
+                                                width: width as DimensionValue,
+                                                left: left as DimensionValue,
+
+                                                zIndex: 5,
                                             }}>
                                                 <View style={{
-                                                    backgroundColor: calcColor(0.5, modul),
-                                                    borderRadius: 5,
-
                                                     width: "100%",
-                                                    height: "100%",
-
-                                                    overflow: "hidden",
-
-                                                    paddingHorizontal: 10,
-                                                    paddingVertical: modul.timeSpan.diff > 25 ? 5 : 2.5,
                                                 }}>
                                                     <View style={{
-                                                        position: 'absolute',
-                                                        backgroundColor: calcColor(1, modul),
+                                                        backgroundColor: calcColor(0.5, modul),
+                                                        borderRadius: 5,
 
-                                                        borderRadius: 100,
+                                                        width: "100%",
+                                                        height: "100%",
 
-                                                        minHeight: modul.timeSpan.diff,
-                                                        width: 4,
+                                                        overflow: "hidden",
 
-                                                        left: 0,
-                                                    }} />
+                                                        paddingHorizontal: 10,
+                                                        paddingVertical: modul.timeSpan.diff > 25 ? 5 : 2.5,
+                                                    }}>
+                                                        <View style={{
+                                                            position: 'absolute',
+                                                            backgroundColor: calcColor(1, modul),
 
-                                                    {modul.timeSpan.diff > 30 && (
+                                                            borderRadius: 100,
+
+                                                            minHeight: modul.timeSpan.diff,
+                                                            width: 4,
+
+                                                            left: 0,
+                                                        }} />
+
+                                                        {modul.timeSpan.diff > 30 && (
+                                                            <Text style={{
+                                                                color: calcColor(1, modul),
+                                                                fontSize: 12.5,
+                                                            }}>
+                                                                {modul.lokale.replace("...", "").replace("▪", "").trim()}
+                                                            </Text>
+                                                        )}
+
                                                         <Text style={{
                                                             color: calcColor(1, modul),
-                                                            fontSize: 12.5,
+                                                            fontWeight: "bold",
                                                         }}>
-                                                            {modul.lokale.replace("...", "").replace("▪", "").trim()}
+                                                            {modul.teacher.length == 0 ? modul.team : (modul.team + " - " + modul.teacher.join(", "))}
                                                         </Text>
-                                                    )}
 
-                                                    <Text style={{
-                                                        color: calcColor(1, modul),
-                                                        fontWeight: "bold",
-                                                    }}>
-                                                        {modul.teacher.length == 0 ? modul.team : (modul.team + " - " + modul.teacher.join(", "))}
-                                                    </Text>
+                                                        {modul.timeSpan.diff > 70 && (
+                                                            <View style={{
+                                                                position: "absolute",
+                                                                top: widthNum > 75 ? 0 : undefined,
+                                                                bottom: widthNum > 75 ? undefined : 0,
+                                                                right: 0,
 
-                                                    {modul.timeSpan.diff > 70 && (
-                                                        <View style={{
-                                                            position: "absolute",
-                                                            top: widthNum > 75 ? 0 : undefined,
-                                                            bottom: widthNum > 75 ? undefined : 0,
-                                                            right: 0,
-
-                                                            display: 'flex',
-                                                            flexDirection: 'row',
-                                                            gap: 5,
-                                                            
-                                                            margin: 5,
-                                                        }}>
-                                                            {modul.comment ?
-                                                                <ChatBubbleBottomCenterTextIcon color={calcColor(1, modul)} />
-                                                            : null}
-                                        
-                                                            {modul.homework ?
-                                                                <InboxStackIcon color={calcColor(1, modul)} />
-                                                            : null}
-                                                            
-                                                        </View>
-                                                    )}
+                                                                display: 'flex',
+                                                                flexDirection: 'row',
+                                                                gap: 5,
+                                                                
+                                                                margin: 5,
+                                                            }}>
+                                                                {modul.comment ?
+                                                                    <ChatBubbleBottomCenterTextIcon color={calcColor(1, modul)} />
+                                                                : null}
+                                            
+                                                                {modul.homework ?
+                                                                    <InboxStackIcon color={calcColor(1, modul)} />
+                                                                : null}
+                                                                
+                                                            </View>
+                                                        )}
+                                                    </View>
                                                 </View>
                                             </View>
-                                        </View>
+                                        </Pressable>
                                     )
                                 })}
                             </View>

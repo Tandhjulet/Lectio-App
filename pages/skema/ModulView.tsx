@@ -47,7 +47,7 @@ export default function ModulView({ navigation, route }: {
                 if(people[CLEAN_NAME(modul.lærerNavn)] != null)
                     setBilledeId(people[CLEAN_NAME(modul.lærerNavn)].billedeId);
 
-            profile.hold.forEach((hold: Hold) => {
+            profile.hold.forEach((hold: Hold, i: number) => {
 
                 if(hold.holdNavn == modul.team) {
                     scrapeHold(hold.holdId, gym.gymNummer).then((v) => {
@@ -59,7 +59,12 @@ export default function ModulView({ navigation, route }: {
                     })
                 }
 
+                if(i == profile.hold.length - 1) {
+                    setLoading(false);
+                }
             })
+
+
         })();
     }, [])
 
@@ -91,13 +96,13 @@ export default function ModulView({ navigation, route }: {
                         <Cell
                             cellStyle="RightDetail"
                             title="Start"
-                            detail={modul.timeSpan.endDate}
+                            detail={modul.timeSpan.start}
                         />
 
                         <Cell
                             cellStyle="RightDetail"
                             title="Slut"
-                            detail={modul.timeSpan.startDate}
+                            detail={modul.timeSpan.end}
                         />
 
                         <Cell
@@ -164,90 +169,49 @@ export default function ModulView({ navigation, route }: {
                         </Section>
                     }
 
-                    {!loading && 
-                        <Section header="MEDLEMMER" roundedCorners={true} hideSurroundingSeparators={true}>
-                            {modul.lærerNavn != null &&
-                                <Cell
-                                    cellStyle="Subtitle"
+                    {loading ?
+                        <ActivityIndicator size={"small"} color={COLORS.WHITE} />
+                    :
+                        <>
+                            {Object.keys(members).length > 0 &&
+                                <Section header="MEDLEMMER" roundedCorners={true} hideSurroundingSeparators={true}>
+                                    {Object.keys(members).map((navn: string, index: number) => {
+                                        return (
+                                            <Cell 
+                                                key={index}
+                                                cellStyle="Subtitle"
 
-                                    title={CLEAN_NAME(modul.lærerNavn)}
-                                    detail={"Lærer"}
+                                                title={navn}
+                                                detail={members[navn].type}
 
-                                    cellImageView={
-                                        <>
-                                            {billedeId != null ?
-                                                <Image
-                                                    style={{
-                                                        borderRadius: 100,
-                                                        width: 35,
-                                                        height: 35,
+                                                subtitleTextStyle={{
+                                                    textTransform: "capitalize"
+                                                }}
 
-                                                        marginRight: 10,
-                                                    }}
-                                                    source={{
-                                                        uri: SCRAPE_URLS(gym?.gymNummer, billedeId).PICTURE_HIGHQUALITY,
-                                                        headers: {
-                                                            "User-Agent": "Mozilla/5.0",
-                                                            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-                                                        },
-                                                    }}
-                                                    crossOrigin="use-credentials"
-                                                />
-                                                :
-                                                <View style={{
-                                                    display: "flex",
-                                                    height: 35,
-                                                    width: 35,
-                                                    borderRadius: 100,
+                                                cellImageView={
+                                                    <Image
+                                                        style={{
+                                                            borderRadius: 100,
+                                                            width: 35,
+                                                            height: 35,
 
-                                                    justifyContent: "center",
-                                                    alignItems: "center",
-                                                }}>
-                                                    <UserIcon color={COLORS.ACCENT} />
-                                                </View>
-                                            }
-                                        </>
-                                    }
-                                />
+                                                            marginRight: 10,
+                                                        }}
+                                                        source={{
+                                                            uri: SCRAPE_URLS(gym?.gymNummer, members[navn].billedeId).PICTURE_HIGHQUALITY,
+                                                            headers: {
+                                                                "User-Agent": "Mozilla/5.0",
+                                                                "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                                                            },
+                                                        }}
+                                                        crossOrigin="use-credentials"
+                                                    />
+                                                }
+                                            />)
+                                    })}
+                                </Section>
                             }
-                            {Object.keys(members).map((navn: string, index: number) => {
-                                if(members[navn].type == "LÆRER")
-                                    return <Fragment key={index}></Fragment>;
-
-                                return (
-                                    <Cell 
-                                        key={index}
-                                        cellStyle="Subtitle"
-
-                                        title={navn}
-                                        detail={members[navn].type}
-
-                                        subtitleTextStyle={{
-                                            textTransform: "capitalize"
-                                        }}
-
-                                        cellImageView={
-                                            <Image
-                                                style={{
-                                                    borderRadius: 100,
-                                                    width: 35,
-                                                    height: 35,
-
-                                                    marginRight: 10,
-                                                }}
-                                                source={{
-                                                    uri: SCRAPE_URLS(gym?.gymNummer, members[navn].billedeId).PICTURE_HIGHQUALITY,
-                                                    headers: {
-                                                        "User-Agent": "Mozilla/5.0",
-                                                        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-                                                    },
-                                                }}
-                                                crossOrigin="use-credentials"
-                                            />
-                                        }
-                                    />)
-                            })}
-                        </Section>
+                        </>
                     }
 
                     <View style={{

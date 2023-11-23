@@ -144,7 +144,14 @@ export default function App() {
 
   return (
     <AuthContext.Provider value={authContext}>
-      <NavigationContainer>
+      <NavigationContainer theme={{colors: {
+        background: COLORS.BLACK,
+        primary: '',
+        card: '',
+        text: '',
+        border: '',
+        notification: ''
+      }, dark: true}}>
           {state.isLoading ? (
 
             <AppStack.Navigator screenOptions={{

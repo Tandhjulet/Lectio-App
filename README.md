@@ -1,5 +1,4 @@
 mangler:
-- optimor skole-siden
 
 kan ikke lave endnu:
 - push notifs

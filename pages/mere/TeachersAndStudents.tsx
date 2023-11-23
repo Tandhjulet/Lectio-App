@@ -1,4 +1,4 @@
-import { ActivityIndicator, FlatList, Image, ImageBackground, Modal, Pressable, ScrollView, SectionList, Text, TextInput, TouchableHighlight, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, FlatList, Image, ImageBackground, Modal, Pressable, ScrollView, SectionList, StyleSheet, Text, TextInput, TouchableHighlight, TouchableWithoutFeedback, View } from "react-native";
 import NavigationBar from "../../components/Navbar";
 import React, { memo, useEffect, useState } from "react";
 import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
@@ -29,7 +29,7 @@ function parseData(data: {[id: string]: Person}, contains?: string): {
     }
 
     for(let key in out) {
-        out[key].sort((a, b) => a.navn.localeCompare(b.navn));
+        out[key].sort((a, b) => a.navn.localeCompare(b.navn, "da"));
     }
   
     out = sort(out);
@@ -51,54 +51,68 @@ function parseData(data: {[id: string]: Person}, contains?: string): {
 
 const UserCell = memo(function UserCell({ uri, index, item, section, setModalData, setModalVisible }: any) {
     return (
-    <TouchableWithoutFeedback
-        hitSlop={10}
-        onPress={() => {
-            setModalData(item);
-            setModalVisible(true);
-        }}
-        
-        >
-        <View style={{
-            paddingHorizontal: 20,
-            paddingVertical: 15,
+    <View>
+        <TouchableWithoutFeedback
+            hitSlop={10}
+            onPress={() => {
+                setModalData(item);
+                setModalVisible(true);
+            }}
             
-            backgroundColor: COLORS.BLACK,
+            >
+            <View style={{
+                paddingHorizontal: 20,
+                paddingVertical: 15,
+                
+                backgroundColor: COLORS.BLACK,
 
-            borderTopLeftRadius: index == 0 ? 20 : 0,
-            borderTopRightRadius: index == 0 ? 20 : 0,
+                borderTopLeftRadius: index == 0 ? 20 : 0,
+                borderTopRightRadius: index == 0 ? 20 : 0,
 
-            borderBottomLeftRadius: index == section.data.length - 1 ? 20 : 0,
-            borderBottomRightRadius: index == section.data.length - 1 ? 20 : 0,
+                borderBottomLeftRadius: index == section.data.length - 1 ? 20 : 0,
+                borderBottomRightRadius: index == section.data.length - 1 ? 20 : 0,
 
-            display: 'flex',
-            gap: 10,
-            flexDirection: "row",
+                display: 'flex',
+                gap: 10,
+                flexDirection: "row",
 
-            alignItems: "center",
-        }}>
-            <Image
-                style={{
-                    borderRadius: 100,
-                    width: 40,
-                    height: 40,
-                }}
-                source={{
-                    uri: uri,
-                    headers: {
-                        "User-Agent": "Mozilla/5.0",
-                    },
-                }}
-                crossOrigin="use-credentials"
-            />
-
-            <Text style={{
-                color: COLORS.WHITE,
+                alignItems: "center",
             }}>
-                {item.navn}
-            </Text>
+                <Image
+                    style={{
+                        borderRadius: 100,
+                        width: 40,
+                        height: 40,
+                    }}
+                    source={{
+                        uri: uri,
+                        headers: {
+                            "User-Agent": "Mozilla/5.0",
+                        },
+                    }}
+                    crossOrigin="use-credentials"
+                />
+
+                <Text style={{
+                    color: COLORS.WHITE,
+                }}>
+                    {item.navn}
+                </Text>
+            </View>
+        </TouchableWithoutFeedback>
+
+        <View style={{
+            marginHorizontal: 15,
+        }}>
+            <View style={{
+                backgroundColor: COLORS.WHITE,
+                width: "100%",
+                height: StyleSheet.hairlineWidth,
+
+                opacity: 0.2,
+            }} />
         </View>
-    </TouchableWithoutFeedback>
+    </View>
     )
 })
 
@@ -199,21 +213,6 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
 
                                             return <UserCell uri={uri} section={section} item={item} index={index} gym={gym} setModalData={setModalData} setModalVisible={setModalVisible} />
                                         }}
-                                        ItemSeparatorComponent={() => (
-                                            <View style={{
-                                                marginHorizontal: 15,
-                                            }}>
-                                                <View style={{
-                                                    backgroundColor: COLORS.BLACK,
-                                                    width: "100%",
-
-                                                    borderTopColor: COLORS.WHITE,
-                                                    borderTopWidth: 1,
-
-                                                    opacity: 0.2,
-                                                }} />
-                                            </View>
-                                        )}
 
                                         renderSectionHeader={(data) => {
                                             
@@ -240,7 +239,7 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                                         contentContainerStyle={{ paddingBottom: 200 }}
 
                                         getItemLayout={(data, index) => {
-                                            return {length: 70, offset: index * 70, index: index}
+                                            return {length: 70 + StyleSheet.hairlineWidth, offset: index * (70 + StyleSheet.hairlineWidth), index: index}
                                         }}
 
                                         stickySectionHeadersEnabled={false}
@@ -249,6 +248,7 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                                         maxToRenderPerBatch={1}
 
                                         keyboardDismissMode="on-drag"
+                                        keyboardShouldPersistTaps="always"
                                         bounces={false}
                                     />
                                 </View>

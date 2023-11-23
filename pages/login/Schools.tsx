@@ -1,8 +1,11 @@
-import React, {useEffect, useState} from 'react';
+import React, {memo, useEffect, useState} from 'react';
 import {
   ActivityIndicator,
   Keyboard,
+  Pressable,
   ScrollView,
+  SectionList,
+  SectionListData,
   StyleSheet,
   Text,
   TextInput,
@@ -12,37 +15,114 @@ import {
 import {Cell, Section, TableView} from 'react-native-tableview-simple';
 import COLORS from '../../modules/Themes';
 import { getSchools } from '../../modules/api/scraper/Scraper';
-import { getUnsecure, saveUnsecure, } from '../../modules/api/Authentication';
+import { saveUnsecure } from '../../modules/api/Authentication';
 
 function findFirstChar(str: string): string {
   return str.replace(/[^a-zA-ZæøåÆØÅ]+/gm, "")[0]
 }
 
-function parseData(data: {[id: string]: string}, contains?: string) {
-  const sortedKeys = Object.keys(data).sort((a,b) => findFirstChar(a).charCodeAt(0) - findFirstChar(b).charCodeAt(0))
+const School = memo(function School({ index, section, navigation, gymNummer, gymName }: {
+  index: number,
+  section: any,
+  navigation: any,
+  gymNummer: string,
+  gymName: string,
+}) {
+  return (
+    <Pressable onPress={() => {
+      saveUnsecure("gym", { "gymNummer": gymNummer, "gymName": gymName })
 
-  const out: { [id: string] : Array<string>} = {}
+      navigation.navigate("Login", {
+        gym: [gymName, gymNummer]
+      })
 
-  for(let schoolName of sortedKeys) {
-    const c = findFirstChar(schoolName);
+    }}>
+      <View style={{
+        height: 48,
+      }}>
+        <View style={{
+          paddingHorizontal: 20,
+          paddingVertical: 15,
+          
+          backgroundColor: COLORS.BLACK,
 
-    if(out[c] == undefined)
-      out[c] = [];
+          borderTopLeftRadius: index == 0 ? 20 : 0,
+          borderTopRightRadius: index == 0 ? 20 : 0,
+
+          borderBottomLeftRadius: index == section.data.length - 1 ? 20 : 0,
+          borderBottomRightRadius: index == section.data.length - 1 ? 20 : 0,
+
+          display: 'flex',
+          gap: 10,
+          flexDirection: "row",
+
+          alignItems: "center",
+        }}>
+          <Text style={{
+            color: COLORS.WHITE,
+          }}>
+            {gymName}
+          </Text>
+        </View>
+        
+        <View style={{
+          marginHorizontal: 15,
+        }}>
+          <View style={{
+            backgroundColor: COLORS.WHITE,
+            width: "100%",
+            height: StyleSheet.hairlineWidth,
+
+            opacity: 0.2,
+          }} />
+        </View>
+      </View>
+    </Pressable>
+  )
+})
+
+function parseData(data: {[id: string]: string}, contains?: string): {
+  letter: string,
+  data: string[];
+}[] {
+  let out: { [id: string] : string[]} = {}
+
+  for(let schoolName in data) {
+    const c = findFirstChar(schoolName.toUpperCase());
 
     if(contains != undefined && !schoolName.toLowerCase().includes(contains.toLowerCase()))
       continue;
 
+    if(out[c] == undefined)
+      out[c] = [];
+
     out[c].push(schoolName)
   }
 
-  return out;
+  const sortedKeys = Object.keys(out).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase(), "da"))
+  const formattedOut: {
+    letter: string,
+    data: string[];
+  }[] = [];
+
+  for(let key of sortedKeys) {
+    formattedOut.push({
+        letter: key,
+        data: out[key],
+    })
+  }
+
+  return formattedOut;
 }
 
 const Schools = ({ navigation }: any) => {
   const [loading, setLoading] = useState(true);
 
-  const [schools, setSchools] = useState({});
-  const [rawData, setRawData] = useState({});
+  const [schools, setSchools] = useState<{
+    letter: string,
+    data: string[];
+  }[]>([]);
+  const [rawData, setRawData] = useState<{[key: string]: string}>({});
 
   useEffect(() => {
     const load = async () => {
@@ -87,64 +167,53 @@ const Schools = ({ navigation }: any) => {
             </View>
         }
 
-        <ScrollView
-          contentContainerStyle={styles.stage}
-          keyboardDismissMode='on-drag'
-          keyboardShouldPersistTaps="always"
-        >
+        <View style={{
+          marginHorizontal: 20,
+        }}>
           <TableView>
-            {Object.keys(schools).length == 0 && loading == false && (
-              <View style={{
-                width: "100%",
-                marginTop: 50,
-              }}>
-                <Text style={{
-                  color: COLORS.WHITE,
-                  textAlign: "center",
-                }}>
-                  Søg venligst efter 2 tegn eller mere.
-                </Text>
-              </View>
-            )}
+            <SectionList
+              sections={schools}
 
-            {Object.keys(schools).map((key: string) => {
-              // @ts-ignore
-              if(schools[key].length == 0)
-                return null;
+              renderItem={({item, index, section}) => {
+                  return <School gymNummer={rawData[item]} gymName={item} index={index} section={section} navigation={navigation} />
+              }}
 
-              return (
-                <Section header={key} key={key}>
-                  {/* 
-                  // @ts-ignore */}
-                  {schools[key].map((schoolName: any) => (
+              renderSectionHeader={(data) => {
+                  return (
+                      <View style={{
+                          paddingTop: 7.5,
 
-                    <Cell
-                      key={schoolName}
-                      cellStyle="Basic"
-                      title={schoolName}
-                      accessory="DisclosureIndicator"
-                      onPress={() => {
-                          // @ts-ignore
-                          const gymNummer = rawData[schoolName];
+                          backgroundColor: COLORS.BLACK,
+                          opacity: 0.9,
+                      }}>
+                          <Text style={{
+                              color: COLORS.WHITE,
+                              fontWeight: "bold",
+                          }}>
+                              {data.section.letter.toUpperCase()}
+                          </Text>
+                      </View>
+                  )
+              }}
+              keyExtractor={(item, index) => item + "-" + index}
+              getItemLayout={(data, index) => {
+                  return {length: 48, offset: 48 * index, index: index}
+              }}
 
-                          saveUnsecure("gym", { "gymNummer": gymNummer, "gymName": schoolName })
+              bounces={false}
 
-                          navigation.navigate("Login", {
-                            gym: [schoolName, gymNummer]
-                        })}
-                      }
-                    />
-                  ))}
-                </Section>
-              )
-            })}
+              stickySectionHeadersEnabled={false}
+              directionalLockEnabled={true}
 
-            <View style={{
-              paddingVertical: 30,
-            }} />
+              contentContainerStyle={{
+                paddingBottom: 150,
+              }}
 
+              keyboardDismissMode="on-drag"
+              keyboardShouldPersistTaps="always"
+            />
           </TableView>
-        </ScrollView>
+        </View>
       </View>
   );
 };
