@@ -147,7 +147,7 @@ export default function ModulView({ navigation, route }: {
                         }
                     </Section>
 
-                    {modul.homework &&
+                    {modul.homework && modul.lektier != undefined &&
                         <Section header="LEKTIER" roundedCorners={true} hideSurroundingSeparators={true}>
                             {modul.lektier?.map((lektie: string, index: number) => {
                                 return (

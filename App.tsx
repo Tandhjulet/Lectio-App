@@ -191,7 +191,9 @@ export default function App() {
                   },
                   headerBackVisible: false,
                 }}>
-                  <AppStack.Screen name="Login" component={Login} />
+                  <AppStack.Screen name="Login" component={Login} options={{
+                    header: () => <></>
+                  }} />
 
                   <AppStack.Screen name="Schools" component={Schools} options={{
                     header: ({ navigation, route, options, back }) => Header({ navigation, route, options, back })

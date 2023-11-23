@@ -94,8 +94,6 @@ export default function Skema({ navigation }: {
     const [ hoursToMap, setHoursToMap ] = useState<number[]>([]);
     const [ loading, setLoading ] = useState(true);
 
-    const [ height, setHeight ] = useState<number>(0);
-
     const [modalVisible, setModalVisible] = useState(false);
     const [rateLimited, setRateLimited] = useState(false);
 
