@@ -1,4 +1,7 @@
 mangler:
+- gør så drag to refresh går gennem cache
+- animationer
+- abonnement
 
 kan ikke lave endnu:
 - push notifs
@@ -7,8 +10,6 @@ kan ikke lave endnu:
 todo senere:
 - spørgeskemaer
 - dokumenter
-- drag to refresh
-- animationer
 
 - queue system til fetches (?)
     - alle tingene hentes i baggrunden ved første load (?)

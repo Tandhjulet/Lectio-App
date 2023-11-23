@@ -1,6 +1,6 @@
 import { NavigationProp } from "@react-navigation/native";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 import { getUnsecure } from "../modules/api/Authentication";
 import { getAfleveringer } from "../modules/api/scraper/Scraper";
 import { Opgave, STATUS } from "../modules/api/scraper/OpgaveScraper";
@@ -146,6 +146,8 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
     const [rateLimited, setRateLimited] = useState<boolean>(false)
 
     const [modalVisible, setModalVisible] = useState<boolean>(false);
+
+    const [refreshing, setRefreshing] = useState<boolean>(false);
 
     useEffect(() => {
         navigation.setOptions({
@@ -405,6 +407,32 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
             })
         })();
     }, [])
+    
+    useEffect(() => {
+        if(!refreshing)
+            return;
+
+        (async () => {
+            const gymNummer = (await getUnsecure("gym")).gymNummer;
+
+            getAfleveringer(gymNummer).then(({payload, rateLimited}): any => {
+                setOpgaveCount(countOpgaver(payload));
+
+                const formattedData = formatData(payload);
+
+                setRawAfleveringer(formattedData)
+                setAfleveringer(filterData(formattedData, STATUS.VENTER))
+                setRateLimited(rateLimited)
+                
+                setRefreshing(false);
+            })
+        })();
+    }, [refreshing])
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+    }, []);
+
 
     return (
         <View style={{
@@ -425,7 +453,9 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                     <ActivityIndicator size={"small"} color={COLORS.ACCENT} />
                 </View>
             :
-                <ScrollView>
+                <ScrollView refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }>
                     <TableView>
                         {Object.keys(afleveringer).length == 0 && (
                             <View style={{

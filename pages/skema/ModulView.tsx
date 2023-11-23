@@ -1,7 +1,7 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native";
-import { ActivityIndicator, Image, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Image, RefreshControl, ScrollView, Text, View } from "react-native";
 import COLORS from "../../modules/Themes";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { Modul } from "../../modules/api/scraper/SkemaScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { getProfile, scrapeHold } from "../../modules/api/scraper/Scraper";
@@ -33,6 +33,7 @@ export default function ModulView({ navigation, route }: {
     const [ billedeId, setBilledeId ] = useState<string>();
 
     const [loading, setLoading] = useState<boolean>(false)
+    const [refreshing, setRefreshing] = useState<boolean>(false);
 
     useEffect(() => {
         (async () => {
@@ -68,6 +69,40 @@ export default function ModulView({ navigation, route }: {
         })();
     }, [])
 
+    useEffect(() => {
+        if(!refreshing)
+            return;
+
+        (async () => {
+            if(gym == null)
+                return;
+            
+            const profile = await getProfile();
+            profile.hold.forEach((hold: Hold, i: number) => {
+
+                if(hold.holdNavn == modul.team) {
+                    scrapeHold(hold.holdId, gym.gymNummer).then((v) => {
+                        if(v == null)
+                            setMembers({})
+                        else
+                            setMembers(v)
+                        setRefreshing(false);
+                    })
+                }
+
+                if(i == profile.hold.length - 1) {
+                    setRefreshing(false);
+                }
+            })
+
+
+        })();
+    }, [refreshing])
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+    }, []);
+
     if(modul == null)
         return <></>;
 
@@ -76,7 +111,9 @@ export default function ModulView({ navigation, route }: {
             minHeight: '100%',
             minWidth:'100%',
         }}>
-            <ScrollView>
+            <ScrollView refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }>
                 <TableView style={{
                     marginHorizontal: 20,
                 }}>

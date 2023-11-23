@@ -1,6 +1,6 @@
-import { ActivityIndicator, DimensionValue, LogBox, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, DimensionValue, LogBox, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 import NavigationBar from "../components/Navbar";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
 import { getUnsecure, isAuthorized } from "../modules/api/Authentication";
 import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
@@ -71,7 +71,9 @@ function hoursBetweenDates(dates: {
 export default function Skema({ navigation }: {
     navigation: NavigationProp<any>,
 }) {
-    const calcColor = (opacity: number, modul: Modul) => (modul.changed || modul.cancelled) ? (modul.changed ? `rgba(255, 255, 0, ${opacity})` : `rgba(255, 0, 34, ${opacity})`) : `rgba(34, 255, 0, ${opacity})`;
+    const calcColor = (opacity: number, modul: Modul) => (modul.changed || modul.cancelled) ? (modul.changed ? `rgba(207, 207, 0, ${opacity})` : `rgba(201, 32, 32, ${opacity})`) : `rgba(31, 222, 34, ${opacity})`;
+
+    const [refreshing, setRefreshing] = useState(false);
 
     const [ dayNum, setDayNum ] = useState<number>((getDay(new Date()).weekDayNumber));
 
@@ -177,6 +179,27 @@ export default function Skema({ navigation }: {
         })();
 
     }, [loadDate])
+
+    useEffect(() => {
+        if(refreshing == false) 
+            return;
+        
+        (async () => {
+            const gymNummer = (await getUnsecure("gym")).gymNummer;
+            getSkema(gymNummer, loadDate).then(({ payload, rateLimited }) => {
+                if(!rateLimited && payload != null) {
+                    setSkema([...payload.days]);
+                    setModulTimings([...payload.modul]);
+                } else {
+                    setSkema(null);
+                    setModulTimings([]);
+                }
+                setRateLimited(rateLimited)
+                setRefreshing(false)
+            })
+        })();
+
+    }, [refreshing])
 
     useEffect(() => {
         if(skema == null || skema.length == 0 || skema[dayNum - 1] == null) 
@@ -355,6 +378,24 @@ export default function Skema({ navigation }: {
         return out
     }
 
+    const getTimeOfDayAsString: () => string = () => {
+        const d = new Date()
+        if(d.getHours() < 8) {
+            return "Godmorgen"
+        } else if (d.getHours() < 11) {
+            return "Godformiddag"
+        } else if (d.getHours() < 13) {
+            return "Godmiddag"
+        } else if (d.getHours() < 20) {
+            return "Goddag"
+        }
+        return "Godaften"
+    }
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+    }, []);
+
     return (
     <>
         <View style={{
@@ -365,17 +406,15 @@ export default function Skema({ navigation }: {
             display: 'flex',
             flexDirection: 'row',
 
-            maxWidth: "100%",
-            minWidth: "100%",
+            width: "100%",
         }}>
             <View style={{
                 paddingHorizontal: 20,
             }}>
-
                 <Text style={{
                     fontSize: 20,
                     color: COLORS.LIGHT,
-                }}>Godmorgen, {profile == undefined ? "..." : profile.name.split(' ')[0]}</Text>
+                }}>{getTimeOfDayAsString()}, {profile == undefined ? "..." : profile.name.split(' ')[0]}</Text>
 
                 <Text style={{
                     fontSize: 30,
@@ -386,17 +425,15 @@ export default function Skema({ navigation }: {
             <View style={{
                 display: 'flex',
                 flexDirection: 'row',
-
-                gap: 20,
-
-                width: '100%',
-
                 justifyContent: 'center',
                 alignItems: 'center',
+                gap: 20,
 
-                transform: [{
-                    translateX: -70,
-                }]
+                position: "absolute",
+                right: 0,
+                bottom: 0,
+
+                paddingRight: 20,
             }}>
                 <TouchableOpacity onPress={() => {
 
@@ -603,7 +640,10 @@ export default function Skema({ navigation }: {
                     :
                     <ScrollView style={{
                         flex: 1,
-                    }}>
+                    }} refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    }>
+
                         <View style={{
                             paddingTop: 20,
                         }} /> 
@@ -709,11 +749,15 @@ export default function Skema({ navigation }: {
                                         justifyContent: "center",
                                         alignItems: "center",
 
-                                        backgroundColor: hexToRgb(COLORS.ACCENT, 0.5),
+                                        backgroundColor: hexToRgb(COLORS.ACCENT, 0.3),
 
                                         top: calculateTop(modulTiming)
                                     }}>
-                                        <Text>
+                                        <Text style={{
+                                            color: COLORS.WHITE,
+                                            fontWeight: "bold",
+                                            opacity: 0.7,
+                                        }}>
                                             {index+1}.
                                         </Text>
                                     </View>
@@ -750,7 +794,7 @@ export default function Skema({ navigation }: {
                                                     width: "100%",
                                                 }}>
                                                     <View style={{
-                                                        backgroundColor: calcColor(0.5, modul),
+                                                        backgroundColor: calcColor(0.4, modul),
                                                         borderRadius: 5,
 
                                                         width: "100%",

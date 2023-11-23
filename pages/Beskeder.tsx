@@ -1,4 +1,4 @@
-import { ActivityIndicator, Button, Image, Keyboard, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, Button, Image, Keyboard, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { Profile, getMessages, getProfile, scrapeCache } from "../modules/api/scraper/Scraper";
@@ -26,6 +26,8 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
     const [ loading, setLoading ] = useState<boolean>(true);
 
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>();
+
+    const [ refreshing, setRefreshing ] = useState<boolean>(false);
 
     const [ recipients, setRecipients ] = useState<Person[]>([]);
     const [ title, setTitle ] = useState<string>();
@@ -327,6 +329,33 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
         })();
     }, [sortedBy]);
 
+    useEffect(() => {
+        if(!refreshing)
+            return;
+
+        (async () => {
+            let mappeId: number = -70;
+            if(sortedBy == "Nyeste") mappeId = -70;
+            else if(sortedBy == "Ulæste") mappeId = -40;
+            else if(sortedBy == "Slettede") mappeId = -60;
+
+            if(gym == null)
+                return;
+            
+            getMessages(gym.gymNummer, mappeId).then(({payload, rateLimited}): any => {
+                setMessages(payload.messages);
+                setHeaders(payload.headers);
+
+                setRateLimited(rateLimited);
+                setRefreshing(false);
+            })
+        })();
+    }, [refreshing]);
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+    }, []);
+
     return (
     <View style={{
         minHeight: '100%',
@@ -351,7 +380,9 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
             :
             <ScrollView style={{
                 marginBottom: 50,
-            }}>
+            }} refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }>
                 {messages == null ? 
                     <View style={{
                         display: 'flex',

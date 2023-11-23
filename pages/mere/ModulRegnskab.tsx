@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
 import { getProfile, scrapeModulRegnskab } from "../../modules/api/scraper/Scraper";
 import { Hold } from "../../modules/api/scraper/hold/HoldScraper";
 import { Modulregnskab } from "../../modules/api/scraper/hold/ModulRegnskabScraper";
@@ -10,6 +10,8 @@ import COLORS from "../../modules/Themes";
 export default function ModulRegnskab() {
     const [ loading, setLoading ] = useState<boolean>(false);
     const [ modulRegnskab, setModulRegnskab ] = useState<Modulregnskab[]>();
+
+    const [refreshing, setRefreshing] = useState<boolean>(false);
 
     useEffect(() => {
         (async () => {
@@ -33,6 +35,33 @@ export default function ModulRegnskab() {
         })();
     }, [])
 
+    useEffect(() => {
+        if(!refreshing)
+            return;
+
+        (async () => {
+            const profile = await getProfile();
+            const gym: {gymName: string, gymNummer: string} = await getUnsecure("gym")
+
+            const out: Modulregnskab[] = [];
+
+            for(let hold of profile.hold) {
+                await scrapeModulRegnskab(gym.gymNummer, hold.holdId).then((modulRegnskab) => {
+                    if(modulRegnskab != null && modulRegnskab.held != 0) {
+                        out.push(modulRegnskab)
+                    }
+                });
+            }
+
+            setModulRegnskab([...out])
+            setRefreshing(false);
+        })();
+    }, [refreshing])
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+    }, []);
+
     return (
         <View style={{
             minWidth: "100%",
@@ -52,7 +81,9 @@ export default function ModulRegnskab() {
                     <ActivityIndicator size={"small"} color={COLORS.ACCENT} />
                 </View>
                 : 
-                <ScrollView>
+                <ScrollView refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }>
                     <TableView style={{
                         marginHorizontal: 20,
                     }}>

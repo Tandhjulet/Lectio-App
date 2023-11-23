@@ -1,6 +1,6 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native"
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Image, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { Opgave, OpgaveDetails, STATUS } from "../../modules/api/scraper/OpgaveScraper";
 import { formatDate } from "../Afleveringer";
@@ -18,6 +18,8 @@ export default function AfleveringView({ navigation, route }: {
 }) {
     const [loading, setLoading] = useState<boolean>(true);
     const [opgaveDetails, setOpgaveDetails] = useState<OpgaveDetails | null>();
+
+    const [refreshing, setRefreshing] = useState<boolean>(false);
 
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>();
     const [billedeId, setBilledeId] = useState<string>();
@@ -44,12 +46,39 @@ export default function AfleveringView({ navigation, route }: {
         })();
     }, [])
 
+    useEffect(() => {
+        if(!refreshing)
+            return;
+
+        (async () => {
+            if(gym == null)
+                return;
+
+            getAflevering(gym.gymNummer, aflevering.id).then(async (v) => {
+                setOpgaveDetails(v);
+
+                const people = await getPeople();
+
+                if(people != null && v?.ansvarlig != null)
+                    setBilledeId(people[CLEAN_NAME(v.ansvarlig)]?.billedeId)
+
+                    setRefreshing(false);
+            })
+        })();
+    }, [refreshing])
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+    }, []);
+    
     return (
         <View style={{
             minHeight: "100%",
             minWidth: "100%",
         }}>
-            <ScrollView>
+            <ScrollView refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }>
                 <TableView style={{
                     marginHorizontal: 20,
                 }}>

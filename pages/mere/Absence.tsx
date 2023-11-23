@@ -1,6 +1,6 @@
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
 import NavigationBar from "../../components/Navbar";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getAbsence } from "../../modules/api/scraper/Scraper";
 import { getUnsecure } from "../../modules/api/Authentication";
 import COLORS from "../../modules/Themes";
@@ -57,7 +57,10 @@ export default function Absence({ navigation }: { navigation: any }) {
     const [ loading, setLoading ] = useState(true);
     const [ rateLimited, setRateLimited ] = useState(false);
 
+    const [ refreshing, setRefreshing ] = useState(false);
+
     useEffect(() => {
+        setLoading(true);
         (async () => {
             const gymNummer = (await getUnsecure("gym")).gymNummer;
 
@@ -129,7 +132,86 @@ export default function Absence({ navigation }: { navigation: any }) {
         })();
     }, []);
 
+    useEffect(() => {
+        if(!refreshing)
+            return;
+
+        (async () => {
+            const gymNummer = (await getUnsecure("gym")).gymNummer;
+
+            const out: ChartedAbsence = {
+                almindeligt: {
+                    series: [],
+                    teams: [],
+                    colors: [],
+
+                    yearly: {
+                        collectiveAbsences: 0,
+                        collectiveModules: 0,
+                    },
+                    settled: {
+                        collectiveAbsences: 0,
+                        collectiveModules: 0,
+                    },
+                },
+                skriftligt: {
+                    series: [],
+                    teams: [],
+                    colors: [],
+
+                    yearly: {
+                        collectiveAbsences: 0,
+                        collectiveModules: 0,
+                    },
+                    settled: {
+                        collectiveAbsences: 0,
+                        collectiveModules: 0,
+                    },
+                },
+            }
+
+            getAbsence(gymNummer).then(({ payload, rateLimited }): any => {
+                setRateLimited(rateLimited)
+
+                // fuck noget rod
+                if(payload != null)
+                    payload.forEach((fag: Fag) => {
+                        if(fag.skriftligt.settled.absent > 0) {
+                            out.skriftligt.series.push(fag.skriftligt.settled.absent);
+                            out.skriftligt.teams.push(fag.skriftligt.team);
+                            out.skriftligt.colors.push(stringToColour(fag.skriftligt.team))
+                        }
+
+                        if(fag.almindeligt.settled.absent > 0) {
+                            out.almindeligt.series.push(fag.almindeligt.settled.absent);
+                            out.almindeligt.teams.push(fag.almindeligt.team);
+                            out.almindeligt.colors.push(stringToColour(fag.almindeligt.team))
+                        }
+
+                        out.almindeligt.yearly.collectiveModules += fag.almindeligt.yearly.total;
+                        out.almindeligt.settled.collectiveModules += fag.almindeligt.settled.total;
+
+                        out.almindeligt.yearly.collectiveAbsences += fag.almindeligt.yearly.absent;
+                        out.almindeligt.settled.collectiveAbsences += fag.almindeligt.settled.absent;
+
+                        out.skriftligt.yearly.collectiveModules += fag.skriftligt.yearly.total;
+                        out.skriftligt.settled.collectiveModules += fag.skriftligt.settled.total;
+
+                        out.skriftligt.yearly.collectiveAbsences += fag.skriftligt.yearly.absent;
+                        out.skriftligt.settled.collectiveAbsences += fag.skriftligt.settled.absent;
+                    })
+                
+                setChartedAbsence(out);
+                setRefreshing(false);
+            })
+        })();
+    }, [refreshing]);
+
     const widthAndHeight = 200;
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+    }, []);
 
     return (
     <View style={{height: '100%', width:'100%'}}>
@@ -147,7 +229,9 @@ export default function Absence({ navigation }: { navigation: any }) {
                 <ActivityIndicator size={"small"} color={COLORS.ACCENT} />
             </View>
             :
-            <ScrollView>
+            <ScrollView refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }>
                 <View style={{
                     display: 'flex',
 

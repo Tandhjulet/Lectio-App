@@ -337,7 +337,7 @@ export function AfleveringNavigator() {
         ),
         headerTitle: "Afleveringer",
       })} />
-      <Opgaver.Screen name={"AfleveringView"} component={AfleveringView} />
+      <Opgaver.Screen name={"AfleveringView"} component={AfleveringView} options={{title: "Aflevering"}} />
     </Opgaver.Navigator>
   )
 }
