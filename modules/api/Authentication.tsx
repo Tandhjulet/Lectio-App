@@ -37,14 +37,27 @@ export async function validate(gymNummer: string, username: string, password: st
         method: "POST",
         credentials: "include",
         headers: {
-            "User-Agent": "Mozilla/5.0",
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Language": "da-DK,da;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+            "Referer": `https://www.lectio.dk/lectio/${gymNummer}/login.aspx`,
+            "Sec-Ch-Ua": `"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"`,
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": `"Windows"`,
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "same-origin",
+            "Sec-Fetch-User": "?1",
+            "Upgrade-Insecure-Requests": "1",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
         },
         body: stringifiedData,
     });
 
-    // test if logged in
-
+    // tests if log in was successful
     return await _isAuthorized(gymNummer);
 }
 
@@ -60,12 +73,30 @@ export async function _isAuthorized(gymNummer: string) {
         method: "GET",
         credentials: 'include',
         headers: {
-            "User-Agent": "Mozilla/5.0",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Language": "da-DK,da;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+            "Referer": `https://www.lectio.dk/lectio/${gymNummer}/login.aspx`,
+            "Sec-Ch-Ua": `"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"`,
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": `"Windows"`,
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "same-origin",
+            "Sec-Fetch-User": "?1",
+            "Upgrade-Insecure-Requests": "1",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
         },
     });
 
-    const isAuth = !res.url.includes("login.aspx?prevurl");
+    if(res.status == 303) {
+        console.log("status: 303")
+        return _isAuthorized(gymNummer);
+    }
 
+    const isAuth = (res.url == SCRAPE_URLS(gymNummer).FORSIDE);
     if(isAuth) {
         await saveFetch(Key.FORSIDE, {
             body: await res.text(),

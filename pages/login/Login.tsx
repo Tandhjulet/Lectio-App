@@ -41,8 +41,12 @@ export default function Login({ route, navigation }: {
         }
         
         if(!(await signIn(payload))) {
-            setInvalidCredentials(true)
-            setLoading(false)
+            setTimeout(async () => {
+                if(!(await signIn(payload))) {
+                    setInvalidCredentials(true)
+                    setLoading(false)
+                }
+            }, 100)
         }
     }
 

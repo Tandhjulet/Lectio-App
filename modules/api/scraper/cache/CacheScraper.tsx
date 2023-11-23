@@ -38,6 +38,7 @@ export async function scrapePeople(stringifiedData: string): Promise<Person[]> {
             navn: name,
             type: type,
             personId: id,
+            rawName: stringifiedPerson[0],
         })
     })
 

@@ -4,6 +4,7 @@ import {
   Keyboard,
   ScrollView,
   StyleSheet,
+  Text,
   TextInput,
   TouchableWithoutFeedback,
   View,
@@ -13,21 +14,25 @@ import COLORS from '../../modules/Themes';
 import { getSchools } from '../../modules/api/scraper/Scraper';
 import { getUnsecure, saveUnsecure, } from '../../modules/api/Authentication';
 
+function findFirstChar(str: string): string {
+  return str.replace(/[^a-zA-ZæøåÆØÅ]+/gm, "")[0]
+}
+
 function parseData(data: {[id: string]: string}, contains?: string) {
+  const sortedKeys = Object.keys(data).sort((a,b) => findFirstChar(a).charCodeAt(0) - findFirstChar(b).charCodeAt(0))
+
   const out: { [id: string] : Array<string>} = {}
 
-  for(let schoolName in data) {
-    if(out[schoolName[0]] == undefined)
-      out[schoolName[0]] = [];
+  for(let schoolName of sortedKeys) {
+    const c = findFirstChar(schoolName);
+
+    if(out[c] == undefined)
+      out[c] = [];
 
     if(contains != undefined && !schoolName.toLowerCase().includes(contains.toLowerCase()))
       continue;
 
-    out[schoolName[0]].push(schoolName)
-  }
-
-  for(let key in out) {
-    out[key].sort();
+    out[c].push(schoolName)
   }
 
   return out;
@@ -88,6 +93,19 @@ const Schools = ({ navigation }: any) => {
           keyboardShouldPersistTaps="always"
         >
           <TableView>
+            {Object.keys(schools).length == 0 && loading == false && (
+              <View style={{
+                width: "100%",
+                marginTop: 50,
+              }}>
+                <Text style={{
+                  color: COLORS.WHITE,
+                  textAlign: "center",
+                }}>
+                  Søg venligst efter 2 tegn eller mere.
+                </Text>
+              </View>
+            )}
 
             {Object.keys(schools).map((key: string) => {
               // @ts-ignore
@@ -120,6 +138,10 @@ const Schools = ({ navigation }: any) => {
                 </Section>
               )
             })}
+
+            <View style={{
+              paddingVertical: 30,
+            }} />
 
           </TableView>
         </ScrollView>

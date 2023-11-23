@@ -103,6 +103,7 @@ export default function App() {
       }
       // validation here
 
+      console.log(payload)
       if(await authorize(payload)) {
         dispatch({ type: 'SIGN_IN' });
 
@@ -119,6 +120,7 @@ export default function App() {
         if(payload.username == null || payload.password == null || payload.gym == null)
           return false;
 
+        console.log(payload)
         if(await authorize(payload)) {
           await secureSave("username", payload.username);
           await secureSave("password", payload.password);

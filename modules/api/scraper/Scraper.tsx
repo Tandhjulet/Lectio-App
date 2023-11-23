@@ -161,7 +161,7 @@ export async function fetchProfile(): Promise<Profile> {
         realName = "";
         ERROR = true;
     } else {
-       realName = realName.firstChild.firstChild.text.split(", ")[0].replace("Eleven ", "");
+       realName = realName.firstChild.firstChild.text.split(", ")[0].replace("Eleven ", "").replace("Læreren ", "");
     }
 
     if(ERROR)
@@ -265,7 +265,7 @@ export async function getSkema(gymNummer: string, date: Date): Promise<{ payload
             "Accept-Language": "da-DK,da;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6",
             "Cache-Control": "no-cache",
             "Pragma": "no-cache",
-            "Referer": "https://www.lectio.dk/lectio/572/SkemaNy.aspx",
+            "Referer": `https://www.lectio.dk/lectio/${gymNummer}/SkemaNy.aspx`,
             "Sec-Ch-Ua": `"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"`,
             "Sec-Ch-Ua-Mobile": "?0",
             "Sec-Ch-Ua-Platform": `"Windows"`,

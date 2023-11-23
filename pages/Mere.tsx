@@ -4,11 +4,12 @@ import { Cell, Section, TableView } from "react-native-tableview-simple";
 import COLORS from "../modules/Themes";
 import { useContext, useEffect, useState } from "react";
 import { AcademicCapIcon, BellSnoozeIcon, BuildingLibraryIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon } from "react-native-heroicons/solid";
-import { getUnsecure, removeSecure, removeUnsecure, signOut } from "../modules/api/Authentication";
+import { getUnsecure, removeSecure, removeUnsecure, secureGet, signOut } from "../modules/api/Authentication";
 import { Profile, getProfile, saveProfile } from "../modules/api/scraper/Scraper";
 import { AuthContext } from "../modules/Auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { abort } from "../modules/api/scraper/class/PeopleList";
+import * as SecureStore from 'expo-secure-store';
 
 export default function Mere({ navigation }: {navigation: any}) {
     const { signOut } = useContext(AuthContext);
@@ -248,6 +249,8 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                                 onPress={() => {
                                     AsyncStorage.clear();
+                                    removeSecure("password");
+                                    removeSecure("username");
                                     abort();
                                 }}
                             />
