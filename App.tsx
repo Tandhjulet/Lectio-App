@@ -12,7 +12,7 @@ import COLORS from './modules/Themes';
 import Absence from './pages/mere/Absence';
 import TeachersAndStudents from './pages/mere/TeachersAndStudents';
 import BeskedView from './pages/beskeder/BeskedView';
-import { useEffect, useMemo, useReducer, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { authorize, getUnsecure, saveUnsecure, secureGet, secureSave } from './modules/api/Authentication';
 import SplashScreen from './pages/SplashScreen';
 import { AuthContext } from './modules/Auth';
@@ -38,7 +38,18 @@ const SkemaNav = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 import { LogBox } from 'react-native';
+import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
+import Checkout from './pages/payment/Checkout';
+import { STRIPE_PUBLIC_KEY, URL_SCHEME } from './modules/Config';
 LogBox.ignoreLogs(["Sending"])
+
+import * as Linking from 'expo-linking';
+import Constants from 'expo-constants';
+
+urlScheme:
+  Constants.appOwnership === 'expo'
+    ? Linking.createURL('/--/')
+    : Linking.createURL('');
 
 type AuthType = {
   type: "SIGN_IN" | "SIGN_OUT",
@@ -142,84 +153,124 @@ export default function App() {
     []
   );
 
+  const { handleURLCallback } = useStripe();
+
+  const handleDeepLink = useCallback(
+    async (url: string | null) => {
+      if (url) {
+        const stripeHandled = await handleURLCallback(url);
+        if (stripeHandled) {
+          // This was a Stripe URL - you can return or add extra handling here as you see fit
+        } else {
+          // This was NOT a Stripe URL – handle as you normally would
+        }
+      }
+    },
+    [handleURLCallback]
+  );
+
+  useEffect(() => {
+    const getUrlAsync = async () => {
+      const initialUrl = await Linking.getInitialURL();
+      handleDeepLink(initialUrl);
+    };
+
+    getUrlAsync();
+
+    const deepLinkListener = Linking.addEventListener(
+      'url',
+      (event: { url: string }) => {
+        handleDeepLink(event.url);
+      }
+    );
+
+    return () => deepLinkListener.remove();
+  }, [handleDeepLink]);
+
+
   return (
-    <AuthContext.Provider value={authContext}>
-      <NavigationContainer theme={{colors: {
-        background: COLORS.BLACK,
-        primary: '',
-        card: '',
-        text: '',
-        border: '',
-        notification: ''
-      }, dark: true}}>
-          {state.isLoading ? (
+    <StripeProvider
+      publishableKey={STRIPE_PUBLIC_KEY}
+      urlScheme={URL_SCHEME}
+    >
+      <AuthContext.Provider value={authContext}>
+        <NavigationContainer theme={{colors: {
+          background: COLORS.BLACK,
+          primary: '',
+          card: '',
+          text: '',
+          border: '',
+          notification: ''
+        }, dark: true}}>
+            {state.isLoading ? (
 
-            <AppStack.Navigator screenOptions={{
-              gestureEnabled: false,
-              contentStyle: {
-                backgroundColor: COLORS.BLACK
-              },
-              animation:'none',
-    
-              headerStyle: {
-                backgroundColor: COLORS.BLACK,
-              },
-              headerTitleStyle: {
-                color: COLORS.WHITE,
-              },
-              headerBackVisible: false,
-            }}>
-              <AppStack.Screen name="Splash" component={SplashScreen} options={{
-                header: () => <></>
-              }} />
-            </AppStack.Navigator>
-          ) : (
-            <>
-              {!state.loggedIn ? (
-                <AppStack.Navigator screenOptions={{
-                  gestureEnabled: false,
-                  contentStyle: {
-                    backgroundColor: COLORS.BLACK
-                  },
-                  animation:'none',
-        
-                  headerStyle: {
-                    backgroundColor: COLORS.BLACK,
-                  },
-                  headerTitleStyle: {
-                    color: COLORS.WHITE,
-                  },
-                  headerBackVisible: false,
-                }}>
-                  <AppStack.Screen name="Login" component={Login} options={{
-                    header: () => <></>
-                  }} />
+              <AppStack.Navigator screenOptions={{
+                gestureEnabled: false,
+                contentStyle: {
+                  backgroundColor: COLORS.BLACK
+                },
+                animation:'none',
+      
+                headerStyle: {
+                  backgroundColor: COLORS.BLACK,
+                },
+                headerTitleStyle: {
+                  color: COLORS.WHITE,
+                },
+                headerBackVisible: false,
+              }}>
+                <AppStack.Screen name="Splash" component={SplashScreen} options={{
+                  header: () => <></>
+                }} />
+              </AppStack.Navigator>
+            ) : (
+              <>
+                {!state.loggedIn ? (
+                  <AppStack.Navigator screenOptions={{
+                    gestureEnabled: false,
+                    contentStyle: {
+                      backgroundColor: COLORS.BLACK
+                    },
+                    animation:'none',
+          
+                    headerStyle: {
+                      backgroundColor: COLORS.BLACK,
+                    },
+                    headerTitleStyle: {
+                      color: COLORS.WHITE,
+                    },
+                    headerBackVisible: false,
+                  }}>
+                    <AppStack.Screen name="Login" component={Login} options={{
+                      header: () => <></>
+                    }} />
 
-                  <AppStack.Screen name="Schools" component={Schools} options={{
-                    header: ({ navigation, route, options, back }) => Header({ navigation, route, options, back })
-                  }} />
-                </AppStack.Navigator>
-              ) : (
-                <Tab.Navigator
-                  tabBar={props => <NavigationBar currentTab={props.state.key} navigation={props.navigation} />}
-                >
-                  <Tab.Screen name="SkemaNavigator" component={SkemaNavigator} options={{
-                    header: () => <></>
-                  }} />
-        
-                  <Tab.Screen name="Beskeder" component={BeskedNavigator} options={{
-                    header: () => <></>
-                  }} />
-        
-                  <Tab.Screen name="Mere" component={MereNavigator} options={{
-                    header: () => <></>
-                  }} />
-                </Tab.Navigator>
-              )}
-            </>
-          )}
-      </NavigationContainer>
-    </AuthContext.Provider>
+                    <AppStack.Screen name="Schools" component={Schools} options={{
+                      header: ({ navigation, route, options, back }) => Header({ navigation, route, options, back })
+                    }} />
+                  </AppStack.Navigator>
+                ) : (
+                  <Tab.Navigator
+                    tabBar={props => <NavigationBar currentTab={props.state.key} navigation={props.navigation} />}
+                  >
+                    <Tab.Screen name="SkemaNavigator" component={SkemaNavigator} options={{
+                      header: () => <></>
+                    }} />
+          
+                    <Tab.Screen name="Beskeder" component={BeskedNavigator} options={{
+                      header: () => <></>
+                    }} />
+          
+                    <Tab.Screen name="Mere" component={MereNavigator} options={{
+                      header: () => <></>
+                    }} />
+                  </Tab.Navigator>
+                )}
+              </>
+            )}
+        </NavigationContainer>
+      </AuthContext.Provider>
+    </StripeProvider>
   );
 }
 
@@ -363,6 +414,7 @@ export function MereNavigator() {
       })} />
       <Settings.Screen name={"ModulRegnskab"} component={ModulRegnskab} options={{title: "Modulregnskab"}} />
       <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Lærere og elever"}} />
+      <Settings.Screen name={"Checkout"} component={Checkout} options={{title: "Check out"}} />
     </Settings.Navigator>
   )
 }

@@ -40,7 +40,14 @@ export async function scrapeCache(gymNummer: string, params?: CacheParams): Prom
     return people;
 }
 
-export async function scrapeHold(holdId: string, gymNummer: string) {
+export async function scrapeHold(holdId: string, gymNummer: string, bypassCache: boolean = false) {
+    if(!bypassCache) {
+        const saved = await getSaved(Key.MODULREGNSKAB, holdId);
+        if(saved.valid && saved.value != null) {
+            return saved.value;
+        }
+    }
+
     const res = await fetch(SCRAPE_URLS(gymNummer, holdId).HOLD, {
         method: "GET",
         credentials: 'include',
@@ -53,14 +60,18 @@ export async function scrapeHold(holdId: string, gymNummer: string) {
     const parser = DomSelector(text);
 
     const hold = holdScraper(parser);
+    if(hold != null)
+        await saveFetch(Key.HOLD_MEMBERS, hold, Timespan.DAY, holdId);
 
     return hold;
 }
 
-export async function scrapeModulRegnskab(gymNummer: string, holdId: string): Promise<Modulregnskab | null> {
-    const saved = await getSaved(Key.MODULREGNSKAB, holdId);
-    if(saved.valid && saved.value != null) {
-        return saved.value;
+export async function scrapeModulRegnskab(gymNummer: string, holdId: string, bypassCache: boolean = false): Promise<Modulregnskab | null> {
+    if(!bypassCache) {
+        const saved = await getSaved(Key.MODULREGNSKAB, holdId);
+        if(saved.valid && saved.value != null) {
+            return saved.value;
+        }
     }
 
     const res = await fetch(SCRAPE_URLS(gymNummer, holdId).MODUL_REGNSKAB, {
@@ -343,14 +354,17 @@ export async function getMessage(gymNummer: string, messageId: string, headers: 
     return messageBody;
 }
 
-export async function getMessages(gymNummer: string, mappeId: number = -70): Promise<{ payload: { messages: LectioMessage[] | null, headers: {[id: string]: string}}, rateLimited: boolean }> {
-    const saved = await getSaved(Key.BESKEDER, mappeId.toString());
-    if(saved.valid && saved.value != null) {
-        return {
-            payload: saved.value,
-            rateLimited: false,
-        };
+export async function getMessages(gymNummer: string, mappeId: number = -70, bypassCache: boolean = false): Promise<{ payload: { messages: LectioMessage[] | null, headers: {[id: string]: string}}, rateLimited: boolean }> {
+    if(!bypassCache) {
+        const saved = await getSaved(Key.BESKEDER, mappeId.toString());
+        if(saved.valid && saved.value != null) {
+            return {
+                payload: saved.value,
+                rateLimited: false,
+            };
+        }
     }
+
 
     const res = await fetch(SCRAPE_URLS(gymNummer, undefined, undefined, undefined, mappeId).MESSAGES, {
         method: "GET",
@@ -387,11 +401,14 @@ export async function getMessages(gymNummer: string, mappeId: number = -70): Pro
     };
 }
 
-export async function getAflevering(gymNummer: string, id: string): Promise<OpgaveDetails | null> {
-    const saved = await getSaved(Key.S_AFLEVERING, id);
-    if(saved.valid && saved.value != null) {
-        return saved.value;
+export async function getAflevering(gymNummer: string, id: string, bypassCache: boolean = false): Promise<OpgaveDetails | null> {
+    if(!bypassCache) {
+        const saved = await getSaved(Key.S_AFLEVERING, id);
+        if(saved.valid && saved.value != null) {
+            return saved.value;
+        }
     }
+
 
     const profile = await getProfile();
 
@@ -414,13 +431,15 @@ export async function getAflevering(gymNummer: string, id: string): Promise<Opga
     return opgaver;
 }
 
-export async function getAfleveringer(gymNummer: string): Promise<{ payload: Opgave[] | null, rateLimited: boolean }> {
-    const saved = await getSaved(Key.AFLEVERINGER);
-    if(saved.valid && saved.value != null) {
-        return {
-            payload: saved.value,
-            rateLimited: false,
-        };
+export async function getAfleveringer(gymNummer: string, bypassCache: boolean = false): Promise<{ payload: Opgave[] | null, rateLimited: boolean }> {
+    if(!bypassCache) {
+        const saved = await getSaved(Key.AFLEVERINGER);
+        if(saved.valid && saved.value != null) {
+            return {
+                payload: saved.value,
+                rateLimited: false,
+            };
+        }
     }
 
     const payload: {[id: string]: string} = {
@@ -467,13 +486,15 @@ export async function getAfleveringer(gymNummer: string): Promise<{ payload: Opg
     };
 }
 
-export async function getAbsence(gymNummer: string): Promise<{ payload: Fag[] | null, rateLimited: boolean}> {
-    const saved = await getSaved(Key.FRAVÆR);
-    if(saved.valid && saved.value != null) {
-        return {
-            payload: saved.value,
-            rateLimited: false,
-        };
+export async function getAbsence(gymNummer: string, bypassCache: boolean = false): Promise<{ payload: Fag[] | null, rateLimited: boolean}> {
+    if(!bypassCache) {
+        const saved = await getSaved(Key.FRAVÆR);
+        if(saved.valid && saved.value != null) {
+            return {
+                payload: saved.value,
+                rateLimited: false,
+            };
+        }   
     }
 
     const res = await fetch(SCRAPE_URLS(gymNummer).ABSENCE, {

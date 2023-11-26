@@ -342,7 +342,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
             if(gym == null)
                 return;
             
-            getMessages(gym.gymNummer, mappeId).then(({payload, rateLimited}): any => {
+            getMessages(gym.gymNummer, mappeId, true).then(({payload, rateLimited}): any => {
                 setMessages(payload.messages);
                 setHeaders(payload.headers);
 

@@ -18,6 +18,8 @@ export enum Key {
 
     CACHE_PEOPLE,
     FORSIDE,
+
+    HOLD_MEMBERS,
 }
 
 export type SaveStructure = {
@@ -95,7 +97,7 @@ export async function getSaved(key: Key, identifier: string = ""): Promise<Resul
         await deleteSaved(key, identifier);
         return {
             valid: false,
-            value: null,
+            value: item.value,
         };
     }
 

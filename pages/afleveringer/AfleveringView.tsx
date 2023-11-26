@@ -54,7 +54,7 @@ export default function AfleveringView({ navigation, route }: {
             if(gym == null)
                 return;
 
-            getAflevering(gym.gymNummer, aflevering.id).then(async (v) => {
+            getAflevering(gym.gymNummer, aflevering.id, true).then(async (v) => {
                 setOpgaveDetails(v);
 
                 const people = await getPeople();

@@ -415,7 +415,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
         (async () => {
             const gymNummer = (await getUnsecure("gym")).gymNummer;
 
-            getAfleveringer(gymNummer).then(({payload, rateLimited}): any => {
+            getAfleveringer(gymNummer, true).then(({payload, rateLimited}): any => {
                 setOpgaveCount(countOpgaver(payload));
 
                 const formattedData = formatData(payload);

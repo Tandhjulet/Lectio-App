@@ -46,7 +46,7 @@ export default function ModulRegnskab() {
             const out: Modulregnskab[] = [];
 
             for(let hold of profile.hold) {
-                await scrapeModulRegnskab(gym.gymNummer, hold.holdId).then((modulRegnskab) => {
+                await scrapeModulRegnskab(gym.gymNummer, hold.holdId, true).then((modulRegnskab) => {
                     if(modulRegnskab != null && modulRegnskab.held != 0) {
                         out.push(modulRegnskab)
                     }

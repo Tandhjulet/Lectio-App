@@ -170,7 +170,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                 },
             }
 
-            getAbsence(gymNummer).then(({ payload, rateLimited }): any => {
+            getAbsence(gymNummer, true).then(({ payload, rateLimited }): any => {
                 setRateLimited(rateLimited)
 
                 // fuck noget rod

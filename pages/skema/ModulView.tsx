@@ -81,7 +81,7 @@ export default function ModulView({ navigation, route }: {
             profile.hold.forEach((hold: Hold, i: number) => {
 
                 if(hold.holdNavn == modul.team) {
-                    scrapeHold(hold.holdId, gym.gymNummer).then((v) => {
+                    scrapeHold(hold.holdId, gym.gymNummer, true).then((v) => {
                         if(v == null)
                             setMembers({})
                         else

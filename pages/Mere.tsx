@@ -226,6 +226,17 @@ export default function Mere({ navigation }: {navigation: any}) {
                         />
                     </Section>
 
+                    <Section header={"ABONNEMENT"} roundedCorners={true} hideSurroundingSeparators={true} >
+                        <Cell 
+                            cellStyle="Basic"
+                            title="Administrer abonnoment"
+                            titleTextColor={COLORS.WHITE}
+                            onPress={() => {
+                                navigation.navigate("Checkout")
+                            }}
+                        />
+                    </Section>
+
                     <Section header={"KONTROLPANEL"} roundedCorners={true} hideSurroundingSeparators={true} >
                         <Cell
                             cellStyle="Basic"
