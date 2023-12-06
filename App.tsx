@@ -28,6 +28,17 @@ import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronLeftIcon, Pen
 import { HeaderStyleInterpolators, TransitionPresets, createStackNavigator } from '@react-navigation/stack';
 import { cleanUp } from './modules/api/storage/Storage';
 
+import {
+  initConnection,
+  purchaseErrorListener,
+  purchaseUpdatedListener,
+  type ProductPurchase,
+  type PurchaseError,
+  flushFailedPurchasesCachedAsPendingAndroid,
+  SubscriptionPurchase,
+  finishTransaction,
+  requestSubscription,
+} from 'react-native-iap';
 
 const AppStack = createNativeStackNavigator();
 const Settings = createNativeStackNavigator();
@@ -38,18 +49,16 @@ const SkemaNav = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 import { LogBox } from 'react-native';
-import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
 import Checkout from './pages/payment/Checkout';
-import { STRIPE_PUBLIC_KEY, URL_SCHEME } from './modules/Config';
 LogBox.ignoreLogs(["Sending"])
 
 import * as Linking from 'expo-linking';
 import Constants from 'expo-constants';
+import { PostPurchase } from './modules/API';
 
-urlScheme:
-  Constants.appOwnership === 'expo'
-    ? Linking.createURL('/--/')
-    : Linking.createURL('');
+Constants.appOwnership === 'expo'
+  ? Linking.createURL('/--/')
+  : Linking.createURL('');
 
 type AuthType = {
   type: "SIGN_IN" | "SIGN_OUT",
@@ -66,6 +75,63 @@ export type SignInPayload = {
 }
 
 export default function App() {
+  useEffect(() => {
+    initConnection().then(() => {
+      flushFailedPurchasesCachedAsPendingAndroid()
+        .catch(() => {
+
+        })
+        .then(() => {
+          this.purchaseUpdateSubscription = purchaseUpdatedListener(
+            (purchase: SubscriptionPurchase | ProductPurchase) => {
+              console.log('purchaseUpdatedListener', purchase);
+              const receipt = purchase.transactionReceipt;
+              if (receipt) {
+
+                PostPurchase(purchase.transactionReceipt)
+                  .then(async (deliveryResult) => {
+                    if (deliveryResult) {
+                      await finishTransaction({purchase, isConsumable: false});
+                    } else {
+                      // Retry / conclude the purchase is fraudulent, etc...
+                    }
+                  });
+              }
+            },
+          );
+
+          this.purchaseErrorSubscription = purchaseErrorListener(
+            (error: PurchaseError) => {
+              console.warn('purchaseErrorListener', error);
+            },
+          );
+        });
+    });
+
+    return () => {
+      if (this.purchaseUpdateSubscription) {
+        this.purchaseUpdateSubscription.remove();
+        this.purchaseUpdateSubscription = null;
+      }
+  
+      if (this.purchaseErrorSubscription) {
+        this.purchaseErrorSubscription.remove();
+        this.purchaseErrorSubscription = null;
+      }
+    }
+  }, [])
+
+  const subscribe = async (sku: string, offerToken: string | undefined) => {
+    try {
+      await requestSubscription({
+        sku,
+        ...(offerToken && {subscriptionOffers: [{sku, offerToken}]}),
+      });
+    } catch (err: any) {
+      console.warn(err.code, err.message);
+    }
+  };
+
   const [state, dispatch]: [state: {loggedIn: boolean | null, payload: SignInPayload | null, isLoading: boolean}, dispatch: any] = useReducer(
     (prevState: any, action: AuthType) => {
       switch (action.type) {
@@ -112,16 +178,21 @@ export default function App() {
 
       } catch (e) {
       }
-      // validation here
 
-      console.log(payload)
-      if(await authorize(payload)) {
+      // validate and retry if it didn't work (lectio is autistic)
+      if(!(await authorize(payload))) {
+        setTimeout(async () => {
+          if(!(await authorize(payload))) {
+            dispatch({ type: 'SIGN_OUT' });
+          } else {
+            dispatch({ type: 'SIGN_IN' });
+            setTimeout(() => scrapePeople(), 500);
+          }
+        }, 100)
+      } else {
         dispatch({ type: 'SIGN_IN' });
-
         setTimeout(() => scrapePeople(), 500);
-      } else
-        dispatch({ type: 'SIGN_OUT' });
-
+      }
     })();
   }, []);
 
@@ -153,46 +224,8 @@ export default function App() {
     []
   );
 
-  const { handleURLCallback } = useStripe();
-
-  const handleDeepLink = useCallback(
-    async (url: string | null) => {
-      if (url) {
-        const stripeHandled = await handleURLCallback(url);
-        if (stripeHandled) {
-          // This was a Stripe URL - you can return or add extra handling here as you see fit
-        } else {
-          // This was NOT a Stripe URL – handle as you normally would
-        }
-      }
-    },
-    [handleURLCallback]
-  );
-
-  useEffect(() => {
-    const getUrlAsync = async () => {
-      const initialUrl = await Linking.getInitialURL();
-      handleDeepLink(initialUrl);
-    };
-
-    getUrlAsync();
-
-    const deepLinkListener = Linking.addEventListener(
-      'url',
-      (event: { url: string }) => {
-        handleDeepLink(event.url);
-      }
-    );
-
-    return () => deepLinkListener.remove();
-  }, [handleDeepLink]);
-
-
+  
   return (
-    <StripeProvider
-      publishableKey={STRIPE_PUBLIC_KEY}
-      urlScheme={URL_SCHEME}
-    >
       <AuthContext.Provider value={authContext}>
         <NavigationContainer theme={{colors: {
           background: COLORS.BLACK,
@@ -270,7 +303,6 @@ export default function App() {
             )}
         </NavigationContainer>
       </AuthContext.Provider>
-    </StripeProvider>
   );
 }
 

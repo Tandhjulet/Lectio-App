@@ -794,7 +794,7 @@ export default function Skema({ navigation }: {
                                                     width: "100%",
                                                 }}>
                                                     <View style={{
-                                                        backgroundColor: calcColor(0.4, modul),
+                                                        backgroundColor: calcColor(0.5, modul),
                                                         borderRadius: 5,
 
                                                         width: "100%",

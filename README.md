@@ -1,11 +1,7 @@
 mangler:
 - animationer
 - abonnement
-    - apple pay
-    - lav abbonoment typer
-    - udregn pris på server siden (står hvordan i bookmarks)
-    - lav så det hooker ind med stripes "customers"
-    - gør så den gemmer kort
+    - skift til react-native-iap
 
 kan ikke lave endnu:
 - push notifs

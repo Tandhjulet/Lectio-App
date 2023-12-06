@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "LectioPlus",
-    "slug": "LectioPlus",
+    "name": "lectioplus",
+    "slug": "lectioplus",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,7 +20,7 @@
       "config": {
         "usesNonExemptEncryption": false
       },
-      "bundleIdentifier": "com.tandhjulet.LectioPlus"
+      "bundleIdentifier": "com.tandhjulet.lectioplus"
     },
     "android": {
       "adaptiveIcon": {
@@ -33,7 +33,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "0ad86295-a181-4b6a-8259-6f7eefceb755"
+        "projectId": "eb5f1f65-f81d-465a-89f1-3e33692e3ba6"
       }
     }
   }
