@@ -1,3 +1,6 @@
+/**
+ * Color scheme
+ */
 const COLORS = {
     "BLACK": "#040D12", 
     "DARK": "#183D3D",
@@ -9,6 +12,12 @@ const COLORS = {
 
 export default COLORS;
 
+/**
+ * Converts hex to RGBA color
+ * @param hex 
+ * @param opacity 
+ * @returns RGBA color as string
+ */
 export function hexToRgb(hex: string, opacity: number = 1) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     if(result == null)

@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Timespan } from "./Timespan";
+import BeskedView from "../../../pages/beskeder/BeskedView";
 
 export enum Key {
     SKEMA,
@@ -32,6 +33,13 @@ export type Result = {
     valid: boolean,
 }
 
+/**
+ * Saves/caches a HTTP response so that it can be shown whilst waiting the next time the user requests the same data.
+ * @param key identifier for each page that needs caching
+ * @param value the HTTP response
+ * @param timespan timespan for when the fetch should expire and be deleted, or -1 if it should never be deleted automatically
+ * @param identifier unique identifier, used by pages such as {@link BeskedView} to be able to save more than one message at a time.
+ */
 export async function saveFetch(key: Key, value: object, timespan: number = -1, identifier: string = "") {
     const fullKey: string = Key[key] + "-" + identifier;
 
@@ -44,11 +52,19 @@ export async function saveFetch(key: Key, value: object, timespan: number = -1, 
     await AsyncStorage.setItem(fullKey, stringifiedValue);
 }
 
+/**
+ * Deletes a saved fetch using the given identifiers
+ * @param key 
+ * @param identifier 
+ */
 export async function deleteSaved(key: Key, identifier: string = "") {
     const fullKey: string = Key[key] + "-" + identifier;
     await AsyncStorage.removeItem(fullKey)
 }
 
+/**
+ * Removes any Responses that have expired
+ */
 export async function cleanUp() {
     const lastCall = await AsyncStorage.getItem("lastCleanUp");
     
@@ -80,6 +96,13 @@ export async function cleanUp() {
     }));
 }
 
+/**
+ * 
+ * @param key identifier for the page
+ * @param identifier unique identifier
+ * @returns an object containing the {@link Result}
+ * @see {@link Result}
+ */
 export async function getSaved(key: Key, identifier: string = ""): Promise<Result> {
     const fullKey: string = Key[key] + "-" + identifier;
 

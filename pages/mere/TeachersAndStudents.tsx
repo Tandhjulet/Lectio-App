@@ -9,9 +9,21 @@ import { getUnsecure } from "../../modules/api/Authentication";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 //import { Image } from "@rneui/themed";
 
+/**
+ * returns the given object with keys sorted alphanumerically.
+ * @param obj the object to sort
+ * @returns the sorted object
+ * @author sinclairzx81 <https://stackoverflow.com/users/8525946/sinclairzx81>
+ */
 const sort = (obj: any) => Object.keys(obj).sort()
         .reduce((acc: any, c: any) => { acc[c] = obj[c]; return acc }, {})
 
+/**
+ * Formats, sorts and optionally filters data so that it's ready to be rendered
+ * @param data data to parse
+ * @param contains a string to filter the data with
+ * @returns filtered data
+ */
 function parseData(data: {[id: string]: Person}, contains?: string): {
     letter: string,
     data: Person[];
@@ -130,6 +142,9 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
 
     const [rawPeople, setRawPeople] = useState<{ [id: string]: Person }>({});
 
+    /**
+     * Fetches the people to be rendered on page load
+     */
     useEffect(() => {
         setLoading(true);
 

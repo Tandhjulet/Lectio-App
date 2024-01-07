@@ -8,11 +8,22 @@ import { SCRAPE_URLS, getASPHeaders } from './scraper/Helpers';
 import { Key, saveFetch } from './storage/Storage';
 import { abort } from './scraper/class/PeopleList';
 
+/**
+ * @param key the key of the item
+ * @returns the object fetched from secure storage
+ */
 export async function secureGet(key: string) {
   const res = await SecureStore.getItemAsync(key);
   return res;
 }
 
+/**
+ * Validates a login request with the given details
+ * @param gymNummer 
+ * @param username 
+ * @param password 
+ * @returns a boolean value indicating whether the request succeded or not
+ */
 export async function validate(gymNummer: string, username: string, password: string): Promise<boolean> {
     console.log("validate called, sending request...")
 
@@ -61,12 +72,21 @@ export async function validate(gymNummer: string, username: string, password: st
     return await _isAuthorized(gymNummer);
 }
 
+/**
+ * Checks if the user is authorized
+ * @returns true if authorized, otherwise false
+ */
 export async function isAuthorized() {
     const gym: { gymName: string, gymNummer: string } = await getUnsecure("gym");
 
     return _isAuthorized(gym.gymNummer);
 }
 
+/**
+ * Sends a HTTP request to Lectios server to see if the user is auth
+ * @param gymNummer 
+ * @returns true if authorized, otherwise false
+ */
 export async function _isAuthorized(gymNummer: string) {
     
     const res = await fetch(SCRAPE_URLS(gymNummer).FORSIDE, {
@@ -108,6 +128,11 @@ export async function _isAuthorized(gymNummer: string) {
     return isAuth;
 }
 
+/**
+ * Tries to authorize the user with the given credentials
+ * @param {SignInPayload} credentials Sign In Payload
+ * @returns true if success, otherwise false
+ */
 export async function authorize({ gym, password, username }: SignInPayload): Promise<boolean> {
     console.log("authorize called!")
 
@@ -118,23 +143,46 @@ export async function authorize({ gym, password, username }: SignInPayload): Pro
     return await validate(gym.gymNummer, username, password);
 }
 
+/**
+ * Securely saves a K,V pair in secure store
+ * @param key 
+ * @param value 
+ */
 export async function secureSave(key: string, value: string) {
     await SecureStore.setItemAsync(key, value);
 }
 
+/**
+ * Securely removes a K,V pair from secure store
+ * @param key 
+ */
 export async function removeSecure(key: string) {
     await SecureStore.deleteItemAsync(key);
 }
 
+/**
+ * Removes a K,V pair from async storage
+ * @param key 
+ */
 export async function removeUnsecure(key: string) {
     await AsyncStorage.removeItem(key);
 }
 
+/**
+ * Saves a K,V pair unsecurely (other apps can access this data)
+ * @param key 
+ * @param value 
+ */
 export async function saveUnsecure(key: string, value: object) {
     const stringifiedValue = JSON.stringify(value);
     await AsyncStorage.setItem(key, stringifiedValue);
 }
 
+/**
+ * Gets an unsecure value from async storage
+ * @param key 
+ * @returns 
+ */
 export async function getUnsecure(key: string): Promise<any> {
     const stringifiedValue = await AsyncStorage.getItem(key);
     if(stringifiedValue == null)
@@ -142,6 +190,9 @@ export async function getUnsecure(key: string): Promise<any> {
     return JSON.parse(stringifiedValue);
 }
 
+/**
+ * Sign out of lectio
+ */
 export async function signOut() {
     fetch(SCRAPE_URLS().LOG_UD, {
         method: "GET",

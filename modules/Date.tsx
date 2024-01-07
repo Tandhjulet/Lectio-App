@@ -6,8 +6,13 @@ export type WeekDay = {
     date: Date,
 }
 
+/**
+ * Calculates all dates that are in the given week and returns them
+ * @param date date in a week
+ * @returns all dates in the week
+ */
 function dates(date: Date) {
-    const current = new Date(date);
+    const current = new Date(date); // copy to avoid messing up the original date
     if(current.getDay() == 0)
         current.setDate(date.getDate() - 1);
 
@@ -23,6 +28,11 @@ function dates(date: Date) {
     return week; 
 }
 
+/**
+ * Parses each date as a {@link WeekDay}
+ * @param date date to get the week days of
+ * @returns a list of {@link WeekDay}s
+ */
 export default function getDaysOfWeek(date: Date): WeekDay[] {
 
     const days: WeekDay[] = []
@@ -35,18 +45,33 @@ export default function getDaysOfWeek(date: Date): WeekDay[] {
     return days;
 }
 
+/**
+ * 
+ * @param date 
+ * @returns the next week
+ */
 export function getNextWeek(date: Date): Date {
     const next = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 7);
 
     return next;
 }
 
+/**
+ * 
+ * @param date 
+ * @returns the previous week
+ */
 export function getPrevWeek(date: Date): Date {
     const next = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 7);
 
     return next;
 }
 
+/**
+ * Parses a single date a {@link WeekDay}
+ * @param date date to parse
+ * @returns parsed date
+ */
 export function getDay(date: Date): WeekDay {
     const weekday = ["Søndag","Mandag","Tirsdag","Onsdag","Torsdag","Fredag","Lørdag"];
 

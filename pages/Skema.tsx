@@ -13,6 +13,12 @@ import { NavigationProp } from "@react-navigation/native";
 import RateLimit from "../components/RateLimit";
 import { Key, getSaved } from "../modules/api/storage/Storage";
 
+/**
+ * 
+ * @param moduler a list of all the modules of the given day
+ * @param fallbackValues a list containing the values to fall back to, if no earlier/later dates are found
+ * @returns the extrenum dates of the given modules
+ */
 function findExtremumDates(moduler: Modul[], fallbackValues: {
     min: ModulDate,
     max: ModulDate,
@@ -40,7 +46,12 @@ function findExtremumDates(moduler: Modul[], fallbackValues: {
     };
 }
 
-function formatDate(dateString: string) {
+/**
+ * 
+ * @param dateString a time formatted as a string in the format HHSS
+ * @returns a date corresponding to the given string
+ */
+function formatDate(dateString: string): Date {
     const padded = dateString.padStart(4, "0");
     const minutes = padded.slice(2);
     const hours = padded.slice(0,2);
@@ -52,6 +63,12 @@ function formatDate(dateString: string) {
     return date;
 }
 
+/**
+ * 
+ * @param dates the two dates to find the hours between
+ * @param padding the amount of hours to add before and after. (E.g timespan 08:00 - 09:00 will return [7, 8, 9, 10])
+ * @returns the hours between the dates
+ */
 function hoursBetweenDates(dates: {
     min: ModulDate,
     max: ModulDate,
@@ -68,9 +85,20 @@ function hoursBetweenDates(dates: {
     return out;
 }
 
+/**
+ * 
+ * @param param0 Navigation prop
+ * @returns JSX for the schema view
+ */
 export default function Skema({ navigation }: {
     navigation: NavigationProp<any>,
 }) {
+    /**
+     * Calculates the color of a given module from it's status.
+     * @param opacity opacity of the color
+     * @param modul the module to calculate the color for
+     * @returns a string color in RGBA-format
+     */
     const calcColor = (opacity: number, modul: Modul) => (modul.changed || modul.cancelled) ? (modul.changed ? `rgba(207, 207, 0, ${opacity})` : `rgba(201, 32, 32, ${opacity})`) : `rgba(31, 222, 34, ${opacity})`;
 
     const [refreshing, setRefreshing] = useState(false);
@@ -101,6 +129,10 @@ export default function Skema({ navigation }: {
 
     const [ profile, setProfile ] = useState<Profile>();
 
+    /**
+     * Used in the gestureRecognizer to go to the next/previous day
+     * @param t if it should go to the next day or the previous, respectively "ADD" or "REMOVE"
+     */
     const daySelector = (t: "ADD" | "REMOVE") => {
         setSelectedDay((prev) => {
             const copy = new Date(prev);
@@ -133,6 +165,10 @@ export default function Skema({ navigation }: {
         });
     }
 
+    /**
+     * Parses the schema for the currently selected day in the schema viewer
+     * @param skema all of the modules for the week
+     */
     function parseSkema(skema: Day[]) {
         if(skema == null)
             return;
@@ -145,6 +181,10 @@ export default function Skema({ navigation }: {
         setDay(flattened);
     }
 
+    /**
+     * Fetches the data needed to display the page, on page load.
+     * If anything is cached it will render that whilst waiting for the server to respond.
+     */
     useEffect(() => {
         (async () => {
             const saved = await getSaved(Key.SKEMA, getWeekNumber(loadDate).toString());
@@ -180,6 +220,9 @@ export default function Skema({ navigation }: {
 
     }, [loadDate])
 
+    /**
+     * Used for drag-to-refresh functionality
+     */
     useEffect(() => {
         if(refreshing == false) 
             return;
@@ -201,6 +244,9 @@ export default function Skema({ navigation }: {
 
     }, [refreshing])
 
+    /**
+     * Used to update the module view when you change the date you're viewing
+     */
     useEffect(() => {
         if(skema == null || skema.length == 0 || skema[dayNum - 1] == null) 
             return;
@@ -218,18 +264,37 @@ export default function Skema({ navigation }: {
         parseSkema(skema)
     }, [modulTimings, dayNum])
 
+    /**
+     * Compares two dates without taking account for time.
+     * E.g for this function 07/01/2024 19:09 === 07/01/2024 00:01
+     * @param d1
+     * @param d2 
+     * @returns true if they are equal, otherwise false
+     */
     const dateCompare = (d1: Date, d2: Date) => {
         return (d1.getMonth() == d2.getMonth() &&
                 d1.getDate() == d2.getDate() &&
                 d1.getFullYear() == d2.getFullYear())
     }
 
+    /**
+     * Used to calculate how long down a module should be on the schema view
+     * @param date the date to calculate the top-property of
+     * @returns a number used for formatting
+     */
     function calculateTop(date: ModulDate) {
         const min: Date = formatDate(date.startNum.toString())
         const out = ((min.getHours() - Math.min(...hoursToMap))*60 + min.getMinutes());
         return (out == Infinity || out == -Infinity) ? 0 : out;
     }
 
+    /**
+     * Searches the given dict for any overlaps
+     * @param dict dict containing module intersects
+     * @param startDate the start date formatted as a number
+     * @param endDate the end date formatted as a number
+     * @returns the overlap if any are detected, else null
+     */
     function searchDateDict(dict: {[id: string]: any}, startDate: number, endDate: number): string | null {
         const xmin1 = formatDate(startDate.toString())
         const xmax1 = formatDate(endDate.toString())
@@ -245,6 +310,12 @@ export default function Skema({ navigation }: {
         return null;
     }
 
+    /**
+     * Assigns depth to the given dictionary
+     * @param intersections a dict containing module intersects
+     * @param depth the current depth
+     * @returns a depth assigned dict
+     */
     function _depth(intersections: {[id: string]: {
         moduler: Modul[],
         contains: any,
@@ -263,6 +334,11 @@ export default function Skema({ navigation }: {
     }
 
     let MAXDEPTH = 0;
+    /**
+     * Recursively sets the max depth in the given dict.
+     * @param intersections a depth-assigned dict containing module intersects
+     * @returns the max depth encountered in the dict
+     */
     function _maxDepth(intersections: {[id: string]: {
         moduler: Modul[],
         contains: any,
@@ -282,6 +358,11 @@ export default function Skema({ navigation }: {
         return MAXDEPTH;
     }
 
+    /**
+     * 
+     * @param depthAssigned a depth-assigned dict containing module intersects
+     * @returns a flattened dict containing width and left (%) properties used for formatting
+     */
     function flatten(depthAssigned: {[id: string]: {
         moduler: Modul[],
         contains: any,
@@ -318,6 +399,15 @@ export default function Skema({ navigation }: {
         return out;
     }
 
+    /**
+     * 
+     * @param intersections intersections calculated by {@link calculateIntersects}
+     * plus some additional info needed for the function to be able to recurse correctly
+     * @param calcDepth if the depth needs to be calculated again
+     * @param maxDepth the highest depth yet encoutered
+     * @returns a depth-assigned dict containing module intersects
+     * @see {@link calculateIntersects}
+     */
     function assignDepth(intersections: {[id: string]: {
         moduler: Modul[],
         contains: any,
@@ -345,6 +435,14 @@ export default function Skema({ navigation }: {
         return out;
     }   
 
+    /**
+     * This function calculates the intersects of the modules and formats them into a dict. An intersection is when two modules have overlapping times.
+     * E.g module A starts at 08:00 and ends 09:30, whilst module B starts 09:00 and ends 10:00. The app needs to be able to register this, and render without 
+     * overlapping the two modules. Hence this function.
+     * @param modules a list of modules for the selected day
+     * @returns a dict of all the intersects. The keys are formatted as "{INTERSECT_START_DATE}-{INTERSECT_END_DATE}".
+     * Every entry contains any internal children intersections. This makes it easy to render if any modules.
+     */
     function calculateIntersects(modules: Modul[]) {
         const out: {[id: string]: {
             moduler: Modul[],
@@ -378,6 +476,10 @@ export default function Skema({ navigation }: {
         return out
     }
 
+    /**
+     * Returns a different greeting depending on the time
+     * @returns a greeting
+     */
     const getTimeOfDayAsString: () => string = () => {
         const d = new Date()
         if(d.getHours() < 8) {
@@ -392,6 +494,9 @@ export default function Skema({ navigation }: {
         return "Godaften"
     }
 
+    /**
+     * Used for auto-refresh
+     */
     const onRefresh = useCallback(() => {
         setRefreshing(true);
     }, []);

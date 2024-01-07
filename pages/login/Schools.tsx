@@ -17,10 +17,18 @@ import COLORS from '../../modules/Themes';
 import { getSchools } from '../../modules/api/scraper/Scraper';
 import { saveUnsecure } from '../../modules/api/Authentication';
 
+/**
+ * Finds first alphabet character in a string
+ * @param str str to search
+ * @returns first char
+ */
 function findFirstChar(str: string): string {
   return str.replace(/[^a-zA-ZæøåÆØÅ]+/gm, "")[0]
 }
 
+/**
+ * Renders the school in a memo to reduce lag/skip rerendering
+ */
 const School = memo(function School({ index, section, navigation, gymNummer, gymName }: {
   index: number,
   section: any,
@@ -81,6 +89,12 @@ const School = memo(function School({ index, section, navigation, gymNummer, gym
   )
 })
 
+/**
+ * Formats and optionally filters schools
+ * @param data data to parse
+ * @param contains optional filter to apply
+ * @returns parsed data
+ */
 function parseData(data: {[id: string]: string}, contains?: string): {
   letter: string,
   data: string[];
@@ -124,6 +138,9 @@ const Schools = ({ navigation }: any) => {
   }[]>([]);
   const [rawData, setRawData] = useState<{[key: string]: string}>({});
 
+  /**
+   * Loads the schools upon page load
+   */
   useEffect(() => {
     const load = async () => {
       const rawData = await getSchools();

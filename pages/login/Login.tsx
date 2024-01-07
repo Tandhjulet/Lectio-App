@@ -14,6 +14,9 @@ export default function Login({ route, navigation }: {
 }) {
     const { signIn } = useContext(AuthContext);
 
+    /**
+     * Logo animation
+     */
     const opacity = useRef(new Animated.Value(0.7)).current;
     const scale = useRef(new Animated.Value(0.95)).current;
     useEffect(() => {
@@ -49,13 +52,15 @@ export default function Login({ route, navigation }: {
             ]),
         ])
       ).start();
-
     }, [opacity, scale]);
 
     const passwdRef = useRef<TextInput>(null);
 
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string } | null>()
 
+    /**
+     * Refresh gym state every time page focuses, to avoid logout/login mishaps
+     */
     useFocusEffect(() => {
         getUnsecure("gym").then((gym: { gymName: string, gymNummer: string } | null) => {
             setGym(gym)
@@ -68,6 +73,10 @@ export default function Login({ route, navigation }: {
     const [invalidCredentials, setInvalidCredentials] = useState(false);
     const [loading, setLoading] = useState<boolean>(false);
 
+    /**
+     * Validates credentials with Lectios servers
+     * @returns boolean value indicating whether login was successful or not
+     */
     async function validateAndContinue() { 
         if(password == "" || username == "" || gym == null) {
             setInvalidCredentials(true);

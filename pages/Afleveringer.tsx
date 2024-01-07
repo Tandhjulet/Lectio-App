@@ -9,6 +9,12 @@ import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { AcademicCapIcon, AdjustmentsVerticalIcon, ChevronRightIcon } from "react-native-heroicons/solid";
 import RateLimit from "../components/RateLimit";
 
+/**
+ * Formats the dates weekday as text.
+ * E.g 07/01/2024 => "Søndag"
+ * @param date date to format
+ * @returns a weekday text
+ */
 export const formatDate = (date: Date) => {
     const weekday = ["Søndag","Mandag","Tirsdag","Onsdag","Torsdag","Fredag","Lørdag"];
     const dateName = weekday[date.getDay()];
@@ -16,6 +22,11 @@ export const formatDate = (date: Date) => {
     return dateName + " " + date.getDate() + "/" + (date.getMonth()+1);
 }
 
+/**
+ * Formats assignments to a dict by their date.
+ * @param data data to format
+ * @returns formatted data
+ */
 const formatData = (data: Opgave[] | null) => {
     const out: {[id:string]: Opgave[]} = {}
 
@@ -30,18 +41,20 @@ const formatData = (data: Opgave[] | null) => {
     return out;
 }
 
-const countdown = (date: Date) => {
+/**
+ * 
+ * @param date a date of an assignment
+ * @returns a text depending on how long there is until the assignment is due
+ */
+const countdown = (date: Date): string => {
     const diff = date.valueOf() - new Date().valueOf();
-    let out = [];
-    if(diff <= 0)
-        return formatDate(date) + " kl. " + date.getHours().toString().padStart(2, "0") + ":" + date.getMinutes().toString().padStart(2, "0");
-
     const days = Math.floor(diff / (1000*60*60*24));
-    if(days > 10)
+    if(diff <= 0 || days > 10)
         return formatDate(date) + " kl. " + date.getHours().toString().padStart(2, "0") + ":" + date.getMinutes().toString().padStart(2, "0");
 
     const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
 
+    const out: string[] = [];
     if(days > 0)
         out.push(days == 1 ? days + " dag" : days + " dage")
 
@@ -51,6 +64,13 @@ const countdown = (date: Date) => {
     return out.join(" og ")
 }
 
+/**
+ * Calculates color from a linear gradient ([255,0,0] to [255,252,0]) 
+ * depending on how soon the assignment is due. If the assignment is due in more than 14 days it will
+ * return white.
+ * @param date date to calculate color from
+ * @returns a color
+ */
 const calculateColor = (date: Date) => {
     const COLOR1 = [255, 0, 0]
     const COLOR2 = [255, 252, 0]
@@ -72,6 +92,11 @@ const calculateColor = (date: Date) => {
     return `rgb(${res[0]}, ${res[1]}, ${res[2]})`;
 }
 
+/**
+ * 
+ * @param data assignments to count
+ * @returns the amount of different types of assignments
+ */
 const countOpgaver = (data: Opgave[] | null) => {
     const out: {
         alle: number,
@@ -105,6 +130,12 @@ const countOpgaver = (data: Opgave[] | null) => {
     return out;
 }
 
+/**
+ * Filteres assignments depending on their status
+ * @param data data to filter
+ * @param filter what to filter for
+ * @returns filtered data
+ */
 const filterData = (data: {
     [id: string]: Opgave[];
 }, filter: STATUS | "ALL") => {
@@ -149,6 +180,9 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
     const [refreshing, setRefreshing] = useState<boolean>(false);
 
+    /**
+     * Renders the filter-button
+     */
     useEffect(() => {
         navigation.setOptions({
             headerRight: () => (
@@ -389,6 +423,9 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
         })
     }, [navigation, modalVisible])
 
+    /**
+     * Fetches the assignments on page load
+     */
     useEffect(() => {
         (async () => {
             setLoading(true);
@@ -408,6 +445,9 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
         })();
     }, [])
     
+    /**
+     * Drag-to-refresh functionality
+     */
     useEffect(() => {
         if(!refreshing)
             return;

@@ -4,9 +4,19 @@ import DomSelector from 'react-native-dom-parser';
 import { SCRAPE_URLS, getASPHeaders, parseASPHeaders } from "../scraper/Helpers";
 import { Person } from "../scraper/class/ClassPictureScraper";
 
-export async function sendMessage(title: string, sendTo: Person[], content: string, gymNummer: string, finished: any) {
+/**
+ * Sends a message over lectio to the specified recipients with the specified data
+ * @param title title of the message
+ * @param sendTo recipients of the message
+ * @param content the body/content of the message
+ * @param gymNummer the gymNummer of the sender
+ * @param finished a callback to run once after the message has been sent
+ */
+export async function sendMessage(title: string, sendTo: Person[], content: string, gymNummer: string, finished: (messageId: string | null) => void) {
     let headers = await createMessage(gymNummer);
 
+    // when running a forEach with an async callback the code will continue before all the callbacks are finished.
+    // since forEach doesn't return a promise that we can await, we need to make one ourselves
     new Promise<void>((resolve, reject) => {
         sendTo.forEach(async (receiver: Person, index: number) => {
             headers = await addReceiver(gymNummer, receiver, headers);
@@ -25,6 +35,14 @@ export async function sendMessage(title: string, sendTo: Person[], content: stri
     })
 }
 
+/**
+ * Sends the message HTTPS POST request that sends the message to the server
+ * @param title 
+ * @param content 
+ * @param headers 
+ * @param gymNummer 
+ * @returns the {@link Response} of the request
+ */
 async function send(title: string, content: string, headers: {[id: string]: string}, gymNummer: string) {
     const payload: {[id: string]: string} = {
         ...headers,
@@ -60,6 +78,13 @@ async function send(title: string, content: string, headers: {[id: string]: stri
     return res;
 }
 
+/**
+ * Sends a HTTP POST that adds a receiver to the message
+ * @param gymNummer 
+ * @param receiver 
+ * @param headers 
+ * @returns the ASP headers of the new page
+ */
 async function addReceiver(gymNummer: string, receiver: Person, headers: {[id: string]: string}): Promise<{[id: string]: string}> {
     const payload: {[id: string]: string} = {
         ...headers,
@@ -104,6 +129,11 @@ async function addReceiver(gymNummer: string, receiver: Person, headers: {[id: s
     return newHeaders;
 }
 
+/**
+ * Creates a request to make a new message in Lectio's system
+ * @param gymNummer 
+ * @returns the ASP headers of the page
+ */
 async function createMessage(gymNummer: string): Promise<{[id: string]: string}> {
     const payload: {[id: string]: string} = {
         ...(await getASPHeaders(SCRAPE_URLS(gymNummer).RAW_MESSAGE_URL)),

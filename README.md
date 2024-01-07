@@ -1,19 +1,21 @@
-mangler:
+# Lectio Plus
+Lectio Plus startede som et hobby projekt. Jeg kunne ikke rigtigt forstå hvordan der på daværende tidspunkt, kun var èn app til Lectio, så jeg besluttede mig for at starte på min egen. Lectio Plus bliver måske open source i fremtiden, men vil formentligt altid have et på betalt plan, der åbner op for hele appen. 
+
+På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg har ikke længere tid til både at lave fremskridt på appen, mens jeg samtidig holder mig up-to-date med Lectios konstante opdateringer. Hvis det lyder som noget for dig, synes jeg du skal skrive en besked til mig over discord `tandhjul`. Tak på forhånd :-)
+
+## Prioriteringer/mangler ved appen
+
+### __HØJ__
 - animationer
 - abonnement
     - skift til react-native-iap
 
-kan ikke lave endnu:
+### __MELLEM__
 - push notifs
 - karakterer
 
-todo senere:
+### __LAV__
 - spørgeskemaer
 - dokumenter
-- queue system til fetches (?)
+- queue system til fetches (?) - ikke ligefrem fordi der på nuværende tidspunkt er brug for det, men måske hvis appen gror engang.
     - alle tingene hentes i baggrunden ved første load (?)
-- gør så den rydder cookies ved logud/data slet (tror det er årsagen), det kræver at man sender 2 reqs for at logge ind igen.
-
-test:
-- cleanUp()
-- refresh går gennem cache

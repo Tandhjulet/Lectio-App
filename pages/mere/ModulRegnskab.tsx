@@ -13,6 +13,9 @@ export default function ModulRegnskab() {
 
     const [refreshing, setRefreshing] = useState<boolean>(false);
 
+    /**
+     * Fetches the modul calculations on page load
+     */
     useEffect(() => {
         (async () => {
             setLoading(true);
@@ -35,6 +38,9 @@ export default function ModulRegnskab() {
         })();
     }, [])
 
+    /**
+     * Drag-to-refresh functionality
+     */
     useEffect(() => {
         if(!refreshing)
             return;

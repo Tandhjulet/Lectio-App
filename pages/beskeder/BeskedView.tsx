@@ -9,6 +9,11 @@ import { getUnsecure } from "../../modules/api/Authentication";
 import { UserIcon } from "react-native-heroicons/solid";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 
+/**
+ * Removes the extra data associated to each name
+ * @param name name to clean
+ * @returns a clean name
+ */
 export const CLEAN_NAME = (name: string) => {
     return name.replace(new RegExp(/ \(.*?\)/), "")
 }
@@ -27,6 +32,9 @@ export default function BeskedView({ navigation, route }: {
     const message: LectioMessage = route.params?.message;
     const headers = route.params?.headers;
 
+    /**
+     * Fetches the message body upon page load
+     */
     useEffect(() => {
         (async () => {
             const gym: { gymName: string, gymNummer: string } = await getUnsecure("gym");

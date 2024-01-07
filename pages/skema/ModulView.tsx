@@ -13,6 +13,11 @@ import { CLEAN_NAME } from "../beskeder/BeskedView";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { UserIcon } from "react-native-heroicons/solid";
 
+/**
+ * 
+ * @param modul modul
+ * @returns the status of the module
+ */
 const getStatus = (modul: Modul) => {
     if(modul.cancelled)
         return "Aflyst";
@@ -35,6 +40,9 @@ export default function ModulView({ navigation, route }: {
     const [loading, setLoading] = useState<boolean>(false)
     const [refreshing, setRefreshing] = useState<boolean>(false);
 
+    /**
+     * Fetches the teacher and the students of the module on page load
+     */
     useEffect(() => {
         (async () => {
             setLoading(true);
@@ -69,6 +77,9 @@ export default function ModulView({ navigation, route }: {
         })();
     }, [])
 
+    /**
+     * Drag-to-refresh functionality
+     */
     useEffect(() => {
         if(!refreshing)
             return;

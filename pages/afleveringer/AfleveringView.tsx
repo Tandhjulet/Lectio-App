@@ -26,6 +26,9 @@ export default function AfleveringView({ navigation, route }: {
 
     const aflevering: Opgave = route.params?.opgave;
 
+    /**
+     * Fetches the assignment, the teacher and the students
+     */
     useEffect(() => {
         setLoading(true);
 
@@ -46,6 +49,9 @@ export default function AfleveringView({ navigation, route }: {
         })();
     }, [])
 
+    /**
+     * Drag-to-refresh functionality
+     */
     useEffect(() => {
         if(!refreshing)
             return;

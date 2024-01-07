@@ -1,3 +1,6 @@
+/**
+ * Different timespans in milliseconds, used in storage
+ */
 export enum Timespan {
     SECOND = 1000,
     MINUTE = 1000*60,

@@ -51,6 +51,10 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
     const [ messages, setMessages ] = useState<LectioMessage[] | null>([]);
     const [ headers, setHeaders ] = useState<{[id: string]: string}>();
 
+    /**
+     * Used in the message-modal to make the x-icon appear so you can clear 
+     * what you've entered
+     */
     useEffect(() => {
         const hideSubscription = Keyboard.addListener('keyboardWillHide', () => {
             if(bottomSheetModalRef == null) return;
@@ -76,6 +80,11 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
         bottomSheetModalRef.current?.snapToIndex(index);
     }, []);
 
+    /**
+     * 
+     * @param searchString what the user is searching for
+     * @returns a list of users matching the searched string
+     */
     const filterPeople = (searchString: string) => {
         if(searchString.length < 3)
             return [];
@@ -90,6 +99,9 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
         return out;
     }
 
+    /**
+     * Renders the filter and message-buttons
+     */
     useEffect(() => {
         navigation.setOptions({
             headerLeft: () => (
@@ -296,6 +308,9 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
         })
     }, [navigation, modalVisible])
 
+    /**
+     * Fetches the messages on page load
+     */
     useEffect(() => {
         setLoading(true);
 
@@ -329,6 +344,9 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
         })();
     }, [sortedBy]);
 
+    /**
+     * Drag-to-refresh functionality
+     */
     useEffect(() => {
         if(!refreshing)
             return;

@@ -39,6 +39,13 @@ type ChartedAbsence = {
     },
 }
 
+/**
+ * Converts a string to a hex color code using bit manipulation 
+ * and a bit of black magic
+ * @author Joe Freeman <https://stackoverflow.com/users/108907/joe-freeman>
+ * @param str string to convert to color
+ * @returns a 6-digit hex color code
+ */
 function stringToColour(str: string): string {
     let hash = 0;
     str.split('').forEach(char => {
@@ -59,11 +66,15 @@ export default function Absence({ navigation }: { navigation: any }) {
 
     const [ refreshing, setRefreshing ] = useState(false);
 
+    /**
+     * Fetches the absence on page load
+     */
     useEffect(() => {
         setLoading(true);
         (async () => {
             const gymNummer = (await getUnsecure("gym")).gymNummer;
 
+            // yeah...
             const out: ChartedAbsence = {
                 almindeligt: {
                     series: [],
@@ -98,7 +109,7 @@ export default function Absence({ navigation }: { navigation: any }) {
             getAbsence(gymNummer).then(({ payload, rateLimited }): any => {
                 setRateLimited(rateLimited)
 
-                // fuck noget rod
+                // this should probably be fixed...
                 if(payload != null)
                     payload.forEach((fag: Fag) => {
                         if(fag.skriftligt.settled.absent > 0) {
@@ -132,6 +143,9 @@ export default function Absence({ navigation }: { navigation: any }) {
         })();
     }, []);
 
+    /**
+     * Drag-to-refresh functionality
+     */
     useEffect(() => {
         if(!refreshing)
             return;

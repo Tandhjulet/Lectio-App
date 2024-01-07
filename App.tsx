@@ -30,13 +30,6 @@ import { cleanUp } from './modules/api/storage/Storage';
 
 import {
   initConnection,
-  purchaseErrorListener,
-  purchaseUpdatedListener,
-  type ProductPurchase,
-  type PurchaseError,
-  flushFailedPurchasesCachedAsPendingAndroid,
-  SubscriptionPurchase,
-  finishTransaction,
   requestSubscription,
 } from 'react-native-iap';
 
@@ -50,7 +43,7 @@ const Tab = createBottomTabNavigator();
 
 import { LogBox } from 'react-native';
 import Checkout from './pages/payment/Checkout';
-LogBox.ignoreLogs(["Sending"])
+LogBox.ignoreLogs(["Sending"]) // dårligt, men umiddelbart eneste løsning.
 
 import * as Linking from 'expo-linking';
 import Constants from 'expo-constants';
@@ -74,50 +67,16 @@ export type SignInPayload = {
   password: string | null,
 }
 
+const isExpoGo = Constants.appOwnership === 'expo';
+
 export default function App() {
   useEffect(() => {
-    initConnection().then(() => {
-      flushFailedPurchasesCachedAsPendingAndroid()
-        .catch(() => {
-
-        })
-        .then(() => {
-          this.purchaseUpdateSubscription = purchaseUpdatedListener(
-            (purchase: SubscriptionPurchase | ProductPurchase) => {
-              console.log('purchaseUpdatedListener', purchase);
-              const receipt = purchase.transactionReceipt;
-              if (receipt) {
-
-                PostPurchase(purchase.transactionReceipt)
-                  .then(async (deliveryResult) => {
-                    if (deliveryResult) {
-                      await finishTransaction({purchase, isConsumable: false});
-                    } else {
-                      // Retry / conclude the purchase is fraudulent, etc...
-                    }
-                  });
-              }
-            },
-          );
-
-          this.purchaseErrorSubscription = purchaseErrorListener(
-            (error: PurchaseError) => {
-              console.warn('purchaseErrorListener', error);
-            },
-          );
-        });
-    });
-
-    return () => {
-      if (this.purchaseUpdateSubscription) {
-        this.purchaseUpdateSubscription.remove();
-        this.purchaseUpdateSubscription = null;
-      }
-  
-      if (this.purchaseErrorSubscription) {
-        this.purchaseErrorSubscription.remove();
-        this.purchaseErrorSubscription = null;
-      }
+    if(!isExpoGo) {
+      initConnection().catch(() => {
+        console.log("init connection failed!");
+      }).then(() => {
+        console.log("init connection success!");
+      });
     }
   }, [])
 
@@ -168,15 +127,10 @@ export default function App() {
         username: null,
       };
 
-      try {
-
-        payload = {
-          gym: await getUnsecure("gym"),
-          password: await secureGet("password"),
-          username: await secureGet("username"),
-        }
-
-      } catch (e) {
+      payload = {
+        gym: await getUnsecure("gym"),
+        password: await secureGet("password"),
+        username: await secureGet("username"),
       }
 
       // validate and retry if it didn't work (lectio is autistic)
@@ -202,7 +156,6 @@ export default function App() {
         if(payload.username == null || payload.password == null || payload.gym == null)
           return false;
 
-        console.log(payload)
         if(await authorize(payload)) {
           await secureSave("username", payload.username);
           await secureSave("password", payload.password);
@@ -450,5 +403,3 @@ export function MereNavigator() {
     </Settings.Navigator>
   )
 }
-
-/* TODO: Loading screen here instead of null */
