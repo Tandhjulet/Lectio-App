@@ -70,6 +70,9 @@ export type SignInPayload = {
 const isExpoGo = Constants.appOwnership === 'expo';
 
 export default function App() {
+  /**
+   * Creates a connections to Apples IAP (WIP)
+   */
   useEffect(() => {
     if(!isExpoGo) {
       initConnection().catch(() => {
@@ -80,6 +83,11 @@ export default function App() {
     }
   }, [])
 
+  /**
+   * Subscribes to an IAP subscription
+   * @param sku 
+   * @param offerToken 
+   */
   const subscribe = async (sku: string, offerToken: string | undefined) => {
     try {
       await requestSubscription({
@@ -91,6 +99,10 @@ export default function App() {
     }
   };
 
+
+  /**
+   * State and dispatcher used for auth
+   */
   const [state, dispatch]: [state: {loggedIn: boolean | null, payload: SignInPayload | null, isLoading: boolean}, dispatch: any] = useReducer(
     (prevState: any, action: AuthType) => {
       switch (action.type) {
@@ -117,6 +129,10 @@ export default function App() {
     }
   );
 
+  /**
+   * Starts a clean up of the cache if it itsn't on cooldown.
+   * Afterwards tries to authorize to Lectio with saved credentials, if there are any.
+   */
   useEffect(() => {
     cleanUp();
 
@@ -150,6 +166,9 @@ export default function App() {
     })();
   }, []);
 
+  /**
+   * Auth Context passed to the rest of the app
+   */
   const authContext = useMemo(
     () => ({
       signIn: async (payload: SignInPayload) => {
