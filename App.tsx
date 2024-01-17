@@ -29,8 +29,17 @@ import { HeaderStyleInterpolators, TransitionPresets, createStackNavigator } fro
 import { cleanUp } from './modules/api/storage/Storage';
 
 import {
+  ProductPurchase,
+  Purchase,
+  SubscriptionPurchase,
+  finishTransaction,
+  getAvailablePurchases,
   initConnection,
+  purchaseUpdatedListener,
+  requestPurchase,
   requestSubscription,
+  useIAP,
+  withIAPContext,
 } from 'react-native-iap';
 
 const AppStack = createNativeStackNavigator();
@@ -42,7 +51,6 @@ const SkemaNav = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 import { LogBox } from 'react-native';
-import Checkout from './pages/payment/Checkout';
 LogBox.ignoreLogs(["Sending"]) // dårligt, men umiddelbart eneste løsning.
 
 import * as Linking from 'expo-linking';
@@ -67,38 +75,65 @@ export type SignInPayload = {
   password: string | null,
 }
 
-const isExpoGo = Constants.appOwnership === 'expo';
+export const subSkus: Readonly<string[]> = [
+  'com.tandhjulet.lectioplus.premium_yearly',
+  'com.tandhjulet.lectioplus.premium_monthly',
+];
 
-export default function App() {
+export const subscribe = async (sku: string, offerToken: string | null) => {
+  try {
+    await requestSubscription({
+      sku,
+      ...(offerToken && {subscriptionOffers: [{sku, offerToken}]}),
+    });
+  } catch (err) {
+    console.warn(err);
+  }
+};
+
+export const checkSubscribed = async () => {
+  const purchases = await getAvailablePurchases();
+  await Promise.all(purchases.map(async purchase => {
+    switch(purchase.productId) {
+      case "com.tandhjulet.lectioplus.premium_yearly":
+      case "com.tandhjulet.lectioplus.premium_monthly":
+        
+        break;
+    }
+    console.log(purchase);
+  }))
+}
+
+const App = () => {
+
   /**
    * Creates a connections to Apples IAP (WIP)
    */
+
   useEffect(() => {
+    const isExpoGo = Constants.appOwnership === 'expo';
+
     if(!isExpoGo) {
-      initConnection().catch(() => {
-        console.log("init connection failed!");
-      }).then(() => {
-        console.log("init connection success!");
-      });
-    }
-  }, [])
+      initConnection().then(() => {
+        console.log("init connection!");
 
-  /**
-   * Subscribes to an IAP subscription
-   * @param sku 
-   * @param offerToken 
-   */
-  const subscribe = async (sku: string, offerToken: string | undefined) => {
-    try {
-      await requestSubscription({
-        sku,
-        ...(offerToken && {subscriptionOffers: [{sku, offerToken}]}),
-      });
-    } catch (err: any) {
-      console.warn(err.code, err.message);
+        purchaseUpdatedListener(async (purchase: SubscriptionPurchase | ProductPurchase) => {
+         const receipt = purchase.transactionReceipt;
+   
+         if(receipt) {
+           console.log("purchase!")
+           console.log(receipt);
+   
+           await finishTransaction({
+             purchase,
+             isConsumable: false,
+           })
+         }
+        })
+   
+       })
     }
-  };
-
+  }, []);
 
   /**
    * State and dispatcher used for auth
@@ -418,7 +453,8 @@ export function MereNavigator() {
       })} />
       <Settings.Screen name={"ModulRegnskab"} component={ModulRegnskab} options={{title: "Modulregnskab"}} />
       <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Lærere og elever"}} />
-      <Settings.Screen name={"Checkout"} component={Checkout} options={{title: "Check out"}} />
     </Settings.Navigator>
   )
 }
+
+export default App;

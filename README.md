@@ -9,6 +9,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - animationer
 - abonnement
     - skift til react-native-iap
+- splash screen, app ikon
 
 ### __MELLEM__
 - push notifs

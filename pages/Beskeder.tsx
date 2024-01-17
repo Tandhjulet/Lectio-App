@@ -546,7 +546,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                         display: "flex",
                         flexDirection: "column",
 
-                        gap: 1,
+                        gap: 2.5,
                     }}>
                         <View
                             onLayout={(event) => {
@@ -554,7 +554,8 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                 setHeaderTop(height + 9);
                             }}
                             style={{
-                                backgroundColor: hexToRgb(COLORS.DARK, 0.1),
+                                borderRadius: 2,
+                                backgroundColor: COLORS.ACCENT_BLACK,
 
                                 display: "flex",
                                 flexDirection: "row",
@@ -565,7 +566,6 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                 gap: 5,
                                 
                                 marginTop: 8,
-                                marginBottom: 2.5,
                                 paddingVertical: 8,
                                 paddingHorizontal: 8,
                             }}
@@ -661,7 +661,9 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                         </View>
 
                         <View style={{
-                            backgroundColor: hexToRgb(COLORS.DARK, 0.1),
+                            borderRadius: 2,
+                            backgroundColor: COLORS.ACCENT_BLACK,
+
                             padding: 8,
 
                             display: "flex",
@@ -693,7 +695,6 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                         </View>
                         <View           
                             style={{
-                                marginTop: 5,
                                 width: "100%",
 
                                 maxHeight: "60%",
@@ -716,7 +717,8 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     minHeight: 20 * 5,
                                     color: COLORS.WHITE,
 
-                                    backgroundColor: hexToRgb(COLORS.DARK, 0.1),
+                                    borderRadius: 2,
+                                    backgroundColor: COLORS.ACCENT_BLACK,
                                 }}
                                 onChangeText={setContent}
                             />

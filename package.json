@@ -36,7 +36,8 @@
     "react-native-screens": "~3.22.0",
     "react-native-svg": "13.9.0",
     "react-native-swipe-gestures": "github:MerijnCanvas/react-native-swipe-gestures",
-    "react-native-tableview-simple": "^4.4.0"
+    "react-native-tableview-simple": "^4.4.0",
+    "expo-dev-client": "~2.4.12"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

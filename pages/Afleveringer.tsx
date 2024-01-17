@@ -187,12 +187,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
         navigation.setOptions({
             headerRight: () => (
                 <View style={{
-                    position: "absolute",
-                    right: 0,
 
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "flex-end"
                 }}>
                     <Pressable
                         onPress={() => {
