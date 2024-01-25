@@ -9,14 +9,12 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - animationer
 - abonnement
     - skift til react-native-iap
-- splash screen, app ikon
 
 ### __MELLEM__
 - push notifs
 - karakterer
+- light mode
 
 ### __LAV__
 - spørgeskemaer
 - dokumenter
-- queue system til fetches (?) - ikke ligefrem fordi der på nuværende tidspunkt er brug for det, men måske hvis appen gror engang.
-    - alle tingene hentes i baggrunden ved første load (?)

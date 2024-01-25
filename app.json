@@ -5,10 +5,10 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "scheme": "lecioplus",
     "splash": {
-      "image": "./assets/splash-transparent-white.png",
+      "image": "./assets/splash-transparent.png",
       "resizeMode": "contain",
       "backgroundColor": "#000"
     },
