@@ -46,7 +46,7 @@ type ChartedAbsence = {
  * @param str string to convert to color
  * @returns a 6-digit hex color code
  */
-function stringToColour(str: string): string {
+function _stringToColour(str: string): string {
     let hash = 0;
     str.split('').forEach(char => {
       hash = char.charCodeAt(0) + ((hash << 5) - hash)
@@ -57,6 +57,82 @@ function stringToColour(str: string): string {
       colour += value.toString(16).padStart(2, '0')
     }
     return colour
+}
+
+/**
+ * Inverts given hex color
+ * @param hex hex to invert color of
+ * @returns inverted hex color
+ * @author Martin Delille <https://stackoverflow.com/users/118125/martin-delille>
+ */
+function invertColor(hex: string) {
+    if (hex.indexOf('#') === 0) {
+        hex = hex.slice(1);
+    }
+    // convert 3-digit hex to 6-digits.
+    if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    }
+    if (hex.length !== 6) {
+        throw new Error('Invalid HEX color.');
+    }
+    // invert color components
+    var r = (255 - parseInt(hex.slice(0, 2), 16)).toString(16),
+        g = (255 - parseInt(hex.slice(2, 4), 16)).toString(16),
+        b = (255 - parseInt(hex.slice(4, 6), 16)).toString(16);
+    // pad each with zeros and return
+    return '#' + padZero(r) + padZero(g) + padZero(b);
+}
+
+/**
+ * Pads string with zeros
+ * @param str string to pad
+ * @param len new post-padded length of string
+ * @returns zero-padded string
+ */
+function padZero(str: string, len?: number) {
+    len = len || 2;
+    var zeros = new Array(len).join('0');
+    return (zeros + str).slice(-len);
+}
+
+/**
+ * Converts RGB to hex
+ * @param r red
+ * @param g green
+ * @param b blue
+ * @returns hex color
+ * @author Tim Down <https://stackoverflow.com/users/96100/tim-down>
+ */
+function rgbToHex(r: number, g: number, b: number) {
+    function componentToHex(c: number) {
+        var hex = c.toString(16);
+        return hex.length == 1 ? "0" + hex : hex;
+    }
+
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+/**
+ * Converts a string into a hex-color using bit manipulation.
+ * If the color is too dark, it gets inverted.
+ * @param str string to convert to a color
+ * @returns hex color
+ */
+function stringToColour(str: string): string {
+    const color = _stringToColour(str);
+    const c = color.substring(1);
+    const rgb = parseInt(c, 16);
+    const r = (rgb >> 16) & 0xff; 
+    const g = (rgb >>  8) & 0xff;  
+    const b = (rgb >>  0) & 0xff; 
+
+    const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b; // ITU-R BT.709
+    if(luma < 40) { 
+        return invertColor(rgbToHex(r, g, b)) // color is too dark, let's find a new one
+    }
+
+    return color;
 }
 
 export default function Absence({ navigation }: { navigation: any }) {
@@ -108,16 +184,20 @@ export default function Absence({ navigation }: { navigation: any }) {
 
             getAbsence(gymNummer).then(({ payload, rateLimited }): any => {
                 setRateLimited(rateLimited)
+                if(payload == null)
+                    return out;
+
+                const almindeligt = [...payload].sort((a,b) => {
+                    return b.almindeligt.yearly.absent - a.almindeligt.yearly.absent;
+                });
+
+                const skriftligt = [...payload].sort((a,b) => {
+                    return b.skriftligt.yearly.absent - a.skriftligt.yearly.absent;
+                });
 
                 // this should probably be fixed...
-                if(payload != null)
-                    payload.forEach((fag: Fag) => {
-                        if(fag.skriftligt.settled.absent > 0) {
-                            out.skriftligt.series.push(fag.skriftligt.settled.absent);
-                            out.skriftligt.teams.push(fag.skriftligt.team);
-                            out.skriftligt.colors.push(stringToColour(fag.skriftligt.team))
-                        }
-
+                if(almindeligt != null && skriftligt != null) {
+                    almindeligt.forEach((fag: Fag) => {
                         if(fag.almindeligt.settled.absent > 0) {
                             out.almindeligt.series.push(fag.almindeligt.settled.absent);
                             out.almindeligt.teams.push(fag.almindeligt.team);
@@ -129,6 +209,14 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                         out.almindeligt.yearly.collectiveAbsences += fag.almindeligt.yearly.absent;
                         out.almindeligt.settled.collectiveAbsences += fag.almindeligt.settled.absent;
+                    })
+
+                    skriftligt.forEach((fag: Fag) => {
+                        if(fag.skriftligt.settled.absent > 0) {
+                            out.skriftligt.series.push(fag.skriftligt.settled.absent);
+                            out.skriftligt.teams.push(fag.skriftligt.team);
+                            out.skriftligt.colors.push(stringToColour(fag.skriftligt.team));
+                        }
 
                         out.skriftligt.yearly.collectiveModules += fag.skriftligt.yearly.total;
                         out.skriftligt.settled.collectiveModules += fag.skriftligt.settled.total;
@@ -136,7 +224,8 @@ export default function Absence({ navigation }: { navigation: any }) {
                         out.skriftligt.yearly.collectiveAbsences += fag.skriftligt.yearly.absent;
                         out.skriftligt.settled.collectiveAbsences += fag.skriftligt.settled.absent;
                     })
-                
+                }
+
                 setChartedAbsence(out);
                 setLoading(false);
             })
@@ -153,6 +242,7 @@ export default function Absence({ navigation }: { navigation: any }) {
         (async () => {
             const gymNummer = (await getUnsecure("gym")).gymNummer;
 
+            // yeah...
             const out: ChartedAbsence = {
                 almindeligt: {
                     series: [],
@@ -184,18 +274,22 @@ export default function Absence({ navigation }: { navigation: any }) {
                 },
             }
 
-            getAbsence(gymNummer, true).then(({ payload, rateLimited }): any => {
+            getAbsence(gymNummer).then(({ payload, rateLimited }): any => {
                 setRateLimited(rateLimited)
+                if(payload == null)
+                    return out;
 
-                // fuck noget rod
-                if(payload != null)
-                    payload.forEach((fag: Fag) => {
-                        if(fag.skriftligt.settled.absent > 0) {
-                            out.skriftligt.series.push(fag.skriftligt.settled.absent);
-                            out.skriftligt.teams.push(fag.skriftligt.team);
-                            out.skriftligt.colors.push(stringToColour(fag.skriftligt.team))
-                        }
+                const almindeligt = [...payload].sort((a,b) => {
+                    return b.almindeligt.yearly.absent - a.almindeligt.yearly.absent;
+                });
 
+                const skriftligt = [...payload].sort((a,b) => {
+                    return b.skriftligt.yearly.absent - a.skriftligt.yearly.absent;
+                });
+
+                // this should probably be fixed...
+                if(almindeligt != null && skriftligt != null) {
+                    almindeligt.forEach((fag: Fag) => {
                         if(fag.almindeligt.settled.absent > 0) {
                             out.almindeligt.series.push(fag.almindeligt.settled.absent);
                             out.almindeligt.teams.push(fag.almindeligt.team);
@@ -207,6 +301,14 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                         out.almindeligt.yearly.collectiveAbsences += fag.almindeligt.yearly.absent;
                         out.almindeligt.settled.collectiveAbsences += fag.almindeligt.settled.absent;
+                    })
+
+                    skriftligt.forEach((fag: Fag) => {
+                        if(fag.skriftligt.settled.absent > 0) {
+                            out.skriftligt.series.push(fag.skriftligt.settled.absent);
+                            out.skriftligt.teams.push(fag.skriftligt.team);
+                            out.skriftligt.colors.push(stringToColour(fag.skriftligt.team));
+                        }
 
                         out.skriftligt.yearly.collectiveModules += fag.skriftligt.yearly.total;
                         out.skriftligt.settled.collectiveModules += fag.skriftligt.settled.total;
@@ -214,7 +316,8 @@ export default function Absence({ navigation }: { navigation: any }) {
                         out.skriftligt.yearly.collectiveAbsences += fag.skriftligt.yearly.absent;
                         out.skriftligt.settled.collectiveAbsences += fag.skriftligt.settled.absent;
                     })
-                
+                }
+
                 setChartedAbsence(out);
                 setRefreshing(false);
             })
@@ -380,7 +483,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                     flexDirection: 'column',
                                 }}>
                                     {chartedAbsence?.almindeligt.colors.map((color: string, index: number) => (
-                                        <View key={color}>
+                                        <View key={index}>
                                             <View style={{
                                                 display: 'flex',
                                                 flexDirection: 'row',
