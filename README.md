@@ -7,7 +7,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 
 ### __HØJ__
 - animationer
-- fravær (med procenter, fiks mørke farver)
 - beskeder (tilføj tråde)
 - abonnement
 

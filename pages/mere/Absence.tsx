@@ -4,138 +4,33 @@ import { useCallback, useEffect, useState } from "react";
 import { getAbsence } from "../../modules/api/scraper/Scraper";
 import { getUnsecure } from "../../modules/api/Authentication";
 import COLORS from "../../modules/Themes";
-import { Fag } from "../../modules/api/scraper/AbsenceScraper";
-import PieChart from "react-native-pie-chart";
+import { Fag, ModuleAbsence } from "../../modules/api/scraper/AbsenceScraper";
 import RateLimit from "../../components/RateLimit";
+import { VictoryChart, VictoryContainer, VictoryLabel, VictoryPie, VictoryTheme } from "victory-native";
 
 type ChartedAbsence = {
     almindeligt: {
-        series: number[],
-        teams: string[],
-        colors: string[],
+        yearly: number,
+        settled: number,
+        absent: number,
 
-        yearly: {
-            collectiveAbsences: number,
-            collectiveModules: number,
-        },
-        settled: {
-            collectiveAbsences: number,
-            collectiveModules: number,
-        },
+        teams: string[],
     },
     skriftligt: {
-        series: number[],
-        teams: string[],
-        colors: string[],
+        yearly: number,
+        settled: number,
+        absent: number,
 
-        yearly: {
-            collectiveAbsences: number,
-            collectiveModules: number,
-        },
-        settled: {
-            collectiveAbsences: number,
-            collectiveModules: number,
-        },
+        teams: string[],
     },
 }
 
-/**
- * Converts a string to a hex color code using bit manipulation 
- * and a bit of black magic
- * @author Joe Freeman <https://stackoverflow.com/users/108907/joe-freeman>
- * @param str string to convert to color
- * @returns a 6-digit hex color code
- */
-function _stringToColour(str: string): string {
-    let hash = 0;
-    str.split('').forEach(char => {
-      hash = char.charCodeAt(0) + ((hash << 5) - hash)
-    })
-    let colour = '#'
-    for (let i = 0; i < 3; i++) {
-      const value = (hash >> (i * 8)) & 0xff
-      colour += value.toString(16).padStart(2, '0')
-    }
-    return colour
-}
-
-/**
- * Inverts given hex color
- * @param hex hex to invert color of
- * @returns inverted hex color
- * @author Martin Delille <https://stackoverflow.com/users/118125/martin-delille>
- */
-function invertColor(hex: string) {
-    if (hex.indexOf('#') === 0) {
-        hex = hex.slice(1);
-    }
-    // convert 3-digit hex to 6-digits.
-    if (hex.length === 3) {
-        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-    }
-    if (hex.length !== 6) {
-        throw new Error('Invalid HEX color.');
-    }
-    // invert color components
-    var r = (255 - parseInt(hex.slice(0, 2), 16)).toString(16),
-        g = (255 - parseInt(hex.slice(2, 4), 16)).toString(16),
-        b = (255 - parseInt(hex.slice(4, 6), 16)).toString(16);
-    // pad each with zeros and return
-    return '#' + padZero(r) + padZero(g) + padZero(b);
-}
-
-/**
- * Pads string with zeros
- * @param str string to pad
- * @param len new post-padded length of string
- * @returns zero-padded string
- */
-function padZero(str: string, len?: number) {
-    len = len || 2;
-    var zeros = new Array(len).join('0');
-    return (zeros + str).slice(-len);
-}
-
-/**
- * Converts RGB to hex
- * @param r red
- * @param g green
- * @param b blue
- * @returns hex color
- * @author Tim Down <https://stackoverflow.com/users/96100/tim-down>
- */
-function rgbToHex(r: number, g: number, b: number) {
-    function componentToHex(c: number) {
-        var hex = c.toString(16);
-        return hex.length == 1 ? "0" + hex : hex;
-    }
-
-    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-}
-
-/**
- * Converts a string into a hex-color using bit manipulation.
- * If the color is too dark, it gets inverted.
- * @param str string to convert to a color
- * @returns hex color
- */
-function stringToColour(str: string): string {
-    const color = _stringToColour(str);
-    const c = color.substring(1);
-    const rgb = parseInt(c, 16);
-    const r = (rgb >> 16) & 0xff; 
-    const g = (rgb >>  8) & 0xff;  
-    const b = (rgb >>  0) & 0xff; 
-
-    const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b; // ITU-R BT.709
-    if(luma < 40) { 
-        return invertColor(rgbToHex(r, g, b)) // color is too dark, let's find a new one
-    }
-
-    return color;
-}
+const pieColors = ["#fc5353", "#fc8653", "#fcca53", "#57cf4c", "#00c972", "#78d6ff", "#009ac9", "#9578ff", "#ff78fd"]
 
 export default function Absence({ navigation }: { navigation: any }) {
+    const [ almindeligt, setAlmindeligt ] = useState<ModuleAbsence[]>();
+    const [ skriftligt, setSkriftligt ] = useState<ModuleAbsence[]>();
+
     const [ chartedAbsence, setChartedAbsence ] = useState<ChartedAbsence>();
     const [ loading, setLoading ] = useState(true);
     const [ rateLimited, setRateLimited ] = useState(false);
@@ -147,84 +42,50 @@ export default function Absence({ navigation }: { navigation: any }) {
      */
     useEffect(() => {
         setLoading(true);
+        
         (async () => {
             const gymNummer = (await getUnsecure("gym")).gymNummer;
 
-            // yeah...
             const out: ChartedAbsence = {
                 almindeligt: {
-                    series: [],
-                    teams: [],
-                    colors: [],
-
-                    yearly: {
-                        collectiveAbsences: 0,
-                        collectiveModules: 0,
-                    },
-                    settled: {
-                        collectiveAbsences: 0,
-                        collectiveModules: 0,
-                    },
+                    yearly: 0,
+                    settled: 0,
+                    absent: 0,
+                    teams: []
                 },
                 skriftligt: {
-                    series: [],
-                    teams: [],
-                    colors: [],
-
-                    yearly: {
-                        collectiveAbsences: 0,
-                        collectiveModules: 0,
-                    },
-                    settled: {
-                        collectiveAbsences: 0,
-                        collectiveModules: 0,
-                    },
-                },
+                    yearly: 0,
+                    settled: 0,
+                    absent: 0,
+                    teams: []
+                }
             }
 
             getAbsence(gymNummer).then(({ payload, rateLimited }): any => {
                 setRateLimited(rateLimited)
-                if(payload == null)
-                    return out;
-
-                const almindeligt = [...payload].sort((a,b) => {
-                    return b.almindeligt.yearly.absent - a.almindeligt.yearly.absent;
-                });
-
-                const skriftligt = [...payload].sort((a,b) => {
-                    return b.skriftligt.yearly.absent - a.skriftligt.yearly.absent;
-                });
-
-                // this should probably be fixed...
-                if(almindeligt != null && skriftligt != null) {
-                    almindeligt.forEach((fag: Fag) => {
-                        if(fag.almindeligt.settled.absent > 0) {
-                            out.almindeligt.series.push(fag.almindeligt.settled.absent);
-                            out.almindeligt.teams.push(fag.almindeligt.team);
-                            out.almindeligt.colors.push(stringToColour(fag.almindeligt.team))
-                        }
-
-                        out.almindeligt.yearly.collectiveModules += fag.almindeligt.yearly.total;
-                        out.almindeligt.settled.collectiveModules += fag.almindeligt.settled.total;
-
-                        out.almindeligt.yearly.collectiveAbsences += fag.almindeligt.yearly.absent;
-                        out.almindeligt.settled.collectiveAbsences += fag.almindeligt.settled.absent;
-                    })
-
-                    skriftligt.forEach((fag: Fag) => {
-                        if(fag.skriftligt.settled.absent > 0) {
-                            out.skriftligt.series.push(fag.skriftligt.settled.absent);
-                            out.skriftligt.teams.push(fag.skriftligt.team);
-                            out.skriftligt.colors.push(stringToColour(fag.skriftligt.team));
-                        }
-
-                        out.skriftligt.yearly.collectiveModules += fag.skriftligt.yearly.total;
-                        out.skriftligt.settled.collectiveModules += fag.skriftligt.settled.total;
-
-                        out.skriftligt.yearly.collectiveAbsences += fag.skriftligt.yearly.absent;
-                        out.skriftligt.settled.collectiveAbsences += fag.skriftligt.settled.absent;
-                    })
+                if(payload == null) {
+                    return;
                 }
+
+                const almindeligt = [...payload.map(load => load.almindeligt).filter((modul) => modul.absent > 0)].sort((a,b) => {
+                    return b.absent - a.absent;
+                });
+
+                const skriftligt = [...payload.map(load => load.skriftligt)].filter((modul) => modul.absent > 0).sort((a,b) => {
+                    return b.absent - a.absent;
+                });
+
+                setAlmindeligt(almindeligt);
+                setSkriftligt(skriftligt);
+
+                payload.forEach((fag: Fag) => {
+                    if(fag.almindeligt.absent > 0) {
+                        out.almindeligt.absent += fag.almindeligt.absent;
+                        out.almindeligt.teams.push(fag.almindeligt.team);
+                    }
+                    out.almindeligt.settled += fag.almindeligt.settled;
+                    out.almindeligt.yearly += fag.almindeligt.yearly;
+                })
 
                 setChartedAbsence(out);
                 setLoading(false);
@@ -242,81 +103,46 @@ export default function Absence({ navigation }: { navigation: any }) {
         (async () => {
             const gymNummer = (await getUnsecure("gym")).gymNummer;
 
-            // yeah...
             const out: ChartedAbsence = {
                 almindeligt: {
-                    series: [],
-                    teams: [],
-                    colors: [],
-
-                    yearly: {
-                        collectiveAbsences: 0,
-                        collectiveModules: 0,
-                    },
-                    settled: {
-                        collectiveAbsences: 0,
-                        collectiveModules: 0,
-                    },
+                    yearly: 0,
+                    settled: 0,
+                    absent: 0,
+                    teams: []
                 },
                 skriftligt: {
-                    series: [],
-                    teams: [],
-                    colors: [],
-
-                    yearly: {
-                        collectiveAbsences: 0,
-                        collectiveModules: 0,
-                    },
-                    settled: {
-                        collectiveAbsences: 0,
-                        collectiveModules: 0,
-                    },
-                },
+                    yearly: 0,
+                    settled: 0,
+                    absent: 0,
+                    teams: []
+                }
             }
 
             getAbsence(gymNummer).then(({ payload, rateLimited }): any => {
                 setRateLimited(rateLimited)
-                if(payload == null)
-                    return out;
-
-                const almindeligt = [...payload].sort((a,b) => {
-                    return b.almindeligt.yearly.absent - a.almindeligt.yearly.absent;
-                });
-
-                const skriftligt = [...payload].sort((a,b) => {
-                    return b.skriftligt.yearly.absent - a.skriftligt.yearly.absent;
-                });
-
-                // this should probably be fixed...
-                if(almindeligt != null && skriftligt != null) {
-                    almindeligt.forEach((fag: Fag) => {
-                        if(fag.almindeligt.settled.absent > 0) {
-                            out.almindeligt.series.push(fag.almindeligt.settled.absent);
-                            out.almindeligt.teams.push(fag.almindeligt.team);
-                            out.almindeligt.colors.push(stringToColour(fag.almindeligt.team))
-                        }
-
-                        out.almindeligt.yearly.collectiveModules += fag.almindeligt.yearly.total;
-                        out.almindeligt.settled.collectiveModules += fag.almindeligt.settled.total;
-
-                        out.almindeligt.yearly.collectiveAbsences += fag.almindeligt.yearly.absent;
-                        out.almindeligt.settled.collectiveAbsences += fag.almindeligt.settled.absent;
-                    })
-
-                    skriftligt.forEach((fag: Fag) => {
-                        if(fag.skriftligt.settled.absent > 0) {
-                            out.skriftligt.series.push(fag.skriftligt.settled.absent);
-                            out.skriftligt.teams.push(fag.skriftligt.team);
-                            out.skriftligt.colors.push(stringToColour(fag.skriftligt.team));
-                        }
-
-                        out.skriftligt.yearly.collectiveModules += fag.skriftligt.yearly.total;
-                        out.skriftligt.settled.collectiveModules += fag.skriftligt.settled.total;
-
-                        out.skriftligt.yearly.collectiveAbsences += fag.skriftligt.yearly.absent;
-                        out.skriftligt.settled.collectiveAbsences += fag.skriftligt.settled.absent;
-                    })
+                if(payload == null) {
+                    return;
                 }
+
+                const almindeligt = [...payload.map(load => load.almindeligt).filter((modul) => modul.absent > 0)].sort((a,b) => {
+                    return b.absent - a.absent;
+                });
+
+                const skriftligt = [...payload.map(load => load.skriftligt)].filter((modul) => modul.absent > 0).sort((a,b) => {
+                    return b.absent - a.absent;
+                });
+
+                setAlmindeligt(almindeligt);
+                setSkriftligt(skriftligt);
+
+                payload.forEach((fag: Fag) => {
+                    if(fag.almindeligt.absent > 0) {
+                        out.almindeligt.absent += fag.almindeligt.absent;
+                        out.almindeligt.teams.push(fag.almindeligt.team);
+                    }
+                    out.almindeligt.settled += fag.almindeligt.settled;
+                    out.almindeligt.yearly += fag.almindeligt.yearly;
+                })
 
                 setChartedAbsence(out);
                 setRefreshing(false);
@@ -324,7 +150,7 @@ export default function Absence({ navigation }: { navigation: any }) {
         })();
     }, [refreshing]);
 
-    const widthAndHeight = 200;
+    const radius = 110;
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
@@ -354,14 +180,13 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                     marginTop: 20,
                     marginHorizontal: 20,
-                    gap: 100,
+                    gap: 25,
 
                     paddingBottom: 150,
                     paddingTop: 25,
                 }}>
                     <View style={{
                         display: 'flex',
-                        gap: 20,
                     }}>
                         <View style={{
                             display: "flex",
@@ -407,8 +232,10 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         fontWeight: "bold",
                                         fontSize: 35,
                                     }}>
-                                        {(chartedAbsence?.almindeligt.settled.collectiveAbsences != undefined && chartedAbsence?.almindeligt.settled.collectiveModules != undefined) &&
-                                            ((chartedAbsence?.almindeligt.settled?.collectiveAbsences / chartedAbsence?.almindeligt.settled?.collectiveModules)*100).toFixed(2).toString().replace(".", ",")
+                                        {(chartedAbsence?.almindeligt.absent != undefined && chartedAbsence?.almindeligt.settled > 0) ?
+                                            ((chartedAbsence?.almindeligt.absent / chartedAbsence?.almindeligt.settled)*100).toFixed(2).toString().replace(".", ",")
+                                            :
+                                            "0,00"
                                             }%
                                     </Text>
 
@@ -416,7 +243,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         color: COLORS.WHITE,
                                         opacity: 0.8,
                                     }}>
-                                        {chartedAbsence?.almindeligt.settled?.collectiveAbsences.toString().replace(".", ",")} / {chartedAbsence?.almindeligt.settled?.collectiveModules.toString().replace(".", ",")}
+                                        {chartedAbsence?.almindeligt.absent.toString().replace(".", ",")} / {chartedAbsence?.almindeligt.settled.toString().replace(".", ",")}
                                     </Text>
                                 </View>
 
@@ -435,8 +262,10 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         fontWeight: "bold",
                                         fontSize: 35,
                                     }}>
-                                        {(chartedAbsence?.almindeligt.yearly.collectiveAbsences != undefined && chartedAbsence?.almindeligt.yearly.collectiveModules != undefined) &&
-                                            ((chartedAbsence?.almindeligt.yearly?.collectiveAbsences / chartedAbsence?.almindeligt.yearly?.collectiveModules)*100).toFixed(2).toString().replace(".", ",")
+                                        {(chartedAbsence?.almindeligt.absent != undefined && chartedAbsence?.almindeligt.yearly > 0) ?
+                                            ((chartedAbsence?.almindeligt.absent / chartedAbsence?.almindeligt.yearly)*100).toFixed(2).toString().replace(".", ",")
+                                            :
+                                            "0,00"
                                             }%
                                     </Text>
 
@@ -444,7 +273,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         color: COLORS.WHITE,
                                         opacity: 0.8,
                                     }}>
-                                        {chartedAbsence?.almindeligt.yearly.collectiveAbsences.toString().replace(".", ",")} / {chartedAbsence?.almindeligt.yearly.collectiveModules.toString().replace(".", ",")}
+                                        {chartedAbsence?.almindeligt.absent.toString().replace(".", ",")} / {chartedAbsence?.almindeligt.yearly.toString().replace(".", ",")}
                                     </Text>
                                 </View>
                             </View>
@@ -458,55 +287,79 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                         </View>
 
-                        {(chartedAbsence != null && chartedAbsence.almindeligt.series.reduce((a, b) => a + b, 0) > 0) &&
+                        {(chartedAbsence != null && chartedAbsence.almindeligt.absent > 0) &&
                             <View style={{
                                 display: 'flex',
                                 flexDirection: 'row',
                                 alignItems: 'center',
 
-                                gap: 10,
+                                gap: 20,
                             }}>
-                                <PieChart
-                                    widthAndHeight={widthAndHeight}
-                                    /*
-                                    // @ts-ignore */
-                                    series={chartedAbsence.almindeligt.series}
+                                <VictoryPie
+                                    data={almindeligt}
+                                    x="team"
+                                    y="absent"
+                                    labels={({ datum }) => {
+                                        return ((datum.absent / chartedAbsence.almindeligt.absent)*100).toFixed(1).replace(".", ",") + "%"
+                                    }}
+                                    colorScale={pieColors}
+                                    labelPlacement={"parallel"}
 
-                                    /*
-                                    // @ts-ignore */
-                                    sliceColor={chartedAbsence?.almindeligt.colors}
-                                    coverRadius={0.55}
-                                    coverFill={COLORS.BLACK}
+                                    innerRadius={radius / 2}
+                                    labelRadius={radius / 1.5}
+
+                                    padAngle={0.5}
+                                    padding={{
+                                        bottom: 0,
+                                        left: 0,
+                                        right: 0,
+                                        top: 0,
+                                    }}
+
+                                    width={radius * 2}
+                                    height={radius * 2}
+                                    radius={radius}
+
+                                    style={{
+                                        labels: {
+                                            fill: "white",
+                                            fontSize: 11,
+                                            fontFamily: "Avenir-Light"
+                                        }
+                                    }}
                                 />
+
                                 <View style={{
                                     display: 'flex',
                                     flexDirection: 'column',
+                                    paddingVertical: 20,
                                 }}>
-                                    {chartedAbsence?.almindeligt.colors.map((color: string, index: number) => (
-                                        <View key={index}>
+                                    {chartedAbsence.almindeligt.teams.map((team: string, index: number) => {
+                                        return (
                                             <View style={{
                                                 display: 'flex',
                                                 flexDirection: 'row',
                                                 marginVertical: 2,
-                                                gap: 5,
 
                                                 alignItems: 'center',
-                                            }}>
+                                            }} key={index}>
                                                 <View style={{
                                                     width: 10,
                                                     height: 10,
-                                                    backgroundColor: color,
+                                                    backgroundColor: pieColors[index % pieColors.length],
                                                 }} />
                                                 <Text ellipsizeMode="tail" numberOfLines={1} style={{
-                                                    color: color,
+                                                    color: COLORS.WHITE,
                                                     maxWidth: 100,
-                                                    
+
+                                                    fontSize: 12,
+                                                    lineHeight: 13,
                                                 }}>
-                                                    {chartedAbsence.almindeligt.teams[index]}
+                                                    {" "}{team}
                                                 </Text>
                                             </View>
-                                        </View>
-                                    ))}
+                                        )
+                                    })}
                                 </View>
                             </View>
                         }
@@ -560,8 +413,10 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         fontWeight: "bold",
                                         fontSize: 35,
                                     }}>
-                                        {(chartedAbsence?.skriftligt.settled.collectiveAbsences != undefined && chartedAbsence?.skriftligt.settled.collectiveModules != undefined) &&
-                                            ((chartedAbsence?.skriftligt.settled?.collectiveAbsences / chartedAbsence?.skriftligt.settled?.collectiveModules)*100).toFixed(2).toString().replace(".", ",")
+                                        {(chartedAbsence?.skriftligt.absent != undefined && chartedAbsence?.skriftligt.yearly > 0) ?
+                                            ((chartedAbsence?.skriftligt.absent / chartedAbsence?.skriftligt.yearly)*100).toFixed(2).toString().replace(".", ",")
+                                            :
+                                            "0,00"
                                             }%
                                     </Text>
 
@@ -569,7 +424,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         color: COLORS.WHITE,
                                         opacity: 0.8,
                                     }}>
-                                        {chartedAbsence?.skriftligt.settled?.collectiveAbsences.toString().replace(".", ",")} / {chartedAbsence?.skriftligt.settled?.collectiveModules.toString().replace(".", ",")}
+                                        {chartedAbsence?.skriftligt.absent.toString().replace(".", ",")} / {chartedAbsence?.skriftligt.yearly.toString().replace(".", ",")}
                                     </Text>
                                 </View>
 
@@ -588,16 +443,18 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         fontWeight: "bold",
                                         fontSize: 35,
                                     }}>
-                                        {(chartedAbsence?.skriftligt.yearly.collectiveAbsences != undefined && chartedAbsence?.skriftligt.yearly.collectiveModules != undefined) &&
-                                            ((chartedAbsence?.skriftligt.yearly?.collectiveAbsences / chartedAbsence?.skriftligt.yearly?.collectiveModules)*100).toFixed(2).toString().replace(".", ",")
-                                            }%
+                                        {(chartedAbsence?.skriftligt.absent != undefined && chartedAbsence?.skriftligt.yearly > 0) ?
+                                            (((chartedAbsence?.skriftligt.absent / chartedAbsence?.skriftligt.yearly)*100).toFixed(2).toString().replace(".", ","))
+                                            :
+                                            "0,00"
+                                        }%
                                     </Text>
 
                                     <Text style={{
                                         color: COLORS.WHITE,
                                         opacity: 0.8,
                                     }}>
-                                        {chartedAbsence?.skriftligt.yearly.collectiveAbsences.toString().replace(".", ",")} / {chartedAbsence?.skriftligt.yearly.collectiveModules.toString().replace(".", ",")}
+                                        {chartedAbsence?.skriftligt.absent.toString().replace(".", ",")} / {chartedAbsence?.skriftligt.yearly.toString().replace(".", ",")}
                                     </Text>
                                 </View>
                             </View>
@@ -611,32 +468,55 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                         </View>
 
-                        {(chartedAbsence != null && chartedAbsence.skriftligt.series.reduce((a, b) => a + b, 0) > 0) &&
+                        {(chartedAbsence != null && chartedAbsence.skriftligt.absent > 0) &&
                             <View style={{
                                 display: 'flex',
                                 flexDirection: 'row',
                                 alignItems: 'center',
 
-                                gap: 10,
+                                gap: 20,
                             }}>
-                                <PieChart
-                                    widthAndHeight={widthAndHeight}
-                                    /*
-                                    // @ts-ignore */
-                                    series={chartedAbsence.skriftligt.series}
+                                <VictoryPie
+                                    data={skriftligt}
+                                    x="team"
+                                    y="absent"
+                                    labels={({ datum }) => {
+                                        return ((datum.absent / chartedAbsence.skriftligt.absent)*100).toFixed(1).replace(".", ",") + "%"
+                                    }}
+                                    colorScale={pieColors}
+                                    labelPlacement={"parallel"}
 
-                                    /*
-                                    // @ts-ignore */
-                                    sliceColor={chartedAbsence?.skriftligt.colors}
-                                    coverRadius={0.55}
-                                    coverFill={COLORS.BLACK}
+                                    innerRadius={radius / 2}
+                                    labelRadius={radius / 1.5}
+
+                                    padAngle={0.5}
+                                    padding={{
+                                        bottom: 0,
+                                        left: 0,
+                                        right: 0,
+                                        top: 0,
+                                    }}
+
+                                    width={radius * 2}
+                                    height={radius * 2}
+                                    radius={radius}
+
+                                    style={{
+                                        labels: {
+                                            fill: "white",
+                                            fontSize: 11,
+                                            fontFamily: "Avenir-Light"
+                                        }
+                                    }}
                                 />
+                                
                                 <View style={{
                                     display: 'flex',
                                     flexDirection: 'column',
+                                    paddingVertical: 20,
                                 }}>
-                                    {chartedAbsence?.skriftligt.colors.map((color: string, index: number) => (
-                                        <View key={color}>
+                                    {chartedAbsence?.skriftligt.teams.map((team: string, index: number) => (
+                                        <View key={index}>
                                             <View style={{
                                                 display: 'flex',
                                                 flexDirection: 'row',
@@ -648,14 +528,14 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 <View style={{
                                                     width: 10,
                                                     height: 10,
-                                                    backgroundColor: color,
+                                                    backgroundColor: pieColors[index % pieColors.length],
                                                 }} />
                                                 <Text ellipsizeMode="tail" numberOfLines={1} style={{
-                                                    color: color,
+                                                    color: pieColors[index % pieColors.length],
                                                     maxWidth: 100,
                                                     
                                                 }}>
-                                                    {chartedAbsence.skriftligt.teams[index]}
+                                                    {team}
                                                 </Text>
                                             </View>
                                         </View>

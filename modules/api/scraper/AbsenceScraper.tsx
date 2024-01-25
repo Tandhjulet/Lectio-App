@@ -22,43 +22,33 @@ export enum AbsenceType {
 }
 
 export type Fag = {
-    skriftligt: Absence,
-    almindeligt: Absence,
+    skriftligt: ModuleAbsence,
+    almindeligt: ModuleAbsence,
 }
 
-export type Absence = {
+export type ModuleAbsence = {
     team: string,
-    settled: {
-        total: number,
-        absent: number,
-    },
-    yearly: {
-        total: number,
-        absent: number,
-    },
+    settled: number
+    yearly: number
+    absent: number,
     type: AbsenceType,
 }
 
 function scrapeAbsenceRow(row: any): Fag {
     const team: string = row.firstChild.firstChild.firstChild.text;
 
-    const scaffOld = (absenceType: AbsenceType): Absence => {
+    const scaffOld = (absenceType: AbsenceType): ModuleAbsence => {
         return ({
             team: team,
-            settled: {
-                total: 0,
-                absent: 0,
-            },
-            yearly: {
-                total: 0,
-                absent: 0,
-            },
+            settled: 0,
+            yearly: 0,
+            absent: 0,
             type: absenceType,
         })
     }
 
-    const almindeligt: Absence = scaffOld(AbsenceType.ALMINDELIGT);
-    const skriftligt: Absence = scaffOld(AbsenceType.SKRIFTLIGT);
+    const almindeligt: ModuleAbsence = scaffOld(AbsenceType.ALMINDELIGT);
+    const skriftligt: ModuleAbsence = scaffOld(AbsenceType.SKRIFTLIGT);
 
     row.children.forEach((child: any, index: number) => {
         if(index == 0 || index % 2 != 0)
@@ -67,14 +57,14 @@ function scrapeAbsenceRow(row: any): Fag {
         const data = scrapeCell(child)
         if(index <= 4) {
             if(index == 2) 
-                almindeligt.settled = data;
+                almindeligt.settled = data.total, almindeligt.absent = data.absent;
             else if (index == 4) 
-                almindeligt.yearly = data;
+                almindeligt.yearly = data.total, almindeligt.absent = data.absent;
         } else {
             if(index == 6) 
-                skriftligt.settled = data;
+                skriftligt.settled = data.total, skriftligt.absent = data.absent;
             else if (index == 8) 
-                skriftligt.yearly = data;
+                skriftligt.yearly = data.total, skriftligt.absent = data.absent;
         }
     })
 
