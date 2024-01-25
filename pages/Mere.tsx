@@ -2,7 +2,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, View } from "r
 import NavigationBar from "../components/Navbar";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import COLORS from "../modules/Themes";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { AcademicCapIcon, BellSnoozeIcon, BuildingLibraryIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon } from "react-native-heroicons/solid";
 import { getUnsecure, removeSecure, removeUnsecure, secureGet, signOut } from "../modules/api/Authentication";
 import { Profile, getProfile, saveProfile } from "../modules/api/scraper/Scraper";
@@ -26,6 +26,8 @@ export default function Mere({ navigation }: {navigation: any}) {
     const [aflysteLektioner, setAflysteLektioner] = useState<boolean>();
     const [ændredeLektioner, setÆndredeLektioner] = useState<boolean>();
     const [beskeder, setBeskeder] = useState<boolean>();
+
+    const showRenew = true;
 
     //const [development, setDevelopment] = useState<boolean>(false);
 
@@ -259,7 +261,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     title="Administrer abonnement"
                                     titleTextColor={COLORS.WHITE}
                                     onPress={() => {
-                                        bottomSheetModalRef.current?.present();
+                                        //bottomSheetModalRef.current?.present();
                                     }}
                                 />
 
@@ -269,17 +271,19 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     titleTextColor={COLORS.WHITE}
 
                                     rightDetailColor={COLORS.ACCENT}
-                                    detail={"Gyldigt abonnement"}
+                                    detail={"Gratis abonnement"}
                                 />
 
-                                <Cell 
-                                    cellStyle="RightDetail"
-                                    title="Fornyes"
-                                    titleTextColor={COLORS.WHITE}
+                                {showRenew && (
+                                    <Cell 
+                                        cellStyle="RightDetail"
+                                        title="Fornyes"
+                                        titleTextColor={COLORS.WHITE}
 
-                                    rightDetailColor={COLORS.ACCENT}
-                                    detail={"d. DD/MM/YY"}
-                                />
+                                        rightDetailColor={COLORS.ACCENT}
+                                        detail={"d. DD/MM/YY"}
+                                    />
+                                )}
                             </Section>
 
                             <Section header={"KONTROLPANEL"} roundedCorners={true} hideSurroundingSeparators={true}>
