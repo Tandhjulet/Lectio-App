@@ -12,6 +12,7 @@ import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import { CLEAN_NAME } from "../beskeder/BeskedView";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { UserIcon } from "react-native-heroicons/solid";
+import { SCHEMA_SEP_CHAR } from "../../modules/Config";
 
 /**
  * 
@@ -37,16 +38,16 @@ export default function ModulView({ navigation, route }: {
 
     const [ billedeId, setBilledeId ] = useState<string>();
 
-    const [loading, setLoading] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(true)
     const [refreshing, setRefreshing] = useState<boolean>(false);
 
     /**
      * Fetches the teacher and the students of the module on page load
      */
     useEffect(() => {
-        (async () => {
-            setLoading(true);
+        setLoading(true);
 
+        (async () => {
             const profile = await getProfile();
             const gym: { gymName: string, gymNummer: string } = await getUnsecure("gym")
             setGym(gym);
@@ -56,24 +57,17 @@ export default function ModulView({ navigation, route }: {
                 if(people[CLEAN_NAME(modul.lærerNavn)] != null)
                     setBilledeId(people[CLEAN_NAME(modul.lærerNavn)].billedeId);
 
-            profile.hold.forEach((hold: Hold, i: number) => {
-
+            for(let hold of profile.hold) {
                 if(hold.holdNavn == modul.team) {
-                    scrapeHold(hold.holdId, gym.gymNummer).then((v) => {
-                        if(v == null)
-                            setMembers({})
-                        else
-                            setMembers(v)
-                        setLoading(false);
-                    })
+                    const v = await scrapeHold(hold.holdId, gym.gymNummer);
+                    if(v == null)
+                        setMembers({})
+                    else
+                        setMembers(v)
+                    break;
                 }
-
-                if(i == profile.hold.length - 1) {
-                    setLoading(false);
-                }
-            })
-
-
+            }
+            setLoading(false);
         })();
     }, [])
 
@@ -138,7 +132,7 @@ export default function ModulView({ navigation, route }: {
                         <Cell
                             cellStyle="RightDetail"
                             title="Lokale"
-                            detail={modul.lokale.replace("...", "").replace("▪", "").trim()}
+                            detail={modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim()}
                         />
 
                         <Cell
@@ -217,6 +211,28 @@ export default function ModulView({ navigation, route }: {
                         </Section>
                     }
 
+                    {modul.extra && (
+                        <Section header="ØVRIGT INDHOLD" roundedCorners hideSurroundingSeparators>
+                            {modul.extra?.map((lektie: string, index: number) => {
+                                return (
+                                    <Cell 
+                                        key={index}
+                                        cellStyle="Basic"
+
+                                        cellContentView={
+                                            <Text style={{
+                                                color: "#fff",
+                                                paddingVertical: 8,
+                                                fontSize: 16,
+                                            }}>
+                                                {lektie}
+                                            </Text>
+                                        }
+                                    />)
+                            })}
+                        </Section>
+                    )}
+
                     {loading ?
                         <ActivityIndicator size={"small"} color={COLORS.WHITE} />
                     :
@@ -230,7 +246,7 @@ export default function ModulView({ navigation, route }: {
                                                 cellStyle="Subtitle"
 
                                                 title={navn}
-                                                detail={members[navn].type}
+                                                detail={members[navn] == null ? "?" : members[navn].type}
 
                                                 subtitleTextStyle={{
                                                     textTransform: "capitalize"
@@ -246,7 +262,7 @@ export default function ModulView({ navigation, route }: {
                                                             marginRight: 10,
                                                         }}
                                                         source={{
-                                                            uri: SCRAPE_URLS(gym?.gymNummer, members[navn].billedeId).PICTURE_HIGHQUALITY,
+                                                            uri: SCRAPE_URLS(gym?.gymNummer, members[navn] == null ? "" : members[navn].billedeId).PICTURE_HIGHQUALITY,
                                                             headers: {
                                                                 "User-Agent": "Mozilla/5.0",
                                                                 "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",

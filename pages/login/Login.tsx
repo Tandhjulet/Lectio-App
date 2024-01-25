@@ -1,12 +1,13 @@
 import { ActivityIndicator, Animated, Keyboard, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle } from "react-native";
 import COLORS from "../../modules/Themes";
-import { AcademicCapIcon, ArrowRightCircleIcon, ChevronDoubleRightIcon } from "react-native-heroicons/solid";
+import { ArrowRightCircleIcon, ChevronDoubleRightIcon } from "react-native-heroicons/solid";
 import { useContext, useEffect, useRef, useState } from "react";
 import { getUnsecure, isAuthorized, secureSave, validate } from "../../modules/api/Authentication";
 import { SignInPayload } from "../../App";
 import { AuthContext } from "../../modules/Auth";
 import { useFocusEffect } from "@react-navigation/native";
 import { Easing } from "react-native-reanimated";
+import Logo from "../../components/Logo";
 
 export default function Login({ route, navigation }: {
     route: any,
@@ -14,48 +15,7 @@ export default function Login({ route, navigation }: {
 }) {
     const { signIn } = useContext(AuthContext);
 
-    /**
-     * Logo animation
-     */
-    const opacity = useRef(new Animated.Value(0.7)).current;
-    const scale = useRef(new Animated.Value(0.95)).current;
-    useEffect(() => {
-      Animated.loop(
-        Animated.sequence([
-            Animated.parallel([
-                Animated.timing(opacity, {
-                    easing: Easing.linear,
-                    toValue: 1,
-                    duration: 2000,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(scale, {
-                    easing: Easing.linear,
-                    toValue: 1.05,
-                    duration: 2000,
-                    useNativeDriver: true,
-                }),
-            ]),
-            Animated.parallel([
-                Animated.timing(opacity, {
-                    easing: Easing.linear,
-                    toValue: 0.7,
-                    duration: 2000,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(scale, {
-                    easing: Easing.linear,
-                    toValue: 0.95,
-                    duration: 2000,
-                    useNativeDriver: true,
-                }),
-            ]),
-        ])
-      ).start();
-    }, [opacity, scale]);
-
     const passwdRef = useRef<TextInput>(null);
-
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string } | null>()
 
     /**
@@ -116,16 +76,9 @@ export default function Login({ route, navigation }: {
             paddingBottom: 275,
         }}>
 
-            <Animated.View style={{
-                marginBottom: 30,
-                opacity: opacity,
-
-                transform: [{
-                    scale: scale,
-                }]
-            }}>
-                <AcademicCapIcon size={75} color={COLORS.WHITE} />
-            </Animated.View>
+            <Logo style={{
+                marginBottom: 20,
+            }} />
 
             <Text style={{
                 fontSize: 30,

@@ -6,7 +6,7 @@ import COLORS, { hexToRgb } from "../modules/Themes";
 import { getUnsecure } from "../modules/api/Authentication";
 import { LectioMessage } from "../modules/api/scraper/MessageScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import { AcademicCapIcon, AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronRightIcon, EnvelopeIcon, EnvelopeOpenIcon, PaperAirplaneIcon, PencilSquareIcon, SunIcon, TrashIcon, XCircleIcon } from "react-native-heroicons/solid";
+import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronRightIcon, EnvelopeIcon, EnvelopeOpenIcon, PaperAirplaneIcon, PencilSquareIcon, SunIcon, TrashIcon, XCircleIcon } from "react-native-heroicons/solid";
 import { NavigationProp, useFocusEffect, useIsFocused } from "@react-navigation/native";
 import RateLimit from "../components/RateLimit";
 import {
@@ -21,6 +21,7 @@ import { SCRAPE_URLS } from "../modules/api/scraper/Helpers";
 import { getPeople } from "../modules/api/scraper/class/PeopleList";
 import { KeyboardAvoidingView } from "react-native";
 import { sendMessage } from "../modules/api/beskeder/sendBesked";
+import Logo from "../components/Logo";
 
 export default function Beskeder({ navigation }: {navigation: NavigationProp<any>}) {
     const [ loading, setLoading ] = useState<boolean>(true);
@@ -443,7 +444,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                 }}>
                                     {sortedBy == "Nyeste" ? "Du har ingen nye beskeder!" : `Du har ingen ${sortedBy.toLowerCase()} beskeder!`}
                                 </Text>
-                                <AcademicCapIcon size={40} color={COLORS.WHITE} />
+                                <Logo size={40} />
                             </View>
                         :
                             <TableView style={{

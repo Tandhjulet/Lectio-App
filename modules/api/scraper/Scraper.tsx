@@ -1,5 +1,6 @@
 // @ts-ignore
 import DomSelector from 'react-native-dom-parser';
+
 import { Day, Week, scrapeSchema } from './SkemaScraper';
 import { Fag, scrapeAbsence } from './AbsenceScraper';
 
@@ -15,6 +16,7 @@ import { Key, getSaved, saveFetch } from '../storage/Storage';
 import { Timespan } from '../storage/Timespan';
 import { CacheParams, scrapePeople, stringifyCacheParams } from './cache/CacheScraper';
 import { Person } from './class/ClassPictureScraper';
+import treat, { _treat, treatRaw } from './TextTreater';
 
 export async function scrapeCache(gymNummer: string, params?: CacheParams): Promise<Person[]> {
     const saved = await getSaved(Key.CACHE_PEOPLE);
@@ -42,7 +44,7 @@ export async function scrapeCache(gymNummer: string, params?: CacheParams): Prom
 
 export async function scrapeHold(holdId: string, gymNummer: string, bypassCache: boolean = false) {
     if(!bypassCache) {
-        const saved = await getSaved(Key.MODULREGNSKAB, holdId);
+        const saved = await getSaved(Key.HOLD_MEMBERS, holdId);
         if(saved.valid && saved.value != null) {
             return saved.value;
         }
@@ -56,10 +58,8 @@ export async function scrapeHold(holdId: string, gymNummer: string, bypassCache:
         },
     });
 
-    const text = await res.text();
-    const parser = DomSelector(text);
-
-    const hold = holdScraper(parser);
+    const parser = await treat(res);
+    const hold = await holdScraper(parser);
     if(hold != null)
         await saveFetch(Key.HOLD_MEMBERS, hold, Timespan.DAY, holdId);
 
@@ -82,9 +82,7 @@ export async function scrapeModulRegnskab(gymNummer: string, holdId: string, byp
         },
     });
 
-    const text = await res.text();
-    const parser = DomSelector(text);
-
+    const parser = await treat(res);
     const hold = await modulRegnskabScraper(parser);
 
     if(hold != null)
@@ -99,15 +97,15 @@ export async function getSchools(): Promise<{[id: string]: string;}> {
         return saved.value;
     }
 
-    const text = await (await fetch(SCRAPE_URLS().GYM_LIST, {
+    const res = await fetch(SCRAPE_URLS().GYM_LIST, {
         method: "GET",
         credentials: 'include',
         headers: {
             "User-Agent": "Mozilla/5.0",
         },
-    })).text();
+    });
 
-    const parser = DomSelector(text);
+    const parser = await treat(res);
     const unparsedGyms = parser.getElementsByTagName("a")
 
     const parsedGyms: { [id: string] : string } = {}
@@ -153,7 +151,7 @@ export async function fetchProfile(): Promise<Profile> {
         text = authFetch.value.body;
     }
 
-    const parser = DomSelector(text);
+    const parser = await treatRaw(text);
 
     let elevID = parser.getElementsByName("msapplication-starturl")[0];
     if(elevID != null && "attributes" in elevID)
@@ -188,9 +186,9 @@ export async function fetchProfile(): Promise<Profile> {
         school: gym.gymName,
     
         notifications: {
-            aflysteLektioner: true,
-            ændredeLektioner: true,
-            beskeder: true,
+            aflysteLektioner: false,
+            ændredeLektioner: false,
+            beskeder: false,
         },
 
         hold: await scrapeHoldListe(parser),
@@ -265,8 +263,6 @@ export async function getProfile(): Promise<Profile> {
 // end of stupidity.
 
 export async function getSkema(gymNummer: string, date: Date): Promise<{ payload: Week | null, rateLimited: boolean }> {
-    console.log("Fetching schema...")
-
     const res = await fetch(SCRAPE_URLS(gymNummer).SKEMA + `?week=${getWeekNumber(date).toString().padStart(2, "0")}${date.getFullYear()}`, {
         method: "GET",
         credentials: 'include',
@@ -282,22 +278,20 @@ export async function getSkema(gymNummer: string, date: Date): Promise<{ payload
             "Sec-Ch-Ua-Platform": `"Windows"`,
             "Sec-Fetch-Dest": "document",
             "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-Site": "same-origin",
+            "Sec-Fetch-Site": "samxce-origin",
             "Sec-Fetch-User": "?1",
             "Upgrade-Insecure-Requests": "1",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
         },
     });
 
-    const text = await res.text();
-
+    const text = _treat(await res.text());
     const parser = DomSelector(text);
+
     const skema: Week | null = scrapeSchema(parser, text);
 
     if(skema != null)
         await saveFetch(Key.SKEMA, skema, Timespan.HOUR, getWeekNumber(date).toString());
-
-    console.log("Fetched skema!")
 
     return {
         payload: skema,
@@ -341,9 +335,7 @@ export async function getMessage(gymNummer: string, messageId: string, headers: 
         body: stringifiedData,
     });
 
-    const text = await res.text();
-
-    const parser = DomSelector(text);
+    const parser = await treat(res);
     const messageBody = await scrapeMessage(parser);
     
     if( messageBody != null &&
@@ -374,9 +366,7 @@ export async function getMessages(gymNummer: string, mappeId: number = -70, bypa
         },
     });
 
-    const text = await res.text();
-
-    const parser = DomSelector(text);
+    const parser = await treat(res);
     
     const ASPHeaders = parser.getElementsByClassName("aspNetHidden");
     let headers: {[id: string]: string} = {};
@@ -420,9 +410,7 @@ export async function getAflevering(gymNummer: string, id: string, bypassCache: 
         },
     });
 
-    const text = await res.text();
-
-    const parser = DomSelector(text);
+    const parser = await treat(res);
     const opgaver = await scrapeOpgave(parser);
 
     if(opgaver != null)
@@ -472,9 +460,7 @@ export async function getAfleveringer(gymNummer: string, bypassCache: boolean = 
         body: stringifiedData,
     });
 
-    const text = await res.text();
-
-    const parser = DomSelector(text);
+    const parser = await treat(res);
     const opgaver = scrapeOpgaver(parser);
 
     if(opgaver != null)
@@ -505,9 +491,7 @@ export async function getAbsence(gymNummer: string, bypassCache: boolean = false
         },
     });
 
-    const text = await res.text();
-
-    const parser = DomSelector(text);
+    const parser = await treat(res);
     const absence = scrapeAbsence(parser);
 
     if(absence != null)
@@ -529,7 +513,7 @@ export function getWeekNumber(d: any): number {
     return weekNo;
 }
 
-export function isRateLimited(parser: DomSelector): boolean {
+export function isRateLimited(parser: any): boolean {
     try {
         const text = parser.getElementsByClassName("content-container")[0].firstChild.firstChild.firstChild.text;
         return text.includes("403 - Forbidden");

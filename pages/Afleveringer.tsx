@@ -6,8 +6,9 @@ import { getAfleveringer } from "../modules/api/scraper/Scraper";
 import { Opgave, STATUS } from "../modules/api/scraper/OpgaveScraper";
 import COLORS from "../modules/Themes";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import { AcademicCapIcon, AdjustmentsVerticalIcon, ChevronRightIcon } from "react-native-heroicons/solid";
+import { AdjustmentsVerticalIcon, ChevronRightIcon } from "react-native-heroicons/solid";
 import RateLimit from "../components/RateLimit";
+import Logo from "../components/Logo";
 
 /**
  * Formats the dates weekday as text.
@@ -514,7 +515,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                         `Du har ingen opgaver der ${sortedBy.toLowerCase()}.`
                                     }
                                 </Text>
-                                <AcademicCapIcon size={40} color={COLORS.WHITE} />
+                                <Logo size={40} />
                             </View>
                         )}
 

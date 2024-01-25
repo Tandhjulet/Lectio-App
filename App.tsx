@@ -245,19 +245,7 @@ const App = () => {
             {state.isLoading ? (
 
               <AppStack.Navigator screenOptions={{
-                gestureEnabled: false,
-                contentStyle: {
-                  backgroundColor: COLORS.BLACK
-                },
-                animation:'none',
-      
-                headerStyle: {
-                  backgroundColor: COLORS.BLACK,
-                },
-                headerTitleStyle: {
-                  color: COLORS.WHITE,
-                },
-                headerBackVisible: false,
+                headerShown: false,
               }}>
                 <AppStack.Screen name="Splash" component={SplashScreen} options={{
                   header: () => <></>
@@ -274,7 +262,7 @@ const App = () => {
                     animation:'none',
           
                     headerStyle: {
-                      backgroundColor: COLORS.BLACK,
+                      backgroundColor: COLORS.ACCENT_BLACK,
                     },
                     headerTitleStyle: {
                       color: COLORS.WHITE,
@@ -291,7 +279,7 @@ const App = () => {
                   </AppStack.Navigator>
                 ) : (
                   <Tab.Navigator
-                    tabBar={props => <NavigationBar currentTab={props.state.key} navigation={props.navigation} />}
+                    tabBar={props => <NavigationBar currentTab={props.state.key} navigation={props.navigation}/>}
                   >
                     <Tab.Screen name="SkemaNavigator" component={SkemaNavigator} options={{
                       header: () => <></>
@@ -318,7 +306,7 @@ export function SkemaNavigator() {
     <SkemaNav.Navigator initialRouteName="Skema" screenOptions={{
       gestureEnabled: true,
       headerStyle: {
-        backgroundColor: COLORS.BLACK,
+        backgroundColor: COLORS.ACCENT_BLACK,
       },
       headerTitleStyle: {
         color: COLORS.WHITE,
@@ -339,7 +327,7 @@ export function BeskedNavigator() {
     <Messages.Navigator initialRouteName="BeskedList" screenOptions={{
       gestureEnabled: true,
       headerStyle: {
-        backgroundColor: COLORS.BLACK,
+        backgroundColor: COLORS.ACCENT_BLACK,
         shadowColor: "rgba(255, 255, 255, 0.2)",
       },
       headerTitleStyle: {
@@ -347,7 +335,7 @@ export function BeskedNavigator() {
         fontSize: 17,
       },
       headerBackTitleVisible: false,
-      headerStatusBarHeight: 47,
+      headerStatusBarHeight: Constants.statusBarHeight,
 
     }}>
       <Messages.Screen name={"BeskedList"} component={Beskeder} options={{
@@ -381,7 +369,7 @@ export function AfleveringNavigator() {
     <Opgaver.Navigator initialRouteName="AfleveringList" screenOptions={{
       gestureEnabled: true,
       headerStyle: {
-        backgroundColor: COLORS.BLACK,
+        backgroundColor: COLORS.ACCENT_BLACK,
       },
       headerTitleStyle: {
         color: COLORS.WHITE,
@@ -437,7 +425,7 @@ export function MereNavigator() {
     <Settings.Navigator initialRouteName="Settings" screenOptions={{
       gestureEnabled: true,
       headerStyle: {
-        backgroundColor: COLORS.BLACK,
+        backgroundColor: COLORS.ACCENT_BLACK,
       },
       headerTitleStyle: {
         color: COLORS.WHITE,

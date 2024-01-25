@@ -5,13 +5,15 @@ import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scr
 import { getUnsecure, isAuthorized } from "../modules/api/Authentication";
 import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
 import COLORS, { hexToRgb } from "../modules/Themes";
-import { AcademicCapIcon, BackwardIcon, ChatBubbleBottomCenterTextIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";
+import { BackwardIcon, ChatBubbleBottomCenterTextIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";
 import getDaysOfCurrentWeek, { WeekDay, getDay, getNextWeek, getPrevWeek } from "../modules/Date";
 import GestureRecognizer from 'react-native-swipe-gestures';
 import { getPeople } from "../modules/api/scraper/class/PeopleList";
 import { NavigationProp } from "@react-navigation/native";
 import RateLimit from "../components/RateLimit";
 import { Key, getSaved } from "../modules/api/storage/Storage";
+import { SCHEMA_SEP_CHAR } from "../modules/Config";
+import Logo from "../components/Logo";
 
 /**
  * 
@@ -506,7 +508,7 @@ export default function Skema({ navigation }: {
         <View style={{
             paddingTop: 50,
     
-            backgroundColor: COLORS.BLACK,
+            backgroundColor: COLORS.ACCENT_BLACK,
 
             display: 'flex',
             flexDirection: 'row',
@@ -661,7 +663,7 @@ export default function Skema({ navigation }: {
                 return week;
             })
         }} style={{
-            backgroundColor: COLORS.BLACK,
+            backgroundColor: COLORS.ACCENT_BLACK,
         }}>
             <View style={{
                 display: 'flex',
@@ -706,19 +708,19 @@ export default function Skema({ navigation }: {
             onSwipeLeft={() => daySelector("ADD")}
             onSwipeRight={() => daySelector("REMOVE")}
             style={{
-                backgroundColor: COLORS.BLACK,
+                backgroundColor: COLORS.ACCENT_BLACK,
             }}
         >
             <View
                 style={{
-                    borderTopColor: COLORS.ACCENT,
-                    borderTopWidth: 1,
+                    backgroundColor: COLORS.ACCENT,
+                    opacity: 0.6,
+                    height: 1,
 
                     borderRadius: 5,
 
                     marginHorizontal: 20,
-
-                    paddingBottom: 10,
+                    marginBottom: 5,
                 }}
             />
 
@@ -790,14 +792,14 @@ export default function Skema({ navigation }: {
                                 gap: 5,
                             }}>
                                 <Text style={{
-                                    color: COLORS.ACCENT,
+                                    color: COLORS.WHITE,
                                     textAlign: 'center'
                                 }}>
                                     Du har ingen moduler.
                                     {"\n"}
                                     Nyd din dag!
                                 </Text>
-                                <AcademicCapIcon size={40} color={COLORS.WHITE} />
+                                <Logo size={60} />
                             </View>
                         )
                         :
@@ -927,7 +929,7 @@ export default function Skema({ navigation }: {
                                                                 color: calcColor(1, modul),
                                                                 fontSize: 12.5,
                                                             }}>
-                                                                {modul.lokale.replace("...", "").replace("▪", "").trim()}
+                                                                {modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim()}
                                                             </Text>
                                                         )}
 

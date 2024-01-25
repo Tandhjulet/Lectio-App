@@ -1,11 +1,13 @@
-export function scrapeSchema(parser: any, raw: string): Week | null {
+import { SCHEMA_SEP_CHAR } from "../../Config";
 
+export function scrapeSchema(parser: any, raw: string): Week | null {
     const table = parser.getElementById("s_m_Content_Content_SkemaNyMedNavigation_skema_skematabel");
+
     if(table == null) {
         return null;
     }
 
-    const schema = table.lastChild.children;
+    const schema = table.children[3].children;
 
     //delete days[0];
 
@@ -56,6 +58,7 @@ export type Modul = {
     homework: boolean,
 
     lektier?: string[],
+    extra?: string[],
     note?: string,
     lærerNavn?: string,
 }
@@ -123,20 +126,6 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
             return;
 
         const lektier = parseLektieNote(modul.attributes.href, raw);
-
-        let width;
-        const regExpWidth = /width:(?<width>([\d\.]*))em/gm.exec(modul.text);
-        if(regExpWidth != null)
-            width = regExpWidth[1];
-        else
-            width = "13.82";
-
-        let height;
-        const regExpHeight = /height:(?<height>([\d\.]*))em/gm.exec(modul.text);
-        if(regExpHeight != null)
-            height = regExpHeight[1];
-        else
-            height = "5.73";
 
         let timeSpan: [Date, Date];
         const regExpTimespan = modul.text.match(new RegExp('\\d{2}:\\d{2}', "gm"));
@@ -313,11 +302,11 @@ export function parseInfoString(info: any): {
             if(element.text.endsWith(". modul - "))
                 out["modul"] = element.text.replace(". modul - ", "")
 
-            if(element.text == " ▪ ") 
+            if(element.text == ` ${SCHEMA_SEP_CHAR} `) 
                 return;
 
-            if(element.text.includes(" ▪ ")) {
-                out["lokale"] = element.text.replace(" ▪ ", "")
+            if(element.text.includes(` ${SCHEMA_SEP_CHAR} `)) {
+                out["lokale"] = element.text.replace(` ${SCHEMA_SEP_CHAR} `, "")
             }
 
             if("attributes" in element) {
@@ -354,6 +343,7 @@ function parseMatch(match: string) {
         lektier?: string[],
         note?: string,
         lærerNavn?: string,
+        extra?: string[],
     } = {};
 
     if(match.includes("Lektier:\n")) {
@@ -369,6 +359,21 @@ function parseMatch(match: string) {
         })
 
         out.lektier = lektierParsed;
+    }
+
+    if(match.includes("Øvrigt indhold:\n")) {
+        const lektier = match.split("Øvrigt indhold:\n")[1].split("\n\n")[0].split(" [...]\n");
+        const lektierParsed: string[] = []
+
+        lektier.forEach((lektie) => {
+            if(lektie.startsWith("- "))
+                lektie = lektie.slice(2);
+            if(lektie.endsWith(" [...]"))
+                lektie = lektie.slice(0, -5)
+            lektierParsed.push(replaceHTMLEntities(lektie.trim()))
+        })
+
+        out.extra = lektierParsed;
     }
 
     if(match.includes("Note:\n")) {
@@ -390,6 +395,7 @@ function parseLektieNote(href: string, raw: string) {
         lektier?: string[],
         note?: string,
         lærerNavn?: string,
+        extra?: string[],
     } = {};
 
     const regExp = new RegExp(`<a href=${fixString(href)}.*?>`, "gms");
@@ -400,18 +406,19 @@ function parseLektieNote(href: string, raw: string) {
             regExp.lastIndex++;
         }
         
-        // The result can be accessed through the `m`-variable.
         matches.forEach((match, groupIndex) => {
-            if(!match.includes("data-additionalInfo"))
+            if(!match.includes("data-tooltip"))
                 return;
 
-            let info = match.split("data-additionalInfo=")[1];
+            let info = match.split("data-tooltip=")[1];
             if(info.startsWith("'") || info.startsWith("\"")) {
                 info = info.substring(1);
             }
 
             if(info.endsWith("'>") || info.endsWith("\">")) {
                 info = info.slice(0, -2);
+            } else if (info.endsWith("\" title>") || info.endsWith("\' title>")) {
+                info = info.slice(0, -8);
             }
 
             out = parseMatch(info);
@@ -427,7 +434,8 @@ export const replaceHTMLEntities = (toFix: string) => {
         .replaceAll("&lt;", "<")
         .replaceAll("&gt;", ">")
         .replaceAll("&quot;", "\"")
-        .replaceAll("&apos;", "'"));
+        .replaceAll("&apos;", "'")
+        .replaceAll("&#39;", "'"));
 }
 
 const fixString = (toFix: string) => {

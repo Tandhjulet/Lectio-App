@@ -3,10 +3,10 @@
  */
 const COLORS = {
     "BLACK": "#000000",
-    "ACCENT_BLACK": "#040D12", 
+    "ACCENT_BLACK": "#0b0d0c", 
     "DARK": "#183D3D",
     "LIGHT": "#5C8374",
-    "ACCENT": "#93B1A6",
+    "ACCENT": "#9bd1bc",
     "WHITE": "#d1d1d1",
     "RED": "#ff7a7a",
 } as const;

@@ -11,7 +11,7 @@ import COLORS from '../modules/Themes';
 const styles = StyleSheet.create({
   navbarContainer: {
     width: '100%',
-    backgroundColor: COLORS.BLACK,
+    backgroundColor: COLORS.ACCENT_BLACK,
     position: 'absolute',
     bottom: 0,
     minHeight: 50,
@@ -75,13 +75,13 @@ const NavigationBar: React.FC<Props> = ({
       <View style={styles.navbarContainer}>
         <View
           style={{
-              borderBottomColor: COLORS.ACCENT,
-              opacity: 0.1,
-              borderBottomWidth: 1,
+              borderBottomColor: COLORS.WHITE,
+              opacity: 0.2,
+              borderBottomWidth: StyleSheet.hairlineWidth,
 
               borderRadius: 5,
 
-              marginHorizontal: 20,
+              marginHorizontal: 0,
           }}
         />
 

@@ -12,7 +12,6 @@ import { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/typ
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { CalendarDaysIcon, GlobeAltIcon, StarIcon } from 'react-native-heroicons/solid';
 import { Pressable } from 'react-native';
-import { subscribe } from '../App';
 
 function Option({
     title,
@@ -51,7 +50,7 @@ function Option({
 
             ...style,
         }} onPress={() => {
-            subscribe(sku, null);
+            //subscribe(sku, null);
         }}>
             <View style={{
                 position: "absolute",

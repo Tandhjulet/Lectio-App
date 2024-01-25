@@ -27,7 +27,7 @@ export default function Mere({ navigation }: {navigation: any}) {
     const [ændredeLektioner, setÆndredeLektioner] = useState<boolean>();
     const [beskeder, setBeskeder] = useState<boolean>();
 
-    const [development, setDevelopment] = useState<boolean>(false);
+    //const [development, setDevelopment] = useState<boolean>(false);
 
     useEffect(() => {
         (async () => {
@@ -88,7 +88,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     title="Fravær"
                                     titleTextColor={COLORS.WHITE}
                                     image={
-                                        <BellSnoozeIcon color={COLORS.LIGHT} />
+                                        <BellSnoozeIcon color={COLORS.ACCENT} style={{
+                                            opacity: 0.85,
+                                        }}  />
                                     }
                                     accessory="DisclosureIndicator"
                                     onPress={() => {
@@ -101,7 +103,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     title="Afleveringer"
                                     titleTextColor={COLORS.WHITE}
                                     image={
-                                        <ClockIcon color={COLORS.LIGHT} />
+                                        <ClockIcon color={COLORS.ACCENT} style={{
+                                            opacity: 0.85,
+                                        }}  />
                                     }
                                     accessory="DisclosureIndicator"
                                     onPress={() => {
@@ -114,7 +118,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     title="Lærere og elever"
                                     titleTextColor={COLORS.WHITE}
                                     image={
-                                        <UsersIcon color={COLORS.LIGHT} />
+                                        <UsersIcon color={COLORS.ACCENT} style={{
+                                            opacity: 0.85,
+                                        }}  />
                                     }
                                     accessory="DisclosureIndicator"
                                     onPress={() => {
@@ -127,7 +133,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     title="Modulregnskab"
                                     titleTextColor={COLORS.WHITE}
                                     image={
-                                        <BuildingLibraryIcon color={COLORS.LIGHT} />
+                                        <BuildingLibraryIcon color={COLORS.ACCENT} style={{
+                                            opacity: 0.85,
+                                        }}  />
                                     }
                                     accessory="DisclosureIndicator"
                                     onPress={() => {
@@ -140,7 +148,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     title="Karakterer"
                                     titleTextColor={COLORS.WHITE}
                                     image={
-                                        <AcademicCapIcon color={COLORS.LIGHT} />
+                                        <AcademicCapIcon color={COLORS.ACCENT} style={{
+                                            opacity: 0.85,
+                                        }} />
                                     }
                                     accessory="DisclosureIndicator"
                                     isDisabled
@@ -151,7 +161,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     title="Spørgeskemaer"
                                     titleTextColor={COLORS.WHITE}
                                     image={
-                                        <ClipboardDocumentListIcon color={COLORS.LIGHT} />
+                                        <ClipboardDocumentListIcon color={COLORS.ACCENT} style={{
+                                            opacity: 0.85,
+                                        }}  />
                                     }
                                     accessory="DisclosureIndicator"
                                     isDisabled
@@ -162,19 +174,23 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     title="Dokumenter"
                                     titleTextColor={COLORS.WHITE}
                                     image={
-                                        <Square2StackIcon color={COLORS.LIGHT} />
+                                        <Square2StackIcon color={COLORS.ACCENT} style={{
+                                            opacity: 0.85,
+                                        }}  />
                                     }
                                     accessory="DisclosureIndicator"
                                     isDisabled
                                 />
                             </Section>
 
-                            <Section header={"NOTIFIKATIONER"} roundedCorners={true} hideSurroundingSeparators={true} >
+                            <Section header={"NOTIFIKATIONER"} roundedCorners={true} hideSurroundingSeparators={true}>
                                 <Cell
+                                    isDisabled
                                     cellStyle="Basic"
                                     title="Aflyste lektioner"
                                     titleTextColor={COLORS.WHITE}
                                     cellAccessoryView={<Switch 
+                                        disabled
                                         trackColor={{false: '#767577', true: "#4ca300"}}
 
                                         onValueChange={() => setAflysteLektioner((prev) => {
@@ -191,10 +207,12 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     />}
                                 />
                                 <Cell
+                                    isDisabled
                                     cellStyle="Basic"
                                     title="Ændrede lektioner"
                                     titleTextColor={COLORS.WHITE}
                                     cellAccessoryView={<Switch 
+                                        disabled
                                         trackColor={{false: '#767577', true: "#4ca300"}}
 
                                         onValueChange={() => setÆndredeLektioner((prev) => {
@@ -211,12 +229,14 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     />}
                                 />
                                 <Cell
+                                    isDisabled
                                     cellStyle="Basic"
                                     title="Beskeder"
                                     titleTextColor={COLORS.WHITE}
                                     cellAccessoryView={<Switch 
-                                        trackColor={{false: '#767577', true: "#4ca300"}}
+                                        disabled
 
+                                        trackColor={{false: '#767577', true: "#4ca300"}}
                                         onValueChange={() => setBeskeder((prev) => {
                                             setProfile((profile) => {
                                                 if(profile != null) {
@@ -262,36 +282,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 />
                             </Section>
 
-                            <Section header={"KONTROLPANEL"} roundedCorners={true} hideSurroundingSeparators={true} >
-                                <Cell
-                                    cellStyle="Basic"
-                                    title="Udvikler tilstand"
-                                    titleTextColor={COLORS.WHITE}
-                                    cellAccessoryView={<Switch 
-                                        trackColor={{false: '#767577', true: "#4ca300"}}
-
-                                        onValueChange={() => setDevelopment((prev) => !prev)}
-                                        value={development}
-                                    />}
-                                />
-
-                                {development && (
-                                    <Cell
-                                        cellStyle="Basic"
-                                        title="Slet data"
-
-                                        titleTextColor={COLORS.RED}
-                                        accessory="DisclosureIndicator"
-
-                                        onPress={() => {
-                                            AsyncStorage.clear();
-                                            removeSecure("password");
-                                            removeSecure("username");
-                                            abort();
-                                        }}
-                                    />
-                                )}
-
+                            <Section header={"KONTROLPANEL"} roundedCorners={true} hideSurroundingSeparators={true}>
                                 <Cell
                                     cellStyle="Basic"
                                     title="Log ud"
