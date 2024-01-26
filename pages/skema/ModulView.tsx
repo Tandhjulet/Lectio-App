@@ -138,13 +138,13 @@ export default function ModulView({ navigation, route }: {
                         <Cell
                             cellStyle="RightDetail"
                             title="Start"
-                            detail={modul.timeSpan.start}
+                            detail={modul.timeSpan.end} // idk ??
                         />
 
                         <Cell
                             cellStyle="RightDetail"
                             title="Slut"
-                            detail={modul.timeSpan.end}
+                            detail={modul.timeSpan.start} // idk ??
                         />
 
                         <Cell

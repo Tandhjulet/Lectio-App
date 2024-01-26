@@ -99,11 +99,11 @@ function parseModule(htmlObject: any): ModulDate[] {
         const endNum = parseInt(end.getHours().toString().padStart(2,"0") + end.getMinutes().toString().padStart(2,"0"));
 
         out.push({
-            start: startNum > endNum ? dateString.split(" - ")[1] : dateString.split(" - ")[0],
-            startNum: startNum > endNum ? endNum : startNum,
+            start: start > end ? dateString.split(" - ")[1] : dateString.split(" - ")[0],
+            startNum: start > end ? endNum : startNum,
 
-            end: startNum > endNum ? dateString.split(" - ")[0] : dateString.split(" - ")[1],
-            endNum: startNum > endNum ? startNum : endNum,
+            end: start > end ? dateString.split(" - ")[0] : dateString.split(" - ")[1],
+            endNum: start > end ? startNum : endNum,
 
             diff: differenceBetweenDates(end, start),
         })
