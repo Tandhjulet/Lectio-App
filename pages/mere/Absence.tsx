@@ -85,6 +85,13 @@ export default function Absence({ navigation }: { navigation: any }) {
                     }
                     out.almindeligt.settled += fag.almindeligt.settled;
                     out.almindeligt.yearly += fag.almindeligt.yearly;
+
+                    if(fag.skriftligt.absent > 0) {
+                        out.skriftligt.absent += fag.skriftligt.absent;
+                        out.skriftligt.teams.push(fag.skriftligt.team);
+                    }
+                    out.skriftligt.settled += fag.skriftligt.settled;
+                    out.skriftligt.yearly += fag.skriftligt.yearly;
                 })
 
                 setChartedAbsence(out);
