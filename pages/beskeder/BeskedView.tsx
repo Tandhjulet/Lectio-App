@@ -5,7 +5,7 @@ import COLORS from "../../modules/Themes";
 import { useEffect, useState } from "react";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { getMessage } from "../../modules/api/scraper/Scraper";
-import { getUnsecure } from "../../modules/api/Authentication";
+import { getSecure, getUnsecure } from "../../modules/api/Authentication";
 import { UserIcon } from "react-native-heroicons/solid";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 
@@ -37,7 +37,7 @@ export default function BeskedView({ navigation, route }: {
      */
     useEffect(() => {
         (async () => {
-            const gym: { gymName: string, gymNummer: string } = await getUnsecure("gym");
+            const gym: { gymName: string, gymNummer: string } = await getSecure("gym");
             setGym(gym);
 
             const people = await getPeople();

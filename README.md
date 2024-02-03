@@ -8,13 +8,14 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ### __HØJ__
 - beskeder (tilføj tråde)
 - fraværsregistering
-- gør alt personligt data krypteret
 - "Hent oplysninger" knap - indsigtsret
 
 ### __MELLEM__
 - push notifs
 - light mode
 - animationer
+    - fravær pie chart
+    - skema swipe mellem dage
 
 ### __LAV__
 - spørgeskemaer

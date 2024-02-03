@@ -7,7 +7,7 @@ import { Fag, scrapeAbsence } from './AbsenceScraper';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LectioMessage, LectioMessageDetailed, scrapeMessage, scrapeMessages } from './MessageScraper';
-import { saveUnsecure } from '../Authentication';
+import { getSecure, saveUnsecure } from '../Authentication';
 import { Hold, holdScraper, scrapeHoldListe } from './hold/HoldScraper';
 import { HEADERS, SCRAPE_URLS, getASPHeaders, parseASPHeaders } from './Helpers';
 import { Opgave, OpgaveDetails, scrapeOpgave, scrapeOpgaver } from './OpgaveScraper';
@@ -126,7 +126,7 @@ export async function fetchProfile(): Promise<Profile> {
     let ERROR = false;
     console.log("Fetching profile...")
 
-    let gym: {gymName: string, gymNummer: string} | null = await _getUnsecure("gym");
+    let gym: {gymName: string, gymNummer: string} | null = await getSecure("gym");
     if(gym == null)
         gym = { gymName: "", gymNummer: "" }
     
@@ -228,7 +228,7 @@ export async function saveProfile(newProfile: Profile) {
     //profile = newProfile;
 
     const stringifiedValue = JSON.stringify(newProfile);
-    await AsyncStorage.setItem("profile", stringifiedValue);
+    await SecureStore.setItemAsync("profile", stringifiedValue);
 }
 
 async function getUsername() {
@@ -244,10 +244,12 @@ export async function getProfile(): Promise<Profile> {
     const profileFetchDate = await _getUnsecure("lastScrapeProfile");
     if(profileFetchDate != null && ((new Date().valueOf() - profileFetchDate.date) < Timespan.DAY)) {
 
-        const savedProfile = await _getUnsecure("profile");
+        const savedProfile: string | null = await SecureStore.getItemAsync("profile");
         if(savedProfile != null) {
-            profile = savedProfile;
-            return savedProfile;
+            const prof: Profile = JSON.parse(savedProfile);
+
+            profile = prof;
+            return prof;
         }
     }
 

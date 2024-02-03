@@ -316,7 +316,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
         setLoading(true);
 
         (async () => {
-            const gym = await getUnsecure("gym");
+            const gym = await getSecure("gym");
             setGym(gym);
 
             if(profile == null) {

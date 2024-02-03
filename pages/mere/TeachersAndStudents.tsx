@@ -5,7 +5,7 @@ import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import COLORS from "../../modules/Themes";
-import { getUnsecure } from "../../modules/api/Authentication";
+import { getSecure, getUnsecure } from "../../modules/api/Authentication";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 //import { Image } from "@rneui/themed";
 
@@ -149,7 +149,7 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
         setLoading(true);
 
         (async () => {
-            const gym: { gymName: string, gymNummer: string } = await getUnsecure("gym");
+            const gym: { gymName: string, gymNummer: string } = await getSecure("gym");
             setGym(gym);
 
             const peopleList: { [id: string]: Person } | null = await getPeople();

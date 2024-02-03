@@ -2,7 +2,7 @@ import { ActivityIndicator, Animated, Keyboard, KeyboardAvoidingView, Pressable,
 import COLORS from "../../modules/Themes";
 import { ArrowRightCircleIcon, ChevronDoubleRightIcon } from "react-native-heroicons/solid";
 import { useContext, useEffect, useRef, useState } from "react";
-import { getUnsecure, isAuthorized, secureSave, validate } from "../../modules/api/Authentication";
+import { getSecure, getUnsecure, isAuthorized, secureSave, validate } from "../../modules/api/Authentication";
 import { SignInPayload } from "../../App";
 import { AuthContext } from "../../modules/Auth";
 import { useFocusEffect } from "@react-navigation/native";
@@ -22,7 +22,7 @@ export default function Login({ route, navigation }: {
      * Refresh gym state every time page focuses, to avoid logout/login mishaps
      */
     useFocusEffect(() => {
-        getUnsecure("gym").then((gym: { gymName: string, gymNummer: string } | null) => {
+        getSecure("gym").then((gym: { gymName: string, gymNummer: string } | null) => {
             setGym(gym)
         })
     })

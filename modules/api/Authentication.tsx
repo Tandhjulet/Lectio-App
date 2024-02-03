@@ -77,7 +77,7 @@ export async function validate(gymNummer: string, username: string, password: st
  * @returns true if authorized, otherwise false
  */
 export async function isAuthorized() {
-    const gym: { gymName: string, gymNummer: string } = await getUnsecure("gym");
+    const gym: { gymName: string, gymNummer: string } = await getSecure("gym");
 
     return _isAuthorized(gym.gymNummer);
 }
@@ -187,6 +187,18 @@ export async function getUnsecure(key: string): Promise<any> {
     const stringifiedValue = await AsyncStorage.getItem(key);
     if(stringifiedValue == null)
         return null;
+    return JSON.parse(stringifiedValue);
+}
+
+/**
+ * Gets an secure value from secure storage
+ * @param key 
+ * @returns 
+ */
+export async function getSecure(key: string): Promise<any> {
+    const stringifiedValue = await AsyncStorage.getItem(key);
+    if(stringifiedValue == null)
+        return {};
     return JSON.parse(stringifiedValue);
 }
 

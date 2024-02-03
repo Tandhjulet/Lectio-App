@@ -1,6 +1,6 @@
 // @ts-ignore
 import DomSelector from 'react-native-dom-parser';
-import { getUnsecure } from "../../Authentication"
+import { getSecure, getUnsecure } from "../../Authentication"
 import { SCRAPE_URLS, getASPHeaders } from '../Helpers';
 
 export type Person = {
@@ -14,7 +14,7 @@ export type Person = {
 }
 
 export async function scrapeStudentPictures(classId: string, className: string) {
-    const gym: { gymName: string, gymNummer: string } =  await getUnsecure("gym")
+    const gym: { gymName: string, gymNummer: string } = await getSecure("gym")
 
     const payload: {[id: string]: string} = {
         ...(await getASPHeaders(SCRAPE_URLS(gym.gymNummer, undefined, classId).CLASS)),

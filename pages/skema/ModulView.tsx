@@ -5,7 +5,7 @@ import { Fragment, useCallback, useEffect, useState } from "react";
 import { Modul, replaceHTMLEntities } from "../../modules/api/scraper/SkemaScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { getProfile, scrapeHold } from "../../modules/api/scraper/Scraper";
-import { getUnsecure } from "../../modules/api/Authentication";
+import { getSecure, getUnsecure } from "../../modules/api/Authentication";
 import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
 import { Hold } from "../../modules/api/scraper/hold/HoldScraper";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
@@ -49,7 +49,7 @@ export default function ModulView({ navigation, route }: {
 
         (async () => {
             const profile = await getProfile();
-            const gym: { gymName: string, gymNummer: string } = await getUnsecure("gym")
+            const gym: { gymName: string, gymNummer: string } = await getSecure("gym")
             setGym(gym);
 
             const people = await getPeople();

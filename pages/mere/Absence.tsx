@@ -2,7 +2,7 @@ import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react
 import NavigationBar from "../../components/Navbar";
 import { useCallback, useEffect, useState } from "react";
 import { getAbsence } from "../../modules/api/scraper/Scraper";
-import { getUnsecure } from "../../modules/api/Authentication";
+import { getSecure, getUnsecure } from "../../modules/api/Authentication";
 import COLORS from "../../modules/Themes";
 import { AbsenceType, Fag, ModuleAbsence } from "../../modules/api/scraper/AbsenceScraper";
 import RateLimit from "../../components/RateLimit";
@@ -44,7 +44,7 @@ export default function Absence({ navigation }: { navigation: any }) {
         setLoading(true);
         
         (async () => {
-            const gymNummer = (await getUnsecure("gym")).gymNummer;
+            const gymNummer = (await getSecure("gym")).gymNummer;
 
             const out: ChartedAbsence = {
                 almindeligt: {
@@ -107,7 +107,7 @@ export default function Absence({ navigation }: { navigation: any }) {
             return;
 
         (async () => {
-            const gymNummer = (await getUnsecure("gym")).gymNummer;
+            const gymNummer = (await getSecure("gym")).gymNummer;
 
             const out: ChartedAbsence = {
                 almindeligt: {

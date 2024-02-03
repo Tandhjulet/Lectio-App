@@ -15,7 +15,7 @@ import {
 import {Cell, Section, TableView} from 'react-native-tableview-simple';
 import COLORS from '../../modules/Themes';
 import { getSchools } from '../../modules/api/scraper/Scraper';
-import { saveUnsecure } from '../../modules/api/Authentication';
+import { saveUnsecure, secureSave } from '../../modules/api/Authentication';
 
 /**
  * Finds first alphabet character in a string
@@ -38,7 +38,7 @@ const School = memo(function School({ index, section, navigation, gymNummer, gym
 }) {
   return (
     <Pressable onPress={() => {
-      saveUnsecure("gym", { "gymNummer": gymNummer, "gymName": gymName })
+      secureSave("gym", JSON.stringify({ "gymNummer": gymNummer, "gymName": gymName }))
 
       navigation.navigate("Login", {
         gym: [gymName, gymNummer]

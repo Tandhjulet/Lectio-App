@@ -13,7 +13,7 @@ import Absence from './pages/mere/Absence';
 import TeachersAndStudents from './pages/mere/TeachersAndStudents';
 import BeskedView from './pages/beskeder/BeskedView';
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
-import { authorize, getUnsecure, saveUnsecure, secureGet, secureSave } from './modules/api/Authentication';
+import { authorize, getSecure, getUnsecure, saveUnsecure, secureGet, secureSave } from './modules/api/Authentication';
 import SplashScreen from './pages/SplashScreen';
 import { AuthContext } from './modules/Auth';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -179,7 +179,7 @@ const App = () => {
       };
 
       payload = {
-        gym: await getUnsecure("gym"),
+        gym: await getSecure("gym"),
         password: await secureGet("password"),
         username: await secureGet("username"),
       }
