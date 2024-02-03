@@ -27,6 +27,8 @@ export default function Mere({ navigation }: {navigation: any}) {
     const [ændredeLektioner, setÆndredeLektioner] = useState<boolean>();
     const [beskeder, setBeskeder] = useState<boolean>();
 
+    const [showNotifications, setShowNotifications] = useState<boolean>(false);
+
     const showRenew = true;
 
     //const [development, setDevelopment] = useState<boolean>(false);
@@ -185,75 +187,77 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 />
                             </Section>
 
-                            <Section header={"NOTIFIKATIONER"} roundedCorners={true} hideSurroundingSeparators={true}>
-                                <Cell
-                                    isDisabled
-                                    cellStyle="Basic"
-                                    title="Aflyste lektioner"
-                                    titleTextColor={COLORS.WHITE}
-                                    cellAccessoryView={<Switch 
-                                        disabled
-                                        trackColor={{false: '#767577', true: "#4ca300"}}
+                            {showNotifications && (
+                                <Section header={"NOTIFIKATIONER"} roundedCorners={true} hideSurroundingSeparators={true}>
+                                    <Cell
+                                        isDisabled
+                                        cellStyle="Basic"
+                                        title="Aflyste lektioner"
+                                        titleTextColor={COLORS.WHITE}
+                                        cellAccessoryView={<Switch 
+                                            disabled
+                                            trackColor={{false: '#767577', true: "#4ca300"}}
 
-                                        onValueChange={() => setAflysteLektioner((prev) => {
-                                            setProfile((profile) => {
-                                                if(profile != null) {
-                                                    profile.notifications.aflysteLektioner = !prev;
-                                                    saveProfile(profile);
-                                                }
-                                                return profile;
-                                            })
-                                            return !prev
-                                        })}
-                                        value={aflysteLektioner}
-                                    />}
-                                />
-                                <Cell
-                                    isDisabled
-                                    cellStyle="Basic"
-                                    title="Ændrede lektioner"
-                                    titleTextColor={COLORS.WHITE}
-                                    cellAccessoryView={<Switch 
-                                        disabled
-                                        trackColor={{false: '#767577', true: "#4ca300"}}
+                                            onValueChange={() => setAflysteLektioner((prev) => {
+                                                setProfile((profile) => {
+                                                    if(profile != null) {
+                                                        profile.notifications.aflysteLektioner = !prev;
+                                                        saveProfile(profile);
+                                                    }
+                                                    return profile;
+                                                })
+                                                return !prev
+                                            })}
+                                            value={aflysteLektioner}
+                                        />}
+                                    />
+                                    <Cell
+                                        isDisabled
+                                        cellStyle="Basic"
+                                        title="Ændrede lektioner"
+                                        titleTextColor={COLORS.WHITE}
+                                        cellAccessoryView={<Switch 
+                                            disabled
+                                            trackColor={{false: '#767577', true: "#4ca300"}}
 
-                                        onValueChange={() => setÆndredeLektioner((prev) => {
-                                            setProfile((profile) => {
-                                                if(profile != null) {
-                                                    profile.notifications.ændredeLektioner = !prev;
-                                                    saveProfile(profile);
-                                                }
-                                                return profile;
-                                            })
-                                            return !prev
-                                        })}
-                                        value={ændredeLektioner}
-                                    />}
-                                />
-                                <Cell
-                                    isDisabled
-                                    cellStyle="Basic"
-                                    title="Beskeder"
-                                    titleTextColor={COLORS.WHITE}
-                                    cellAccessoryView={<Switch 
-                                        disabled
+                                            onValueChange={() => setÆndredeLektioner((prev) => {
+                                                setProfile((profile) => {
+                                                    if(profile != null) {
+                                                        profile.notifications.ændredeLektioner = !prev;
+                                                        saveProfile(profile);
+                                                    }
+                                                    return profile;
+                                                })
+                                                return !prev
+                                            })}
+                                            value={ændredeLektioner}
+                                        />}
+                                    />
+                                    <Cell
+                                        isDisabled
+                                        cellStyle="Basic"
+                                        title="Beskeder"
+                                        titleTextColor={COLORS.WHITE}
+                                        cellAccessoryView={<Switch 
+                                            disabled
 
-                                        trackColor={{false: '#767577', true: "#4ca300"}}
-                                        onValueChange={() => setBeskeder((prev) => {
-                                            setProfile((profile) => {
-                                                if(profile != null) {
-                                                    profile.notifications.beskeder = !prev;
-                                                    saveProfile(profile);
-                                                }
+                                            trackColor={{false: '#767577', true: "#4ca300"}}
+                                            onValueChange={() => setBeskeder((prev) => {
+                                                setProfile((profile) => {
+                                                    if(profile != null) {
+                                                        profile.notifications.beskeder = !prev;
+                                                        saveProfile(profile);
+                                                    }
 
-                                                return profile;
-                                            })
-                                            return !prev
-                                        })}
-                                        value={beskeder}
-                                    />}
-                                />
-                            </Section>
+                                                    return profile;
+                                                })
+                                                return !prev
+                                            })}
+                                            value={beskeder}
+                                        />}
+                                    />
+                                </Section>
+                            )}
 
                             <Section header={"ABONNEMENT"} roundedCorners={true} hideSurroundingSeparators={true} >
                                 <Cell 
@@ -316,7 +320,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 color: COLORS.WHITE,
                                 opacity: 0.5,
                             }}>
-                                BETA (v0.0.1) - Mads B. Mortensen
+                                BETA (v0.0.1)
                             </Text>
 
                             <View style={{

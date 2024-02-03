@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getAbsence } from "../../modules/api/scraper/Scraper";
 import { getUnsecure } from "../../modules/api/Authentication";
 import COLORS from "../../modules/Themes";
-import { Fag, ModuleAbsence } from "../../modules/api/scraper/AbsenceScraper";
+import { AbsenceType, Fag, ModuleAbsence } from "../../modules/api/scraper/AbsenceScraper";
 import RateLimit from "../../components/RateLimit";
 import { VictoryChart, VictoryContainer, VictoryLabel, VictoryPie, VictoryTheme } from "victory-native";
 
@@ -75,9 +75,6 @@ export default function Absence({ navigation }: { navigation: any }) {
                     return b.absent - a.absent;
                 });
 
-                setAlmindeligt(almindeligt);
-                setSkriftligt(skriftligt);
-
                 payload.forEach((fag: Fag) => {
                     if(fag.almindeligt.absent > 0) {
                         out.almindeligt.absent += fag.almindeligt.absent;
@@ -93,6 +90,8 @@ export default function Absence({ navigation }: { navigation: any }) {
                     out.skriftligt.settled += fag.skriftligt.settled;
                     out.skriftligt.yearly += fag.skriftligt.yearly;
                 })
+                setAlmindeligt(almindeligt);
+                setSkriftligt(skriftligt);
 
                 setChartedAbsence(out);
                 setLoading(false);
@@ -303,6 +302,11 @@ export default function Absence({ navigation }: { navigation: any }) {
                                 gap: 20,
                             }}>
                                 <VictoryPie
+                                    animate={{
+                                        easing: "circleIn",
+                                        duration: 2000,
+                                    }}
+
                                     data={almindeligt}
                                     x="team"
                                     y="absent"

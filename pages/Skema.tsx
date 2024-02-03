@@ -1,12 +1,12 @@
-import { ActivityIndicator, DimensionValue, LogBox, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, Animated, DimensionValue, Dimensions, LogBox, Modal, PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 import NavigationBar from "../components/Navbar";
-import { useCallback, useEffect, useState } from "react";
+import { createRef, useCallback, useEffect, useRef, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
 import { getUnsecure, isAuthorized } from "../modules/api/Authentication";
 import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
 import COLORS, { hexToRgb } from "../modules/Themes";
 import { BackwardIcon, ChatBubbleBottomCenterTextIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";
-import getDaysOfCurrentWeek, { WeekDay, getDay, getNextWeek, getPrevWeek } from "../modules/Date";
+import getDaysOfCurrentWeek, { WeekDay, getDay, getDaysOfThreeWeeks, getNextWeek, getPrevWeek } from "../modules/Date";
 import GestureRecognizer from 'react-native-swipe-gestures';
 import { getPeople } from "../modules/api/scraper/class/PeopleList";
 import { NavigationProp } from "@react-navigation/native";
@@ -14,6 +14,8 @@ import RateLimit from "../components/RateLimit";
 import { Key, getSaved } from "../modules/api/storage/Storage";
 import { SCHEMA_SEP_CHAR } from "../modules/Config";
 import Logo from "../components/Logo";
+import PagerView from "react-native-pager-view";
+import { TouchableHighlight } from "react-native-gesture-handler";
 
 /**
  * 
@@ -109,7 +111,7 @@ export default function Skema({ navigation }: {
 
     const [ selectedDay, setSelectedDay ] = useState<Date>(new Date());
 
-    const [ daysOfWeek, setDaysOfWeek ] = useState<WeekDay[]>([]);
+    const [ daysOfThreeWeeks, setDaysOfThreeWeeks ] = useState<WeekDay[][]>([]);
     const [ loadWeekDate, setLoadWeekDate ] = useState<Date>(new Date());
 
     const [ loadDate, setLoadDate ] = useState<Date>(new Date());
@@ -125,6 +127,7 @@ export default function Skema({ navigation }: {
     const [ modulTimings, setModulTimings ] = useState<ModulDate[]>([]);
     const [ hoursToMap, setHoursToMap ] = useState<number[]>([]);
     const [ loading, setLoading ] = useState(true);
+    const [ blockScroll, setBlockScroll ] = useState(true);
 
     const [modalVisible, setModalVisible] = useState(false);
     const [rateLimited, setRateLimited] = useState(false);
@@ -161,6 +164,8 @@ export default function Skema({ navigation }: {
 
             if(getWeekNumber(prev) != getWeekNumber(copy)) {
                 setLoadDate(copy);
+                if(t == "ADD") pagerRef.current?.setPage(2);
+                else if (t == "REMOVE") pagerRef.current?.setPage(0);
             }
             
             return copy;
@@ -189,6 +194,8 @@ export default function Skema({ navigation }: {
      */
     useEffect(() => {
         (async () => {
+            setBlockScroll(true);
+
             const saved = await getSaved(Key.SKEMA, getWeekNumber(loadDate).toString());
             let hasCache = false;
             if(saved.valid && saved.value != null) {
@@ -202,7 +209,8 @@ export default function Skema({ navigation }: {
             const gymNummer = (await getUnsecure("gym")).gymNummer;
 
             setLoadWeekDate(loadDate);
-            setDaysOfWeek(getDaysOfCurrentWeek(loadDate));
+            setDaysOfThreeWeeks([...getDaysOfThreeWeeks(loadDate)])
+
             setProfile(await getProfile());
 
             getSkema(gymNummer, loadDate).then(({ payload, rateLimited }) => {
@@ -216,11 +224,16 @@ export default function Skema({ navigation }: {
                     }
                 }
                 setLoading(false);
+                setBlockScroll(false);
                 setRateLimited(rateLimited)
             })
         })();
 
     }, [loadDate])
+
+    useEffect(() => {
+        pagerRef.current?.setPageWithoutAnimation(1);
+    }, [daysOfThreeWeeks]);
 
     /**
      * Used for drag-to-refresh functionality
@@ -503,8 +516,13 @@ export default function Skema({ navigation }: {
         setRefreshing(true);
     }, []);
 
+    const {width} = Dimensions.get('window');
+
+    const pagerRef = createRef<PagerView>();
+    const scrollRef = createRef<ScrollView>();
+
     return (
-    <>
+    <View>
         <View style={{
             paddingTop: 50,
     
@@ -543,10 +561,6 @@ export default function Skema({ navigation }: {
                 paddingRight: 20,
             }}>
                 <TouchableOpacity onPress={() => {
-
-                    if((getWeekNumber(loadWeekDate) != getWeekNumber(loadDate)) || dateCompare(selectedDay, new Date()))
-                        return;
-
                     setLoadDate(new Date());
                     setSelectedDay(new Date());
                     setDayNum(getDay(new Date()).weekDayNumber)
@@ -556,7 +570,7 @@ export default function Skema({ navigation }: {
                         padding: 5,
                         borderRadius: 12.5,
 
-                        opacity: (getWeekNumber(loadWeekDate) != getWeekNumber(loadDate) || dateCompare(selectedDay, new Date())) ? 0.5 : 1,
+                        opacity: (!loading && !dateCompare(selectedDay, new Date())) ? 1 : 0.5,
                     }}>
                         <BackwardIcon color={COLORS.DARK} />
                     </View>
@@ -636,73 +650,96 @@ export default function Skema({ navigation }: {
             </View>
         </View>
 
-        <GestureRecognizer onSwipeLeft={() => {
-            //setLoadWeekDate((prev) => {
-            //    const prevWeek = getNextWeek(prev);
-            //    setDaysOfWeek(getDaysOfCurrentWeek(prevWeek));
-            //    return prevWeek;
-            //})
-
-            setLoadDate(() => {
-                const week = getNextWeek(selectedDay);
-                
-                setSelectedDay(week);
-                return week;
-            })
-        }} onSwipeRight={() => {
-            //setLoadWeekDate((prev) => {
-            //    const prevWeek = getPrevWeek(prev);
-            //    setDaysOfWeek(getDaysOfCurrentWeek(prevWeek));
-            //    return prevWeek;
-            //})
-
-            setLoadDate(() => {
-                const week = getPrevWeek(selectedDay);
-
-                setSelectedDay(week);
-                return week;
-            })
-        }} style={{
+        <View style={{
             backgroundColor: COLORS.ACCENT_BLACK,
         }}>
-            <View style={{
-                display: 'flex',
-                justifyContent:'space-between',
+            <PagerView
+                ref={pagerRef}
+                initialPage={2}
+                orientation={"horizontal"}
+                overdrag
 
-                paddingTop: 15,
-                flexDirection: 'row',
-                width: '100%',
+                style={{
+                    width: width,
+                    height: 56 + 15 + 10,
+                }}
 
-                paddingHorizontal: 20,
-                marginBottom: 10,
-            }}>
-                {daysOfWeek.map(day => {
+                scrollEnabled={!loading}
+
+                onPageSelected={(e) => {
+                    if(blockScroll)
+                        return;
+                    
+                    if(e.nativeEvent.position == 2) {
+                        setLoadDate(() => {
+                            const week = getNextWeek(selectedDay);
+    
+                            setSelectedDay(week);
+                            return week;
+                        })
+                    } else if (e.nativeEvent.position == 0) {
+                        setLoadDate(() => {
+                            const week = getPrevWeek(selectedDay);
+    
+                            setSelectedDay(week);
+                            return week;
+                        })
+                    }
+
+                }}
+            >
+                {daysOfThreeWeeks.map((_, i) => {
                     return (
-                        <TouchableOpacity key={day.dayName as React.Key} onPress={() => {
-                            setDayNum(day.weekDayNumber);
-                            setSelectedDay(day.date);
-                        }}>
-                            <View style={{...styles.dayContainer, backgroundColor: (day.date.getMonth() == selectedDay.getMonth() &&
-                                                                                    day.date.getDate() == selectedDay.getDate() &&
-                                                                                    day.date.getFullYear() == selectedDay.getFullYear()) ? COLORS.LIGHT : COLORS.DARK}}>
-                                <Text style={{
-                                    textTransform: 'lowercase',
-                                    color: COLORS.ACCENT,
-                                    opacity: day.isWeekday ? 0.6 : 1,
-                                }}>{day.dayName.slice(0,3)}.</Text>
+                        <View key={i} style={{
+                            display: 'flex',
 
-                                <Text style={{
-                                    color: COLORS.WHITE,
-                                    fontWeight: "bold",
-                                    fontSize: 20,
-                                    opacity: day.isWeekday ? 0.6 : 1,
-                                }}>{day.dayNumber.toString()}</Text>
-                            </View>
-                        </TouchableOpacity>
+                            justifyContent:'space-between',
+
+                            paddingTop: 15,
+                            flexDirection: 'row',
+
+                            flexWrap: "nowrap",
+
+                            width: width,
+                            height: 56 + 15 + 10,
+
+                            paddingHorizontal: 20,
+                            marginBottom: 10,
+                        }}>
+                            {daysOfThreeWeeks[i].map((day,i) => {
+                                return (
+                                    <Pressable key={i + "."} onPress={() => {
+                                        setDayNum(day.weekDayNumber);
+                                        setSelectedDay(day.date);
+                                    }} style={({pressed}) => [
+                                        {
+                                            opacity: pressed ? 0.6 : 1,
+                                        }
+                                    ]}>
+                                        <View style={{...styles.dayContainer, backgroundColor: (day.date.getMonth() == selectedDay.getMonth() &&
+                                                                                                day.date.getDate() == selectedDay.getDate() &&
+                                                                                                day.date.getFullYear() == selectedDay.getFullYear()) ? COLORS.LIGHT : COLORS.DARK}}>
+                                            <Text style={{
+                                                textTransform: 'lowercase',
+                                                color: COLORS.ACCENT,
+                                                opacity: day.isWeekday ? 0.6 : 1,
+                                            }}>{day.dayName.slice(0,3)}.</Text>
+
+                                            <Text style={{
+                                                color: COLORS.WHITE,
+                                                fontWeight: "bold",
+                                                fontSize: 20,
+                                                opacity: day.isWeekday ? 0.6 : 1,
+                                            }}>{day.dayNumber.toString()}</Text>
+                                        </View>
+                                    </Pressable>
+                                )
+                            })}
+                        </View>
                     )
                 })}
-            </View>
-        </GestureRecognizer>
+            </PagerView>
+        </View>
 
         <GestureRecognizer 
             onSwipeLeft={() => daySelector("ADD")}
@@ -724,6 +761,7 @@ export default function Skema({ navigation }: {
                 }}
             />
 
+            
             <View style={{
                 backgroundColor: COLORS.BLACK,
                 minHeight: "100%",
@@ -749,8 +787,7 @@ export default function Skema({ navigation }: {
                         flex: 1,
                     }} refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                    }>
-
+                    } ref={scrollRef}>
                         <View style={{
                             paddingTop: 20,
                         }} /> 
@@ -856,7 +893,7 @@ export default function Skema({ navigation }: {
                                         justifyContent: "center",
                                         alignItems: "center",
 
-                                        backgroundColor: hexToRgb(COLORS.ACCENT, 0.3),
+                                        backgroundColor: hexToRgb(COLORS.WHITE, 0.15),
 
                                         top: calculateTop(modulTiming)
                                     }}>
@@ -972,8 +1009,10 @@ export default function Skema({ navigation }: {
                             </View>
 
                             <View style={{
-                                paddingBottom: hoursToMap.length * 60 + 100,
-                            }} /> 
+                                width: "100%",
+                                height: hoursToMap.length * 60 + (110 + 81) + 60
+                            }} />
+
                         </View>
                         }
                     </ScrollView>
@@ -982,7 +1021,7 @@ export default function Skema({ navigation }: {
         </GestureRecognizer>
 
         {rateLimited && <RateLimit />}
-    </>
+    </View>
     )
 }
 

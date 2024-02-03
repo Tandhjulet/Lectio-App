@@ -16,7 +16,7 @@ function dates(date: Date) {
     if(current.getDay() == 0)
         current.setDate(date.getDate() - 1);
 
-    var week= new Array(); 
+    var week: Date[] = new Array(); 
     // Starting Monday not Sunday
     current.setDate((current.getDate() - current.getDay() +1));
     for (var i = 0; i < 7; i++) {
@@ -40,6 +40,28 @@ export default function getDaysOfWeek(date: Date): WeekDay[] {
 
     weekDates.forEach((i) => {
         days.push(getDay(i));
+    })
+
+    return days;
+}
+
+/**
+ * Parses each date as a {@link WeekDay}
+ * @param date date to get the week days of
+ * @returns a list of {@link WeekDay}s
+ */
+export function getDaysOfThreeWeeks(date: Date): WeekDay[][] {
+
+    const days: WeekDay[][] = [[],[],[]]
+    const weekDates: Date[][] = [
+        dates(getPrevWeek(date)),
+        dates(date),
+        dates(getNextWeek(date))];
+
+    weekDates.forEach((o, i) => {
+        o.forEach((d) => {
+            days[i].push(getDay(d));
+        })
     })
 
     return days;

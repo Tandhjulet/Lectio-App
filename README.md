@@ -6,19 +6,20 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ## Prioriteringer/mangler ved appen
 
 ### __HØJ__
-- animationer
 - beskeder (tilføj tråde)
 - fraværsregistering
-- gør så knap på hjemmesiden virker (hent i app store)
-- privatlivspolitik
-- "kontakt lectio plus" i appen
-- abonnement
+- gør alt personligt data krypteret
+- "Hent oplysninger" knap - indsigtsret
 
 ### __MELLEM__
 - push notifs
-- karakterer
 - light mode
+- animationer
 
 ### __LAV__
 - spørgeskemaer
 - dokumenter
+
+### __KAN IKKE LAVE ENDNU__
+- abonnement (krypteret Lectio-ID og skole er det eneste som klienten må sende)
+- karakterer

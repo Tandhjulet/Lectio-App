@@ -2,7 +2,7 @@ import { NavigationProp, RouteProp } from "@react-navigation/native";
 import { ActivityIndicator, Image, RefreshControl, ScrollView, Text, View } from "react-native";
 import COLORS from "../../modules/Themes";
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { Modul } from "../../modules/api/scraper/SkemaScraper";
+import { Modul, replaceHTMLEntities } from "../../modules/api/scraper/SkemaScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { getProfile, scrapeHold } from "../../modules/api/scraper/Scraper";
 import { getUnsecure } from "../../modules/api/Authentication";
@@ -203,7 +203,7 @@ export default function ModulView({ navigation, route }: {
                                                 paddingVertical: 8,
                                                 fontSize: 16,
                                             }}>
-                                                {lektie}
+                                                {replaceHTMLEntities(lektie)}
                                             </Text>
                                         }
                                     />)
@@ -225,7 +225,7 @@ export default function ModulView({ navigation, route }: {
                                                 paddingVertical: 8,
                                                 fontSize: 16,
                                             }}>
-                                                {lektie}
+                                                {replaceHTMLEntities(lektie)}
                                             </Text>
                                         }
                                     />)
