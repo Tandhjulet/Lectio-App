@@ -497,7 +497,7 @@ export async function getAbsence(gymNummer: string, bypassCache: boolean = false
     const absence = scrapeAbsence(parser);
 
     if(absence != null)
-        await saveFetch(Key.S_AFLEVERING, absence, Timespan.MINUTE * 5)
+        await saveFetch(Key.FRAVÆR, absence, Timespan.MINUTE * 5)
 
     return {
         payload: absence,
