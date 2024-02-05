@@ -1,5 +1,5 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native";
-import { ActivityIndicator, Image, RefreshControl, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
 import COLORS from "../../modules/Themes";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { Modul, replaceHTMLEntities } from "../../modules/api/scraper/SkemaScraper";
@@ -13,6 +13,7 @@ import { CLEAN_NAME } from "../beskeder/BeskedView";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { UserIcon } from "react-native-heroicons/solid";
 import { SCHEMA_SEP_CHAR } from "../../modules/Config";
+import ProfilePicture from "../../components/ProfilePicture";
 
 /**
  * 
@@ -253,23 +254,11 @@ export default function ModulView({ navigation, route }: {
                                                 }}
 
                                                 cellImageView={
-                                                    <Image
-                                                        style={{
-                                                            borderRadius: 100,
-                                                            width: 35,
-                                                            height: 35,
-
-                                                            marginRight: 10,
-                                                        }}
-                                                        source={{
-                                                            uri: SCRAPE_URLS(gym?.gymNummer, members[navn] == null ? "" : members[navn].billedeId).PICTURE_HIGHQUALITY,
-                                                            headers: {
-                                                                "User-Agent": "Mozilla/5.0",
-                                                                "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-                                                            },
-                                                        }}
-                                                        crossOrigin="use-credentials"
-                                                    />
+                                                    <View style={{
+                                                        marginRight: 10,
+                                                    }}>
+                                                        <ProfilePicture gymNummer={gym?.gymNummer ?? ""} billedeId={members[navn].billedeId ?? ""} size={35} navn={navn} />
+                                                    </View>
                                                 }
                                             />)
                                     })}

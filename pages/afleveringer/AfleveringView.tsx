@@ -1,6 +1,6 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native"
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Image, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { Opgave, OpgaveDetails, STATUS } from "../../modules/api/scraper/OpgaveScraper";
 import { formatDate } from "../Afleveringer";
@@ -11,6 +11,7 @@ import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { CLEAN_NAME } from "../beskeder/BeskedView";
 import { UserIcon } from "react-native-heroicons/solid";
+import ProfilePicture from "../../components/ProfilePicture";
 
 export default function AfleveringView({ navigation, route }: {
     navigation: NavigationProp<any>,
@@ -245,22 +246,9 @@ export default function AfleveringView({ navigation, route }: {
 
                                                             gap: 10,
                                                         }}>
+                                                            
                                                             {billedeId != null ?
-                                                                <Image
-                                                                    style={{
-                                                                        borderRadius: 100,
-                                                                        width: 40,
-                                                                        height: 40,
-                                                                    }}
-                                                                    source={{
-                                                                        uri: SCRAPE_URLS(gym?.gymNummer, billedeId).PICTURE_HIGHQUALITY,
-                                                                        headers: {
-                                                                            "User-Agent": "Mozilla/5.0",
-                                                                            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-                                                                        },
-                                                                    }}
-                                                                    crossOrigin="use-credentials"
-                                                                />
+                                                                <ProfilePicture gymNummer={gym?.gymNummer ?? ""} billedeId={billedeId} size={40} navn={opgaveDetails?.ansvarlig} />
                                                             :
                                                                 <View style={{
                                                                     width: 40,

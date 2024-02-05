@@ -6,7 +6,7 @@ import { Fag, scrapeAbsence } from './AbsenceScraper';
 
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LectioMessage, LectioMessageDetailed, scrapeMessage, scrapeMessages } from './MessageScraper';
+import { LectioMessage, ThreadMessage, scrapeMessage, scrapeMessages } from './MessageScraper';
 import { getSecure, saveUnsecure } from '../Authentication';
 import { Hold, holdScraper, scrapeHoldListe } from './hold/HoldScraper';
 import { HEADERS, SCRAPE_URLS, getASPHeaders, parseASPHeaders } from './Helpers';
@@ -301,12 +301,14 @@ export async function getSkema(gymNummer: string, date: Date): Promise<{ payload
     };
 }
 
-export async function getMessage(gymNummer: string, messageId: string, headers: {}): Promise<LectioMessageDetailed | null> {
-    const saved = await getSaved(Key.S_BESKED, messageId);
-    if(saved.valid && saved.value != null) {
-        return saved.value;
+export async function getMessage(gymNummer: string, messageId: string, headers: {}, bypassCache: boolean = false): Promise<ThreadMessage[] | null> {
+    if(!bypassCache) {
+        const saved = await getSaved(Key.S_BESKED, messageId);
+        if(saved.valid && saved.value != null) {
+            return saved.value;
+        }    
     }
-
+    
     const payload: {[id: string]: string} = {
         ...headers,
 
@@ -340,11 +342,9 @@ export async function getMessage(gymNummer: string, messageId: string, headers: 
     const parser = await treat(res);
     const messageBody = await scrapeMessage(parser);
     
-    if( messageBody != null &&
-        messageBody.body != null &&
-        messageBody.body.length > 0)
-        
+    if( messageBody != null)
         await saveFetch(Key.S_BESKED, messageBody, Timespan.HOUR * 6, messageId)
+
     return messageBody;
 }
 

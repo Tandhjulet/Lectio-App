@@ -7,6 +7,7 @@ import { Cell, Section, TableView } from "react-native-tableview-simple";
 import COLORS from "../../modules/Themes";
 import { getSecure, getUnsecure } from "../../modules/api/Authentication";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
+import ProfilePicture from "../../components/ProfilePicture";
 //import { Image } from "@rneui/themed";
 
 /**
@@ -28,12 +29,11 @@ function parseData(data: {[id: string]: Person}, contains?: string): {
     letter: string,
     data: Person[];
 }[] {
+    console.log("called " + contains)
+
     let out: { [id: string] : Person[]} = {}
   
-    for(let name in data) {    
-        if(contains != null && !name.toLowerCase().includes(contains.toLowerCase()))
-            continue;
-
+    for(let name in data) {
         if(out[name[0]] == undefined)
             out[name[0]] = [];
 
@@ -61,17 +61,44 @@ function parseData(data: {[id: string]: Person}, contains?: string): {
     return formattedOut;
 }
 
-const UserCell = memo(function UserCell({ uri, index, item, section, setModalData, setModalVisible }: any) {
+function parseFormattedData(data: {
+    letter: string,
+    data: Person[];
+}[], contains: string) {
+    const out: {
+        letter: string,
+        data: Person[];
+    }[] = [];
+
+    data.forEach((v) => {
+        const i = out.push({
+            letter: v.letter,
+            data: [],
+        })-1;
+
+        for(let person of v.data) {
+            if(contains.length > 0 && (!(person.rawName.toLowerCase().includes(contains.toLowerCase()))))
+                continue;
+
+            out[i].data.push(person);
+        }
+
+        if(out[i].data.length === 0)
+            out.pop();
+    })
+
+    return out;
+}
+
+const UserCell = memo(function UserCell({ index, item, section, gym }: {
+    index: number,
+    item: Person,
+    section: any,
+    gym: any,
+
+}) {
     return (
-    <View>
-        <TouchableWithoutFeedback
-            hitSlop={10}
-            onPress={() => {
-                setModalData(item);
-                setModalVisible(true);
-            }}
-            
-            >
+        <>
             <View style={{
                 paddingHorizontal: 20,
                 paddingVertical: 15,
@@ -90,49 +117,46 @@ const UserCell = memo(function UserCell({ uri, index, item, section, setModalDat
 
                 alignItems: "center",
             }}>
-                <Image
-                    style={{
-                        borderRadius: 100,
-                        width: 40,
-                        height: 40,
-                    }}
-                    source={{
-                        uri: uri,
-                        headers: {
-                            "User-Agent": "Mozilla/5.0",
-                        },
-                    }}
-                    crossOrigin="use-credentials"
-                />
+                <ProfilePicture gymNummer={gym?.gymNummer ?? ""} billedeId={item.billedeId ?? ""} size={40} navn={item.navn} />
 
-                <Text style={{
-                    color: COLORS.WHITE,
+                <View style={{
+                    display: "flex",
+                    flexDirection: "column",
+
+                    gap: 5,
                 }}>
-                    {item.navn}
-                </Text>
+                    <Text style={{
+                        color: COLORS.WHITE,
+                        fontWeight: "bold",
+                    }}>
+                        {item.navn}
+                    </Text>
+
+                    <Text style={{
+                        color: COLORS.WHITE,
+                    }}>
+                        {item.klasse}
+                    </Text>
+                </View>
             </View>
-        </TouchableWithoutFeedback>
 
-        <View style={{
-            marginHorizontal: 15,
-        }}>
             <View style={{
-                backgroundColor: COLORS.WHITE,
-                width: "100%",
-                height: StyleSheet.hairlineWidth,
+                marginHorizontal: 15,
+            }}>
+                <View style={{
+                    backgroundColor: COLORS.WHITE,
+                    width: "100%",
+                    height: StyleSheet.hairlineWidth,
 
-                opacity: 0.2,
-            }} />
-        </View>
-    </View>
+                    opacity: 0.2,
+                }} />
+            </View>
+        </>
     )
 })
 
 export default function TeachersAndStudents({ navigation }: { navigation: any }) {
     const [loading, setLoading] = useState<boolean>(true);
-    
-    const [modalVisible, setModalVisible] = useState(false);
-    const [modalData, setModalData] = useState<Person>();
 
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>({gymName: "", gymNummer: ""});
     const [people, setPeople] = useState<{
@@ -140,7 +164,11 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
         data: Person[];
     }[]>([]);
 
-    const [rawPeople, setRawPeople] = useState<{ [id: string]: Person }>({});
+    const [rawPeople, setRawPeople] = useState<{
+        letter: string,
+        data: Person[];
+    }[]>([]);
+    const [filter, setFilter] = useState<string>("");
 
     /**
      * Fetches the people to be rendered on page load
@@ -158,10 +186,10 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                 return;
             }
 
-            setRawPeople(peopleList)
             const parsedPeople = parseData(peopleList);
-
+            setRawPeople(parsedPeople)
             setPeople(parsedPeople)
+
             setLoading(false)
         })();
     }, [])
@@ -170,7 +198,14 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
         <View style={{height: '100%',width:'100%'}}>
             {!loading &&
                 <>
-                    <TextInput placeholder="Søg efter lære eller elev..." onChangeText={(text) => {setPeople(parseData(rawPeople, text))}} style={{
+                    <TextInput placeholder="Søg efter lære eller elev..." onChangeText={(text) => {
+                        setFilter(text);
+                        if(text.length > filter.length) {
+                            setPeople(parseFormattedData(people, text));
+                        } else {
+                            setPeople(parseFormattedData(rawPeople, text));
+                        }
+                    }} style={{
                         color: COLORS.WHITE,
                         fontSize: 15,
 
@@ -224,9 +259,7 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                                             )
                                         }}
                                         renderItem={({item, index, section}) => {
-                                            const uri = SCRAPE_URLS(gym.gymNummer, item.billedeId).PICTURE_HIGHQUALITY;
-
-                                            return <UserCell uri={uri} section={section} item={item} index={index} gym={gym} setModalData={setModalData} setModalVisible={setModalVisible} />
+                                            return <UserCell section={section} item={item} index={index} gym={gym} />
                                         }}
 
                                         renderSectionHeader={(data) => {
@@ -269,93 +302,6 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                             </>
                         }
                     </TableView>
-
-                    <Modal 
-                        transparent={true}
-                        visible={modalVisible}
-                        onRequestClose={() => {
-                            setModalVisible(!modalVisible);
-                            setModalData(undefined)
-                        }}
-                    >
-                        {modalData != undefined &&
-                            <TouchableWithoutFeedback style={{
-                                position: "absolute",
-
-                                width: "100%",
-                                height: "100%",
-                            }} onPress={() => {
-                                setModalVisible(!modalVisible);
-                                setModalData(undefined)
-                            }}>
-                                <View style={{
-                                    flex: 1,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-
-                                    paddingTop: 22,
-                                    paddingBottom: 200,
-
-                                    backgroundColor: 'rgba(52, 52, 52, 0.6)',
-                                }}>
-                                    <View style={{
-                                        margin: 20,
-
-                                        backgroundColor: COLORS.BLACK,
-                                        borderRadius: 20,
-
-                                        paddingHorizontal: 35,
-                                        paddingVertical: 20,
-
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                    }}>
-                                        <Image
-                                            style={{
-                                                borderRadius: 100,
-                                                width: 100,
-                                                height: 100,
-                                                marginBottom: 15,
-                                            }}
-                                            source={{
-                                                uri: SCRAPE_URLS(gym.gymNummer, modalData.billedeId).PICTURE_HIGHQUALITY,
-                                                headers: {
-                                                    "User-Agent": "Mozilla/5.0",
-                                                    "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-                                                    "Referer": "https://www.lectio.dk/lectio/572/forside.aspx"
-                                                },
-                                            }}
-                                            crossOrigin="use-credentials"
-                                            referrerPolicy="strict-origin-when-cross-origin"
-                                        />
-                                        
-
-                                        <Text style={{
-                                            color: COLORS.WHITE,
-
-                                            fontSize: 20,
-                                            fontWeight: "bold",
-
-                                            textAlign: 'center'
-                                        }}>
-                                            {modalData?.navn}
-                                        </Text>
-
-                                        <Text style={{
-                                            color: COLORS.WHITE,
-                                            textTransform: "capitalize"
-                                        }}>
-                                            {modalData?.type}
-                                        </Text>
-                                        
-                                    </View>
-                                </View>
-                            </TouchableWithoutFeedback>
-                        }
-                    </Modal>
                 </>
             }
         </View>

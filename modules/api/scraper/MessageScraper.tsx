@@ -30,14 +30,37 @@ function scrapeHelper(elements:any) {
     return out;
 }
 
-export async function scrapeMessage(parser: any): Promise<LectioMessageDetailed | null> {
-    const ul = parser.getElementsByClassName("message-thread-message-content");
+export async function scrapeMessage(parser: any): Promise<ThreadMessage[] | null> {
+    const table = parser.getElementsByClassName("ls-table-layout")[0];
 
-    if(ul.length == 0) {
-        return {body: ""};
+    if(table == null) {
+        return null;
     }
 
-    return { body: scrapeHelper(ul[0].children) };
+    const data = table.children;
+    const out: ThreadMessage[] = [];
+
+    data.forEach((message: any, index: number) => {
+        if(index == data.length - 1)
+            return; // last index is answer field
+
+        const gridRowMessage = message.firstChild.firstChild;
+
+        const sender: string = gridRowMessage.firstChild.firstChild.firstChild.text.trim();
+        const time: string = gridRowMessage.firstChild.lastChild.text.trim();
+
+        const body: string = scrapeHelper(gridRowMessage.lastChild.firstChild.firstChild.lastChild.children);
+        const title: string = gridRowMessage.lastChild.firstChild.firstChild.firstChild.firstChild.lastChild.firstChild.text;
+
+        out.push({
+            body: body,
+            date: time.replace(", ", ""),
+            sender: sender,
+            title: title,
+        })
+    })
+
+    return out;
 }
 
 export async function scrapeMessages(parser: any): Promise<LectioMessage[] | null> {
@@ -95,6 +118,9 @@ export async function scrapeMessages(parser: any): Promise<LectioMessage[] | nul
     return out;
 }
 
-export type LectioMessageDetailed = {
+export type ThreadMessage = {
+    sender: string,
+    date: string,
+    title: string,
     body: string,
 }

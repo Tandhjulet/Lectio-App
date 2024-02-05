@@ -22,6 +22,7 @@ import { getPeople } from "../modules/api/scraper/class/PeopleList";
 import { KeyboardAvoidingView } from "react-native";
 import { sendMessage } from "../modules/api/beskeder/sendBesked";
 import Logo from "../components/Logo";
+import ProfilePicture from "../components/ProfilePicture";
 
 export default function Beskeder({ navigation }: {navigation: NavigationProp<any>}) {
     const [ loading, setLoading ] = useState<boolean>(true);
@@ -821,20 +822,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
 
                                             alignItems: "center",
                                         }}>
-                                            <Image
-                                                style={{
-                                                    borderRadius: 100,
-                                                    width: 40,
-                                                    height: 40,
-                                                }}
-                                                source={{
-                                                    uri: uri,
-                                                    headers: {
-                                                        "User-Agent": "Mozilla/5.0",
-                                                    },
-                                                }}
-                                                crossOrigin="use-credentials"
-                                            />
+                                            <ProfilePicture gymNummer={gym?.gymNummer ?? ""} billedeId={person.billedeId ?? ""} size={40} navn={person.navn} noContextMenu />
 
                                             <Text style={{
                                                 color: COLORS.WHITE,

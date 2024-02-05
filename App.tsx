@@ -104,6 +104,8 @@ export const checkSubscribed = async () => {
   }))
 }
 
+export const isExpoGo = Constants.appOwnership === 'expo';
+
 const App = () => {
 
   /**
@@ -111,8 +113,6 @@ const App = () => {
    */
 
   useEffect(() => {
-    const isExpoGo = Constants.appOwnership === 'expo';
-
     if(!isExpoGo) {
       initConnection().then(() => {
         console.log("init connection!");

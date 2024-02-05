@@ -6,7 +6,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ## Prioriteringer/mangler ved appen
 
 ### __HØJ__
-- beskeder (tilføj tråde)
 - fraværsregistering
 - "Hent oplysninger" knap - indsigtsret
 
