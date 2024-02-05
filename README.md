@@ -8,6 +8,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ### __HØJ__
 - fraværsregistering
 - "Hent oplysninger" knap - indsigtsret
+- landing page
 
 ### __MELLEM__
 - push notifs

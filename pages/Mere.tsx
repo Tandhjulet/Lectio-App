@@ -312,7 +312,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                         const body = (`
 
 ---------------
-For at bedre kunne hjælpe dig, har vi brug for lidt information:
+For at kunne hjælpe dig har vi brug for lidt information:
 🏫: ${profile?.school}
 🧑🏻‍🎓: ${profile?.elevId}
 📱: ${Device.modelName}, ${Device.osVersion}`)
