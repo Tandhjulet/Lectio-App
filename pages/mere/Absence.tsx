@@ -131,30 +131,45 @@ export default function Absence({ navigation }: { navigation: any }) {
                 }
             }
 
-            getAbsence(gymNummer).then(({ payload, rateLimited }): any => {
+            getAbsence(gymNummer, true).then(({ payload, rateLimited }): any => {
                 setRateLimited(rateLimited)
                 if(payload == null) {
                     return;
                 }
 
-                const almindeligt = [...payload.map(load => load.almindeligt).filter((modul) => modul.absent > 0)]
+                const almindeligt = [...payload.map(load => load.almindeligt).filter((modul) => modul.absent > 0)].sort((a,b) => {
+                    return b.absent - a.absent;
+                });
 
-                const skriftligt = [...payload.map(load => load.skriftligt)].filter((modul) => modul.absent > 0)
+                const skriftligt = [...payload.map(load => load.skriftligt)].filter((modul) => modul.absent > 0).sort((a,b) => {
+                    return b.absent - a.absent;
+                });
+
+                almindeligt.forEach((fag: ModuleAbsence) => {
+                    out.almindeligt.absent += fag.absent;
+                    out.almindeligt.teams.push(fag.team); 
+                })
+
+                skriftligt.forEach((fag: ModuleAbsence) => {
+                    out.skriftligt.absent += fag.absent;
+                    out.skriftligt.teams.push(fag.team);
+                })
+
+                payload.forEach((fag: Fag) => {
+                    out.almindeligt.settled += fag.almindeligt.settled;
+                    out.almindeligt.yearly += fag.almindeligt.yearly;
+
+                    out.skriftligt.settled += fag.skriftligt.settled;
+                    out.skriftligt.yearly += fag.skriftligt.yearly;
+                })
 
                 setAlmindeligt(almindeligt);
                 setSkriftligt(skriftligt);
 
-                payload.forEach((fag: Fag) => {
-                    if(fag.almindeligt.absent > 0) {
-                        out.almindeligt.absent += fag.almindeligt.absent;
-                        out.almindeligt.teams.push(fag.almindeligt.team);
-                    }
-                    out.almindeligt.settled += fag.almindeligt.settled;
-                    out.almindeligt.yearly += fag.almindeligt.yearly;
-                })
-
                 setChartedAbsence(out);
                 setRefreshing(false);
+
+                setEndAngle(360);
             })
         })();
     }, [refreshing]);
@@ -306,9 +321,9 @@ export default function Absence({ navigation }: { navigation: any }) {
                         }}>
                             <VictoryPie
                                 animate={{
-                                    easing: "backInOut",
+                                    easing: "quadOut",
                                     onLoad: {
-                                        duration: 1750,
+                                        duration: 750,
                                     },
                                 }}
 
@@ -489,9 +504,9 @@ export default function Absence({ navigation }: { navigation: any }) {
                         }}>
                             <VictoryPie
                                 animate={{
-                                    easing: "backInOut",
+                                    easing: "quadOut",
                                     onLoad: {
-                                        duration: 1750,
+                                        duration: 750,
                                     },
                                 }}
 

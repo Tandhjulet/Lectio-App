@@ -1,4 +1,4 @@
-import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { ActivityIndicator, Linking, NativeModules, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import COLORS from "../modules/Themes";
@@ -13,6 +13,10 @@ import * as SecureStore from 'expo-secure-store';
 import Subscription from "../components/Subscription";
 import { BottomSheetModal, BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import * as WebBrowser from 'expo-web-browser';
+import { WebBrowserPresentationStyle } from "expo-web-browser";
+import * as Device from 'expo-device';
+import * as MailComposer from 'expo-mail-composer';
 
 export default function Mere({ navigation }: {navigation: any}) {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -29,7 +33,8 @@ export default function Mere({ navigation }: {navigation: any}) {
 
     const [showNotifications, setShowNotifications] = useState<boolean>(false);
 
-    const showRenew = true;
+    const renew = new Date();
+    renew.setDate(renew.getDate() + 1);
 
     //const [development, setDevelopment] = useState<boolean>(false);
 
@@ -69,23 +74,6 @@ export default function Mere({ navigation }: {navigation: any}) {
                         <TableView style={{
                             paddingHorizontal: 20,
                         }}>
-                            <Section header={"DIG"} roundedCorners={true} hideSurroundingSeparators={true} >
-                                <Cell
-                                    cellStyle="Subtitle"
-                                    title={profile?.name}
-
-                                    detail={profile?.username}
-
-                                    titleTextColor={COLORS.WHITE}
-                                />
-                                <Cell
-                                    cellStyle="Basic"
-                                    title={profile?.school}
-
-                                    titleTextColor={COLORS.WHITE}
-                                />
-                            </Section>
-
                             <Section header={"INFORMATION"} roundedCorners={true} hideSurroundingSeparators={true} >
                                 <Cell
                                     cellStyle="Basic"
@@ -261,36 +249,95 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                             <Section header={"ABONNEMENT"} roundedCorners={true} hideSurroundingSeparators={true} >
                                 <Cell 
+                                    cellStyle="Subtitle"
+                                    title="Dit abonnement er aktivt"
+                                    titleTextColor={COLORS.WHITE}
+
+                                    detail={"Fornyes d. " + renew.toLocaleDateString()}
+
+                                    accessory={"Checkmark"}
+                                    accessoryColor={COLORS.ACCENT}
+                                />
+                                
+                                <Cell 
                                     cellStyle="Basic"
                                     title="Administrer abonnement"
-                                    titleTextColor={COLORS.WHITE}
-                                    onPress={() => {
-                                        //bottomSheetModalRef.current?.present();
-                                    }}
+                                    titleTextColor={COLORS.ACCENT}
+
+                                    onPress={() => {}}
                                 />
 
                                 <Cell 
-                                    cellStyle="RightDetail"
-                                    title="Status"
-                                    titleTextColor={COLORS.WHITE}
+                                    cellStyle="Basic"
+                                    title="Genindlæs adgang"
+                                    titleTextColor={COLORS.ACCENT}
 
-                                    rightDetailColor={COLORS.ACCENT}
-                                    detail={"Gratis abonnement"}
+                                    onPress={() => {
+
+                                    }}
+                                />
+                            </Section>
+
+                            <Section roundedCorners={true} hideSurroundingSeparators={true}>
+                                <Cell
+                                    cellStyle="Basic"
+                                    title={"Privatlivspolitik"}
+
+                                    titleTextColor={COLORS.WHITE}
+                                    accessory="DisclosureIndicator"
+
+                                    onPress={() => {
+                                        WebBrowser.openBrowserAsync("https://lectioplus.com/privatliv", {
+                                            controlsColor: COLORS.ACCENT,
+                                            dismissButtonStyle: "close",
+                                            presentationStyle: WebBrowserPresentationStyle.POPOVER,
+
+                                            toolbarColor: COLORS.ACCENT_BLACK,
+                                        })
+                                    }}
                                 />
 
-                                {showRenew && (
-                                    <Cell 
-                                        cellStyle="RightDetail"
-                                        title="Fornyes"
-                                        titleTextColor={COLORS.WHITE}
+                                <Cell
+                                    cellStyle="Basic"
+                                    title={"Kontakt Lectio Plus"}
 
-                                        rightDetailColor={COLORS.ACCENT}
-                                        detail={"d. DD/MM/YY"}
-                                    />
-                                )}
+                                    titleTextColor={COLORS.WHITE}
+                                    accessory="DisclosureIndicator"
+
+                                    onPress={() => {
+                                        if(!MailComposer.isAvailableAsync())
+                                            return;
+
+
+                                        const body = (`
+
+---------------
+For at bedre kunne hjælpe dig, har vi brug for lidt information:
+🏫: ${profile?.school}
+🧑🏻‍🎓: ${profile?.elevId}
+📱: ${Device.modelName}, ${Device.osVersion}`)
+
+                                        MailComposer.composeAsync({
+                                            subject: "Kontakt",
+                                            body: body,
+                                            recipients: ["hello@lectioplus.com"]
+                                        })
+
+                                        
+                                    }}
+                                />
                             </Section>
 
                             <Section header={"KONTROLPANEL"} roundedCorners={true} hideSurroundingSeparators={true}>
+                                <Cell
+                                    cellStyle="RightDetail"
+                                    title={profile?.name.slice(0,23)}
+
+                                    detail={profile?.username.slice(0,13)}
+
+                                    titleTextColor={COLORS.WHITE}
+                                />
+
                                 <Cell
                                     cellStyle="Basic"
                                     title="Log ud"
@@ -324,7 +371,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                             </Text>
 
                             <View style={{
-                                paddingVertical: 100,
+                                paddingVertical: 42,
                             }} />
                         </TableView>
                     </ScrollView>

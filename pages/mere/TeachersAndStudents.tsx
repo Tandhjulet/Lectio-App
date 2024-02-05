@@ -184,7 +184,7 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                     }} />
 
                     <TableView style={{
-                        paddingHorizontal: 20,
+                        paddingHorizontal: 5,
                     }}>   
                         {people == null ? 
 
@@ -211,7 +211,7 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                             :
                             <>
                                 <View style={{
-                                    marginHorizontal: 10,
+                                    marginHorizontal: 0,
                                 }}>
                                     <SectionList
                                         sections={people}
@@ -264,7 +264,6 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
 
                                         keyboardDismissMode="on-drag"
                                         keyboardShouldPersistTaps="always"
-                                        bounces={false}
                                     />
                                 </View>
                             </>

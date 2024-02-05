@@ -23,6 +23,7 @@
     "expo-linking": "^6.0.0",
     "expo-secure-store": "~12.3.1",
     "expo-status-bar": "~1.6.0",
+    "expo-web-browser": "~12.3.2",
     "install": "^0.13.0",
     "npm": "^10.4.0",
     "react": "18.2.0",
@@ -40,7 +41,9 @@
     "react-native-svg": "13.9.0",
     "react-native-swipe-gestures": "github:MerijnCanvas/react-native-swipe-gestures",
     "react-native-tableview-simple": "^4.4.0",
-    "victory-native": "^36.8.2"
+    "victory-native": "^36.8.2",
+    "expo-device": "~5.4.0",
+    "expo-mail-composer": "~12.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
