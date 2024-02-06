@@ -1,7 +1,7 @@
 import { ActivityIndicator, Animated, Keyboard, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle } from "react-native";
-import COLORS from "../../modules/Themes";
-import { ArrowRightCircleIcon, ChevronDoubleRightIcon } from "react-native-heroicons/solid";
-import { useContext, useEffect, useRef, useState } from "react";
+import COLORS, { hexToRgb } from "../../modules/Themes";
+import { ArrowRightCircleIcon, ChevronDoubleRightIcon, LockClosedIcon, UserIcon } from "react-native-heroicons/solid";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { getSecure, getUnsecure, isAuthorized, secureSave, validate } from "../../modules/api/Authentication";
 import { SignInPayload } from "../../App";
 import { AuthContext } from "../../modules/Auth";
@@ -21,11 +21,15 @@ export default function Login({ route, navigation }: {
     /**
      * Refresh gym state every time page focuses, to avoid logout/login mishaps
      */
-    useFocusEffect(() => {
-        getSecure("gym").then((gym: { gymName: string, gymNummer: string } | null) => {
-            setGym(gym)
-        })
-    })
+    useFocusEffect(
+        useCallback(() => {
+            getSecure("gym").then((gym: { gymName: string, gymNummer: string } | null) => {
+                setGym(gym)
+            })
+
+            console.log("called")
+        }, [])
+    )
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -120,54 +124,56 @@ export default function Login({ route, navigation }: {
                 marginTop: 25,
                 gap: 15,
             }}>
-                <TextInput
-                    onFocus={() => setInvalidCredentials(false)}
-                    onChangeText={(updated) => setUsername(updated)}
-                    placeholder="Brugernavn"
-                    style={{
-                        ...styles.textInput,
-                        shadowColor: (invalidCredentials) ? COLORS.RED : undefined,
-                        shadowRadius: 4,
-                        shadowOpacity: 0.6,
+                <View style={{
+                    ...styles.wrapper,
+                    shadowColor: (invalidCredentials) ? COLORS.RED : undefined,
+                }}>
+                    <UserIcon size={20} color={COLORS.WHITE} />
 
-                        shadowOffset: {
-                            width: 0,
-                            height: 0,
-                        },
-                    }}
-                    textContentType="username"
-                    autoComplete="username"
-                    autoFocus
+                    <TextInput
+                        onFocus={() => setInvalidCredentials(false)}
+                        onChangeText={(updated) => setUsername(updated)}
+                        placeholder="Brugernavn"
+                        style={{
+                            ...styles.textInput,
+                        }}
+                        textContentType="username"
+                        autoComplete="username"
+                        autoFocus
 
-                    onSubmitEditing={() => {
-                        passwdRef.current?.focus();
-                    }}
-                    enterKeyHint="next"
-                />
+                        cursorColor={COLORS.ACCENT}
 
-                <TextInput
-                    ref={passwdRef}
-                    onFocus={() => setInvalidCredentials(false)}
-                    onChangeText={(updated) => setPassword(updated)}
-                    placeholder="Password"
-                    secureTextEntry={true}
-                    style={{
-                        ...styles.textInput,
-                        shadowColor: (invalidCredentials) ? COLORS.RED : undefined,
-                        shadowRadius: 4,
-                        shadowOpacity: 0.6,
+                        onSubmitEditing={() => {
+                            passwdRef.current?.focus();
+                        }}
+                        enterKeyHint="next"
+                    />
+                </View>
 
-                        shadowOffset: {
-                            width: 0,
-                            height: 0,
-                        },
-                    }}
-                    textContentType="password"
-                    autoComplete="current-password"
+                <View style={{
+                    ...styles.wrapper,
+                    shadowColor: (invalidCredentials) ? COLORS.RED : undefined,
+                }}>
+                    <LockClosedIcon size={20} color={COLORS.WHITE} />
 
-                    enterKeyHint="send"
-                    onSubmitEditing={validateAndContinue}
-                />
+                    <TextInput
+                        ref={passwdRef}
+                        onFocus={() => setInvalidCredentials(false)}
+                        onChangeText={(updated) => setPassword(updated)}
+                        placeholder="Password"
+                        secureTextEntry={true}
+                        style={{
+                            ...styles.textInput,
+                        }}
+                        textContentType="password"
+                        autoComplete="current-password"
+
+                        cursorColor={COLORS.ACCENT}
+
+                        enterKeyHint="send"
+                        onSubmitEditing={validateAndContinue}
+                    />
+                </View>
             </View>
 
             <Text style={{
@@ -176,59 +182,109 @@ export default function Login({ route, navigation }: {
                 opacity: invalidCredentials ? 1 : 0,
             }}>Dine oplysninger er ikke gyldige.</Text>
 
-            <Pressable
-                onPress={validateAndContinue}
-            >
-                <View style={{
-                    marginTop: 20,
+            <View style={{
+                display: "flex",
+                flexDirection: "row",
+                gap: 20,
+            }}>
+                <Pressable
 
-                    paddingHorizontal: 30,
-                    paddingVertical: 20,
-                    borderRadius: 10,
+                >
+                    <View style={{
 
-                    backgroundColor: COLORS.LIGHT,
+                        paddingHorizontal: 15,
+                        paddingVertical: 10,
+                        borderRadius: 99,
 
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: 5,
-                }}>
-                    {!loading ? 
-                        <>
-                            <ChevronDoubleRightIcon size={25} style={{
-                                // @ts-ignore
-                                color: COLORS.WHITE,
-                            }} />
+                        backgroundColor: hexToRgb(COLORS.WHITE, 0.2),
 
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: 5,
+                    }}>
+                        <Text style={{
+                            color: COLORS.WHITE,
+                            fontSize: 17,
+                            fontWeight: "normal",
+                        }}>
+                            Tilbage
+                        </Text>
+                    </View>
+                </Pressable>
+
+                <Pressable
+                    onPress={validateAndContinue}
+                >
+                    <View style={{
+
+                        paddingHorizontal: 25,
+                        paddingVertical: 10,
+                        borderRadius: 99,
+
+                        backgroundColor: COLORS.LIGHT,
+
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: 5,
+                    }}>
+                        {!loading ? 
                             <Text style={{
                                 color: COLORS.WHITE,
                                 fontSize: 17,
-                                fontWeight: "bold",
+                                fontWeight: "normal",
                             }}>
                                 Fortsæt
                             </Text>
-                        </>
-                    :
-                        <ActivityIndicator color={COLORS.WHITE} />
-                    }
-                </View>
-            </Pressable>
+                        :
+                            <ActivityIndicator color={COLORS.WHITE} />
+                        }
+                    </View>
+                </Pressable>
+            </View>
+
+            
         </View>
     )
 }
 
 const styles = StyleSheet.create({
     textInput: {
-        backgroundColor: COLORS.DARK,
+        fontSize: 16,
         color: COLORS.WHITE,
 
-        paddingHorizontal: 18,
+        flexGrow: 1,
         paddingVertical: 15,
-
-        fontSize: 16,
-
-        minWidth: 200,
-        borderRadius: 5,
+        width: 0,
     },
+    wrapper: {
+        paddingRight: 10,
+        paddingLeft: 10,
+
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        overflow: "hidden",
+
+        gap: 7.5,
+
+        shadowRadius: 4,
+        shadowOpacity: 0.6,
+
+        shadowOffset: {
+            width: 0,
+            height: 0,
+        },
+
+        backgroundColor: COLORS.BLACK,
+
+        width: 200,
+
+        borderRadius: 5,
+        borderColor: hexToRgb(COLORS.ACCENT, 0.6),
+        borderWidth: 1,
+    }
 })

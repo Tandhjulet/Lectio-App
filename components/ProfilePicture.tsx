@@ -1,7 +1,9 @@
 import { Image } from "react-native";
 import { SCRAPE_URLS } from "../modules/api/scraper/Helpers";
 import { ContextMenuView } from "react-native-ios-context-menu";
-import { isExpoGo } from "../App";
+import Constants from 'expo-constants';
+
+const isExpoGo = Constants.appOwnership === 'expo'
 
 export default function ProfilePicture({
     gymNummer,
