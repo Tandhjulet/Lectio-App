@@ -56,6 +56,7 @@ LogBox.ignoreLogs(["Sending"]) // dårligt, men umiddelbart eneste løsning.
 import * as Linking from 'expo-linking';
 import Constants from 'expo-constants';
 import { PostPurchase } from './modules/API';
+import LandingPage from './pages/login/LandingPage';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -269,6 +270,9 @@ const App = () => {
                     },
                     headerBackVisible: false,
                   }}>
+                    <AppStack.Screen name="LandingPage" component={LandingPage} options={{
+                      header: () => <></>
+                    }} />
                     <AppStack.Screen name="Login" component={Login} options={{
                       header: () => <></>
                     }} />

@@ -26,8 +26,6 @@ export default function Login({ route, navigation }: {
             getSecure("gym").then((gym: { gymName: string, gymNummer: string } | null) => {
                 setGym(gym)
             })
-
-            console.log("called")
         }, [])
     )
 
@@ -188,7 +186,9 @@ export default function Login({ route, navigation }: {
                 gap: 20,
             }}>
                 <Pressable
-
+                    onPress={() => {
+                        navigation.navigate("LandingPage")
+                    }}
                 >
                     <View style={{
 

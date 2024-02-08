@@ -8,13 +8,17 @@ export default function Logo({
     color,
     size,
     style,
+    minOpacity,
+    minScale,
 }: {
     color?: string,
     size?: number,
     style?: ViewStyle,
+    minOpacity?: number,
+    minScale?: number,
 }) {
-    const opacity = useRef(new Animated.Value(0.7)).current;
-    const scale = useRef(new Animated.Value(0.95)).current;
+    const opacity = useRef(new Animated.Value(minOpacity ?? 0.7)).current;
+    const scale = useRef(new Animated.Value(minScale ?? 0.95)).current;
     useEffect(() => {
       Animated.loop(
         Animated.sequence([
@@ -35,13 +39,13 @@ export default function Logo({
             Animated.parallel([
                 Animated.timing(opacity, {
                     easing: Easing.linear,
-                    toValue: 0.7,
+                    toValue: minOpacity ?? 0.7,
                     duration: 2000,
                     useNativeDriver: true,
                 }),
                 Animated.timing(scale, {
                     easing: Easing.linear,
-                    toValue: 0.95,
+                    toValue: minScale ?? 0.95,
                     duration: 2000,
                     useNativeDriver: true,
                 }),

@@ -561,6 +561,12 @@ export default function Skema({ navigation }: {
                 paddingRight: 20,
             }}>
                 <TouchableOpacity onPress={() => {
+                    if(loadDate > new Date()) {
+                        pagerRef.current?.setPage(0);
+                    } else {
+                        pagerRef.current?.setPage(2);
+                    }
+
                     setLoadDate(new Date());
                     setSelectedDay(new Date());
                     setDayNum(getDay(new Date()).weekDayNumber)

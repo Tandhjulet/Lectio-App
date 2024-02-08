@@ -29,8 +29,6 @@ function parseData(data: {[id: string]: Person}, contains?: string): {
     letter: string,
     data: Person[];
 }[] {
-    console.log("called " + contains)
-
     let out: { [id: string] : Person[]} = {}
   
     for(let name in data) {

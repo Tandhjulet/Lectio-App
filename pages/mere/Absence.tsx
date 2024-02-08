@@ -37,8 +37,6 @@ export default function Absence({ navigation }: { navigation: any }) {
 
     const [ refreshing, setRefreshing ] = useState(false);
 
-    const [ endAngle, setEndAngle ] = useState<number>(0);
-
     /**
      * Fetches the absence on page load
      */
@@ -101,7 +99,6 @@ export default function Absence({ navigation }: { navigation: any }) {
                 setChartedAbsence(out);
                 setLoading(false);
 
-                setEndAngle(360);
             })
         })();
     }, []);
@@ -169,7 +166,6 @@ export default function Absence({ navigation }: { navigation: any }) {
                 setChartedAbsence(out);
                 setRefreshing(false);
 
-                setEndAngle(360);
             })
         })();
     }, [refreshing]);
@@ -320,13 +316,6 @@ export default function Absence({ navigation }: { navigation: any }) {
                             gap: 20,
                         }}>
                             <VictoryPie
-                                animate={{
-                                    easing: "quadOut",
-                                    onLoad: {
-                                        duration: 750,
-                                    },
-                                }}
-
                                 data={almindeligt}
                                 x="team"
                                 y="absent"
@@ -340,7 +329,6 @@ export default function Absence({ navigation }: { navigation: any }) {
                                 labelRadius={radius / 1.5}
 
                                 padAngle={0.5}
-                                endAngle={endAngle}
 
                                 width={radius * 2}
                                 height={radius * 2}
@@ -503,13 +491,6 @@ export default function Absence({ navigation }: { navigation: any }) {
                             gap: 20,
                         }}>
                             <VictoryPie
-                                animate={{
-                                    easing: "quadOut",
-                                    onLoad: {
-                                        duration: 750,
-                                    },
-                                }}
-
                                 data={skriftligt}
                                 x="team"
                                 y="absent"
@@ -529,8 +510,6 @@ export default function Absence({ navigation }: { navigation: any }) {
                                     right: 0,
                                     top: 0,
                                 }}
-
-                                endAngle={endAngle}
 
                                 width={radius * 2}
                                 height={radius * 2}

@@ -8,7 +8,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ### __HØJ__
 - fraværsregistering
 - "Hent oplysninger" knap - indsigtsret
-- landing page
 
 ### __MELLEM__
 - push notifs
@@ -20,6 +19,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ### __LAV__
 - spørgeskemaer
 - dokumenter
+- gør "gå tilbage til nuværende dag" i skema mere 'smooth'
 
 ### __KAN IKKE LAVE ENDNU__
 - abonnement (krypteret Lectio-ID og skole er det eneste som klienten må sende)
