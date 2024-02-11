@@ -1,3 +1,6 @@
+import { scrapeHelper } from "./MessageScraper";
+import { parseInfoString } from "./SkemaScraper";
+
 export function scrapeAbsence(parser: any): Fag[] | null {
     const table = parser.getElementById("s_m_Content_Content_SFTabStudentAbsenceDataTable");
     if(table == null)
@@ -92,3 +95,66 @@ function scrapeCell(cell: any): {
         total: parseFloat(data[1].replace(",", ".")),
     };
 }
+
+// -- REGISTRATION --
+
+
+export type Registration = {
+    studentProvidedReason: boolean,
+    studentNote?: string,
+    teacherNote?: string,
+
+    modul: string,
+    date: string,
+
+    absence: string,
+}
+
+
+export function scapeRegistration(parser: any): Registration[] {
+    const tables = parser.getElementsByClassName("ls-table-layout1");
+
+    if(tables == null)
+        return [];
+
+    const out: Registration[] = [];
+
+    tables.forEach((table: any) => {
+        table.children.forEach((absence: any, i: number) => {
+
+            if(i == 0) return;
+
+            let team = absence.children[1].firstChild.firstChild.children;
+            team = team.length == 2 ? team[0].children[1].firstChild.text : team[1].children[1].firstChild.text;
+
+            const absenceAmount: string = absence.children[2].firstChild.text.replace("%", "").trim();
+
+            let registreret: string[] = absence.children[4].firstChild.text.split(" ");
+            registreret.pop()
+
+            const teacherNote: string | undefined = absence.children[5].children.length > 0 && absence.children[5].firstChild.text
+
+            let studentProvidedReason: boolean = false;
+            let studentNote: string | undefined = undefined;
+
+            if(absence.children.length == 8) {
+                studentProvidedReason = true;
+                studentNote = scrapeHelper(absence.children[7].children);
+            }
+
+            out.push({
+                modul: team,
+                date: registreret.join(" "),
+                absence: absenceAmount,
+                studentProvidedReason: studentProvidedReason,
+                studentNote: studentNote,
+                teacherNote: teacherNote || undefined,
+            })
+    
+        })
+    });
+
+    return out;
+}
+
+

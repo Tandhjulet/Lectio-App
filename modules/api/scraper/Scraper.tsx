@@ -2,7 +2,7 @@
 import DomSelector from 'react-native-dom-parser';
 
 import { Day, Week, scrapeSchema } from './SkemaScraper';
-import { Fag, scrapeAbsence } from './AbsenceScraper';
+import { Fag, Registration, scapeRegistration, scrapeAbsence } from './AbsenceScraper';
 
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -503,6 +503,22 @@ export async function getAbsence(gymNummer: string, bypassCache: boolean = false
         payload: absence,
         rateLimited: isRateLimited(parser),
     };
+}
+
+export async function getAbsenceRegistration(gymNummer: string, bypassCache: boolean = false): Promise<Registration[]> {
+    
+    const res = await fetch(SCRAPE_URLS(gymNummer).ABSENCE_REGISTRATION, {
+        method: "GET",
+        credentials: 'include',
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+        },
+    });
+
+    const parser = await treat(res);
+    const registration = scapeRegistration(parser);
+
+    return registration;
 }
 
 export function getWeekNumber(d: any): number {

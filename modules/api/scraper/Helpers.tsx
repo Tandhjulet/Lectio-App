@@ -10,6 +10,7 @@ export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: stri
         "SKEMA_FOR": `https://www.lectio.dk/lectio/${gymNummer}/SkemaNy.aspx?type=${type}&elevid=${elevId}`,
         "LOG_UD": `https://www.lectio.dk/lectio/${gymNummer}/logout.aspx`,
         "ABSENCE": `https://www.lectio.dk/lectio/${gymNummer}/subnav/fravaerelev.aspx`,
+        "ABSENCE_REGISTRATION": `https://www.lectio.dk/lectio/${gymNummer}/subnav/fravaerelev_fravaersaarsager.aspx`,
         "RAW_MESSAGE_URL": `https://www.lectio.dk/lectio/${gymNummer}/beskeder2.aspx`,
         "MESSAGES": `https://www.lectio.dk/lectio/${gymNummer}/beskeder2.aspx?mappeid=${selectedFolder}`,
         "NEW_MESSAGE": `https://www.lectio.dk/lectio/572/beskeder2.aspx?mappeid=${selectedFolder}`,

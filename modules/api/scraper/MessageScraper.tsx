@@ -8,7 +8,7 @@ export type LectioMessage = {
     messageId: string,
 }
 
-function scrapeHelper(elements:any) {
+export function scrapeHelper(elements:any) {
     let out: string = "";
     for(let child of elements) {
         if(child.tagName == "br") {
