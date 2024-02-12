@@ -119,7 +119,7 @@ export function scapeRegistration(parser: any): Registration[] {
 
     const out: Registration[] = [];
 
-    tables.forEach((table: any) => {
+    tables.forEach((table: any, j: number) => {
         table.children.forEach((absence: any, i: number) => {
 
             if(i == 0) return;
@@ -137,9 +137,10 @@ export function scapeRegistration(parser: any): Registration[] {
             let studentProvidedReason: boolean = false;
             let studentNote: string | undefined = undefined;
 
-            if(absence.children.length == 8) {
+            if(j == 1) {
                 studentProvidedReason = true;
-                studentNote = scrapeHelper(absence.children[7].children);
+                studentNote = scrapeHelper(absence.children[6].children).trim();
+                if(studentNote?.endsWith("\n")) studentNote = studentNote.replace("\n", "");
             }
 
             out.push({

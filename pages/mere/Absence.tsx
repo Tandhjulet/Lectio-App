@@ -1,4 +1,4 @@
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import NavigationBar from "../../components/Navbar";
 import { useCallback, useEffect, useState } from "react";
 import { getAbsence, getAbsenceRegistration } from "../../modules/api/scraper/Scraper";
@@ -9,7 +9,6 @@ import RateLimit from "../../components/RateLimit";
 import { VictoryChart, VictoryContainer, VictoryLabel, VictoryPie, VictoryTheme } from "victory-native";
 import PagerView from "react-native-pager-view";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import { UnorderedBulkOperation } from "mongodb";
 import { PieChart } from "react-native-gifted-charts";
 
 type ChartedAbsence = {
@@ -614,7 +613,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                     }}>
                                         <Text style={{
                                             color: hexToRgb(COLORS.ACCENT, 0.5),
-                                            fontWeight: "bold",
+                                            fontWeight: "normal",
                                             fontSize: 15,
                                             marginBottom: 5,
                                         }}>
@@ -626,10 +625,8 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                     paddingVertical: 10,
                                                     paddingLeft: 0,
 
-                                                    borderTopColor: COLORS.ACCENT_BLACK,
-                                                    borderBottomColor: COLORS.ACCENT_BLACK,
-                                                    borderBottomWidth: 1,
-                                                    borderTopWidth: i == 0 ? 1 : 0,
+                                                    borderBottomColor: hexToRgb(COLORS.WHITE, 0.2),
+                                                    borderBottomWidth: i+1 == remappedRegs[key].length ? StyleSheet.hairlineWidth : 0,
 
                                                     display: "flex",
                                                     flexDirection: "row",
@@ -653,8 +650,8 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                                                         <View style={{
                                                             position: "absolute",
-                                                            width: "100%",
-                                                            height: "100%",
+                                                            width: 60, // width and width of chart is 60 if radius is 30
+                                                            height: 60,
 
                                                             display: "flex",
                                                             justifyContent: "center",
@@ -676,8 +673,8 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                     }}>
                                                         <Text style={{
                                                             color: COLORS.WHITE,
-                                                            fontSize: 17.5,
-                                                            fontWeight: "500",
+                                                            fontSize: 15,
+                                                            fontWeight: "bold",
                                                             letterSpacing: 0.5,
                                                         }}>
                                                             {reg.modul}
@@ -698,8 +695,18 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                                                                 fontWeight: "bold",
                                                             }}>
-                                                                {reg.studentProvidedReason ? "IKKE ANGIVET" : reg.studentNote}
+                                                                {!reg.studentProvidedReason ? "Ikke angivet" : reg.studentNote?.split("\n")[0]}
                                                             </Text>
+                                                            {reg.studentNote?.split("\n").length == 2 && (
+                                                                <Text style={{
+                                                                    color: COLORS.RED,
+                                                                    flex: 0,
+
+                                                                    fontWeight: "normal",
+                                                                }}>
+                                                                    {reg.studentNote.split("\n")[1]}
+                                                                </Text>
+                                                            )}
                                                         </View>
                                                     </View>
                                                 </View>
