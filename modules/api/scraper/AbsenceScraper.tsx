@@ -106,6 +106,7 @@ export type Registration = {
 
     modul: string,
     date: string,
+    time: string,
 
     absence: string,
 }
@@ -124,15 +125,18 @@ export function scapeRegistration(parser: any): Registration[] {
 
             if(i == 0) return;
 
+            // TODO: fiks så time & date i Registration ikke hentes fra tidspunktet fraværet
+            // blev registreret, men istedet hvornår lektionen tog sted.
+
             let team = absence.children[1].firstChild.firstChild.children;
             team = team.length == 2 ? team[0].children[1].firstChild.text : team[1].children[1].firstChild.text;
 
             const absenceAmount: string = absence.children[2].firstChild.text.replace("%", "").trim();
 
             let registreret: string[] = absence.children[4].firstChild.text.split(" ");
-            registreret.pop()
+            const time = registreret.pop()?.slice(0,5);
 
-            const teacherNote: string | undefined = absence.children[5].children.length > 0 && absence.children[5].firstChild.text
+            const teacherNote: string | undefined = (absence.children[5].children.length > 0 && scrapeHelper(absence.children[5].children)) || undefined;
 
             let studentProvidedReason: boolean = false;
             let studentNote: string | undefined = undefined;
@@ -147,9 +151,10 @@ export function scapeRegistration(parser: any): Registration[] {
                 modul: team,
                 date: registreret.join(" "),
                 absence: absenceAmount,
+                time: time || "",
                 studentProvidedReason: studentProvidedReason,
                 studentNote: studentNote,
-                teacherNote: teacherNote || undefined,
+                teacherNote: teacherNote,
             })
     
         })

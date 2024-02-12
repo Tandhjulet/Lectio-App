@@ -631,6 +631,8 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                     display: "flex",
                                                     flexDirection: "row",
                                                     alignItems: "center",
+
+                                                    width: "100%",
                                                     gap: 15,
                                                 }} key={i}>
                                                     <View style={{
@@ -670,15 +672,40 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                     <View style={{
                                                         display: "flex",
                                                         gap: 5,
+
+                                                        width: "100%",
                                                     }}>
-                                                        <Text style={{
-                                                            color: COLORS.WHITE,
-                                                            fontSize: 15,
-                                                            fontWeight: "bold",
-                                                            letterSpacing: 0.5,
+                                                        <View style={{
+                                                            display: "flex",
+                                                            flexDirection: "row",
+
+                                                            justifyContent: "space-between",
+                                                            alignItems: "center",
+
+                                                            paddingRight: 15*5,
+
+                                                            width: "100%",
                                                         }}>
-                                                            {reg.modul}
-                                                        </Text>
+                                                            <Text style={{
+                                                                color: COLORS.WHITE,
+                                                                fontSize: 15,
+                                                                fontWeight: "bold",
+                                                                letterSpacing: 0.5,
+
+                                                                flex: 0,
+                                                            }}>
+                                                                {reg.modul}
+                                                            </Text>
+
+                                                            <Text style={{
+                                                                color: hexToRgb(COLORS.WHITE, 0.6),
+                                                                fontSize: 15,
+
+                                                                flex: 0,
+                                                            }}>
+                                                                {reg.time}
+                                                            </Text>
+                                                        </View>
 
                                                         <View style={{
                                                             backgroundColor: hexToRgb(COLORS.RED, 0.2),
