@@ -1,13 +1,13 @@
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Animated, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import NavigationBar from "../../components/Navbar";
-import { useCallback, useEffect, useState } from "react";
+import { RefObject, createRef, useCallback, useEffect, useRef, useState } from "react";
 import { getAbsence, getAbsenceRegistration } from "../../modules/api/scraper/Scraper";
 import { getSecure, getUnsecure } from "../../modules/api/Authentication";
 import COLORS, { hexToRgb } from "../../modules/Themes";
 import { AbsenceType, Fag, ModuleAbsence, Registration } from "../../modules/api/scraper/AbsenceScraper";
 import RateLimit from "../../components/RateLimit";
 import { VictoryChart, VictoryContainer, VictoryLabel, VictoryPie, VictoryTheme } from "victory-native";
-import PagerView from "react-native-pager-view";
+import PagerView, { PagerViewOnPageScrollEventData } from "react-native-pager-view";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { PieChart } from "react-native-gifted-charts";
 
@@ -33,6 +33,91 @@ const pieColors = ["#fc5353", "#fc8653", "#fcca53", "#57cf4c", "#00c972", "#78d6
 const fraværColors = ["#fc5353", "#fc8653", "#fcca53", "#57cf4c", "#00c972", "#78d6ff"];
 const fraværIndexes = ["ikke angivet", "andet", "kom for sent", "skolerelaterede aktiviteter", "private forhold", "sygdom"];
 
+const { width, height } = Dimensions.get('window');
+
+const PaginationIndicator = ({
+    scrollOffset,
+    position,
+    pagerRef,
+}: {
+    scrollOffset: Animated.Value,
+    position: Animated.Value,
+    pagerRef: RefObject<PagerView>,
+}) => {
+    const inputRange = [0, 2];
+    const translateX = Animated.add(
+        scrollOffset,
+        position,
+    ).interpolate({
+        inputRange,
+        outputRange: [0, width],
+    })
+
+    return (
+        <View style={{
+            width: "100%",
+
+            display: "flex",
+            flexDirection: "column",
+            marginBottom: 2.5,
+
+            backgroundColor: hexToRgb(COLORS.ACCENT_BLACK, 0.8,),
+        }}>
+            <View style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+
+                marginTop: 15,
+                marginBottom: 7.5,
+            }}>
+                <Pressable style={{
+                    width: "50%",
+
+                    display: "flex",
+                    alignItems: "center",
+                }} hitSlop={20} onPress={() => pagerRef.current?.setPage(0)}>
+                    <Text style={{
+                        color: COLORS.WHITE,
+                        fontSize: 15,
+                        fontWeight: "bold",
+                    }}>
+                        Fraværsoversigt
+                    </Text>
+                </Pressable>
+
+                <Pressable style={{
+                    width: "50%",
+
+                    display: "flex",
+                    alignItems: "center",
+                }} hitSlop={20} onPress={() => pagerRef.current?.setPage(1)}>
+                    <Text style={{
+                        color: COLORS.WHITE,
+                        fontSize: 15,
+                        fontWeight: "bold",
+                    }}>
+                        Registreringer
+                    </Text>
+                </Pressable>
+            </View>
+
+            <Animated.View
+                style={{
+                    width: "50%",
+                    height: 5,
+
+                    backgroundColor: hexToRgb(COLORS.DARK, 1),
+
+                    transform: [{ translateX: translateX }],
+                }}
+            />
+        </View>
+    )
+}
+
+const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
+
 export default function Absence({ navigation }: { navigation: any }) {
     const [ almindeligt, setAlmindeligt ] = useState<ModuleAbsence[]>();
     const [ skriftligt, setSkriftligt ] = useState<ModuleAbsence[]>();
@@ -43,7 +128,6 @@ export default function Absence({ navigation }: { navigation: any }) {
 
     const [ refreshing, setRefreshing ] = useState(false);
 
-    const [ registreringer, setRegistreringer ] = useState<Registration[]>([]);
     const [ remappedRegs, setRemappedRegs ] = useState<{[id: string]: Registration[]}>();
 
     /**
@@ -203,9 +287,31 @@ export default function Absence({ navigation }: { navigation: any }) {
         setRefreshing(true);
     }, []);
 
+    const scrollOffsetAnimatedValue = useRef(new Animated.Value(0)).current;
+    const positionAnimatedValue = useRef(new Animated.Value(0)).current;
+    
+    const pagerRef = createRef<PagerView>();
+
     return (
         <View style={{height: '100%', width:'100%'}}>
-            <PagerView
+            <PaginationIndicator scrollOffset={scrollOffsetAnimatedValue} position={positionAnimatedValue} pagerRef={pagerRef} />
+
+            <AnimatedPagerView
+                initialPage={0}
+                onPageScroll={Animated.event<PagerViewOnPageScrollEventData>(
+                    [
+                        {
+                            nativeEvent: {
+                                offset: scrollOffsetAnimatedValue,
+                                position: positionAnimatedValue,
+                            }
+                        }
+                    ],
+                    {
+                        useNativeDriver: true,
+                    }
+                )}
+
                 orientation={"horizontal"}
                 overdrag
 
@@ -213,6 +319,8 @@ export default function Absence({ navigation }: { navigation: any }) {
                     width: "100%",
                     height: "100%",
                 }}
+
+                ref={pagerRef}
             >
                 <View key="0">
                     {loading ?
@@ -231,7 +339,6 @@ export default function Absence({ navigation }: { navigation: any }) {
                             <View style={{
                                 display: 'flex',
 
-                                marginTop: 20,
                                 marginHorizontal: 20,
                                 gap: 25,
 
@@ -768,7 +875,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                     </ScrollView>
                 </View>
 
-            </PagerView>
+            </AnimatedPagerView>
             {rateLimited && <RateLimit />}
         </View>
     )

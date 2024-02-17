@@ -13,7 +13,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - push notifs
 - light mode
 - animationer
-    - optimer fravær pie chart
     - skema swipe mellem dage
 
 ### __LAV__
