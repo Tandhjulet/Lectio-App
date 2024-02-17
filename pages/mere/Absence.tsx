@@ -28,7 +28,10 @@ type ChartedAbsence = {
     },
 }
 
-const pieColors = ["#fc5353", "#fc8653", "#fcca53", "#57cf4c", "#00c972", "#78d6ff", "#009ac9", "#9578ff", "#ff78fd"]
+const pieColors = ["#fc5353", "#fc8653", "#fcca53", "#57cf4c", "#00c972", "#78d6ff", "#009ac9", "#9578ff", "#ff78fd"];
+
+const fraværColors = ["#fc5353", "#fc8653", "#fcca53", "#57cf4c", "#00c972", "#78d6ff"];
+const fraværIndexes = ["ikke angivet", "andet", "kom for sent", "skolerelaterede aktiviteter", "private forhold", "sygdom"];
 
 export default function Absence({ navigation }: { navigation: any }) {
     const [ almindeligt, setAlmindeligt ] = useState<ModuleAbsence[]>();
@@ -114,10 +117,10 @@ export default function Absence({ navigation }: { navigation: any }) {
                 const out: {[id: string]: Registration[]} = {};
 
                 res.forEach((reg) => {
-                    if(!(reg.date in out)) 
-                        out[reg.date] = []
+                    if(!(reg.registered in out)) 
+                        out[reg.registered] = []
 
-                    out[reg.date].push(reg);
+                    out[reg.registered].push(reg);
                 })
 
                 setRemappedRegs(out);
@@ -611,15 +614,33 @@ export default function Absence({ navigation }: { navigation: any }) {
                                     <View key={key} style={{
                                         marginTop: i == 0 ? 0 : 25,
                                     }}>
-                                        <Text style={{
-                                            color: hexToRgb(COLORS.ACCENT, 0.5),
-                                            fontWeight: "normal",
-                                            fontSize: 15,
-                                            marginBottom: 5,
+                                        <View style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            flexDirection: "row",
                                         }}>
-                                            {["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"][(new Date(key.replace("/", "-"))).getDay()]} d. {key}
-                                        </Text>
+                                            <Text style={{
+                                                color: hexToRgb(COLORS.ACCENT, 0.5),
+                                                fontWeight: "normal",
+                                                fontSize: 15,
+                                                marginBottom: 5,
+                                            }}>
+                                                {["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"][(new Date(key.replace("/", "-"))).getDay()]} d. {key}
+                                            </Text>
+
+                                            <Text style={{
+                                                color: hexToRgb(COLORS.WHITE, 0.4),
+                                                fontWeight: "normal",
+                                                fontSize: 15,
+                                                marginBottom: 5,
+                                            }}>
+                                                {remappedRegs[key].length} {remappedRegs[key].length == 1 ? "modul" : "moduler"}
+                                            </Text>
+                                        </View>
                                         {remappedRegs[key].map((reg: Registration, i: number) => {
+                                            const colorIndex = fraværIndexes.findIndex((v) => v == (!reg.studentProvidedReason ? "Ikke angivet" : reg.studentNote?.split("\n")[0])?.toLowerCase())
+                                            const color = fraværColors[colorIndex];
+
                                             return (
                                                 <View style={{
                                                     paddingVertical: 10,
@@ -637,14 +658,14 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 }} key={i}>
                                                     <View style={{
                                                         borderRadius: 999,
-                                                        borderColor: COLORS.RED,
+                                                        borderColor: color,
                                                         borderWidth: 2,
 
                                                         position: "relative"
                                                     }}>
                                                         <PieChart data={[{
                                                             value: parseFloat(reg.absence),
-                                                            color: hexToRgb(COLORS.RED, 0.2),
+                                                            color: hexToRgb(color, 0.2),
                                                         }, {
                                                             value: 100-parseFloat(reg.absence),
                                                             color: COLORS.BLACK,
@@ -660,7 +681,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                             alignItems: "center",
                                                         }}>
                                                             <Text style={{
-                                                                color: COLORS.RED,
+                                                                color: color,
                                                                 fontFamily: "bold",
                                                                 letterSpacing: 0.6,
                                                             }}>
@@ -703,12 +724,12 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                                                                 flex: 0,
                                                             }}>
-                                                                {reg.time}
+                                                                {reg.modulStartTime}
                                                             </Text>
                                                         </View>
 
                                                         <View style={{
-                                                            backgroundColor: hexToRgb(COLORS.RED, 0.2),
+                                                            backgroundColor: hexToRgb(color, 0.2),
 
                                                             paddingHorizontal: 20,
                                                             paddingVertical: 10,
@@ -717,7 +738,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                             alignSelf: "flex-start",
                                                         }}>
                                                             <Text style={{
-                                                                color: COLORS.RED,
+                                                                color: color,
                                                                 flex: 0,
 
                                                                 fontWeight: "bold",
@@ -726,7 +747,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                             </Text>
                                                             {reg.studentNote?.split("\n").length == 2 && (
                                                                 <Text style={{
-                                                                    color: COLORS.RED,
+                                                                    color: color,
                                                                     flex: 0,
 
                                                                     fontWeight: "normal",

@@ -104,9 +104,12 @@ export type Registration = {
     studentNote?: string,
     teacherNote?: string,
 
+    modulStartTime: string,
+
     modul: string,
-    date: string,
-    time: string,
+
+    registered: string,
+    registeredTime: string,
 
     absence: string,
 }
@@ -125,8 +128,15 @@ export function scapeRegistration(parser: any): Registration[] {
 
             if(i == 0) return;
 
-            // TODO: fiks så time & date i Registration ikke hentes fra tidspunktet fraværet
-            // blev registreret, men istedet hvornår lektionen tog sted.
+            let timeSpan: Date | undefined;
+            const regExpTimespan = absence.children[1].firstChild.text.match(new RegExp('\\d{2}:\\d{2}', "gm"));
+
+            if(regExpTimespan != null) {
+                const start = new Date();
+                start.setHours(parseInt(regExpTimespan[0].split(":")[0]))
+                start.setMinutes(parseInt(regExpTimespan[0].split(":")[1]))
+                timeSpan = start;
+            }
 
             let team = absence.children[1].firstChild.firstChild.children;
             team = team.length == 2 ? team[0].children[1].firstChild.text : team[1].children[1].firstChild.text;
@@ -149,12 +159,18 @@ export function scapeRegistration(parser: any): Registration[] {
 
             out.push({
                 modul: team,
-                date: registreret.join(" "),
                 absence: absenceAmount,
-                time: time || "",
                 studentProvidedReason: studentProvidedReason,
                 studentNote: studentNote,
                 teacherNote: teacherNote,
+
+                modulStartTime: timeSpan?.toLocaleTimeString("de-DK", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                }) || "",
+
+                registered: registreret.join(" "),
+                registeredTime: time || "",
             })
     
         })
