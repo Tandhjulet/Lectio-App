@@ -164,7 +164,7 @@ export default function Subscription({
             index={0}
             snapPoints={snapPoints}
 
-            bottomInset={90}
+            bottomInset={89}
             enableOverDrag
 
             backgroundStyle={{

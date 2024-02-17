@@ -528,7 +528,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                 index={0}
                 snapPoints={snapPoints}
 
-                bottomInset={90}
+                bottomInset={89}
 
                 backgroundStyle={{
                     backgroundColor: COLORS.BLACK,

@@ -23,12 +23,14 @@ export type OpgaveDetails = {
     karakterSkala?: string,
 }
 
-function parseDate(date: string): Date {
+export function parseDate(date: string): Date {
     const today = new Date();
 
-    today.setFullYear(parseInt(date.split("-")[1].split(" ")[0]), parseInt(date.split("/")[1].split("-")[0])-1, parseInt(date.split("/")[0]))
-    today.setHours(parseInt(date.split(" ")[1].split(":")[0]))
-    today.setMinutes(parseInt(date.split(" ")[1].split(":")[1]))
+    try {
+        today.setFullYear(parseInt(date.split("-")[1].split(" ")[0]), parseInt(date.split("/")[1].split("-")[0])-1, parseInt(date.split("/")[0]))
+        today.setHours(parseInt(date.split(" ")[1].split(":")[0]))
+        today.setMinutes(parseInt(date.split(" ")[1].split(":")[1]))
+    } catch {}
 
     return today;
 }
