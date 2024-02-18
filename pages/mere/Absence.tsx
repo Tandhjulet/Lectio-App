@@ -120,6 +120,24 @@ const PaginationIndicator = ({
     )
 }
 
+const RegistrationComponent = ({
+    title,
+}: {
+    title: string,
+}) => {
+    return (
+        <View style={{
+            width: "40%",
+            height: "25%",
+
+            marginVertical: 5,
+
+            backgroundColor: COLORS.RED,
+        }}>
+        </View>
+    )
+}
+
 const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
 
 export default function Absence({ navigation }: { navigation: any }) {
@@ -297,7 +315,9 @@ export default function Absence({ navigation }: { navigation: any }) {
     const [registration, setRegistration] = useState<Registration>();
     
     const pagerRef = createRef<PagerView>();
+
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+    const bottomSheetAbsenceRegistrationRef = useRef<BottomSheetModal>(null);
 
     return (
         <GestureHandlerRootView>
@@ -897,6 +917,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                         ref={bottomSheetModalRef}
                         index={0}
                         snapPoints={["60%", "90%"]}
+                        stackBehavior="push"
         
                         bottomInset={89}
         
@@ -1068,11 +1089,14 @@ export default function Absence({ navigation }: { navigation: any }) {
                                             </View>
                                         </View>
                                         
-                                        <View style={{
+                                        <Pressable style={{
                                             width: "100%",
                                             paddingVertical: 20,
                                             backgroundColor: hexToRgb(COLORS.WHITE, 0.1),
                                             borderRadius: 10,
+                                        }} onPress={() => {
+                                            bottomSheetModalRef.current?.close();
+                                            bottomSheetAbsenceRegistrationRef.current?.present()
                                         }}>
                                             <Text style={{
                                                 color: color,
@@ -1082,7 +1106,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                             }}>
                                                 Opgiv fraværsårsag
                                             </Text>
-                                        </View>
+                                        </Pressable>
 
                                         <BottomSheetTextInput
                                             editable
@@ -1110,6 +1134,49 @@ export default function Absence({ navigation }: { navigation: any }) {
                             )
                         })()}
                     </BottomSheetModal>
+
+                    <BottomSheetModal
+                        ref={bottomSheetAbsenceRegistrationRef}
+                        index={0}
+                        snapPoints={["30%"]}
+        
+                        bottomInset={89}
+                        stackBehavior="push"
+
+                        enableDismissOnClose
+                        onDismiss={() => {
+                            bottomSheetModalRef.current?.present();
+                        }}
+
+                        backgroundStyle={{
+                            backgroundColor: COLORS.ACCENT_BLACK,
+                        }}
+                        handleIndicatorStyle={{
+                            backgroundColor: COLORS.WHITE,
+                        }}
+                    >
+                        <View style={{
+                            width: "100%",
+                            height: "100%",
+
+                            backgroundColor: COLORS.ACCENT_BLACK,
+
+                            display: "flex",
+                            flexWrap: "wrap",
+
+                            flexDirection: "row",
+
+                            justifyContent: "space-evenly",
+                            alignItems: "center",
+                        }}>
+                            <RegistrationComponent title={"Andet"} />
+                            <RegistrationComponent title={"Andet"} />
+                            <RegistrationComponent title={"Andet"} />
+                            <RegistrationComponent title={"Andet"} />
+                            <RegistrationComponent title={"Andet"} />
+                        </View>
+                    </BottomSheetModal>
+
                 </View>
             </BottomSheetModalProvider>
         </GestureHandlerRootView>
