@@ -1,10 +1,10 @@
 import { ActivityIndicator, Animated, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import NavigationBar from "../../components/Navbar";
-import { RefObject, createRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ReactElement, RefObject, createRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getAbsence, getAbsenceRegistration } from "../../modules/api/scraper/Scraper";
 import { getSecure, getUnsecure } from "../../modules/api/Authentication";
 import COLORS, { hexToRgb } from "../../modules/Themes";
-import { AbsenceType, Fag, ModuleAbsence, Registration } from "../../modules/api/scraper/AbsenceScraper";
+import { AbsenceReason, AbsenceRegistration, AbsenceType, Fag, ModuleAbsence, Registration } from "../../modules/api/scraper/AbsenceScraper";
 import RateLimit from "../../components/RateLimit";
 import { VictoryChart, VictoryContainer, VictoryLabel, VictoryPie, VictoryTheme } from "victory-native";
 import PagerView, { PagerViewOnPageScrollEventData } from "react-native-pager-view";
@@ -13,7 +13,8 @@ import { PieChart } from "react-native-gifted-charts";
 import { BottomSheetModal, BottomSheetModalProvider, BottomSheetScrollView, BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { parseDate } from "../../modules/api/scraper/OpgaveScraper";
-import { PaperAirplaneIcon } from "react-native-heroicons/solid";
+import { BellIcon, CalendarDaysIcon, ClockIcon, EyeDropperIcon, LockClosedIcon, PaperAirplaneIcon, PaperClipIcon } from "react-native-heroicons/solid";
+import { NumberProp, SvgProps } from "react-native-svg";
 
 type ChartedAbsence = {
     almindeligt: {
@@ -34,7 +35,7 @@ type ChartedAbsence = {
 
 const pieColors = ["#fc5353", "#fc8653", "#fcca53", "#57cf4c", "#00c972", "#78d6ff", "#009ac9", "#9578ff", "#ff78fd"];
 
-const fraværColors = ["#fc5353", "#fc8653", "#fcca53", "#57cf4c", "#00c972", "#78d6ff"];
+const fraværColors = ["#fc5353", "#9578ff", "#fcca53", "#00c972", "#78d6ff", "#ff78fd"];
 const fraværIndexes = ["ikke angivet", "andet", "kom for sent", "skolerelaterede aktiviteter", "private forhold", "sygdom"];
 
 const { width, height } = Dimensions.get('window');
@@ -120,23 +121,58 @@ const PaginationIndicator = ({
     )
 }
 
+interface Props extends SvgProps {
+    size?: NumberProp;
+}
+
 const RegistrationComponent = ({
     title,
+    color,
+    Icon,
+    setAbsenceReason,
 }: {
     title: string,
-}) => {
-    return (
-        <View style={{
+    color: string,
+    Icon: ReactElement<Props, any>,
+    setAbsenceReason: React.Dispatch<React.SetStateAction<AbsenceReason | ((absenceReason: AbsenceReason) => string) | null>>,
+}) => (
+        <Pressable style={{
             width: "40%",
             height: "25%",
 
             marginVertical: 5,
 
-            backgroundColor: COLORS.RED,
+            backgroundColor: hexToRgb(color, 0.3),
+            
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+
+            flexDirection: "column",
+
+            borderRadius: 5,
+
+            gap: 5,
+        }} onPress={() => {
+            const str = (title || "andet").toUpperCase().replaceAll(" ", "_");
+
+            const reason = AbsenceReason[str as keyof typeof AbsenceReason];
+            setAbsenceReason(reason);
         }}>
-        </View>
+            {Icon}
+
+            <Text style={{
+                fontWeight: "600",
+                fontSize: 15,
+                letterSpacing: 0.4,
+
+                color: color,
+            }}>
+                {title}
+            </Text>
+        </Pressable>
     )
-}
+
 
 const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
 
@@ -151,6 +187,8 @@ export default function Absence({ navigation }: { navigation: any }) {
     const [ refreshing, setRefreshing ] = useState(false);
 
     const [ remappedRegs, setRemappedRegs ] = useState<{[id: string]: Registration[]}>();
+
+    const [ absenceReason, setAbsenceReason] = useState<AbsenceReason | ((absenceReason: AbsenceReason) => string) | null>(null);
 
     /**
      * Fetches the absence on page load
@@ -243,8 +281,8 @@ export default function Absence({ navigation }: { navigation: any }) {
         if(!refreshing)
             return;
 
-        (async () => {
-            const gymNummer = (await getSecure("gym")).gymNummer;
+        (async (): Promise<string> => {
+            const gymNummer: string = (await getSecure("gym")).gymNummer;
 
             const out: ChartedAbsence = {
                 almindeligt: {
@@ -298,9 +336,26 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                 setChartedAbsence(out);
                 setRefreshing(false);
-
             })
-        })();
+
+            return gymNummer;
+        })().then(async (gymNummer: string) => { // render registrations after absence
+            
+            getAbsenceRegistration(gymNummer).then((res: Registration[]) => {
+
+                const out: {[id: string]: Registration[]} = {};
+
+                res.forEach((reg) => {
+                    if(!(reg.registered in out)) 
+                        out[reg.registered] = []
+
+                    out[reg.registered].push(reg);
+                })
+
+                setRemappedRegs(out);
+            })
+
+        });
     }, [refreshing]);
 
     const radius = 110;
@@ -318,6 +373,13 @@ export default function Absence({ navigation }: { navigation: any }) {
 
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
     const bottomSheetAbsenceRegistrationRef = useRef<BottomSheetModal>(null);
+
+    useEffect(() => {
+        if(absenceReason == null) return;
+        
+        bottomSheetAbsenceRegistrationRef.current?.dismiss();
+        bottomSheetModalRef.current?.present();
+    }, [absenceReason])
 
     return (
         <GestureHandlerRootView>
@@ -796,6 +858,17 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                             gap: 15,
                                                         }} key={i} onPress={() => {
                                                             setRegistration(reg);
+
+                                                            if(reg.studentProvidedReason) {
+                                                                let note = reg.studentNote?.split("\n")[0]?.toLowerCase();
+                                                                if(note?.toLowerCase() == "skolerelaterede aktiviteter")
+                                                                    note = "skolerelateret";
+
+                                                                setAbsenceReason(AbsenceReason[note?.replaceAll(" ", "_").toUpperCase() as keyof typeof AbsenceReason]);
+                                                            } else {
+                                                                setAbsenceReason(null);
+                                                            }
+
                                                             bottomSheetModalRef.current?.present();
                                                         }}>
                                                             <View style={{
@@ -929,8 +1002,15 @@ export default function Absence({ navigation }: { navigation: any }) {
                         }}
                     >   
                         {(() => {
-                            const colorIndex = fraværIndexes.findIndex((v) => v == (!registration?.studentProvidedReason ? "Ikke angivet" : registration?.studentNote?.split("\n")[0])?.toLowerCase())
-                            const color = fraværColors[colorIndex];
+                            let color;
+                            if(absenceReason == null) {
+                                const colorIndex = fraværIndexes.findIndex((v) => v == (!registration?.studentProvidedReason ? "Ikke angivet" : registration?.studentNote?.split("\n")[0])?.toLowerCase())
+                                color = fraværColors[colorIndex];
+                            } else {
+                                const str = AbsenceReason.toString(absenceReason);
+                                const colorIndex = fraværIndexes.findIndex((v) => v == (str.toLowerCase() == "skolerelateret" ? "skolerelaterede aktiviteter" : str).toLowerCase())
+                                color = fraværColors[colorIndex];
+                            }
 
                             return (
                                 <BottomSheetScrollView>
@@ -1095,7 +1175,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                             backgroundColor: hexToRgb(COLORS.WHITE, 0.1),
                                             borderRadius: 10,
                                         }} onPress={() => {
-                                            bottomSheetModalRef.current?.close();
+                                            bottomSheetModalRef.current?.dismiss();
                                             bottomSheetAbsenceRegistrationRef.current?.present()
                                         }}>
                                             <Text style={{
@@ -1104,7 +1184,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 fontSize: 17.5,
                                                 textAlign: "center",
                                             }}>
-                                                Opgiv fraværsårsag
+                                                {absenceReason == null ? "Opgiv fraværsårsag" : AbsenceReason.toString(absenceReason)}
                                             </Text>
                                         </Pressable>
 
@@ -1138,7 +1218,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                     <BottomSheetModal
                         ref={bottomSheetAbsenceRegistrationRef}
                         index={0}
-                        snapPoints={["30%"]}
+                        snapPoints={["50%"]}
         
                         bottomInset={89}
                         stackBehavior="push"
@@ -1169,11 +1249,23 @@ export default function Absence({ navigation }: { navigation: any }) {
                             justifyContent: "space-evenly",
                             alignItems: "center",
                         }}>
-                            <RegistrationComponent title={"Andet"} />
-                            <RegistrationComponent title={"Andet"} />
-                            <RegistrationComponent title={"Andet"} />
-                            <RegistrationComponent title={"Andet"} />
-                            <RegistrationComponent title={"Andet"} />
+                            {(() => {
+                                const andet = fraværColors[fraværIndexes.findIndex((s) => s == "andet")]
+                                const komForSent = fraværColors[fraværIndexes.findIndex((s) => s == "kom for sent")]
+                                const skolerelateredeAktiviter = fraværColors[fraværIndexes.findIndex((s) => s == "skolerelaterede aktiviteter" || s == "skolerelateret")]
+                                const privateForhold = fraværColors[fraværIndexes.findIndex((s) => s == "private forhold")]
+                                const sygdom = fraværColors[fraværIndexes.findIndex((s) => s == "sygdom")]
+
+                                return (
+                                    <>
+                                        <RegistrationComponent title={"Andet"} color={andet} Icon={<PaperClipIcon color={andet} />} setAbsenceReason={setAbsenceReason} />
+                                        <RegistrationComponent title={"Kom for sent"} color={komForSent} Icon={<BellIcon color={komForSent} />} setAbsenceReason={setAbsenceReason} />
+                                        <RegistrationComponent title={"Skolerelateret"} color={skolerelateredeAktiviter} Icon={<CalendarDaysIcon color={skolerelateredeAktiviter} />} setAbsenceReason={setAbsenceReason} />
+                                        <RegistrationComponent title={"Private forhold"} color={privateForhold} Icon={<LockClosedIcon color={privateForhold} />} setAbsenceReason={setAbsenceReason} />
+                                        <RegistrationComponent title={"Sygdom"} color={sygdom} Icon={<EyeDropperIcon color={sygdom} />} setAbsenceReason={setAbsenceReason} />
+                                    </>
+                                )
+                            })()}
                         </View>
                     </BottomSheetModal>
 

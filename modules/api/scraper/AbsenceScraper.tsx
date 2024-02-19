@@ -24,6 +24,26 @@ export enum AbsenceType {
     ALMINDELIGT,
 }
 
+export enum AbsenceReason {
+    ANDET,
+    KOM_FOR_SENT,
+    SKOLERELATERET,
+    PRIVATE_FORHOLD,
+    SYGDOM,
+}
+
+export namespace AbsenceReason {
+    export function toString(absenceReason: AbsenceReason | any): string {
+        const str = AbsenceReason[absenceReason].replaceAll("_", " ");
+        return str[0] + str.slice(1).toLowerCase()
+    }
+}
+
+export type AbsenceRegistration = {
+    reason: AbsenceReason,
+    comment?: string,
+}
+
 export type Fag = {
     skriftligt: ModuleAbsence,
     almindeligt: ModuleAbsence,

@@ -2,5 +2,8 @@
   "compilerOptions": {
     "noImplicitThis": false,
   },
+  "paths": {
+    "react": [ "./node_modules/@types/react" ]
+  },
   "extends": "@tsconfig/react-native/tsconfig.json"
 }
