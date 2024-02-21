@@ -4,14 +4,14 @@ import { ReactElement, RefObject, createRef, useCallback, useEffect, useMemo, us
 import { getAbsence, getAbsenceRegistration } from "../../modules/api/scraper/Scraper";
 import { getSecure, getUnsecure } from "../../modules/api/Authentication";
 import COLORS, { hexToRgb } from "../../modules/Themes";
-import { AbsenceReason, AbsenceRegistration, AbsenceType, Fag, ModuleAbsence, Registration } from "../../modules/api/scraper/AbsenceScraper";
+import { AbsenceReason, AbsenceRegistration, AbsenceType, Fag, ModuleAbsence, Registration, postRegistration } from "../../modules/api/scraper/AbsenceScraper";
 import RateLimit from "../../components/RateLimit";
 import { VictoryChart, VictoryContainer, VictoryLabel, VictoryPie, VictoryTheme } from "victory-native";
 import PagerView, { PagerViewOnPageScrollEventData } from "react-native-pager-view";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { PieChart } from "react-native-gifted-charts";
 import { BottomSheetModal, BottomSheetModalProvider, BottomSheetScrollView, BottomSheetTextInput } from "@gorhom/bottom-sheet";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { GestureHandlerRootView, TextInput } from "react-native-gesture-handler";
 import { parseDate } from "../../modules/api/scraper/OpgaveScraper";
 import { BellIcon, CalendarDaysIcon, ClockIcon, EyeDropperIcon, LockClosedIcon, PaperAirplaneIcon, PaperClipIcon } from "react-native-heroicons/solid";
 import { NumberProp, SvgProps } from "react-native-svg";
@@ -177,6 +177,9 @@ const RegistrationComponent = ({
 const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
 
 export default function Absence({ navigation }: { navigation: any }) {
+
+    //const gymNummer = useRef((await getSecure("gym")).gymNummer).current;
+
     const [ almindeligt, setAlmindeligt ] = useState<ModuleAbsence[]>();
     const [ skriftligt, setSkriftligt ] = useState<ModuleAbsence[]>();
 
@@ -185,10 +188,13 @@ export default function Absence({ navigation }: { navigation: any }) {
     const [ rateLimited, setRateLimited ] = useState(false);
 
     const [ refreshing, setRefreshing ] = useState(false);
+    const [ registrationRefreshing, setRegistrationRefreshing ] = useState(false);
 
     const [ remappedRegs, setRemappedRegs ] = useState<{[id: string]: Registration[]}>();
 
     const [ absenceReason, setAbsenceReason] = useState<AbsenceReason | ((absenceReason: AbsenceReason) => string) | null>(null);
+
+    const [ sendLoading, setSendLoading ] = useState<boolean>(false);
 
     /**
      * Fetches the absence on page load
@@ -197,8 +203,6 @@ export default function Absence({ navigation }: { navigation: any }) {
         setLoading(true);
         
         (async (): Promise<string> => {
-            const gymNummer: string = (await getSecure("gym")).gymNummer;
-
             const out: ChartedAbsence = {
                 almindeligt: {
                     yearly: 0,
@@ -213,6 +217,8 @@ export default function Absence({ navigation }: { navigation: any }) {
                     teams: []
                 }
             }
+            
+            const gymNummer = (await getSecure("gym")).gymNummer;
 
             getAbsence(gymNummer, true).then(({ payload, rateLimited }): any => {
                 setRateLimited(rateLimited)
@@ -281,7 +287,7 @@ export default function Absence({ navigation }: { navigation: any }) {
         if(!refreshing)
             return;
 
-        (async (): Promise<string> => {
+        (async () => {
             const gymNummer: string = (await getSecure("gym")).gymNummer;
 
             const out: ChartedAbsence = {
@@ -337,25 +343,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                 setChartedAbsence(out);
                 setRefreshing(false);
             })
-
-            return gymNummer;
-        })().then(async (gymNummer: string) => { // render registrations after absence
-            
-            getAbsenceRegistration(gymNummer).then((res: Registration[]) => {
-
-                const out: {[id: string]: Registration[]} = {};
-
-                res.forEach((reg) => {
-                    if(!(reg.registered in out)) 
-                        out[reg.registered] = []
-
-                    out[reg.registered].push(reg);
-                })
-
-                setRemappedRegs(out);
-            })
-
-        });
+        })();
     }, [refreshing]);
 
     const radius = 110;
@@ -371,6 +359,9 @@ export default function Absence({ navigation }: { navigation: any }) {
     
     const pagerRef = createRef<PagerView>();
 
+    const [commentField, setCommentField] = useState<string>();
+
+
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
     const bottomSheetAbsenceRegistrationRef = useRef<BottomSheetModal>(null);
 
@@ -380,6 +371,36 @@ export default function Absence({ navigation }: { navigation: any }) {
         bottomSheetAbsenceRegistrationRef.current?.dismiss();
         bottomSheetModalRef.current?.present();
     }, [absenceReason])
+
+    const onRegistrationRefresh = useCallback(() => {
+        setRegistrationRefreshing(true);
+    }, []);
+
+    useEffect(() => {
+        if(!registrationRefreshing) return;
+
+        (async () => {
+            const gymNummer = (await getSecure("gym")).gymNummer;
+            getAbsenceRegistration(gymNummer).then((res: Registration[]) => {
+
+                const out: {[id: string]: Registration[]} = {};
+
+                res.forEach((reg) => {
+                    if(!(reg.registered in out)) 
+                        out[reg.registered] = []
+
+                    out[reg.registered].push(reg);
+                })
+
+                setRemappedRegs(out);
+
+                setSendLoading(false);
+                bottomSheetModalRef.current?.dismiss();
+
+                setRegistrationRefreshing(false);
+            })
+        })();
+    }, [registrationRefreshing])
 
     return (
         <GestureHandlerRootView>
@@ -783,7 +804,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                                     maxWidth: 100,
                                                                     
                                                                 }}>
-                                                                    {team}
+                                                                    {" "}{team}
                                                                 </Text>
                                                             </View>
                                                         </View>
@@ -798,7 +819,9 @@ export default function Absence({ navigation }: { navigation: any }) {
                         </View>
                         
                         <View key="1">
-                            <ScrollView>
+                            <ScrollView refreshControl={
+                                    <RefreshControl refreshing={registrationRefreshing} onRefresh={onRegistrationRefresh} />
+                                }>
                                 <View style={{
                                     display: 'flex',
 
@@ -857,7 +880,10 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                             width: "100%",
                                                             gap: 15,
                                                         }} key={i} onPress={() => {
+                                                            bottomSheetAbsenceRegistrationRef.current?.dismiss();
+
                                                             setRegistration(reg);
+                                                            setCommentField(reg.studentNote?.split("\n").slice(1).join("\n"));
 
                                                             if(reg.studentProvidedReason) {
                                                                 let note = reg.studentNote?.split("\n")[0]?.toLowerCase();
@@ -989,7 +1015,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                     <BottomSheetModal
                         ref={bottomSheetModalRef}
                         index={0}
-                        snapPoints={["60%", "90%"]}
+                        snapPoints={["60%"]}
                         stackBehavior="push"
         
                         bottomInset={89}
@@ -1000,6 +1026,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                         handleIndicatorStyle={{
                             backgroundColor: COLORS.WHITE,
                         }}
+
                     >   
                         {(() => {
                             let color;
@@ -1013,7 +1040,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                             }
 
                             return (
-                                <BottomSheetScrollView>
+                                <BottomSheetScrollView keyboardShouldPersistTaps="handled">
                                     <View style={{
                                         height: "100%",
                                         width: "100%",
@@ -1047,15 +1074,33 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 alignItems: "center",
 
                                                 gap: 5,
+                                            }} onPressIn={async () => {
+                                                if(absenceReason == null) return;
+                                                else if (typeof absenceReason == "function") return;
+                                               
+                                                setSendLoading(true);
+                                                const gymNummer = (await getSecure("gym")).gymNummer;
+
+                                                await postRegistration({
+                                                    reason: absenceReason,
+                                                    comment: commentField,
+                                                }, (registration?.url) || "", gymNummer);
+                                                onRegistrationRefresh();
                                             }}>
-                                                <Text style={{
-                                                    color: COLORS.LIGHT,
-                                                    fontSize: 17.5,
-                                                    fontWeight: "bold",
-                                                }}>
-                                                    Send
-                                                </Text>
-                                                <PaperAirplaneIcon size={17.5} color={COLORS.LIGHT} />
+                                                {!sendLoading ? (
+                                                    <>
+                                                        <Text style={{
+                                                            color: COLORS.LIGHT,
+                                                            fontSize: 17.5,
+                                                            fontWeight: "bold",
+                                                        }}>
+                                                            Send
+                                                        </Text>
+                                                        <PaperAirplaneIcon size={17.5} color={COLORS.LIGHT} />
+                                                    </>
+                                                ) : (
+                                                    <ActivityIndicator color={COLORS.LIGHT} />
+                                                )}
                                             </Pressable>
                                         </View>
             
@@ -1194,6 +1239,9 @@ export default function Absence({ navigation }: { navigation: any }) {
                                             textAlignVertical={"top"}
                                             scrollEnabled
 
+                                            onChangeText={(e) => setCommentField(e)}
+                                            defaultValue={registration?.studentNote?.split("\n").slice(1).join("\n") || ""}
+
                                             placeholder={"Tilføj en kommentar"}
                                             placeholderTextColor={hexToRgb(COLORS.WHITE, 0.6)}
                                             style={{
@@ -1224,9 +1272,6 @@ export default function Absence({ navigation }: { navigation: any }) {
                         stackBehavior="push"
 
                         enableDismissOnClose
-                        onDismiss={() => {
-                            bottomSheetModalRef.current?.present();
-                        }}
 
                         backgroundStyle={{
                             backgroundColor: COLORS.ACCENT_BLACK,

@@ -1,5 +1,6 @@
 // @ts-ignore
 import DomSelector from 'react-native-dom-parser';
+import treat, { _treat, treatRaw } from './TextTreater';
 
 export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: string, type?: "bcstudent" | "bcteacher", selectedFolder: number = -70) {
     const _URLS = {
@@ -40,13 +41,15 @@ export function parseASPHeaders(ASPHeader: any) {
 }
 
 export async function getASPHeaders(url: string): Promise<{[id: string]: string}> {
-    const text = await (await fetch(url, {
+    const res = (await fetch(url, {
         method: "GET",
         credentials: 'include',
         headers: {
             "User-Agent": "Mozilla/5.0",
         },
-    })).text();
+    }));
+
+    const text = _treat(await res.text());
 
     const parser = DomSelector(text);
     const ASPHeaders = parser.getElementsByClassName("aspNetHidden");

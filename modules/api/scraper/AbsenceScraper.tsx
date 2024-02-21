@@ -1,5 +1,6 @@
+import { getASPHeaders } from "./Helpers";
 import { scrapeHelper } from "./MessageScraper";
-import { parseInfoString } from "./SkemaScraper";
+import { parseInfoString, replaceHTMLEntities } from "./SkemaScraper";
 
 export function scrapeAbsence(parser: any): Fag[] | null {
     const table = parser.getElementById("s_m_Content_Content_SFTabStudentAbsenceDataTable");
@@ -132,6 +133,46 @@ export type Registration = {
     registeredTime: string,
 
     absence: string,
+
+    url?: string,
+}
+
+export async function postRegistration(reg: AbsenceRegistration, url: string, gymNummer: string) {
+    if(url == "" || gymNummer == "") return;
+
+    url = replaceHTMLEntities(url);
+
+    if(!url.startsWith("/")) url = "/" + url;
+    url = "https://www.lectio.dk" + url;
+
+    const reason = AbsenceReason.toString(reg.reason);
+
+
+    const headers: {[id: string]: string}  = {
+        ...(await getASPHeaders(url)),
+
+        "__EVENTTARGET": "s$m$Content$Content$savecancelapplyBtn$svbtn",
+
+        "s$m$Content$Content$StudentReasonDD$dd": reason.toLowerCase() == "skolerelateret" ? "Skolerelaterede aktiviteter" : reason,
+        "s$m$Content$Content$cancelStudentNote$tb": reg.comment || "",
+        "masterfootervalue": "X1!ÆØÅ",
+        "LectioPostbackId": "",
+    }
+
+    const parsedData = [];
+    for (const key in headers) {
+        parsedData.push(encodeURIComponent(key) + "=" + encodeURIComponent(headers[key]));
+    }
+    const stringifiedData = parsedData.join("&");
+
+    await fetch(url, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        },
+        body: stringifiedData,
+    });
 }
 
 
@@ -177,6 +218,8 @@ export function scapeRegistration(parser: any): Registration[] {
                 if(studentNote?.endsWith("\n")) studentNote = studentNote.replace("\n", "");
             }
 
+            const url = absence.children[j == 1 ? 7 : 6].firstChild.firstChild.attributes.href
+
             out.push({
                 modul: team,
                 absence: absenceAmount,
@@ -191,6 +234,8 @@ export function scapeRegistration(parser: any): Registration[] {
 
                 registered: registreret.join(" "),
                 registeredTime: time || "",
+
+                url: url,
             })
     
         })
