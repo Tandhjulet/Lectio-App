@@ -5,7 +5,7 @@ import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scr
 import { getSecure, getUnsecure, isAuthorized } from "../modules/api/Authentication";
 import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
 import { hexToRgb, themes } from "../modules/Themes";
-import { BackwardIcon, ChatBubbleBottomCenterTextIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";
+import { ArrowLeftIcon, ArrowRightIcon, BackwardIcon, ChatBubbleBottomCenterTextIcon, ChevronLeftIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";
 import getDaysOfCurrentWeek, { WeekDay, getDay, getDaysOfThreeWeeks, getNextWeek, getPrevWeek } from "../modules/Date";
 import GestureRecognizer from 'react-native-swipe-gestures';
 import { getPeople } from "../modules/api/scraper/class/PeopleList";
@@ -139,6 +139,8 @@ export default function Skema({ navigation }: {
      * @param t if it should go to the next day or the previous, respectively "ADD" or "REMOVE"
      */
     const daySelector = (t: "ADD" | "REMOVE") => {
+        if(loading) return;
+
         setSelectedDay((prev) => {
             const copy = new Date(prev);
     
@@ -516,13 +518,55 @@ export default function Skema({ navigation }: {
         setRefreshing(true);
     }, []);
 
-    const {width} = Dimensions.get('window');
+    const {width,height} = Dimensions.get('screen');
 
     const pagerRef = createRef<PagerView>();
     const scrollRef = createRef<ScrollView>();
 
     const scheme = useColorScheme();
     const theme = themes[scheme || "dark"];
+
+    const pan = useRef(new Animated.ValueXY()).current;
+
+    const threshold = useRef(60).current;
+    const maxExtension = useRef(90).current;
+
+    const panResponder = 
+        PanResponder.create({
+            onStartShouldSetPanResponder : () => true,
+            onMoveShouldSetPanResponder : (e, gestureState) => {
+                const {dx, dy} = gestureState;
+                return (Math.abs(dx) > threshold) && (Math.abs(dy) < (threshold / 2));
+            },
+
+            onPanResponderMove: (evt, gestureState) => {
+                if(Math.abs(gestureState.dx) > maxExtension)
+                    gestureState.dx = gestureState.dx > 0 ? maxExtension : -maxExtension;
+
+                return Animated.event(
+                    [
+                        null,
+                        { dx: pan.x }
+                    ],
+                    {useNativeDriver: false}
+                )(evt, gestureState)
+            },
+            onPanResponderRelease: (evt, gestureState) => {
+                if(gestureState.dx > threshold) { // previous day
+                    daySelector("REMOVE")
+                } else if (Math.abs(gestureState.dx) > threshold) { // next day
+                    daySelector("ADD")
+                }
+
+                Animated.spring(
+                    pan,
+                    {
+                        useNativeDriver: true,
+                        toValue: 0
+                    }
+                ).start();
+            }
+        });
 
     return (
         <View>
@@ -564,6 +608,8 @@ export default function Skema({ navigation }: {
                     paddingRight: 20,
                 }}>
                     <TouchableOpacity onPress={() => {
+                        if(loading) return;
+
                         if(loadDate > new Date()) {
                             pagerRef.current?.setPage(0);
                         } else {
@@ -750,13 +796,9 @@ export default function Skema({ navigation }: {
                 </PagerView>
             </View>
 
-            <GestureRecognizer 
-                onSwipeLeft={() => daySelector("ADD")}
-                onSwipeRight={() => daySelector("REMOVE")}
-                style={{
-                    backgroundColor: theme.ACCENT_BLACK,
-                }}
-            >
+            <View style={{
+                backgroundColor: theme.ACCENT_BLACK,
+            }} {...panResponder.panHandlers}>
                 <View
                     style={{
                         backgroundColor: theme.ACCENT,
@@ -794,6 +836,7 @@ export default function Skema({ navigation }: {
                         :
                         <ScrollView style={{
                             flex: 1,
+                            zIndex: 50,
                         }} refreshControl={
                             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                         } ref={scrollRef}>
@@ -824,6 +867,77 @@ export default function Skema({ navigation }: {
 
                                 </View>
                             }
+
+                            {skema != null && (
+                                <Animated.View style={{
+                                    position: "absolute",
+
+                                    width: width,
+                                    height: height / 2,
+
+                                    display: "flex",
+                                    flexDirection: "row",
+
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+
+                                    zIndex: 50,
+
+                                    transform: [{translateX: pan.x}],
+                                }}>
+                                    <View style={{
+                                        width: 75,
+                                        aspectRatio: 1,
+
+                                        transform: [{translateX: -85}],
+
+                                        backgroundColor: theme.BLACK,
+                                        borderRadius: 75,
+                                    }}>
+                                        <View style={{
+                                            width: "100%",
+                                            height: "100%",
+
+                                            borderRadius: 75,
+
+                                            borderWidth: 1,
+                                            borderColor: theme.WHITE,
+
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}>
+                                            <ArrowLeftIcon size={40} color={theme.WHITE} />
+                                        </View>
+                                    </View>
+
+                                    <View style={{
+                                        width: 75,
+                                        aspectRatio: 1,
+
+                                        transform: [{translateX: 85}],
+
+                                        backgroundColor: theme.BLACK,
+                                        borderRadius: 75,
+                                    }}>
+                                        <View style={{
+                                            width: "100%",
+                                            height: "100%",
+
+                                            borderRadius: 75,
+
+                                            borderWidth: 1,
+                                            borderColor: theme.WHITE,
+
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}>
+                                            <ArrowRightIcon size={40} color={theme.WHITE} />
+                                        </View>
+                                    </View>
+                                </Animated.View>
+                            )}
 
                             {skema != null && (skema[dayNum - 1] == undefined || Object.keys(skema[dayNum - 1].moduler).length == 0) ? (
                                 <View style={{
@@ -1021,13 +1135,12 @@ export default function Skema({ navigation }: {
                                     width: "100%",
                                     height: hoursToMap.length * 60 + (110 + 81) + 60
                                 }} />
-
                             </View>
                             }
                         </ScrollView>
                     }
                 </View>
-            </GestureRecognizer>
+            </View>
 
             {rateLimited && <RateLimit />}
         </View>

@@ -10,13 +10,15 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 
 ### __MELLEM__
 - push notifs
-- animationer
-    - skema swipe mellem dage
 
 ### __LAV__
 - spørgeskemaer
 - dokumenter
-- gør "gå tilbage til nuværende dag" i skema mere 'smooth'
+
+### __OPTIMERINGER__
+- optimer søge algoritme i elev og lære listen
+- optimer skemaets parsing algoritme af moduler
+- optimer modulregnskab
 
 ### __KAN IKKE LAVE ENDNU__
 - abonnement (krypteret Lectio-ID og skole er det eneste som klienten må sende)
