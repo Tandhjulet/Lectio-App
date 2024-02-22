@@ -1,9 +1,9 @@
-import { ActivityIndicator, Animated, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Animated, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useColorScheme } from "react-native";
 import NavigationBar from "../../components/Navbar";
 import { ReactElement, RefObject, createRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getAbsence, getAbsenceRegistration } from "../../modules/api/scraper/Scraper";
 import { getSecure, getUnsecure } from "../../modules/api/Authentication";
-import COLORS, { hexToRgb } from "../../modules/Themes";
+import { hexToRgb, themes } from "../../modules/Themes";
 import { AbsenceReason, AbsenceRegistration, AbsenceType, Fag, ModuleAbsence, Registration, postRegistration } from "../../modules/api/scraper/AbsenceScraper";
 import RateLimit from "../../components/RateLimit";
 import { VictoryChart, VictoryContainer, VictoryLabel, VictoryPie, VictoryTheme } from "victory-native";
@@ -58,6 +58,9 @@ const PaginationIndicator = ({
         outputRange: [0, width],
     })
 
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
         <View style={{
             width: "100%",
@@ -66,7 +69,7 @@ const PaginationIndicator = ({
             flexDirection: "column",
             marginBottom: 2.5,
 
-            backgroundColor: hexToRgb(COLORS.ACCENT_BLACK, 0.8,),
+            backgroundColor: hexToRgb(theme.ACCENT_BLACK.toString(), 0.8,),
         }}>
             <View style={{
                 display: "flex",
@@ -83,7 +86,7 @@ const PaginationIndicator = ({
                     alignItems: "center",
                 }} hitSlop={20} onPress={() => pagerRef.current?.setPage(0)}>
                     <Text style={{
-                        color: COLORS.WHITE,
+                        color: theme.WHITE,
                         fontSize: 15,
                         fontWeight: "bold",
                     }}>
@@ -98,7 +101,7 @@ const PaginationIndicator = ({
                     alignItems: "center",
                 }} hitSlop={20} onPress={() => pagerRef.current?.setPage(1)}>
                     <Text style={{
-                        color: COLORS.WHITE,
+                        color: theme.WHITE,
                         fontSize: 15,
                         fontWeight: "bold",
                     }}>
@@ -112,7 +115,7 @@ const PaginationIndicator = ({
                     width: "50%",
                     height: 5,
 
-                    backgroundColor: hexToRgb(COLORS.DARK, 1),
+                    backgroundColor: hexToRgb(theme.DARK.toString(), 1),
 
                     transform: [{ translateX: translateX }],
                 }}
@@ -402,6 +405,9 @@ export default function Absence({ navigation }: { navigation: any }) {
         })();
     }, [registrationRefreshing])
 
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
         <GestureHandlerRootView>
             <BottomSheetModalProvider>
@@ -445,7 +451,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                     justifyContent: "center",
                                     alignItems: "center",
                                 }}>
-                                    <ActivityIndicator size={"small"} color={COLORS.ACCENT} />
+                                    <ActivityIndicator size={"small"} color={theme.ACCENT} />
                                 </View>
                                 :
                                 <ScrollView refreshControl={
@@ -468,7 +474,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 gap: 5,
                                             }}>
                                                 <Text style={{
-                                                    color: COLORS.WHITE,
+                                                    color: theme.WHITE,
                                                     fontSize: 20,
                                                     fontWeight: "bold",
                                                 }}>
@@ -478,7 +484,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 <View style={{
                                                     width: "100%",
                                                     
-                                                    borderBottomColor: COLORS.WHITE,
+                                                    borderBottomColor: theme.WHITE,
                                                     borderBottomWidth: 1,
                                                 }} />
 
@@ -497,13 +503,13 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                         alignItems: 'center',
                                                     }}>
                                                         <Text style={{
-                                                            color: COLORS.WHITE,
+                                                            color: theme.WHITE,
                                                         }}>
                                                             Opgjort
                                                         </Text>
 
                                                         <Text style={{
-                                                            color: COLORS.WHITE,
+                                                            color: theme.WHITE,
                                                             fontWeight: "bold",
                                                             fontSize: 35,
                                                         }}>
@@ -515,7 +521,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                         </Text>
 
                                                         <Text style={{
-                                                            color: COLORS.WHITE,
+                                                            color: theme.WHITE,
                                                             opacity: 0.8,
                                                         }}>
                                                             {chartedAbsence?.almindeligt.absent.toString().replace(".", ",")} / {chartedAbsence?.almindeligt.settled.toString().replace(".", ",")}
@@ -527,13 +533,13 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                         alignItems: 'center',
                                                     }}>
                                                         <Text style={{
-                                                            color: COLORS.WHITE,
+                                                            color: theme.WHITE,
                                                         }}>
                                                             For året
                                                         </Text>
 
                                                         <Text style={{
-                                                            color: COLORS.WHITE,
+                                                            color: theme.WHITE,
                                                             fontWeight: "bold",
                                                             fontSize: 35,
                                                         }}>
@@ -545,7 +551,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                         </Text>
 
                                                         <Text style={{
-                                                            color: COLORS.WHITE,
+                                                            color: theme.WHITE,
                                                             opacity: 0.8,
                                                         }}>
                                                             {chartedAbsence?.almindeligt.absent.toString().replace(".", ",")} / {chartedAbsence?.almindeligt.yearly.toString().replace(".", ",")}
@@ -556,7 +562,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 <View style={{
                                                     width: "100%",
                                                     
-                                                    borderBottomColor: COLORS.WHITE,
+                                                    borderBottomColor: theme.WHITE,
                                                     borderBottomWidth: 1,
                                                 }} />
 
@@ -618,7 +624,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                                     backgroundColor: pieColors[index % pieColors.length],
                                                                 }} />
                                                                 <Text ellipsizeMode="tail" numberOfLines={1} style={{
-                                                                    color: COLORS.WHITE,
+                                                                    color: theme.WHITE,
                                                                     maxWidth: 100,
 
                                                                     fontSize: 12,
@@ -643,7 +649,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 gap: 5,
                                             }}>
                                                 <Text style={{
-                                                    color: COLORS.WHITE,
+                                                    color: theme.WHITE,
                                                     fontSize: 20,
                                                     fontWeight: "bold",
                                                 }}>
@@ -653,7 +659,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 <View style={{
                                                     width: "100%",
                                                     
-                                                    borderBottomColor: COLORS.WHITE,
+                                                    borderBottomColor: theme.WHITE,
                                                     borderBottomWidth: 1,
                                                 }} />
 
@@ -672,13 +678,13 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                         alignItems: 'center',
                                                     }}>
                                                         <Text style={{
-                                                            color: COLORS.WHITE,
+                                                            color: theme.WHITE,
                                                         }}>
                                                             Opgjort
                                                         </Text>
 
                                                         <Text style={{
-                                                            color: COLORS.WHITE,
+                                                            color: theme.WHITE,
                                                             fontWeight: "bold",
                                                             fontSize: 35,
                                                         }}>
@@ -690,7 +696,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                         </Text>
 
                                                         <Text style={{
-                                                            color: COLORS.WHITE,
+                                                            color: theme.WHITE,
                                                             opacity: 0.8,
                                                         }}>
                                                             {chartedAbsence?.skriftligt.absent.toString().replace(".", ",")} / {chartedAbsence?.skriftligt.yearly.toString().replace(".", ",")}
@@ -702,13 +708,13 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                         alignItems: 'center',
                                                     }}>
                                                         <Text style={{
-                                                            color: COLORS.WHITE,
+                                                            color: theme.WHITE,
                                                         }}>
                                                             For året
                                                         </Text>
 
                                                         <Text style={{
-                                                            color: COLORS.WHITE,
+                                                            color: theme.WHITE,
                                                             fontWeight: "bold",
                                                             fontSize: 35,
                                                         }}>
@@ -720,7 +726,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                         </Text>
 
                                                         <Text style={{
-                                                            color: COLORS.WHITE,
+                                                            color: theme.WHITE,
                                                             opacity: 0.8,
                                                         }}>
                                                             {chartedAbsence?.skriftligt.absent.toString().replace(".", ",")} / {chartedAbsence?.skriftligt.yearly.toString().replace(".", ",")}
@@ -731,7 +737,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 <View style={{
                                                     width: "100%",
                                                     
-                                                    borderBottomColor: COLORS.WHITE,
+                                                    borderBottomColor: theme.WHITE,
                                                     borderBottomWidth: 1,
                                                 }} />
 
@@ -844,7 +850,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                     flexDirection: "row",
                                                 }}>
                                                     <Text style={{
-                                                        color: hexToRgb(COLORS.ACCENT, 0.5),
+                                                        color: hexToRgb(theme.ACCENT.toString(), 0.5),
                                                         fontWeight: "normal",
                                                         fontSize: 15,
                                                         marginBottom: 5,
@@ -853,7 +859,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                     </Text>
 
                                                     <Text style={{
-                                                        color: hexToRgb(COLORS.WHITE, 0.4),
+                                                        color: hexToRgb(theme.WHITE.toString(), 0.4),
                                                         fontWeight: "normal",
                                                         fontSize: 15,
                                                         marginBottom: 5,
@@ -870,7 +876,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                             paddingVertical: 10,
                                                             paddingLeft: 0,
 
-                                                            borderBottomColor: hexToRgb(COLORS.WHITE, 0.2),
+                                                            borderBottomColor: hexToRgb(theme.WHITE.toString(), 0.2),
                                                             borderBottomWidth: i+1 == remappedRegs[key].length ? StyleSheet.hairlineWidth : 0,
 
                                                             display: "flex",
@@ -909,7 +915,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                                     color: hexToRgb(color, 0.2),
                                                                 }, {
                                                                     value: 100-parseFloat(reg.absence),
-                                                                    color: COLORS.BLACK,
+                                                                    color: theme.BLACK.toString(),
                                                                 }]} radius={30} />
 
                                                                 <View style={{
@@ -949,7 +955,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                                     width: "100%",
                                                                 }}>
                                                                     <Text style={{
-                                                                        color: COLORS.WHITE,
+                                                                        color: theme.WHITE,
                                                                         fontSize: 15,
                                                                         fontWeight: "bold",
                                                                         letterSpacing: 0.5,
@@ -960,7 +966,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                                     </Text>
 
                                                                     <Text style={{
-                                                                        color: hexToRgb(COLORS.WHITE, 0.6),
+                                                                        color: hexToRgb(theme.WHITE.toString(), 0.6),
                                                                         fontSize: 15,
 
                                                                         flex: 0,
@@ -1021,10 +1027,10 @@ export default function Absence({ navigation }: { navigation: any }) {
                         bottomInset={89}
         
                         backgroundStyle={{
-                            backgroundColor: COLORS.ACCENT_BLACK,
+                            backgroundColor: theme.ACCENT_BLACK,
                         }}
                         handleIndicatorStyle={{
-                            backgroundColor: COLORS.WHITE,
+                            backgroundColor: theme.WHITE,
                         }}
 
                     >   
@@ -1062,7 +1068,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 fontSize: 17.5,
                                                 fontWeight: "bold",
                 
-                                                color: COLORS.WHITE,
+                                                color: theme.WHITE,
                                             }}>
                                                 Opgiv fraværsårsag
                                             </Text>
@@ -1090,16 +1096,16 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 {!sendLoading ? (
                                                     <>
                                                         <Text style={{
-                                                            color: COLORS.LIGHT,
+                                                            color: theme.LIGHT,
                                                             fontSize: 17.5,
                                                             fontWeight: "bold",
                                                         }}>
                                                             Send
                                                         </Text>
-                                                        <PaperAirplaneIcon size={17.5} color={COLORS.LIGHT} />
+                                                        <PaperAirplaneIcon size={17.5} color={theme.LIGHT} />
                                                     </>
                                                 ) : (
-                                                    <ActivityIndicator color={COLORS.LIGHT} />
+                                                    <ActivityIndicator color={theme.LIGHT} />
                                                 )}
                                             </Pressable>
                                         </View>
@@ -1108,7 +1114,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                             width: "100%",
                                             height: StyleSheet.hairlineWidth,
             
-                                            backgroundColor: hexToRgb(COLORS.WHITE, 0.6),
+                                            backgroundColor: hexToRgb(theme.WHITE.toString(), 0.6),
                                         }} />
             
                                         <View style={{
@@ -1131,7 +1137,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                         fontSize: 15,
                                                         fontWeight: "600",
                     
-                                                        color: COLORS.WHITE,
+                                                        color: theme.WHITE,
                                                     }}>
                                                         Registreret
                                                     </Text>
@@ -1140,7 +1146,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                         fontSize: 15,
                                                         fontWeight: "400",
                     
-                                                        color: hexToRgb(COLORS.WHITE, 0.6),
+                                                        color: hexToRgb(theme.WHITE.toString(), 0.6),
                                                     }}>
                                                         {parseDate(registration?.registered || "").toLocaleDateString("da-DK", {
                                                             day: "numeric",
@@ -1161,7 +1167,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                         fontSize: 15,
                                                         fontWeight: "600",
                 
-                                                        color: COLORS.WHITE,
+                                                        color: theme.WHITE,
                                                     }}>
                                                         Lektion
                                                     </Text>
@@ -1170,7 +1176,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                         fontSize: 15,
                                                         fontWeight: "400",
                 
-                                                        color: hexToRgb(COLORS.WHITE, 0.6),
+                                                        color: hexToRgb(theme.WHITE.toString(), 0.6),
                                                     }}>
                                                         {registration?.modul}
                                                     </Text>
@@ -1189,7 +1195,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                     color: hexToRgb(color, 0.2),
                                                 }, {
                                                     value: 100-parseFloat(registration?.absence || "0"),
-                                                    color: COLORS.BLACK,
+                                                    color: theme.BLACK.toString(),
                                                 }]} radius={40} />
 
                                                 <View style={{
@@ -1217,7 +1223,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         <Pressable style={{
                                             width: "100%",
                                             paddingVertical: 20,
-                                            backgroundColor: hexToRgb(COLORS.WHITE, 0.1),
+                                            backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
                                             borderRadius: 10,
                                         }} onPress={() => {
                                             bottomSheetModalRef.current?.dismiss();
@@ -1243,7 +1249,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                             defaultValue={registration?.studentNote?.split("\n").slice(1).join("\n") || ""}
 
                                             placeholder={"Tilføj en kommentar"}
-                                            placeholderTextColor={hexToRgb(COLORS.WHITE, 0.6)}
+                                            placeholderTextColor={hexToRgb(theme.WHITE.toString(), 0.6)}
                                             style={{
                                                 padding: 8,
 
@@ -1251,10 +1257,10 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 lineHeight: 20,
 
                                                 minHeight: 20 * 5,
-                                                color: COLORS.WHITE,
+                                                color: theme.WHITE,
 
                                                 borderRadius: 10,
-                                                backgroundColor: hexToRgb(COLORS.WHITE, 0.1),
+                                                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
                                             }}
                                         />
                                     </View>
@@ -1274,17 +1280,17 @@ export default function Absence({ navigation }: { navigation: any }) {
                         enableDismissOnClose
 
                         backgroundStyle={{
-                            backgroundColor: COLORS.ACCENT_BLACK,
+                            backgroundColor: theme.ACCENT_BLACK,
                         }}
                         handleIndicatorStyle={{
-                            backgroundColor: COLORS.WHITE,
+                            backgroundColor: theme.WHITE,
                         }}
                     >
                         <View style={{
                             width: "100%",
                             height: "100%",
 
-                            backgroundColor: COLORS.ACCENT_BLACK,
+                            backgroundColor: theme.ACCENT_BLACK,
 
                             display: "flex",
                             flexWrap: "wrap",

@@ -6,12 +6,12 @@ import {
 } from '@gorhom/bottom-sheet';
 
 import { useMemo, useState } from "react";
-import COLORS, { hexToRgb } from "../modules/Themes";
-import { StyleSheet, Text, View, ViewProps, ViewStyle } from "react-native";
+import { StyleSheet, Text, View, ViewProps, ViewStyle, useColorScheme } from "react-native";
 import { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/types';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { CalendarDaysIcon, GlobeAltIcon, StarIcon } from 'react-native-heroicons/solid';
 import { Pressable } from 'react-native';
+import { themes } from '../modules/Themes';
 
 function Option({
     title,
@@ -33,12 +33,15 @@ function Option({
 
     const OFFSET = 15;
 
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
         <Pressable style={{
             width: "40%",
             aspectRatio: 1 / 1.5,
 
-            backgroundColor: "#5a6f6b",
+            backgroundColor: theme.LIGHT,
 
             display: "flex",
             alignItems: "center",
@@ -64,9 +67,9 @@ function Option({
                 justifyContent: "center",
             }}>
                 {title == "Månedligt" ? (
-                    <CalendarDaysIcon color={COLORS.LIGHT} size={100} />
+                    <CalendarDaysIcon color={theme.LIGHT} size={100} />
                 ) : (
-                    <GlobeAltIcon color={COLORS.LIGHT} size={100} />
+                    <GlobeAltIcon color={theme.LIGHT} size={100} />
                 )}
             </View>
 
@@ -76,9 +79,9 @@ function Option({
                     top: height / 2 * -1 + OFFSET,
 
                     padding: 5,
-                    backgroundColor: COLORS.LIGHT,
+                    backgroundColor: theme.LIGHT,
 
-                    borderColor: COLORS.BLACK,
+                    borderColor: theme.BLACK,
                     borderRadius: 50,
                     borderWidth: 2,
 
@@ -107,7 +110,7 @@ function Option({
             )}
 
             <Text style={{
-                color: COLORS.WHITE,
+                color: theme.WHITE,
                 fontSize: 25,
             }}>
                 {title}
@@ -115,7 +118,7 @@ function Option({
             <Text style={{
                 marginTop: 5,
 
-                color: COLORS.WHITE,
+                color: theme.WHITE,
                 opacity: 0.8,
                 fontSize: 14,
 
@@ -130,7 +133,7 @@ function Option({
             }} />
 
             <View style={{
-                backgroundColor: COLORS.DARK,
+                backgroundColor: theme.DARK,
 
                 paddingHorizontal: 30,
                 paddingVertical: 5,
@@ -139,7 +142,7 @@ function Option({
             }}>
                 <Text style={{
                     textAlign: "center",
-                    color: COLORS.WHITE,
+                    color: theme.WHITE,
 
                     fontSize: 20,
                 }}>
@@ -158,6 +161,9 @@ export default function Subscription({
 
     const snapPoints = useMemo(() => ['65%'], []);
 
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
         <BottomSheetModal
             ref={bottomSheetModalRef}
@@ -168,10 +174,10 @@ export default function Subscription({
             enableOverDrag
 
             backgroundStyle={{
-                backgroundColor: COLORS.BLACK,
+                backgroundColor: theme.BLACK,
             }}
             handleIndicatorStyle={{
-                backgroundColor: COLORS.WHITE,
+                backgroundColor: theme.WHITE,
             }}
         >
             <View style={{
@@ -188,7 +194,7 @@ export default function Subscription({
                     alignItems: "center",
                 }}>
                     <Text style={{
-                        color: COLORS.WHITE,
+                        color: theme.WHITE,
 
                         fontSize: 25,
 
@@ -201,24 +207,24 @@ export default function Subscription({
                         flexDirection: "row",
                     }}>
                         <Text style={{
-                            color: COLORS.WHITE,
+                            color: theme.WHITE,
                         }}>
                             med et ikke-bindene abonnement til 
                         </Text>
                         <Text style={{
-                            color: COLORS.ACCENT,
+                            color: theme.ACCENT,
                         }}>
                             {" "}Lectio Plus
                         </Text>
                         <Text style={{
-                            color: COLORS.WHITE,
+                            color: theme.WHITE,
                         }}>
                             !
                         </Text>
                     </View>
 
                     <Text style={{
-                        color: COLORS.LIGHT,
+                        color: theme.LIGHT,
                         opacity: 0.9,
                         textAlign: "center",
 
@@ -238,14 +244,14 @@ export default function Subscription({
                         height: StyleSheet.hairlineWidth,
                         width: 100,
 
-                        backgroundColor: COLORS.ACCENT,
+                        backgroundColor: theme.ACCENT,
 
                         marginTop: 15,
                         marginBottom: 7.5,
                     }} />
 
                     <Text style={{
-                        color: COLORS.WHITE,
+                        color: theme.WHITE,
                         opacity: 0.8,
 
                         marginBottom: 20,
@@ -272,7 +278,7 @@ export default function Subscription({
                             }, {
                                 translateY: 5,
                             }],
-                            backgroundColor: COLORS.DARK,
+                            backgroundColor: theme.DARK,
                             borderRadius: 20,
                         }} />
                         <Option title={'Månedligt'} subtitle={'1 mdr. varighed\nFornyes automatisk!'} sku={"com.tandhjulet.lectioplus.premium_monthly"} price={'9,99'} />
@@ -291,7 +297,7 @@ export default function Subscription({
                             }, {
                                 translateY: 5,
                             }],
-                            backgroundColor: COLORS.DARK,
+                            backgroundColor: theme.DARK,
                             borderRadius: 20,
                         }} />
                         <Option title={'Årligt'} subtitle={'1 års varighed\nFornyes automatisk!'} price={'59,99'} sku={"com.tandhjulet.lectioplus.premium_yearly"} recommended />

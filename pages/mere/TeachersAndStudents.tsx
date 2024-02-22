@@ -1,14 +1,13 @@
-import { ActivityIndicator, FlatList, Image, ImageBackground, Modal, Pressable, ScrollView, SectionList, StyleSheet, Text, TextInput, TouchableHighlight, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, FlatList, Image, ImageBackground, Modal, Pressable, ScrollView, SectionList, StyleSheet, Text, TextInput, TouchableHighlight, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../../components/Navbar";
-import React, { memo, useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import COLORS from "../../modules/Themes";
+import { themes } from "../../modules/Themes";
 import { getSecure, getUnsecure } from "../../modules/api/Authentication";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import ProfilePicture from "../../components/ProfilePicture";
-//import { Image } from "@rneui/themed";
 
 /**
  * returns the given object with keys sorted alphanumerically.
@@ -25,7 +24,7 @@ const sort = (obj: any) => Object.keys(obj).sort()
  * @param contains a string to filter the data with
  * @returns filtered data
  */
-function parseData(data: {[id: string]: Person}, contains?: string): {
+function parseData(data: {[id: string]: Person}): {
     letter: string,
     data: Person[];
 }[] {
@@ -59,35 +58,6 @@ function parseData(data: {[id: string]: Person}, contains?: string): {
     return formattedOut;
 }
 
-function parseFormattedData(data: {
-    letter: string,
-    data: Person[];
-}[], contains: string) {
-    const out: {
-        letter: string,
-        data: Person[];
-    }[] = [];
-
-    data.forEach((v) => {
-        const i = out.push({
-            letter: v.letter,
-            data: [],
-        })-1;
-
-        for(let person of v.data) {
-            if(contains.length > 0 && (!(person.rawName.toLowerCase().includes(contains.toLowerCase()))))
-                continue;
-
-            out[i].data.push(person);
-        }
-
-        if(out[i].data.length === 0)
-            out.pop();
-    })
-
-    return out;
-}
-
 const UserCell = memo(function UserCell({ index, item, section, gym }: {
     index: number,
     item: Person,
@@ -95,13 +65,16 @@ const UserCell = memo(function UserCell({ index, item, section, gym }: {
     gym: any,
 
 }) {
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
         <>
             <View style={{
                 paddingHorizontal: 20,
                 paddingVertical: 15,
                 
-                backgroundColor: COLORS.BLACK,
+                backgroundColor: theme.BLACK,
 
                 borderTopLeftRadius: index == 0 ? 20 : 0,
                 borderTopRightRadius: index == 0 ? 20 : 0,
@@ -124,14 +97,14 @@ const UserCell = memo(function UserCell({ index, item, section, gym }: {
                     gap: 5,
                 }}>
                     <Text style={{
-                        color: COLORS.WHITE,
+                        color: theme.WHITE,
                         fontWeight: "bold",
                     }}>
                         {item.navn}
                     </Text>
 
                     <Text style={{
-                        color: COLORS.WHITE,
+                        color: theme.WHITE,
                     }}>
                         {item.klasse}
                     </Text>
@@ -142,7 +115,7 @@ const UserCell = memo(function UserCell({ index, item, section, gym }: {
                 marginHorizontal: 15,
             }}>
                 <View style={{
-                    backgroundColor: COLORS.WHITE,
+                    backgroundColor: theme.WHITE,
                     width: "100%",
                     height: StyleSheet.hairlineWidth,
 
@@ -167,6 +140,42 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
         data: Person[];
     }[]>([]);
     const [filter, setFilter] = useState<string>("");
+
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
+
+    const parseFormattedData = useCallback((data: {
+        letter: string,
+        data: Person[];
+    }[], contains: string) => {
+        const out: {
+            letter: string,
+            data: Person[];
+        }[] = [];
+
+        data.forEach((v) => {
+            if(contains.length > 0 && (!(contains.toLowerCase().includes(v.letter.toLowerCase()))))
+                return;
+
+            const i = out.push({
+                letter: v.letter,
+                data: [],
+            })-1;
+
+            for(let person of v.data) {
+                if(contains.length > 0 && (!(person.rawName.toLowerCase().includes(contains.toLowerCase()))))
+                    continue;
+
+                out[i].data.push(person);
+            }
+
+            if(out[i].data.length === 0)
+                out.pop();
+        })
+
+        return out;
+    }, [])
 
     /**
      * Fetches the people to be rendered on page load
@@ -204,10 +213,10 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                             setPeople(parseFormattedData(rawPeople, text));
                         }
                     }} style={{
-                        color: COLORS.WHITE,
+                        color: theme.WHITE,
                         fontSize: 15,
 
-                        backgroundColor: COLORS.DARK,
+                        backgroundColor: theme.DARK,
 
                         marginHorizontal: 20,
                         padding: 5,
@@ -233,7 +242,7 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                                 gap: 20,
                             }}>
                                 <Text style={{
-                                    color: COLORS.RED,
+                                    color: theme.RED,
                                     textAlign: 'center'
                                 }}>
                                     Der opstod en fejl.
@@ -267,11 +276,11 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                                                     paddingTop: 7.5,
                                                     paddingBottom: 2,
 
-                                                    backgroundColor: COLORS.BLACK,
+                                                    backgroundColor: theme.BLACK,
                                                     opacity: 0.9,
                                                 }}>
                                                     <Text style={{
-                                                        color: COLORS.WHITE,
+                                                        color: theme.WHITE,
                                                         fontWeight: "bold",
                                                     }}>
                                                         {data.section.letter.toUpperCase()}

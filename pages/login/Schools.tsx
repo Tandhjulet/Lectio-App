@@ -11,9 +11,10 @@ import {
   TextInput,
   TouchableWithoutFeedback,
   View,
+  useColorScheme,
 } from 'react-native';
 import {Cell, Section, TableView} from 'react-native-tableview-simple';
-import COLORS from '../../modules/Themes';
+import { themes } from '../../modules/Themes';
 import { getSchools } from '../../modules/api/scraper/Scraper';
 import { saveUnsecure, secureSave } from '../../modules/api/Authentication';
 
@@ -36,6 +37,9 @@ const School = memo(function School({ index, section, navigation, gymNummer, gym
   gymNummer: string,
   gymName: string,
 }) {
+  const scheme = useColorScheme();
+  const theme = themes[scheme || "dark"];
+
   return (
     <Pressable onPress={() => {
       secureSave("gym", JSON.stringify({ "gymNummer": gymNummer, "gymName": gymName }))
@@ -52,7 +56,7 @@ const School = memo(function School({ index, section, navigation, gymNummer, gym
           paddingHorizontal: 20,
           paddingVertical: 15,
           
-          backgroundColor: COLORS.BLACK,
+          backgroundColor: theme.BLACK,
 
           borderTopLeftRadius: index == 0 ? 20 : 0,
           borderTopRightRadius: index == 0 ? 20 : 0,
@@ -67,7 +71,7 @@ const School = memo(function School({ index, section, navigation, gymNummer, gym
           alignItems: "center",
         }}>
           <Text style={{
-            color: COLORS.WHITE,
+            color: theme.WHITE,
           }}>
             {gymName}
           </Text>
@@ -77,7 +81,7 @@ const School = memo(function School({ index, section, navigation, gymNummer, gym
           marginHorizontal: 15,
         }}>
           <View style={{
-            backgroundColor: COLORS.WHITE,
+            backgroundColor: theme.WHITE,
             width: "100%",
             height: StyleSheet.hairlineWidth,
 
@@ -154,13 +158,16 @@ const Schools = ({ navigation }: any) => {
     load();
   }, [])
 
+  const scheme = useColorScheme();
+  const theme = themes[scheme || "dark"];
+
   return (
       <View style={{paddingBottom: 40, minHeight: "100%"}}>
         <TextInput placeholder="Søg efter skole..." onChangeText={(text) => {setSchools(parseData(rawData, text))}} style={{
-          color: COLORS.WHITE,
+          color: theme.WHITE,
           fontSize: 15,
 
-          backgroundColor: COLORS.DARK,
+          backgroundColor: theme.DARK,
 
           marginHorizontal: 20,
           padding: 5,
@@ -180,7 +187,7 @@ const Schools = ({ navigation }: any) => {
                     translateX: -12.5,
                 }]
             }}>
-                <ActivityIndicator size={"small"} color={COLORS.ACCENT} />
+                <ActivityIndicator size={"small"} color={theme.ACCENT} />
             </View>
         }
 
@@ -200,11 +207,11 @@ const Schools = ({ navigation }: any) => {
                       <View style={{
                           paddingTop: 7.5,
 
-                          backgroundColor: COLORS.BLACK,
+                          backgroundColor: theme.BLACK,
                           opacity: 0.9,
                       }}>
                           <Text style={{
-                              color: COLORS.WHITE,
+                              color: theme.WHITE,
                               fontWeight: "bold",
                           }}>
                               {data.section.letter.toUpperCase()}
@@ -234,12 +241,5 @@ const Schools = ({ navigation }: any) => {
       </View>
   );
 };
-
-const styles = StyleSheet.create({
-  stage: {
-    backgroundColor: COLORS.BLACK,
-    paddingBottom: 20,
-  },
-});
 
 export default Schools;

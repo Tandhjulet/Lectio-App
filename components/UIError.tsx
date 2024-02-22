@@ -1,6 +1,6 @@
-import { Animated, Text, View, ViewStyle } from "react-native";
-import COLORS from "../modules/Themes";
+import { Animated, Text, View, ViewStyle, useColorScheme } from "react-native";
 import React, { PropsWithChildren, useEffect, useRef } from "react";
+import { themes } from "../modules/Themes";
 
 type FlyInViewProps = PropsWithChildren<{style?: ViewStyle}>;
 
@@ -42,6 +42,9 @@ const FlyInView: React.FC<FlyInViewProps> = props => {
 export default function UIError({ details }: {
     details: string[]
 }) {
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
         <FlyInView style={{
             zIndex: 25,
@@ -54,7 +57,7 @@ export default function UIError({ details }: {
 
             top: 0,
 
-            backgroundColor: COLORS.RED,
+            backgroundColor: theme.RED,
             paddingHorizontal: 20,
         }}>
             <View style={{
@@ -66,7 +69,7 @@ export default function UIError({ details }: {
                 gap: 10,
             }}>
                 <Text style={{
-                    color: "#fff",
+                    color: theme.WHITE,
                     fontWeight: "bold",
                     fontSize: 20,
                 }}>
@@ -74,7 +77,7 @@ export default function UIError({ details }: {
                 </Text>
                 <Text
                     style={{
-                        color: "#fff",
+                        color: theme.WHITE,
                         textAlign: "center",
                     }}
                 >

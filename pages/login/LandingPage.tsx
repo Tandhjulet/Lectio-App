@@ -1,6 +1,6 @@
-import { Pressable, Text, TouchableHighlight, View } from "react-native";
+import { Pressable, Text, TouchableHighlight, View, useColorScheme } from "react-native";
 import Logo from "../../components/Logo";
-import COLORS from "../../modules/Themes";
+import { themes } from "../../modules/Themes";
 import { ChevronRightIcon } from "react-native-heroicons/solid";
 import BackgroundSVG from "../../components/BackgroundSVG";
 
@@ -9,6 +9,10 @@ export default function LandingPage({
 }: {
     navigation: any,
 }) {
+
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
         <View style={{
             display: "flex",
@@ -20,7 +24,7 @@ export default function LandingPage({
             height: "100%",
             width: "100%",
 
-            backgroundColor: COLORS.WHITE,
+            backgroundColor: theme.WHITE,
         }}>
                 <BackgroundSVG style={{
                     position: "absolute",
@@ -32,10 +36,10 @@ export default function LandingPage({
                 display: "flex",
                 alignItems: "center",
             }}>
-                <Logo color={COLORS.ACCENT_BLACK} size={128} minOpacity={0.8} />
+                <Logo color={theme.ACCENT_BLACK.toString()} size={128} minOpacity={0.8} />
 
                 <Text style={{
-                    color: COLORS.DARK,
+                    color: theme.DARK,
                     fontWeight: "700",
                     
                     fontSize: 100,
@@ -56,7 +60,7 @@ export default function LandingPage({
                     paddingVertical: 15,
                     borderRadius: 20,
 
-                    backgroundColor: COLORS.ACCENT_BLACK,
+                    backgroundColor: theme.ACCENT_BLACK,
 
                     display: "flex",
 
@@ -68,7 +72,7 @@ export default function LandingPage({
                     gap: 5,
                 }}>
                     <Text style={{
-                        color: COLORS.WHITE,
+                        color: theme.WHITE,
                         fontSize: 20,
 
                         fontWeight: "500",

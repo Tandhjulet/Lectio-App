@@ -10,7 +10,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 
 ### __MELLEM__
 - push notifs
-- light mode
 - animationer
     - skema swipe mellem dage
 

@@ -1,7 +1,7 @@
-import { ActivityIndicator, Linking, NativeModules, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { ActivityIndicator, Linking, NativeModules, ScrollView, StyleSheet, Switch, Text, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import COLORS from "../modules/Themes";
+import { themes } from "../modules/Themes";
 import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { AcademicCapIcon, BellSnoozeIcon, BuildingLibraryIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon } from "react-native-heroicons/solid";
 import { getUnsecure, removeSecure, removeUnsecure, secureGet, signOut } from "../modules/api/Authentication";
@@ -51,6 +51,9 @@ export default function Mere({ navigation }: {navigation: any}) {
         })();
     }, [])
 
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
     <GestureHandlerRootView>
         <BottomSheetModalProvider>
@@ -67,10 +70,13 @@ export default function Mere({ navigation }: {navigation: any}) {
                             translateX: -12.5,
                         }]
                     }}>
-                        <ActivityIndicator size={"small"} color={COLORS.ACCENT} />
+                        <ActivityIndicator size={"small"} color={theme.ACCENT} />
                     </View>
                     :
-                    <ScrollView contentContainerStyle={styles.stage}>
+                    <ScrollView contentContainerStyle={{
+                        backgroundColor: theme.BLACK,
+                        paddingBottom: 20,
+                    }}>
                         <TableView style={{
                             paddingHorizontal: 20,
                         }}>
@@ -78,9 +84,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 <Cell
                                     cellStyle="Basic"
                                     title="Fravær"
-                                    titleTextColor={COLORS.WHITE}
+                                    titleTextColor={theme.WHITE}
                                     image={
-                                        <BellSnoozeIcon color={COLORS.ACCENT} style={{
+                                        <BellSnoozeIcon color={theme.ACCENT} style={{
                                             opacity: 0.85,
                                         }}  />
                                     }
@@ -93,9 +99,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 <Cell
                                     cellStyle="Basic"
                                     title="Afleveringer"
-                                    titleTextColor={COLORS.WHITE}
+                                    titleTextColor={theme.WHITE}
                                     image={
-                                        <ClockIcon color={COLORS.ACCENT} style={{
+                                        <ClockIcon color={theme.ACCENT} style={{
                                             opacity: 0.85,
                                         }}  />
                                     }
@@ -108,9 +114,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 <Cell
                                     cellStyle="Basic"
                                     title="Lærere og elever"
-                                    titleTextColor={COLORS.WHITE}
+                                    titleTextColor={theme.WHITE}
                                     image={
-                                        <UsersIcon color={COLORS.ACCENT} style={{
+                                        <UsersIcon color={theme.ACCENT} style={{
                                             opacity: 0.85,
                                         }}  />
                                     }
@@ -123,9 +129,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 <Cell
                                     cellStyle="Basic"
                                     title="Modulregnskab"
-                                    titleTextColor={COLORS.WHITE}
+                                    titleTextColor={theme.WHITE}
                                     image={
-                                        <BuildingLibraryIcon color={COLORS.ACCENT} style={{
+                                        <BuildingLibraryIcon color={theme.ACCENT} style={{
                                             opacity: 0.85,
                                         }}  />
                                     }
@@ -138,9 +144,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 <Cell
                                     cellStyle="Basic"
                                     title="Karakterer"
-                                    titleTextColor={COLORS.WHITE}
+                                    titleTextColor={theme.WHITE}
                                     image={
-                                        <AcademicCapIcon color={COLORS.ACCENT} style={{
+                                        <AcademicCapIcon color={theme.ACCENT} style={{
                                             opacity: 0.85,
                                         }} />
                                     }
@@ -151,9 +157,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 <Cell
                                     cellStyle="Basic"
                                     title="Spørgeskemaer"
-                                    titleTextColor={COLORS.WHITE}
+                                    titleTextColor={theme.WHITE}
                                     image={
-                                        <ClipboardDocumentListIcon color={COLORS.ACCENT} style={{
+                                        <ClipboardDocumentListIcon color={theme.ACCENT} style={{
                                             opacity: 0.85,
                                         }}  />
                                     }
@@ -164,9 +170,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 <Cell
                                     cellStyle="Basic"
                                     title="Dokumenter"
-                                    titleTextColor={COLORS.WHITE}
+                                    titleTextColor={theme.WHITE}
                                     image={
-                                        <Square2StackIcon color={COLORS.ACCENT} style={{
+                                        <Square2StackIcon color={theme.ACCENT} style={{
                                             opacity: 0.85,
                                         }}  />
                                     }
@@ -181,7 +187,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                         isDisabled
                                         cellStyle="Basic"
                                         title="Aflyste lektioner"
-                                        titleTextColor={COLORS.WHITE}
+                                        titleTextColor={theme.WHITE}
                                         cellAccessoryView={<Switch 
                                             disabled
                                             trackColor={{false: '#767577', true: "#4ca300"}}
@@ -203,7 +209,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                         isDisabled
                                         cellStyle="Basic"
                                         title="Ændrede lektioner"
-                                        titleTextColor={COLORS.WHITE}
+                                        titleTextColor={theme.WHITE}
                                         cellAccessoryView={<Switch 
                                             disabled
                                             trackColor={{false: '#767577', true: "#4ca300"}}
@@ -225,7 +231,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                         isDisabled
                                         cellStyle="Basic"
                                         title="Beskeder"
-                                        titleTextColor={COLORS.WHITE}
+                                        titleTextColor={theme.WHITE}
                                         cellAccessoryView={<Switch 
                                             disabled
 
@@ -251,18 +257,18 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 <Cell 
                                     cellStyle="Subtitle"
                                     title="Dit abonnement er aktivt"
-                                    titleTextColor={COLORS.WHITE}
+                                    titleTextColor={theme.WHITE}
 
                                     detail={"Fornyes d. " + renew.toLocaleDateString()}
 
                                     accessory={"Checkmark"}
-                                    accessoryColor={COLORS.ACCENT}
+                                    accessoryColor={theme.ACCENT}
                                 />
                                 
                                 <Cell 
                                     cellStyle="Basic"
                                     title="Administrer abonnement"
-                                    titleTextColor={COLORS.ACCENT}
+                                    titleTextColor={theme.ACCENT}
 
                                     onPress={() => {}}
                                 />
@@ -270,7 +276,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 <Cell 
                                     cellStyle="Basic"
                                     title="Genindlæs adgang"
-                                    titleTextColor={COLORS.ACCENT}
+                                    titleTextColor={theme.ACCENT}
 
                                     onPress={() => {
 
@@ -283,16 +289,16 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     cellStyle="Basic"
                                     title={"Privatlivspolitik"}
 
-                                    titleTextColor={COLORS.WHITE}
+                                    titleTextColor={theme.WHITE}
                                     accessory="DisclosureIndicator"
 
                                     onPress={() => {
                                         WebBrowser.openBrowserAsync("https://lectioplus.com/privatliv", {
-                                            controlsColor: COLORS.ACCENT,
+                                            controlsColor: theme.ACCENT.toString(),
                                             dismissButtonStyle: "close",
                                             presentationStyle: WebBrowserPresentationStyle.POPOVER,
 
-                                            toolbarColor: COLORS.ACCENT_BLACK,
+                                            toolbarColor: theme.ACCENT_BLACK.toString(),
                                         })
                                     }}
                                 />
@@ -301,7 +307,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     cellStyle="Basic"
                                     title={"Kontakt Lectio Plus"}
 
-                                    titleTextColor={COLORS.WHITE}
+                                    titleTextColor={theme.WHITE}
                                     accessory="DisclosureIndicator"
 
                                     onPress={() => {
@@ -335,7 +341,7 @@ For at kunne hjælpe dig har vi brug for lidt information:
 
                                     detail={profile?.username.slice(0,13)}
 
-                                    titleTextColor={COLORS.WHITE}
+                                    titleTextColor={theme.WHITE}
                                 />
 
                                 <Cell
@@ -345,7 +351,7 @@ For at kunne hjælpe dig har vi brug for lidt information:
                                     titleTextStyle={{
                                         fontWeight: "bold"
                                     }}
-                                    titleTextColor={COLORS.RED}
+                                    titleTextColor={theme.RED}
                                     accessory="DisclosureIndicator"
 
                                     onPress={() => {
@@ -364,7 +370,7 @@ For at kunne hjælpe dig har vi brug for lidt information:
                             </Section>
 
                             <Text style={{
-                                color: COLORS.WHITE,
+                                color: theme.WHITE,
                                 opacity: 0.5,
                             }}>
                                 BETA (v0.0.1)
@@ -384,10 +390,3 @@ For at kunne hjælpe dig har vi brug for lidt information:
 
     )
 }
-
-const styles = StyleSheet.create({
-    stage: {
-      backgroundColor: COLORS.BLACK,
-      paddingBottom: 20,
-    },
-  });

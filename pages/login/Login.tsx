@@ -1,5 +1,5 @@
-import { ActivityIndicator, Animated, Keyboard, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle } from "react-native";
-import COLORS, { hexToRgb } from "../../modules/Themes";
+import { ActivityIndicator, Animated, Keyboard, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle, useColorScheme } from "react-native";
+import { hexToRgb, themes } from "../../modules/Themes";
 import { ArrowRightCircleIcon, ChevronDoubleRightIcon, LockClosedIcon, UserIcon } from "react-native-heroicons/solid";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { getSecure, getUnsecure, isAuthorized, secureSave, validate } from "../../modules/api/Authentication";
@@ -62,12 +62,15 @@ export default function Login({ route, navigation }: {
         }
     }
 
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
         <View style={{
             width: '100%',
             height: "100%",
 
-            backgroundColor: COLORS.BLACK,
+            backgroundColor: theme.BLACK,
             
             display: 'flex',
             flexDirection: 'column',
@@ -84,7 +87,7 @@ export default function Login({ route, navigation }: {
 
             <Text style={{
                 fontSize: 30,
-                color: COLORS.WHITE,
+                color: theme.WHITE,
                 fontWeight: "bold",
             }}>Log ind</Text>
 
@@ -92,7 +95,7 @@ export default function Login({ route, navigation }: {
                 navigation.navigate("Schools")
             }}>
                 <View style={{
-                    backgroundColor: COLORS.DARK,
+                    backgroundColor: theme.DARK,
                     borderRadius: 10,
 
                     padding: 5,
@@ -106,13 +109,13 @@ export default function Login({ route, navigation }: {
                 }}>
                     <Text numberOfLines={1} ellipsizeMode={"tail"} style={{
                         fontSize: 20,
-                        color: COLORS.ACCENT,
+                        color: theme.ACCENT,
                         fontWeight: "bold",
 
                         maxWidth: 290,
                     }}>{gym == null ? "Vælg venligst et gymnasie" : gym.gymName}</Text>
 
-                    <ArrowRightCircleIcon color={COLORS.ACCENT} />
+                    <ArrowRightCircleIcon color={theme.ACCENT} />
                 </View>
             </Pressable>
 
@@ -124,9 +127,11 @@ export default function Login({ route, navigation }: {
             }}>
                 <View style={{
                     ...styles.wrapper,
-                    shadowColor: (invalidCredentials) ? COLORS.RED : undefined,
+                    backgroundColor: theme.BLACK,
+                    borderColor: hexToRgb(theme.ACCENT.toString(), 0.6),
+                    shadowColor: (invalidCredentials) ? theme.RED : undefined,
                 }}>
-                    <UserIcon size={20} color={COLORS.WHITE} />
+                    <UserIcon size={20} color={theme.WHITE} />
 
                     <TextInput
                         onFocus={() => setInvalidCredentials(false)}
@@ -134,12 +139,13 @@ export default function Login({ route, navigation }: {
                         placeholder="Brugernavn"
                         style={{
                             ...styles.textInput,
+                            color: theme.WHITE,
                         }}
                         textContentType="username"
                         autoComplete="username"
                         autoFocus
 
-                        cursorColor={COLORS.ACCENT}
+                        cursorColor={theme.ACCENT}
 
                         onSubmitEditing={() => {
                             passwdRef.current?.focus();
@@ -150,9 +156,9 @@ export default function Login({ route, navigation }: {
 
                 <View style={{
                     ...styles.wrapper,
-                    shadowColor: (invalidCredentials) ? COLORS.RED : undefined,
+                    shadowColor: (invalidCredentials) ? theme.RED : undefined,
                 }}>
-                    <LockClosedIcon size={20} color={COLORS.WHITE} />
+                    <LockClosedIcon size={20} color={theme.WHITE} />
 
                     <TextInput
                         ref={passwdRef}
@@ -166,7 +172,7 @@ export default function Login({ route, navigation }: {
                         textContentType="password"
                         autoComplete="current-password"
 
-                        cursorColor={COLORS.ACCENT}
+                        cursorColor={theme.ACCENT}
 
                         enterKeyHint="send"
                         onSubmitEditing={validateAndContinue}
@@ -175,7 +181,7 @@ export default function Login({ route, navigation }: {
             </View>
 
             <Text style={{
-                color: COLORS.RED,
+                color: theme.RED,
                 marginTop: 10,
                 opacity: invalidCredentials ? 1 : 0,
             }}>Dine oplysninger er ikke gyldige.</Text>
@@ -196,7 +202,7 @@ export default function Login({ route, navigation }: {
                         paddingVertical: 10,
                         borderRadius: 99,
 
-                        backgroundColor: hexToRgb(COLORS.WHITE, 0.2),
+                        backgroundColor: hexToRgb(theme.WHITE.toString(), 0.2),
 
                         display: 'flex',
                         flexDirection: 'row',
@@ -205,7 +211,7 @@ export default function Login({ route, navigation }: {
                         gap: 5,
                     }}>
                         <Text style={{
-                            color: COLORS.WHITE,
+                            color: theme.WHITE,
                             fontSize: 17,
                             fontWeight: "normal",
                         }}>
@@ -223,7 +229,7 @@ export default function Login({ route, navigation }: {
                         paddingVertical: 10,
                         borderRadius: 99,
 
-                        backgroundColor: COLORS.LIGHT,
+                        backgroundColor: theme.LIGHT,
 
                         display: 'flex',
                         flexDirection: 'row',
@@ -233,14 +239,14 @@ export default function Login({ route, navigation }: {
                     }}>
                         {!loading ? 
                             <Text style={{
-                                color: COLORS.WHITE,
+                                color: theme.WHITE,
                                 fontSize: 17,
                                 fontWeight: "normal",
                             }}>
                                 Fortsæt
                             </Text>
                         :
-                            <ActivityIndicator color={COLORS.WHITE} />
+                            <ActivityIndicator color={theme.WHITE} />
                         }
                     </View>
                 </Pressable>
@@ -254,7 +260,6 @@ export default function Login({ route, navigation }: {
 const styles = StyleSheet.create({
     textInput: {
         fontSize: 16,
-        color: COLORS.WHITE,
 
         flexGrow: 1,
         paddingVertical: 15,
@@ -279,12 +284,9 @@ const styles = StyleSheet.create({
             height: 0,
         },
 
-        backgroundColor: COLORS.BLACK,
-
         width: 200,
 
         borderRadius: 5,
-        borderColor: hexToRgb(COLORS.ACCENT, 0.6),
         borderWidth: 1,
     }
 })

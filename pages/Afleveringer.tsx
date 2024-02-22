@@ -1,10 +1,10 @@
 import { NavigationProp } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, ColorSchemeName, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import { getSecure, getUnsecure } from "../modules/api/Authentication";
 import { getAfleveringer } from "../modules/api/scraper/Scraper";
 import { Opgave, STATUS } from "../modules/api/scraper/OpgaveScraper";
-import COLORS from "../modules/Themes";
+import { Theme, hexToRgb, themes } from "../modules/Themes";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { AdjustmentsVerticalIcon, ChevronRightIcon } from "react-native-heroicons/solid";
 import RateLimit from "../components/RateLimit";
@@ -72,14 +72,14 @@ const countdown = (date: Date): string => {
  * @param date date to calculate color from
  * @returns a color
  */
-const calculateColor = (date: Date) => {
+const calculateColor = (date: Date, theme: ColorSchemeName) => {
     const COLOR1 = [255, 0, 0]
     const COLOR2 = [255, 252, 0]
 
     const diff = date.valueOf() - new Date().valueOf();
     const hours = Math.floor(diff / (1000*60*60));
     if(hours > 24*14 || hours < 0)
-        return COLORS.WHITE;
+        return theme == "dark" ? themes.dark.WHITE : hexToRgb(themes.light.WHITE.toString(), 0.6);
 
 
     const percent = hours/(24*14)
@@ -249,7 +249,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                             top: 50,
 
                             borderRadius: 7.5,
-                            backgroundColor: COLORS.BLACK,
+                            backgroundColor: theme.BLACK,
 
                             paddingVertical: 10,
                         }}>
@@ -272,13 +272,13 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                     gap: 40,
                                 }}>
                                     <Text style={{
-                                        color: COLORS.WHITE,
+                                        color: theme.WHITE,
                                         fontSize: 15,
                                     }}>
                                         Alle
                                     </Text>
                                     <Text style={{
-                                        color: COLORS.WHITE,
+                                        color: theme.WHITE,
                                         fontSize: 12.5,
                                         opacity: 0.6,
                                     }}>
@@ -288,7 +288,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                             </Pressable>
                             <View style={{
                                 borderBottomWidth: StyleSheet.hairlineWidth,
-                                borderBottomColor: COLORS.WHITE,
+                                borderBottomColor: theme.WHITE,
                                 opacity: 0.6,
 
                                 marginHorizontal: 10,
@@ -314,13 +314,13 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                     gap: 40,
                                 }}>
                                     <Text style={{
-                                        color: COLORS.WHITE,
+                                        color: theme.WHITE,
                                         fontSize: 15,
                                     }}>
                                         Venter
                                     </Text>
                                     <Text style={{
-                                        color: COLORS.WHITE,
+                                        color: theme.WHITE,
                                         fontSize: 12.5,
                                         opacity: 0.6,
                                     }}>
@@ -330,7 +330,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                             </Pressable>
                             <View style={{
                                 borderBottomWidth: StyleSheet.hairlineWidth,
-                                borderBottomColor: COLORS.WHITE,
+                                borderBottomColor: theme.WHITE,
                                 opacity: 0.6,
 
                                 marginHorizontal: 10,
@@ -356,13 +356,13 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                     gap: 40,
                                 }}>
                                     <Text style={{
-                                        color: COLORS.WHITE,
+                                        color: theme.WHITE,
                                         fontSize: 15,
                                     }}>
                                         Afleveret
                                     </Text>
                                     <Text style={{
-                                        color: COLORS.WHITE,
+                                        color: theme.WHITE,
                                         fontSize: 12.5,
                                         opacity: 0.6,
                                     }}>
@@ -372,7 +372,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                             </Pressable>
                             <View style={{
                                 borderBottomWidth: StyleSheet.hairlineWidth,
-                                borderBottomColor: COLORS.WHITE,
+                                borderBottomColor: theme.WHITE,
                                 opacity: 0.6,
 
                                 marginHorizontal: 10,
@@ -398,13 +398,13 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                     gap: 40,
                                 }}>
                                     <Text style={{
-                                        color: COLORS.WHITE,
+                                        color: theme.WHITE,
                                         fontSize: 15,
                                     }}>
                                         Mangler
                                     </Text>
                                     <Text style={{
-                                        color: COLORS.WHITE,
+                                        color: theme.WHITE,
                                         fontSize: 12.5,
                                         opacity: 0.6,
                                     }}>
@@ -470,6 +470,9 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
     }, []);
 
 
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
         <View style={{
             minHeight: "100%",
@@ -486,7 +489,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                         translateX: -12.5,
                     }]
                 }}>
-                    <ActivityIndicator size={"small"} color={COLORS.ACCENT} />
+                    <ActivityIndicator size={"small"} color={theme.ACCENT} />
                 </View>
             :
                 <ScrollView refreshControl={
@@ -506,13 +509,13 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                 gap: 5,
                             }}>
                                 <Text style={{
-                                    color: COLORS.ACCENT,
+                                    color: theme.WHITE,
                                     textAlign: 'center'
                                 }}>
                                     {sortedBy == "Alle" ?
                                         "Du har ingen opgaver"
                                     :
-                                        `Du har ingen opgaver der ${sortedBy.toLowerCase()}.`
+                                        `Du har ingen opgaver der ${sortedBy == "Afleveret" && "er "}${sortedBy.toLowerCase()}.`
                                     }
                                 </Text>
                                 <Logo size={40} />
@@ -546,7 +549,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                                     paddingVertical: 5,
                                                 }}>
                                                     <View style={{
-                                                        backgroundColor: calculateColor(new Date(opgave.date)),
+                                                        backgroundColor: calculateColor(new Date(opgave.date), scheme),
                                                         height: "100%",
                                                         width: 7.5,
 
@@ -577,20 +580,20 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                                             numberOfLines={1}
                                                             ellipsizeMode="tail"
                                                             style={{
-                                                                color: COLORS.WHITE,
+                                                                color: theme.WHITE,
                                                                 fontSize: 15,
                                                                 fontWeight: "bold",
                                                             }}>
                                                             {opgave.title}
                                                         </Text>
                                                         <Text style={{
-                                                            color: COLORS.ACCENT,
+                                                            color: theme.ACCENT,
                                                         }}>
                                                             {opgave.team}
                                                         </Text>
 
                                                         <Text style={{
-                                                            color: COLORS.WHITE,
+                                                            color: theme.WHITE,
                                                         }}>
                                                             {countdown(new Date(opgave.date))}
                                                         </Text>
@@ -601,7 +604,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                                         alignItems: "center",
                                                     }}>
                                                         <ChevronRightIcon
-                                                            color={COLORS.ACCENT}
+                                                            color={theme.ACCENT}
                                                         />
                                                     </View>
                                                 </View>

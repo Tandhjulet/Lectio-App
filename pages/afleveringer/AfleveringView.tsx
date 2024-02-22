@@ -1,12 +1,12 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native"
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View, useColorScheme } from "react-native";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { Opgave, OpgaveDetails, STATUS } from "../../modules/api/scraper/OpgaveScraper";
 import { formatDate } from "../Afleveringer";
 import { getAflevering } from "../../modules/api/scraper/Scraper";
 import { getSecure, getUnsecure } from "../../modules/api/Authentication";
-import COLORS from "../../modules/Themes";
+import { themes } from "../../modules/Themes";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { CLEAN_NAME } from "../beskeder/BeskedView";
@@ -77,6 +77,9 @@ export default function AfleveringView({ navigation, route }: {
     const onRefresh = useCallback(() => {
         setRefreshing(true);
     }, []);
+
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
     
     return (
         <View style={{
@@ -175,7 +178,7 @@ export default function AfleveringView({ navigation, route }: {
                                                     height: StyleSheet.hairlineWidth,
                                                     width: "100%",
 
-                                                    backgroundColor: "#2b2b2d",
+                                                    backgroundColor: theme.ACCENT_BLACK,
                                                     marginLeft: 15,
                                                 }} />
                                             </>
@@ -194,7 +197,7 @@ export default function AfleveringView({ navigation, route }: {
                                                     cellContentView={
                                                         <>
                                                             <Text style={{
-                                                                color: "#fff",
+                                                                color: theme.WHITE,
                                                                 paddingBottom: 5,
                                                                 paddingTop: 8,
                                                                 fontSize: 16,
@@ -202,7 +205,7 @@ export default function AfleveringView({ navigation, route }: {
                                                                 Note
                                                             </Text>
                                                             <Text style={{
-                                                                color: COLORS.WHITE,
+                                                                color: theme.WHITE,
                                                             }}>
                                                                 {opgaveDetails?.note}
                                                             </Text>
@@ -214,7 +217,7 @@ export default function AfleveringView({ navigation, route }: {
                                                     height: StyleSheet.hairlineWidth,
                                                     width: "100%",
 
-                                                    backgroundColor: "#2b2b2d",
+                                                    backgroundColor: theme.ACCENT_BLACK,
                                                     marginLeft: 15,
                                                 }} />
                                             </>
@@ -232,7 +235,7 @@ export default function AfleveringView({ navigation, route }: {
                                                 cellContentView={
                                                     <>
                                                         <Text style={{
-                                                            color: "#fff",
+                                                            color: theme.WHITE,
                                                             paddingBottom: 5,
                                                             paddingTop: 8,
                                                             fontSize: 16,
@@ -259,12 +262,12 @@ export default function AfleveringView({ navigation, route }: {
                                                                     justifyContent: "center",
                                                                     alignItems: "center",
                                                                 }}>
-                                                                    <UserIcon color={COLORS.WHITE} />
+                                                                    <UserIcon color={theme.WHITE} />
                                                                 </View>
                                                             }
                                                                 
                                                             <Text style={{
-                                                                color: COLORS.WHITE,
+                                                                color: theme.WHITE,
                                                                 maxWidth: "80%",
                                                             }} numberOfLines={1}>
                                                                 {opgaveDetails?.ansvarlig}
@@ -286,7 +289,7 @@ export default function AfleveringView({ navigation, route }: {
                                 justifyContent: "center",
                                 alignItems: "center",
                             }}>
-                                <ActivityIndicator color={COLORS.ACCENT} />
+                                <ActivityIndicator color={theme.ACCENT} />
                             </View>
                         }
                     </Section>

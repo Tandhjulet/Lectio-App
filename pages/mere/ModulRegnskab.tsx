@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View, useColorScheme } from "react-native";
 import { getProfile, scrapeModulRegnskab } from "../../modules/api/scraper/Scraper";
 import { Hold } from "../../modules/api/scraper/hold/HoldScraper";
 import { Modulregnskab } from "../../modules/api/scraper/hold/ModulRegnskabScraper";
 import { getSecure, getUnsecure } from "../../modules/api/Authentication";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import COLORS from "../../modules/Themes";
+import { themes } from "../../modules/Themes";
 
 export default function ModulRegnskab() {
     const [ loading, setLoading ] = useState<boolean>(false);
@@ -68,6 +68,9 @@ export default function ModulRegnskab() {
         setRefreshing(true);
     }, []);
 
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
         <View style={{
             minWidth: "100%",
@@ -84,7 +87,7 @@ export default function ModulRegnskab() {
                         translateX: -12.5,
                     }]
                 }}>
-                    <ActivityIndicator size={"small"} color={COLORS.ACCENT} />
+                    <ActivityIndicator size={"small"} color={theme.ACCENT} />
                 </View>
                 : 
                 <ScrollView refreshControl={
@@ -121,7 +124,7 @@ export default function ModulRegnskab() {
                                                     flexGrow: 1,
                                                 }}>
                                                     <Text style={{
-                                                        color: "#fff",
+                                                        color: theme.WHITE,
                                                         paddingBottom: 5,
                                                         paddingTop: 8,
                                                         fontSize: 16,
@@ -130,7 +133,7 @@ export default function ModulRegnskab() {
                                                     </Text>
                                                     <View>
                                                         <Text style={{
-                                                            color: "#fff",
+                                                            color: theme.WHITE,
                                                         }}>
                                                             {modul.held} ud af {modul.planned + modul.held} moduler
                                                         </Text>
@@ -152,7 +155,7 @@ export default function ModulRegnskab() {
                                                     <View style={{
                                                         width: 125,
                                                         height: 5,
-                                                        backgroundColor: COLORS.LIGHT,
+                                                        backgroundColor: theme.LIGHT,
                                                         borderRadius: 100,
 
                                                         position: "relative"
@@ -162,7 +165,7 @@ export default function ModulRegnskab() {
                                                             width: parseFloat(modul.afvigelse.replace("%", "").replace(",", ".")) + (125/2),
                                                             borderRadius: 100,
 
-                                                            backgroundColor: COLORS.DARK,
+                                                            backgroundColor: theme.DARK,
                                                         }} />
 
                                                         <View
@@ -176,13 +179,13 @@ export default function ModulRegnskab() {
                                                                 left: "50%",
                                                                 marginLeft: 0.5,
                                                                 
-                                                                backgroundColor: COLORS.WHITE,
+                                                                backgroundColor: theme.WHITE,
                                                             }}
                                                         />
                                                     </View>
 
                                                     <Text style={{
-                                                        color: COLORS.WHITE,
+                                                        color: theme.WHITE,
                                                         opacity: 0.6,
                                                     }}>
                                                         {modul.afvigelse} afvigelse

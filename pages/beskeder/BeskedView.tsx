@@ -1,7 +1,7 @@
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View, useColorScheme } from "react-native";
 import { LectioMessage, ThreadMessage } from "../../modules/api/scraper/MessageScraper";
 import { NavigationProp, RouteProp } from "@react-navigation/native";
-import COLORS, { hexToRgb } from "../../modules/Themes";
+import { hexToRgb, themes } from "../../modules/Themes";
 import { useCallback, useEffect, useState } from "react";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { getMessage } from "../../modules/api/scraper/Scraper";
@@ -78,14 +78,17 @@ export default function BeskedView({ navigation, route }: {
         setRefreshing(true);
     }, []);
 
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
         <View style={{
-            backgroundColor: COLORS.BLACK,
+            backgroundColor: theme.BLACK,
             width: "100%",
         }}>
 
             {loading ? 
-                <ActivityIndicator size={"small"} color={COLORS.ACCENT} />
+                <ActivityIndicator size={"small"} color={theme.ACCENT} />
             :
                 <ScrollView style={{
                     paddingVertical: 20,
@@ -101,7 +104,7 @@ export default function BeskedView({ navigation, route }: {
                             paddingHorizontal: 10,
                             paddingVertical: 20,
         
-                            backgroundColor: hexToRgb(COLORS.WHITE, 0.1),
+                            backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
         
                             borderRadius: 5,
 
@@ -126,7 +129,7 @@ export default function BeskedView({ navigation, route }: {
                                             maxWidth: "80%",
                                         }}>
                                             <Text style={{
-                                                color: COLORS.WHITE,
+                                                color: theme.WHITE,
                                                 fontWeight: 'bold',
                                                 fontSize: 12,
         
@@ -136,7 +139,7 @@ export default function BeskedView({ navigation, route }: {
                                             </Text>
         
                                             <Text style={{
-                                                color: COLORS.WHITE,
+                                                color: theme.WHITE,
                                                 fontWeight: 'bold',
                                             }}>
                                                 {message.title}
@@ -145,14 +148,14 @@ export default function BeskedView({ navigation, route }: {
                                     </View>
         
                                     <View style={{
-                                        borderTopColor: COLORS.WHITE,
+                                        borderTopColor: theme.WHITE,
                                         borderTopWidth: 1,
                                         opacity: 0.5,
                                         marginHorizontal: 5,
                                     }} />
         
                                     <Text style={{
-                                        color: COLORS.WHITE,
+                                        color: theme.WHITE,
                                     }}>
                                         {message.body}
                                     </Text>

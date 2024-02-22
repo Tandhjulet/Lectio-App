@@ -1,11 +1,11 @@
 import { ParamListBase, Route } from "@react-navigation/native";
 import { NativeStackNavigationOptions, NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-import { Keyboard, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Keyboard, StyleSheet, Text, TouchableWithoutFeedback, View, useColorScheme } from 'react-native';
 import { getHeaderTitle } from '@react-navigation/elements';
 import { Fragment } from "react";
-import COLORS from "../modules/Themes";
 import { getWeekNumber } from "../modules/api/scraper/Scraper";
+import { themes } from "../modules/Themes";
 
 export default function Header({ navigation, route, options, back }: {
     navigation: NativeStackNavigationProp<ParamListBase, string, undefined>;
@@ -17,11 +17,20 @@ export default function Header({ navigation, route, options, back }: {
 }) {
     const title = getHeaderTitle(options, route.name);
 
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     if(title === "Schools") {
         return (<Fragment>
             <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-                <View style={styles.defaultHeaderContainer}>
-                    <Text style={styles.text}>Skoler</Text>
+                <View style={{
+                    ...styles.defaultHeaderContainer,
+                    backgroundColor: theme.BLACK,
+                }}>
+                    <Text style={{
+                        fontSize: 20,
+                        color: theme.WHITE,
+                    }}>Skoler</Text>
                 </View>
             </TouchableWithoutFeedback>
         </Fragment>)
@@ -29,8 +38,14 @@ export default function Header({ navigation, route, options, back }: {
 
     return (
         <Fragment>
-            <View style={styles.defaultHeaderContainer}>
-                <Text style={styles.text}>{title}</Text>
+            <View style={{
+                    ...styles.defaultHeaderContainer,
+                    backgroundColor: theme.BLACK,
+                }}>
+                <Text style={{
+                    fontSize: 20,
+                    color: theme.WHITE,
+                }}>{title}</Text>
             </View>
         </Fragment>
     );
@@ -53,12 +68,6 @@ const styles = StyleSheet.create({
         paddingBottom: 10,
         paddingTop: 5,
     },
-    headerContainer: {
-        width: "100%",
-        paddingTop: 50,
-
-        backgroundColor: COLORS.BLACK,
-    },
     defaultHeaderContainer: {
         display: 'flex',
         justifyContent: 'center',
@@ -67,11 +76,5 @@ const styles = StyleSheet.create({
         width: "100%",
         paddingTop: 60,
         paddingBottom: 20,
-
-        backgroundColor: COLORS.BLACK,
-    },
-    text: {
-        fontSize: 20,
-        color: COLORS.WHITE,
     }
 });

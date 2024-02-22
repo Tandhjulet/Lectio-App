@@ -1,8 +1,8 @@
-import { ActivityIndicator, Button, Image, Keyboard, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, Button, Image, Keyboard, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { Profile, getMessages, getProfile, scrapeCache } from "../modules/api/scraper/Scraper";
-import COLORS, { hexToRgb } from "../modules/Themes";
+import { hexToRgb, themes } from "../modules/Themes";
 import { getSecure, getUnsecure } from "../modules/api/Authentication";
 import { LectioMessage } from "../modules/api/scraper/MessageScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
@@ -52,6 +52,9 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
     const [ rateLimited, setRateLimited ] = useState<boolean>(false);
     const [ messages, setMessages ] = useState<LectioMessage[] | null>([]);
     const [ headers, setHeaders ] = useState<{[id: string]: string}>();
+
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
 
     /**
      * Used in the message-modal to make the x-icon appear so you can clear 
@@ -203,7 +206,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                             top: 50,
 
                             borderRadius: 7.5,
-                            backgroundColor: COLORS.BLACK,
+                            backgroundColor: theme.BLACK,
 
                             paddingVertical: 10,
                         }}>
@@ -225,17 +228,17 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     gap: 40,
                                 }}>
                                     <Text style={{
-                                        color: COLORS.WHITE,
+                                        color: theme.WHITE,
                                         fontSize: 15,
                                     }}>
                                         Nyeste
                                     </Text>
-                                    <EnvelopeOpenIcon size={20} color={COLORS.LIGHT} />
+                                    <EnvelopeOpenIcon size={20} color={theme.LIGHT} />
                                 </View>
                             </Pressable>
                             <View style={{
                                 borderBottomWidth: StyleSheet.hairlineWidth,
-                                borderBottomColor: COLORS.WHITE,
+                                borderBottomColor: theme.WHITE,
                                 opacity: 0.6,
 
                                 marginHorizontal: 10,
@@ -260,17 +263,17 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     gap: 40,
                                 }}>
                                     <Text style={{
-                                        color: COLORS.WHITE,
+                                        color: theme.WHITE,
                                         fontSize: 15,
                                     }}>
                                         Ulæste
                                     </Text>
-                                    <EnvelopeIcon size={20} color={COLORS.LIGHT} />
+                                    <EnvelopeIcon size={20} color={theme.LIGHT} />
                                 </View>
                             </Pressable>
                             <View style={{
                                 borderBottomWidth: StyleSheet.hairlineWidth,
-                                borderBottomColor: COLORS.WHITE,
+                                borderBottomColor: theme.WHITE,
                                 opacity: 0.6,
 
                                 marginHorizontal: 10,
@@ -295,12 +298,12 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     gap: 40,
                                 }}>
                                     <Text style={{
-                                        color: COLORS.WHITE,
+                                        color: theme.WHITE,
                                         fontSize: 15,
                                     }}>
                                         Slettede
                                     </Text>
-                                    <TrashIcon size={20} color={COLORS.LIGHT} />
+                                    <TrashIcon size={20} color={theme.LIGHT} />
                                 </View>
                             </Pressable>
                         </View>
@@ -380,7 +383,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
     <View style={{
         minHeight: '100%',
         minWidth:'100%',
-        backgroundColor: COLORS.BLACK,
+        backgroundColor: theme.BLACK,
 
         paddingBottom: 50,
     }}>
@@ -395,7 +398,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                     translateX: -12.5,
                 }]
             }}>
-                <ActivityIndicator size={"small"} color={COLORS.ACCENT} />
+                <ActivityIndicator size={"small"} color={theme.ACCENT} />
             </View>
             :
             <ScrollView style={{
@@ -416,7 +419,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                         gap: 20,
                     }}>
                         <Text style={{
-                            color: COLORS.RED,
+                            color: theme.RED,
                             textAlign: 'center'
                         }}>
                             Der opstod en fejl.
@@ -440,7 +443,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                 gap: 5,
                             }}>
                                 <Text style={{
-                                    color: COLORS.WHITE,
+                                    color: theme.WHITE,
                                     textAlign: 'center'
                                 }}>
                                     {sortedBy == "Nyeste" ? "Du har ingen nye beskeder!" : `Du har ingen ${sortedBy.toLowerCase()} beskeder!`}
@@ -485,7 +488,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                                     }}>
                                                         {message.unread &&
                                                             <View style={{
-                                                                backgroundColor: COLORS.ACCENT,
+                                                                backgroundColor: theme.ACCENT,
 
                                                                 height: 10,
                                                                 width: 10,
@@ -494,7 +497,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                                         }
 
                                                         <ChevronRightIcon
-                                                            color={COLORS.ACCENT}
+                                                            color={theme.ACCENT}
                                                         />
                                                     </View>
                                                 }
@@ -531,10 +534,10 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                 bottomInset={89}
 
                 backgroundStyle={{
-                    backgroundColor: COLORS.BLACK,
+                    backgroundColor: theme.ACCENT_BLACK,
                 }}
                 handleIndicatorStyle={{
-                    backgroundColor: COLORS.WHITE,
+                    backgroundColor: theme.WHITE,
                 }}
             >
                 <View onLayout={(event) => {
@@ -557,7 +560,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                             }}
                             style={{
                                 borderRadius: 2,
-                                backgroundColor: COLORS.ACCENT_BLACK,
+                                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.02),
 
                                 display: "flex",
                                 flexDirection: "row",
@@ -574,7 +577,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                         >
                             
                             <Text style={{
-                                color: COLORS.WHITE,
+                                color: theme.WHITE,
                                 fontSize: 16,
                                 lineHeight: 20,
                             }}>
@@ -590,7 +593,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     }}>
                                         <View style={{
                                             padding: 5,
-                                            backgroundColor: COLORS.DARK,
+                                            backgroundColor: theme.DARK,
 
                                             display: "flex",
                                             flexDirection: "row",
@@ -601,12 +604,12 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                             borderRadius: 5,
                                         }}>
                                             <Text style={{
-                                                color: COLORS.WHITE,
+                                                color: theme.WHITE,
                                             }}>
                                                 {recipient.navn}
                                             </Text>
 
-                                            <XCircleIcon size={15} color={COLORS.ACCENT} />
+                                            <XCircleIcon size={15} color={theme.ACCENT} />
                                         </View>
                                     </Pressable>
                                 )
@@ -624,12 +627,12 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                 numberOfLines={1}
                                 editable
                                 placeholder={"Søg efter lære eller elev"}
-                                placeholderTextColor={hexToRgb(COLORS.WHITE, 0.6)}
+                                placeholderTextColor={hexToRgb(theme.WHITE.toString(), 0.6)}
                                 style={{
                                     fontSize: 16,
                                     lineHeight: 20,
                                     textAlign: "left",
-                                    color: COLORS.WHITE,
+                                    color: theme.WHITE,
                                     flex: 1,
                                 }}
                                 onPressIn={() => {
@@ -656,7 +659,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     handleSnapPress(0);
 
                                 }} hitSlop={20}>
-                                    <XCircleIcon size={20} color={COLORS.WHITE} />
+                                    <XCircleIcon size={20} color={theme.WHITE} />
                                 </Pressable>
                             )}
 
@@ -664,7 +667,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
 
                         <View style={{
                             borderRadius: 2,
-                            backgroundColor: COLORS.ACCENT_BLACK,
+                            backgroundColor: hexToRgb(theme.WHITE.toString(), 0.02),
 
                             padding: 8,
 
@@ -673,7 +676,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                             gap: 5,
                         }}>
                             <Text style={{
-                                color: COLORS.WHITE,
+                                color: theme.WHITE,
                                 fontSize: 16,
                                 lineHeight: 20,
                             }}>
@@ -685,11 +688,11 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
 
                                 editable
                                 placeholder={"Overskrift"}
-                                placeholderTextColor={hexToRgb(COLORS.WHITE, 0.6)}
+                                placeholderTextColor={hexToRgb(theme.WHITE.toString(), 0.6)}
                                 style={{
                                     fontSize: 16,
                                     lineHeight: 20,
-                                    color: COLORS.WHITE,
+                                    color: theme.WHITE,
                                     flex: 1,
                                 }}
                                 onChangeText={setTitle}
@@ -709,7 +712,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                 scrollEnabled
 
                                 placeholder={"Indhold"}
-                                placeholderTextColor={hexToRgb(COLORS.WHITE, 0.6)}
+                                placeholderTextColor={hexToRgb(theme.WHITE.toString(), 0.6)}
                                 style={{
                                     padding: 8,
 
@@ -717,10 +720,10 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     lineHeight: 20,
 
                                     minHeight: 20 * 5,
-                                    color: COLORS.WHITE,
+                                    color: theme.WHITE,
 
                                     borderRadius: 2,
-                                    backgroundColor: COLORS.ACCENT_BLACK,
+                                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.02),
                                 }}
                                 onChangeText={setContent}
                             />
@@ -739,7 +742,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                         marginRight: 30,
                         marginBottom: 30,
 
-                        backgroundColor: COLORS.DARK,
+                        backgroundColor: theme.DARK,
 
                         display: "flex",
                         justifyContent: "center",
@@ -776,9 +779,9 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                         }
                     }}>
                         {!sendingMessage ? 
-                            (<PaperAirplaneIcon size={25} color={COLORS.WHITE} />)
+                            (<PaperAirplaneIcon size={25} color={theme.WHITE} />)
                         :
-                            (<ActivityIndicator size={25} color={COLORS.WHITE} />)
+                            (<ActivityIndicator size={25} color={theme.WHITE} />)
                         }
                     </Pressable>
                 </View>
@@ -792,7 +795,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                         top: headerTop,
                         left: 0,
 
-                        backgroundColor: hexToRgb(COLORS.BLACK, 0.6),
+                        backgroundColor: hexToRgb(theme.BLACK.toString(), 0.6),
                         zIndex: 50,
                     }}>
                         <BottomSheetScrollView
@@ -815,7 +818,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                             paddingHorizontal: 20,
                                             paddingVertical: 15,
                                             
-                                            backgroundColor: hexToRgb(COLORS.BLACK, 0.6),
+                                            backgroundColor: hexToRgb(theme.BLACK.toString(), 0.6),
                                             display: 'flex',
                                             gap: 10,
                                             flexDirection: "row",
@@ -825,7 +828,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                             <ProfilePicture gymNummer={gym?.gymNummer ?? ""} billedeId={person.billedeId ?? ""} size={40} navn={person.navn} noContextMenu />
 
                                             <Text style={{
-                                                color: COLORS.WHITE,
+                                                color: theme.WHITE,
                                             }}>
                                                 {person.navn}
                                             </Text>
@@ -836,7 +839,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
 
                             {filteredPeople.length == 0 && (
                                 <Text style={{
-                                    color: COLORS.WHITE,
+                                    color: theme.WHITE,
                                     fontSize: 10,
 
                                     paddingTop: 20,

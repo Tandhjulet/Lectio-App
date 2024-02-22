@@ -8,7 +8,6 @@ import { HeaderBackButton } from "@react-navigation/elements";
 
 import Login from './pages/login/Login';
 import Schools from './pages/login/Schools';
-import COLORS from './modules/Themes';
 import Absence from './pages/mere/Absence';
 import TeachersAndStudents from './pages/mere/TeachersAndStudents';
 import BeskedView from './pages/beskeder/BeskedView';
@@ -23,7 +22,7 @@ import { scrapePeople } from './modules/api/scraper/class/PeopleList';
 import Afleveringer from './pages/Afleveringer';
 import AfleveringView from './pages/afleveringer/AfleveringView';
 import ModulRegnskab from './pages/mere/ModulRegnskab';
-import { Button, Pressable, Text, View } from 'react-native';
+import { Appearance, Button, Pressable, Text, View, useColorScheme } from 'react-native';
 import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronLeftIcon, PencilSquareIcon } from 'react-native-heroicons/solid';
 import { HeaderStyleInterpolators, TransitionPresets, createStackNavigator } from '@react-navigation/stack';
 import { cleanUp } from './modules/api/storage/Storage';
@@ -57,6 +56,7 @@ import * as Linking from 'expo-linking';
 import Constants from 'expo-constants';
 import { PostPurchase } from './modules/API';
 import LandingPage from './pages/login/LandingPage';
+import { themes } from './modules/Themes';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -232,91 +232,97 @@ const App = () => {
     []
   );
 
+  const scheme = useColorScheme();
+  const theme = themes[scheme || "dark"];
   
   return (
-      <AuthContext.Provider value={authContext}>
-        <NavigationContainer theme={{colors: {
-          background: COLORS.BLACK,
-          primary: '',
-          card: '',
-          text: '',
-          border: '',
-          notification: ''
-        }, dark: true}}>
-            {state.isLoading ? (
+    <AuthContext.Provider value={authContext}>
+      <NavigationContainer theme={{colors: {
+        background: theme.BLACK.toString(),
+        primary: '',
+        card: '',
+        text: '',
+        border: '',
+        notification: ''
+      }, dark: true}}>
+          {state.isLoading ? (
 
-              <AppStack.Navigator screenOptions={{
-                headerShown: false,
-              }}>
-                <AppStack.Screen name="Splash" component={SplashScreen} options={{
-                  header: () => <></>
-                }} />
-              </AppStack.Navigator>
-            ) : (
-              <>
-                {!state.loggedIn ? (
-                  <AppStack.Navigator screenOptions={{
-                    gestureEnabled: false,
-                    contentStyle: {
-                      backgroundColor: COLORS.BLACK
-                    },
-                    animation:'none',
-          
-                    headerStyle: {
-                      backgroundColor: COLORS.ACCENT_BLACK,
-                    },
-                    headerTitleStyle: {
-                      color: COLORS.WHITE,
-                    },
-                    headerBackVisible: false,
-                  }}>
-                    <AppStack.Screen name="LandingPage" component={LandingPage} options={{
-                      header: () => <></>
-                    }} />
-                    <AppStack.Screen name="Login" component={Login} options={{
-                      header: () => <></>
-                    }} />
+            <AppStack.Navigator screenOptions={{
+              headerShown: false,
+            }}>
+              <AppStack.Screen name="Splash" component={SplashScreen} options={{
+                header: () => <></>
+              }} />
+            </AppStack.Navigator>
+          ) : (
+            <>
+              {!state.loggedIn ? (
+                <AppStack.Navigator screenOptions={{
+                  gestureEnabled: false,
+                  contentStyle: {
+                    backgroundColor: theme.BLACK
+                  },
+                  animation:'none',
+        
+                  headerStyle: {
+                    backgroundColor: theme.ACCENT_BLACK.toString(),
+                  },
+                  headerTitleStyle: {
+                    color: theme.WHITE.toString(),
+                  },
+                  headerBackVisible: false,
+                }}>
+                  <AppStack.Screen name="LandingPage" component={LandingPage} options={{
+                    header: () => <></>
+                  }} />
+                  <AppStack.Screen name="Login" component={Login} options={{
+                    header: () => <></>
+                  }} />
 
-                    <AppStack.Screen name="Schools" component={Schools} options={{
-                      header: ({ navigation, route, options, back }) => Header({ navigation, route, options, back })
-                    }} />
-                  </AppStack.Navigator>
-                ) : (
-                  <Tab.Navigator
-                    tabBar={props => <NavigationBar currentTab={props.state.key} navigation={props.navigation}/>}
-                  >
-                    <Tab.Screen name="SkemaNavigator" component={SkemaNavigator} options={{
-                      header: () => <></>
-                    }} />
-          
-                    <Tab.Screen name="Beskeder" component={BeskedNavigator} options={{
-                      header: () => <></>
-                    }} />
-          
-                    <Tab.Screen name="Mere" component={MereNavigator} options={{
-                      header: () => <></>
-                    }} />
-                  </Tab.Navigator>
-                )}
-              </>
-            )}
-        </NavigationContainer>
-      </AuthContext.Provider>
+                  <AppStack.Screen name="Schools" component={Schools} options={{
+                    header: ({ navigation, route, options, back }) => Header({ navigation, route, options, back })
+                  }} />
+                </AppStack.Navigator>
+              ) : (
+                <Tab.Navigator
+                  tabBar={props => <NavigationBar currentTab={props.state.key} navigation={props.navigation}/>}
+                >
+                  <Tab.Screen name="SkemaNavigator" component={SkemaNavigator} options={{
+                    header: () => <></>
+                  }} />
+        
+                  <Tab.Screen name="Beskeder" component={BeskedNavigator} options={{
+                    header: () => <></>
+                  }} />
+        
+                  <Tab.Screen name="Mere" component={MereNavigator} options={{
+                    header: () => <></>
+                  }} />
+                </Tab.Navigator>
+              )}
+            </>
+          )}
+      </NavigationContainer>
+    </AuthContext.Provider>
   );
 }
 
 export function SkemaNavigator() {
+
+  const scheme = useColorScheme();
+  const theme = themes[scheme || "dark"];
+
   return (
     <SkemaNav.Navigator initialRouteName="Skema" screenOptions={{
       gestureEnabled: true,
       headerStyle: {
-        backgroundColor: COLORS.ACCENT_BLACK,
+        backgroundColor: theme.ACCENT_BLACK.toString(),
       },
       headerTitleStyle: {
-        color: COLORS.WHITE,
+        color: theme.WHITE.toString(),
       },
       headerBackTitleVisible: false,
-      contentStyle: {backgroundColor: COLORS.BLACK},
+      contentStyle: {backgroundColor: theme.BLACK},
     }}>
       <SkemaNav.Screen name={"Skema"} component={Skema} options={{
         header: () => <></>
@@ -327,15 +333,19 @@ export function SkemaNavigator() {
 }
 
 export function BeskedNavigator() {
+
+  const scheme = useColorScheme();
+  const theme = themes[scheme || "dark"];
+
   return (
     <Messages.Navigator initialRouteName="BeskedList" screenOptions={{
       gestureEnabled: true,
       headerStyle: {
-        backgroundColor: COLORS.ACCENT_BLACK,
+        backgroundColor: theme.ACCENT_BLACK,
         shadowColor: "rgba(255, 255, 255, 0.2)",
       },
       headerTitleStyle: {
-        color: COLORS.WHITE,
+        color: theme.WHITE,
         fontSize: 17,
       },
       headerBackTitleVisible: false,
@@ -369,17 +379,21 @@ export function BeskedNavigator() {
 }
 
 export function AfleveringNavigator() {
+
+  const scheme = useColorScheme();
+  const theme = themes[scheme || "dark"];
+
   return (
     <Opgaver.Navigator initialRouteName="AfleveringList" screenOptions={{
       gestureEnabled: true,
       headerStyle: {
-        backgroundColor: COLORS.ACCENT_BLACK,
+        backgroundColor: theme.ACCENT_BLACK.toString(),
       },
       headerTitleStyle: {
-        color: COLORS.WHITE,
+        color: theme.WHITE.toString(),
       },
       headerBackTitleVisible: false,
-      contentStyle: {backgroundColor: COLORS.BLACK}
+      contentStyle: {backgroundColor: theme.BLACK}
     }}>
       <Opgaver.Screen name={"AfleveringList"} component={Afleveringer} options={({ navigation, route }) => ({
         headerRight: () => (
@@ -425,17 +439,23 @@ export function AfleveringNavigator() {
 }
 
 export function MereNavigator() {
+
+  const scheme = useColorScheme();
+  const theme = themes[scheme || "dark"];
+
   return (
     <Settings.Navigator initialRouteName="Settings" screenOptions={{
       gestureEnabled: true,
       headerStyle: {
-        backgroundColor: COLORS.ACCENT_BLACK,
+        backgroundColor: theme.ACCENT_BLACK.toString(),
       },
       headerTitleStyle: {
-        color: COLORS.WHITE,
+        color: theme.WHITE.toString(),
       },
+
+      headerBackVisible: true,
       headerBackTitleVisible: false,
-      contentStyle: {backgroundColor: COLORS.BLACK}
+      contentStyle: {backgroundColor: theme.BLACK}
     }}>
       <Settings.Screen name={"Settings"} component={Mere} options={{title: "Indstillinger"}} />
 

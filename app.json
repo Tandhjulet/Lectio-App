@@ -9,12 +9,8 @@
     "scheme": "lecioplus",
     "splash": {
       "image": "./assets/splash-transparent.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#000"
+      "resizeMode": "contain"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "ios": {
       "supportsTablet": false,
       "config": {

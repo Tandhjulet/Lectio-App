@@ -1,17 +1,37 @@
-/**
- * Color scheme
- */
-const COLORS = {
-    "BLACK": "#000000",
-    "ACCENT_BLACK": "#0b0d0c", 
-    "DARK": "#183D3D",
-    "LIGHT": "#5C8374",
-    "ACCENT": "#9bd1bc",
-    "WHITE": "#d1d1d1",
-    "RED": "#ff7a7a",
-} as const;
+import React from "react";
+import { Appearance, ColorValue } from "react-native";
 
-export default COLORS;
+export type Theme = {
+  BLACK: ColorValue,
+  ACCENT_BLACK: ColorValue,
+  DARK: ColorValue,
+  LIGHT: ColorValue,
+  ACCENT: ColorValue,
+  WHITE: ColorValue,
+  RED: ColorValue,
+}
+
+export const LightTheme: Theme = {
+  BLACK: "#f2f2f2",
+  ACCENT_BLACK: "#e3e3e3",
+  DARK: "#89b39e",
+  LIGHT: "#5C8374",
+  ACCENT: "#3d6354",
+  WHITE: "#000000",
+  RED: "#ff7a7a",
+}
+
+export const DarkTheme: Theme = {
+  BLACK: "#000000",
+  ACCENT_BLACK: "#0b0d0c", 
+  DARK: "#183D3D",
+  LIGHT: "#5C8374",
+  ACCENT: "#9bd1bc",
+  WHITE: "#d1d1d1",
+  RED: "#ff7a7a",
+}
+
+export const themes = {light: LightTheme, dark: DarkTheme};
 
 /**
  * Converts hex to RGBA color

@@ -4,14 +4,14 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useColorScheme,
 } from 'react-native';
 import { CalendarIcon, EnvelopeIcon, ClockIcon, EllipsisHorizontalIcon } from 'react-native-heroicons/solid';
-import COLORS from '../modules/Themes';
+import { themes } from '../modules/Themes';
 
 const styles = StyleSheet.create({
   navbarContainer: {
     width: '100%',
-    backgroundColor: COLORS.ACCENT_BLACK,
     position: 'absolute',
     bottom: 0,
     minHeight: 50,
@@ -32,14 +32,6 @@ const styles = StyleSheet.create({
     gap: 2.5,
     alignItems: 'center',
     fontSize: '50px',
-  },
-  iconCurrent: {
-    color: COLORS.LIGHT,
-    paddingHorizontal: 5,
-  },
-  icon: {
-    color: COLORS.ACCENT,
-    paddingHorizontal: 5,
   }
 });
 
@@ -69,13 +61,19 @@ const NavigationBar: React.FC<Props> = ({
   navigation,
 }) => {
 
+  const scheme = useColorScheme();
+  const theme = themes[scheme || "dark"];
+
   return (
     <>
 
-      <View style={styles.navbarContainer}>
+      <View style={{
+        ...styles.navbarContainer,
+        backgroundColor: theme.ACCENT_BLACK,
+      }}>
         <View
           style={{
-              borderBottomColor: COLORS.WHITE,
+              borderBottomColor: theme.WHITE,
               opacity: 0.2,
               borderBottomWidth: StyleSheet.hairlineWidth,
 
@@ -94,13 +92,25 @@ const NavigationBar: React.FC<Props> = ({
                   <View style={styles.iconContainer}>
                     {(currentTab === tab.slug) ? (
                       <>
-                        <tab.icon style={styles.iconCurrent}></tab.icon>
-                        <Text style={styles.iconCurrent}>{tab.slug}</Text>
+                        <tab.icon style={{
+                          color: theme.LIGHT,
+                          paddingHorizontal: 5,
+                        }}></tab.icon>
+                        <Text style={{
+                          color: theme.LIGHT,
+                          paddingHorizontal: 5,
+                        }}>{tab.slug}</Text>
                       </>
                     ) : (
                       <>
-                        <tab.icon style={styles.icon}></tab.icon>
-                        <Text style={styles.icon}>{tab.slug}</Text>
+                        <tab.icon style={{
+                          color: theme.ACCENT,
+                          paddingHorizontal: 5,
+                        }}></tab.icon>
+                        <Text style={{
+                          color: theme.ACCENT,
+                          paddingHorizontal: 5,
+                        }}>{tab.slug}</Text>
                       </>
                     )}
                   </View>

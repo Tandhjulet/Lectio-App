@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
-import { Animated, ViewStyle } from "react-native";
+import { Animated, ViewStyle, useColorScheme } from "react-native";
 import { AcademicCapIcon } from "react-native-heroicons/solid";
 import { Easing } from "react-native-reanimated";
-import COLORS from "../modules/Themes";
+import { themes } from "../modules/Themes";
 
 export default function Logo({
     color,
@@ -54,6 +54,9 @@ export default function Logo({
       ).start();
     }, [opacity, scale]);
 
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
         <Animated.View style={{
             opacity: opacity,
@@ -63,7 +66,7 @@ export default function Logo({
 
             ...style,
         }}>
-            <AcademicCapIcon size={size ?? 75} color={color ?? COLORS.WHITE} />
+            <AcademicCapIcon size={size ?? 75} color={color ?? theme.WHITE} />
         </Animated.View>
     )
 }

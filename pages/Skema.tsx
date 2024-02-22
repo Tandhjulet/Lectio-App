@@ -1,10 +1,10 @@
-import { ActivityIndicator, Animated, DimensionValue, Dimensions, LogBox, Modal, PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, Animated, DimensionValue, Dimensions, LogBox, Modal, PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { createRef, useCallback, useEffect, useRef, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
 import { getSecure, getUnsecure, isAuthorized } from "../modules/api/Authentication";
 import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
-import COLORS, { hexToRgb } from "../modules/Themes";
+import { hexToRgb, themes } from "../modules/Themes";
 import { BackwardIcon, ChatBubbleBottomCenterTextIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";
 import getDaysOfCurrentWeek, { WeekDay, getDay, getDaysOfThreeWeeks, getNextWeek, getPrevWeek } from "../modules/Date";
 import GestureRecognizer from 'react-native-swipe-gestures';
@@ -521,513 +521,516 @@ export default function Skema({ navigation }: {
     const pagerRef = createRef<PagerView>();
     const scrollRef = createRef<ScrollView>();
 
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
-    <View>
-        <View style={{
-            paddingTop: 50,
-    
-            backgroundColor: COLORS.ACCENT_BLACK,
-
-            display: 'flex',
-            flexDirection: 'row',
-
-            width: "100%",
-        }}>
+        <View>
             <View style={{
-                paddingHorizontal: 20,
-            }}>
-                <Text style={{
-                    fontSize: 20,
-                    color: COLORS.LIGHT,
-                }}>{getTimeOfDayAsString()}, {profile == undefined ? "..." : profile.name.split(' ')[0]}</Text>
+                paddingTop: 50,
+        
+                backgroundColor: theme.ACCENT_BLACK,
 
-                <Text style={{
-                    fontSize: 30,
-                    fontWeight: "bold",
-                    color: COLORS.WHITE,
-                }}>Uge {getWeekNumber(loadWeekDate)}</Text>
-            </View>
-            <View style={{
                 display: 'flex',
                 flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: 20,
 
-                position: "absolute",
-                right: 0,
-                bottom: 0,
-
-                paddingRight: 20,
+                width: "100%",
             }}>
-                <TouchableOpacity onPress={() => {
-                    if(loadDate > new Date()) {
-                        pagerRef.current?.setPage(0);
-                    } else {
-                        pagerRef.current?.setPage(2);
-                    }
-
-                    setLoadDate(new Date());
-                    setSelectedDay(new Date());
-                    setDayNum(getDay(new Date()).weekDayNumber)
+                <View style={{
+                    paddingHorizontal: 20,
                 }}>
-                    <View style={{
-                        backgroundColor: COLORS.LIGHT,
-                        padding: 5,
-                        borderRadius: 12.5,
+                    <Text style={{
+                        fontSize: 20,
+                        color: theme.LIGHT,
+                    }}>{getTimeOfDayAsString()}, {profile == undefined ? "..." : profile.name.split(' ')[0]}</Text>
 
-                        opacity: (!loading && !dateCompare(selectedDay, new Date())) ? 1 : 0.5,
-                    }}>
-                        <BackwardIcon color={COLORS.DARK} />
-                    </View>
-                </TouchableOpacity>
+                    <Text style={{
+                        fontSize: 30,
+                        fontWeight: "bold",
+                        color: theme.WHITE,
+                    }}>Uge {getWeekNumber(loadWeekDate)}</Text>
+                </View>
+                <View style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: 20,
 
-                <TouchableOpacity onPress={() => {
-                    if(skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter == ""))
-                        return;
+                    position: "absolute",
+                    right: 0,
+                    bottom: 0,
 
-                    setModalVisible(true)
+                    paddingRight: 20,
                 }}>
-                    <View style={{
-                        backgroundColor: COLORS.LIGHT,
-                        padding: 5,
-                        borderRadius: 12.5,
-
-                        opacity: (skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter == "")) ? 0.5 : 1,
-                    }}>
-                        <ClipboardDocumentListIcon color={COLORS.DARK} />
-                    </View>
-                </TouchableOpacity>
-
-                <Modal 
-                    transparent={true}
-                    visible={modalVisible}
-                    onRequestClose={() => {
-                        setModalVisible(!modalVisible);
-                    }}
-                >
-                    <TouchableWithoutFeedback style={{
-                        position: "absolute",
-
-                        width: "100%",
-                        height: "100%",
-                    }} onPress={() => {
-                        setModalVisible(!modalVisible);
-                    }}>
-                        <View style={{
-                            flex: 1,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-
-                            paddingTop: 22,
-                            paddingBottom: 200,
-
-                            backgroundColor: 'rgba(52, 52, 52, 0.6)',
-                        }}>
-                            <View style={{
-                                margin: 20,
-
-                                backgroundColor: COLORS.BLACK,
-                                borderRadius: 20,
-
-                                paddingHorizontal: 35,
-                                paddingVertical: 20,
-
-                                alignItems: 'center',
-                                shadowColor: '#000',
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 4,
-                                elevation: 5,
-                            }}>
-                                <Text style={{
-                                    color: COLORS.WHITE,
-                                }}>
-                                    {skema != null && skema[dayNum - 2] != undefined && skema[dayNum - 2].skemaNoter}
-                                </Text>
-                            </View>
-                        </View>
-                    </TouchableWithoutFeedback>
-
-                </Modal>
-            </View>
-        </View>
-
-        <View style={{
-            backgroundColor: COLORS.ACCENT_BLACK,
-        }}>
-            <PagerView
-                ref={pagerRef}
-                initialPage={2}
-                orientation={"horizontal"}
-                overdrag
-
-                style={{
-                    width: width,
-                    height: 56 + 15 + 10,
-                }}
-
-                scrollEnabled={!loading}
-
-                onPageSelected={(e) => {
-                    if(blockScroll)
-                        return;
-                    
-                    if(e.nativeEvent.position == 2) {
-                        setLoadDate(() => {
-                            const week = getNextWeek(selectedDay);
-    
-                            setSelectedDay(week);
-                            return week;
-                        })
-                    } else if (e.nativeEvent.position == 0) {
-                        setLoadDate(() => {
-                            const week = getPrevWeek(selectedDay);
-    
-                            setSelectedDay(week);
-                            return week;
-                        })
-                    }
-
-                }}
-            >
-                {daysOfThreeWeeks.map((_, i) => {
-                    return (
-                        <View key={i} style={{
-                            display: 'flex',
-
-                            justifyContent:'space-between',
-
-                            paddingTop: 15,
-                            flexDirection: 'row',
-
-                            flexWrap: "nowrap",
-
-                            width: width,
-                            height: 56 + 15 + 10,
-
-                            paddingHorizontal: 20,
-                            marginBottom: 10,
-                        }}>
-                            {daysOfThreeWeeks[i].map((day,i) => {
-                                return (
-                                    <Pressable key={i + "."} onPress={() => {
-                                        setDayNum(day.weekDayNumber);
-                                        setSelectedDay(day.date);
-                                    }} style={({pressed}) => [
-                                        {
-                                            opacity: pressed ? 0.6 : 1,
-                                        }
-                                    ]}>
-                                        <View style={{...styles.dayContainer, backgroundColor: (day.date.getMonth() == selectedDay.getMonth() &&
-                                                                                                day.date.getDate() == selectedDay.getDate() &&
-                                                                                                day.date.getFullYear() == selectedDay.getFullYear()) ? COLORS.LIGHT : COLORS.DARK}}>
-                                            <Text style={{
-                                                textTransform: 'lowercase',
-                                                color: COLORS.ACCENT,
-                                                opacity: day.isWeekday ? 0.6 : 1,
-                                            }}>{day.dayName.slice(0,3)}.</Text>
-
-                                            <Text style={{
-                                                color: COLORS.WHITE,
-                                                fontWeight: "bold",
-                                                fontSize: 20,
-                                                opacity: day.isWeekday ? 0.6 : 1,
-                                            }}>{day.dayNumber.toString()}</Text>
-                                        </View>
-                                    </Pressable>
-                                )
-                            })}
-                        </View>
-                    )
-                })}
-            </PagerView>
-        </View>
-
-        <GestureRecognizer 
-            onSwipeLeft={() => daySelector("ADD")}
-            onSwipeRight={() => daySelector("REMOVE")}
-            style={{
-                backgroundColor: COLORS.ACCENT_BLACK,
-            }}
-        >
-            <View
-                style={{
-                    backgroundColor: COLORS.ACCENT,
-                    opacity: 0.6,
-                    height: 1,
-
-                    borderRadius: 5,
-
-                    marginHorizontal: 20,
-                    marginBottom: 5,
-                }}
-            />
-
-            
-            <View style={{
-                backgroundColor: COLORS.BLACK,
-                minHeight: "100%",
-
-                paddingBottom: 200,
-            }}>
-
-                {loading ?
-                    <View style={{
-                        position: "absolute",
-
-                        top: "20%",
-                        left: "50%",
-
-                        transform: [{
-                            translateX: -12.5,
-                        }]
-                    }}>
-                        <ActivityIndicator size={"small"} color={COLORS.ACCENT} />
-                    </View>
-                    :
-                    <ScrollView style={{
-                        flex: 1,
-                    }} refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                    } ref={scrollRef}>
-                        <View style={{
-                            paddingTop: 20,
-                        }} /> 
-
-                        {skema == null && 
-                            <View style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-
-                                flexDirection: 'column-reverse',
-
-                                minHeight: '40%',
-
-                                gap: 20,
-                            }}>
-                                <Text style={{
-                                    color: COLORS.RED,
-                                    textAlign: 'center'
-                                }}>
-                                    Der opstod en fejl.
-                                    {"\n"}
-                                    Du kan prøve igen ved at genstarte appen.
-                                </Text>
-
-                            </View>
+                    <TouchableOpacity onPress={() => {
+                        if(loadDate > new Date()) {
+                            pagerRef.current?.setPage(0);
+                        } else {
+                            pagerRef.current?.setPage(2);
                         }
 
-                        {skema != null && (skema[dayNum - 1] == undefined || Object.keys(skema[dayNum - 1].moduler).length == 0) ? (
+                        setLoadDate(new Date());
+                        setSelectedDay(new Date());
+                        setDayNum(getDay(new Date()).weekDayNumber)
+                    }}>
+                        <View style={{
+                            backgroundColor: theme.LIGHT,
+                            padding: 5,
+                            borderRadius: 12.5,
+
+                            opacity: (!loading && !dateCompare(selectedDay, new Date())) ? 1 : 0.5,
+                        }}>
+                            <BackwardIcon color={theme.DARK} />
+                        </View>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => {
+                        if(skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter == ""))
+                            return;
+
+                        setModalVisible(true)
+                    }}>
+                        <View style={{
+                            backgroundColor: theme.LIGHT,
+                            padding: 5,
+                            borderRadius: 12.5,
+
+                            opacity: (skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter == "")) ? 0.5 : 1,
+                        }}>
+                            <ClipboardDocumentListIcon color={theme.DARK} />
+                        </View>
+                    </TouchableOpacity>
+
+                    <Modal 
+                        transparent={true}
+                        visible={modalVisible}
+                        onRequestClose={() => {
+                            setModalVisible(!modalVisible);
+                        }}
+                    >
+                        <TouchableWithoutFeedback style={{
+                            position: "absolute",
+
+                            width: "100%",
+                            height: "100%",
+                        }} onPress={() => {
+                            setModalVisible(!modalVisible);
+                        }}>
                             <View style={{
-                                display: 'flex',
+                                flex: 1,
                                 justifyContent: 'center',
                                 alignItems: 'center',
 
-                                flexDirection: 'column-reverse',
+                                paddingTop: 22,
+                                paddingBottom: 200,
 
-                                minHeight: '40%',
-
-                                gap: 5,
+                                backgroundColor: 'rgba(52, 52, 52, 0.6)',
                             }}>
-                                <Text style={{
-                                    color: COLORS.WHITE,
-                                    textAlign: 'center'
+                                <View style={{
+                                    margin: 20,
+
+                                    backgroundColor: theme.BLACK,
+                                    borderRadius: 20,
+
+                                    paddingHorizontal: 35,
+                                    paddingVertical: 20,
+
+                                    alignItems: 'center',
+                                    shadowColor: '#000',
+                                    shadowOffset: {
+                                        width: 0,
+                                        height: 2,
+                                    },
+                                    shadowOpacity: 0.25,
+                                    shadowRadius: 4,
+                                    elevation: 5,
                                 }}>
-                                    Du har ingen moduler.
-                                    {"\n"}
-                                    Nyd din dag!
-                                </Text>
-                                <Logo size={60} />
+                                    <Text style={{
+                                        color: theme.WHITE,
+                                    }}>
+                                        {skema != null && skema[dayNum - 2] != undefined && skema[dayNum - 2].skemaNoter}
+                                    </Text>
+                                </View>
                             </View>
-                        )
-                        :
-                        <View>
-                            {hoursToMap.map((hour: number, index: number) => {
-                                return (
-                                    <View key={index} style={{
-                                        position: "absolute",
-                                        top: (hour - Math.min(...hoursToMap)) * 60,
+                        </TouchableWithoutFeedback>
 
-                                        display: "flex",
-                                        flexDirection: "row",
-                                        alignItems: "center",
+                    </Modal>
+                </View>
+            </View>
 
-                                        left: 40,
-                                        paddingRight: 41,
-                                        gap: 7.5,
+            <View style={{
+                backgroundColor: theme.ACCENT_BLACK,
+            }}>
+                <PagerView
+                    ref={pagerRef}
+                    initialPage={2}
+                    orientation={"horizontal"}
+                    overdrag
 
-                                        transform: [{
-                                            translateY: -(17 / 2),
-                                        }],
+                    style={{
+                        width: width,
+                        height: 56 + 15 + 10,
+                    }}
 
-                                        zIndex: 1,
-                                    }}>
-                                        <Text style={{
-                                            color: hexToRgb(COLORS.WHITE, 0.8),
-                                            width: 39,
+                    scrollEnabled={!loading}
 
-                                            textAlign: "center",
-                                            textAlignVertical: "center",
-                                        }}>
-                                            {hour.toString().padStart(2, "0")}:00
-                                        </Text>
-                                        <View style={{
-                                            height: StyleSheet.hairlineWidth,
-                                            backgroundColor: hexToRgb(COLORS.WHITE, 0.6),
-                                            flex: 1,
-                                        }} />
-                                    </View>
-                                )
-                            })}
+                    onPageSelected={(e) => {
+                        if(blockScroll)
+                            return;
+                        
+                        if(e.nativeEvent.position == 2) {
+                            setLoadDate(() => {
+                                const week = getNextWeek(selectedDay);
+        
+                                setSelectedDay(week);
+                                return week;
+                            })
+                        } else if (e.nativeEvent.position == 0) {
+                            setLoadDate(() => {
+                                const week = getPrevWeek(selectedDay);
+        
+                                setSelectedDay(week);
+                                return week;
+                            })
+                        }
 
-                            {modulTimings.map((modulTiming: ModulDate, index: number) => {
-                                return (
-                                    <View key={index} style={{
-                                        position: "absolute",
-                                        height: modulTiming.diff,
-                                        width: 30,
+                    }}
+                >
+                    {daysOfThreeWeeks.map((_, i) => {
+                        return (
+                            <View key={i} style={{
+                                display: 'flex',
 
-                                        borderTopRightRadius: 7.5,
-                                        borderBottomRightRadius: 7.5,
+                                justifyContent:'space-between',
 
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
+                                paddingTop: 15,
+                                flexDirection: 'row',
 
-                                        backgroundColor: hexToRgb(COLORS.WHITE, 0.15),
+                                flexWrap: "nowrap",
 
-                                        top: calculateTop(modulTiming)
-                                    }}>
-                                        <Text style={{
-                                            color: COLORS.WHITE,
-                                            fontWeight: "bold",
-                                            opacity: 0.7,
-                                        }}>
-                                            {index+1}.
-                                        </Text>
-                                    </View>
-                                )
-                            })}
+                                width: width,
+                                height: 56 + 15 + 10,
 
-                            <View style={{
-                                position: "relative",
-                                marginLeft: 40 + 7.5 + 38,
-
-                                zIndex: 5,
+                                paddingHorizontal: 20,
+                                marginBottom: 10,
                             }}>
-                                {day != null && day.map(({ modul, width, left}, index: number) => {
-                                    const widthNum = parseInt(width.replace("%", ""));
-
+                                {daysOfThreeWeeks[i].map((day,i) => {
                                     return (
-                                        <Pressable key={index} onPress={() => {
-                                            navigation.navigate("Modul View", {
-                                                modul: modul,
-                                            })
-                                        }}>
-                                            <View style={{
-                                                position:"absolute",
+                                        <Pressable key={i + "."} onPress={() => {
+                                            setDayNum(day.weekDayNumber);
+                                            setSelectedDay(day.date);
+                                        }} style={({pressed}) => [
+                                            {
+                                                opacity: pressed ? 0.6 : 1,
+                                            }
+                                        ]}>
+                                            <View style={{...styles.dayContainer, backgroundColor: (day.date.getMonth() == selectedDay.getMonth() &&
+                                                                                                    day.date.getDate() == selectedDay.getDate() &&
+                                                                                                    day.date.getFullYear() == selectedDay.getFullYear()) ? theme.LIGHT : theme.DARK}}>
+                                                <Text style={{
+                                                    textTransform: 'lowercase',
+                                                    color: theme.ACCENT,
+                                                    opacity: day.isWeekday ? 0.6 : 1,
+                                                }}>{day.dayName.slice(0,3)}.</Text>
 
-                                                top: calculateTop(modul.timeSpan),
-                                                height: modul.timeSpan.diff,
-                                                
-                                                width: width as DimensionValue,
-                                                left: left as DimensionValue,
-
-                                                zIndex: 5,
-                                            }}>
-                                                <View style={{
-                                                    width: "100%",
-                                                }}>
-                                                    <View style={{
-                                                        backgroundColor: calcColor(0.5, modul),
-                                                        borderRadius: 5,
-
-                                                        width: "100%",
-                                                        height: "100%",
-
-                                                        overflow: "hidden",
-
-                                                        paddingHorizontal: 10,
-                                                        paddingVertical: modul.timeSpan.diff > 25 ? 5 : 2.5,
-                                                    }}>
-                                                        <View style={{
-                                                            position: 'absolute',
-                                                            backgroundColor: calcColor(1, modul),
-
-                                                            borderRadius: 100,
-
-                                                            minHeight: modul.timeSpan.diff,
-                                                            width: 4,
-
-                                                            left: 0,
-                                                        }} />
-
-                                                        {modul.timeSpan.diff > 30 && (
-                                                            <Text style={{
-                                                                color: calcColor(1, modul),
-                                                                fontSize: 12.5,
-                                                            }}>
-                                                                {modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim()}
-                                                            </Text>
-                                                        )}
-
-                                                        <Text style={{
-                                                            color: calcColor(1, modul),
-                                                            fontWeight: "bold",
-                                                        }}>
-                                                            {modul.teacher.length == 0 ? modul.team : (modul.team + " - " + modul.teacher.join(", "))}
-                                                        </Text>
-
-                                                        {modul.timeSpan.diff > 70 && (
-                                                            <View style={{
-                                                                position: "absolute",
-                                                                top: widthNum > 75 ? 0 : undefined,
-                                                                bottom: widthNum > 75 ? undefined : 0,
-                                                                right: 0,
-
-                                                                display: 'flex',
-                                                                flexDirection: 'row',
-                                                                gap: 5,
-                                                                
-                                                                margin: 5,
-                                                            }}>
-                                                                {modul.comment ?
-                                                                    <ChatBubbleBottomCenterTextIcon color={calcColor(1, modul)} />
-                                                                : null}
-                                            
-                                                                {modul.homework ?
-                                                                    <InboxStackIcon color={calcColor(1, modul)} />
-                                                                : null}
-                                                                
-                                                            </View>
-                                                        )}
-                                                    </View>
-                                                </View>
+                                                <Text style={{
+                                                    color: theme.WHITE,
+                                                    fontWeight: "bold",
+                                                    fontSize: 20,
+                                                    opacity: day.isWeekday ? 0.6 : 1,
+                                                }}>{day.dayNumber.toString()}</Text>
                                             </View>
                                         </Pressable>
                                     )
                                 })}
                             </View>
-
-                            <View style={{
-                                width: "100%",
-                                height: hoursToMap.length * 60 + (110 + 81) + 60
-                            }} />
-
-                        </View>
-                        }
-                    </ScrollView>
-                }
+                        )
+                    })}
+                </PagerView>
             </View>
-        </GestureRecognizer>
 
-        {rateLimited && <RateLimit />}
-    </View>
+            <GestureRecognizer 
+                onSwipeLeft={() => daySelector("ADD")}
+                onSwipeRight={() => daySelector("REMOVE")}
+                style={{
+                    backgroundColor: theme.ACCENT_BLACK,
+                }}
+            >
+                <View
+                    style={{
+                        backgroundColor: theme.ACCENT,
+                        opacity: 0.6,
+                        height: 1,
+
+                        borderRadius: 5,
+
+                        marginHorizontal: 20,
+                        marginBottom: 5,
+                    }}
+                />
+
+                
+                <View style={{
+                    backgroundColor: theme.BLACK,
+                    minHeight: "100%",
+
+                    paddingBottom: 200,
+                }}>
+
+                    {loading ?
+                        <View style={{
+                            position: "absolute",
+
+                            top: "20%",
+                            left: "50%",
+
+                            transform: [{
+                                translateX: -12.5,
+                            }]
+                        }}>
+                            <ActivityIndicator size={"small"} color={theme.ACCENT} />
+                        </View>
+                        :
+                        <ScrollView style={{
+                            flex: 1,
+                        }} refreshControl={
+                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                        } ref={scrollRef}>
+                            <View style={{
+                                paddingTop: 20,
+                            }} /> 
+
+                            {skema == null && 
+                                <View style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+
+                                    flexDirection: 'column-reverse',
+
+                                    minHeight: '40%',
+
+                                    gap: 20,
+                                }}>
+                                    <Text style={{
+                                        color: theme.RED,
+                                        textAlign: 'center'
+                                    }}>
+                                        Der opstod en fejl.
+                                        {"\n"}
+                                        Du kan prøve igen ved at genstarte appen.
+                                    </Text>
+
+                                </View>
+                            }
+
+                            {skema != null && (skema[dayNum - 1] == undefined || Object.keys(skema[dayNum - 1].moduler).length == 0) ? (
+                                <View style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+
+                                    flexDirection: 'column-reverse',
+
+                                    minHeight: '40%',
+
+                                    gap: 5,
+                                }}>
+                                    <Text style={{
+                                        color: theme.WHITE,
+                                        textAlign: 'center'
+                                    }}>
+                                        Du har ingen moduler.
+                                        {"\n"}
+                                        Nyd din dag!
+                                    </Text>
+                                    <Logo size={60} />
+                                </View>
+                            )
+                            :
+                            <View>
+                                {hoursToMap.map((hour: number, index: number) => {
+                                    return (
+                                        <View key={index} style={{
+                                            position: "absolute",
+                                            top: (hour - Math.min(...hoursToMap)) * 60,
+
+                                            display: "flex",
+                                            flexDirection: "row",
+                                            alignItems: "center",
+
+                                            left: 40,
+                                            paddingRight: 41,
+                                            gap: 7.5,
+
+                                            transform: [{
+                                                translateY: -(17 / 2),
+                                            }],
+
+                                            zIndex: 1,
+                                        }}>
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 0.8),
+                                                width: 39,
+
+                                                textAlign: "center",
+                                                textAlignVertical: "center",
+                                            }}>
+                                                {hour.toString().padStart(2, "0")}:00
+                                            </Text>
+                                            <View style={{
+                                                height: StyleSheet.hairlineWidth,
+                                                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                flex: 1,
+                                            }} />
+                                        </View>
+                                    )
+                                })}
+
+                                {modulTimings.map((modulTiming: ModulDate, index: number) => {
+                                    return (
+                                        <View key={index} style={{
+                                            position: "absolute",
+                                            height: modulTiming.diff,
+                                            width: 30,
+
+                                            borderTopRightRadius: 7.5,
+                                            borderBottomRightRadius: 7.5,
+
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+
+                                            backgroundColor: hexToRgb(theme.WHITE.toString(), 0.15),
+
+                                            top: calculateTop(modulTiming)
+                                        }}>
+                                            <Text style={{
+                                                color: theme.WHITE,
+                                                fontWeight: "bold",
+                                                opacity: 0.7,
+                                            }}>
+                                                {index+1}.
+                                            </Text>
+                                        </View>
+                                    )
+                                })}
+
+                                <View style={{
+                                    position: "relative",
+                                    marginLeft: 40 + 7.5 + 38,
+
+                                    zIndex: 5,
+                                }}>
+                                    {day != null && day.map(({ modul, width, left}, index: number) => {
+                                        const widthNum = parseInt(width.replace("%", ""));
+
+                                        return (
+                                            <Pressable key={index} onPress={() => {
+                                                navigation.navigate("Modul View", {
+                                                    modul: modul,
+                                                })
+                                            }}>
+                                                <View style={{
+                                                    position:"absolute",
+
+                                                    top: calculateTop(modul.timeSpan),
+                                                    height: modul.timeSpan.diff,
+                                                    
+                                                    width: width as DimensionValue,
+                                                    left: left as DimensionValue,
+
+                                                    zIndex: 5,
+                                                }}>
+                                                    <View style={{
+                                                        width: "100%",
+                                                    }}>
+                                                        <View style={{
+                                                            backgroundColor: calcColor(0.5, modul),
+                                                            borderRadius: 5,
+
+                                                            width: "100%",
+                                                            height: "100%",
+
+                                                            overflow: "hidden",
+
+                                                            paddingHorizontal: 10,
+                                                            paddingVertical: modul.timeSpan.diff > 25 ? 5 : 2.5,
+                                                        }}>
+                                                            <View style={{
+                                                                position: 'absolute',
+                                                                backgroundColor: calcColor(1, modul),
+
+                                                                borderRadius: 100,
+
+                                                                minHeight: modul.timeSpan.diff,
+                                                                width: 4,
+
+                                                                left: 0,
+                                                            }} />
+
+                                                            {modul.timeSpan.diff > 30 && (
+                                                                <Text style={{
+                                                                    color: calcColor(1, modul),
+                                                                    fontSize: 12.5,
+                                                                }}>
+                                                                    {modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim()}
+                                                                </Text>
+                                                            )}
+
+                                                            <Text style={{
+                                                                color: calcColor(1, modul),
+                                                                fontWeight: "bold",
+                                                            }}>
+                                                                {modul.teacher.length == 0 ? modul.team : (modul.team + " - " + modul.teacher.join(", "))}
+                                                            </Text>
+
+                                                            {modul.timeSpan.diff > 70 && (
+                                                                <View style={{
+                                                                    position: "absolute",
+                                                                    top: widthNum > 75 ? 0 : undefined,
+                                                                    bottom: widthNum > 75 ? undefined : 0,
+                                                                    right: 0,
+
+                                                                    display: 'flex',
+                                                                    flexDirection: 'row',
+                                                                    gap: 5,
+                                                                    
+                                                                    margin: 5,
+                                                                }}>
+                                                                    {modul.comment ?
+                                                                        <ChatBubbleBottomCenterTextIcon color={calcColor(1, modul)} />
+                                                                    : null}
+                                                
+                                                                    {modul.homework ?
+                                                                        <InboxStackIcon color={calcColor(1, modul)} />
+                                                                    : null}
+                                                                    
+                                                                </View>
+                                                            )}
+                                                        </View>
+                                                    </View>
+                                                </View>
+                                            </Pressable>
+                                        )
+                                    })}
+                                </View>
+
+                                <View style={{
+                                    width: "100%",
+                                    height: hoursToMap.length * 60 + (110 + 81) + 60
+                                }} />
+
+                            </View>
+                            }
+                        </ScrollView>
+                    }
+                </View>
+            </GestureRecognizer>
+
+            {rateLimited && <RateLimit />}
+        </View>
     )
 }
 

@@ -1,6 +1,6 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native";
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
-import COLORS from "../../modules/Themes";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View, useColorScheme } from "react-native";
+import { themes } from "../../modules/Themes";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { Modul, replaceHTMLEntities } from "../../modules/api/scraper/SkemaScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
@@ -112,6 +112,9 @@ export default function ModulView({ navigation, route }: {
     if(modul == null)
         return <></>;
 
+    const scheme = useColorScheme();
+    const theme = themes[scheme || "dark"];
+
     return (
         <View style={{
             minHeight: '100%',
@@ -172,7 +175,7 @@ export default function ModulView({ navigation, route }: {
                                 cellContentView={
                                     <>
                                         <Text style={{
-                                            color: "#fff",
+                                            color: theme.WHITE,
                                             paddingBottom: 5,
                                             paddingTop: 8,
                                             fontSize: 16,
@@ -180,7 +183,7 @@ export default function ModulView({ navigation, route }: {
                                             Note
                                         </Text>
                                         <Text style={{
-                                            color: COLORS.WHITE,
+                                            color: theme.WHITE,
                                         }}>
                                             {modul.note}
                                         </Text>
@@ -200,7 +203,7 @@ export default function ModulView({ navigation, route }: {
 
                                         cellContentView={
                                             <Text style={{
-                                                color: "#fff",
+                                                color: theme.WHITE,
                                                 paddingVertical: 8,
                                                 fontSize: 16,
                                             }}>
@@ -222,7 +225,7 @@ export default function ModulView({ navigation, route }: {
 
                                         cellContentView={
                                             <Text style={{
-                                                color: "#fff",
+                                                color: theme.WHITE,
                                                 paddingVertical: 8,
                                                 fontSize: 16,
                                             }}>
@@ -235,7 +238,7 @@ export default function ModulView({ navigation, route }: {
                     )}
 
                     {loading ?
-                        <ActivityIndicator size={"small"} color={COLORS.WHITE} />
+                        <ActivityIndicator size={"small"} color={theme.WHITE} />
                     :
                         <>
                             {Object.keys(members).length > 0 &&
