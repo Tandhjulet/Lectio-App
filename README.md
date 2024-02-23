@@ -19,6 +19,8 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - optimer søge algoritme i elev og lære listen
 - optimer skemaets parsing algoritme af moduler
 - optimer modulregnskab
+- gør farvet tekst i lyst tema mere læseligt (skema)
+- sorter fravær efter dato
 
 ### __KAN IKKE LAVE ENDNU__
 - abonnement (krypteret Lectio-ID og skole er det eneste som klienten må sende)
