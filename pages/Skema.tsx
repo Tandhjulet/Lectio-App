@@ -868,80 +868,6 @@ export default function Skema({ navigation }: {
                                 </View>
                             }
 
-                            {skema != null && (
-                                <Animated.View style={{
-                                    position: "absolute",
-
-                                    width: width,
-                                    height: height / 2,
-
-                                    display: "flex",
-                                    flexDirection: "row",
-
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-
-                                    zIndex: 50,
-
-                                    transform: [{translateX: pan.x.interpolate({
-                                        inputRange: [0, width],
-                                        outputRange: [0, 75 * 2],
-                                    }) }],
-                                }}>
-                                    <View style={{
-                                        width: 75,
-                                        aspectRatio: 1,
-
-                                        transform: [{translateX: -78}],
-
-                                        backgroundColor: theme.ACCENT_BLACK,
-                                        borderRadius: 75,
-
-                                        display: "flex",
-                                        alignItems: "flex-end",
-                                    }}>
-                                        <View style={{
-                                            width: "50%",
-                                            height: "100%",
-
-                                            borderRadius: 75,
-
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            alignItems: "center",
-                                        }}>
-                                            <ArrowLeftIcon size={20} color={theme.WHITE} />
-                                        </View>
-                                    </View>
-
-                                    <View style={{
-                                        width: 75,
-                                        aspectRatio: 1,
-
-                                        transform: [{translateX: 78}],
-
-                                        backgroundColor: theme.ACCENT_BLACK,
-                                        borderRadius: 75,
-
-                                        display: "flex",
-                                        alignItems: "flex-start",
-                                    }}>
-                                        <View style={{
-                                            width: "50%",
-                                            height: "100%",
-
-                                            borderRadius: 75,
-
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            alignItems: "center",
-                                        }}>
-                                            <ArrowRightIcon size={20} color={theme.WHITE} />
-                                        </View>
-                                    </View>
-                                </Animated.View>
-                            )}
-
                             {skema != null && (skema[dayNum - 1] == undefined || Object.keys(skema[dayNum - 1].moduler).length == 0) ? (
                                 <View style={{
                                     display: 'flex',
@@ -1142,6 +1068,77 @@ export default function Skema({ navigation }: {
                             }
                         </ScrollView>
                     }
+
+                    <Animated.View style={{
+                        position: "absolute",
+                        top: "25%",
+                        left: -77,
+
+                        width: 75,
+                        height: 75,
+
+                        transform: [{translateX: pan.x.interpolate({
+                            inputRange: [0, width],
+                            outputRange: [0, 75 * 2],
+                        }) }],
+
+                        backgroundColor: theme.ACCENT_BLACK,
+                        borderRadius: 75,
+
+                        display: "flex",
+                        alignItems: "flex-end",
+
+                        zIndex: 50,
+                    }}>
+                        <View style={{
+                            width: "50%",
+                            height: "100%",
+
+                            borderRadius: 75,
+
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}>
+                            <ArrowLeftIcon size={20} color={theme.WHITE} />
+                        </View>
+                    </Animated.View>
+
+                    <Animated.View style={{
+                        position: "absolute",
+                        top: "25%",
+                        right: -77,
+
+                        width: 75,
+                        height: 75,
+
+                        transform: [{translateX: pan.x.interpolate({
+                            inputRange: [0, width],
+                            outputRange: [0, 75 * 2],
+                        }) }],
+
+                        backgroundColor: theme.ACCENT_BLACK,
+                        borderRadius: 75,
+
+                        display: "flex",
+                        alignItems: "flex-start",
+
+                        zIndex: 50,
+                    }}>
+                        <View style={{
+                            width: "50%",
+                            height: "100%",
+
+                            borderRadius: 75,
+
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}>
+                            <ArrowRightIcon size={20} color={theme.WHITE} />
+                        </View>
+                    </Animated.View>
+
                 </View>
             </View>
 
