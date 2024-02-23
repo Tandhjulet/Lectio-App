@@ -97,14 +97,6 @@ function hoursBetweenDates(dates: {
 export default function Skema({ navigation }: {
     navigation: NavigationProp<any>,
 }) {
-    /**
-     * Calculates the color of a given module from it's status.
-     * @param opacity opacity of the color
-     * @param modul the module to calculate the color for
-     * @returns a string color in RGBA-format
-     */
-    const calcColor = (opacity: number, modul: Modul) => (modul.changed || modul.cancelled) ? (modul.changed ? `rgba(207, 207, 0, ${opacity})` : `rgba(201, 32, 32, ${opacity})`) : `rgba(31, 222, 34, ${opacity})`;
-
     const [refreshing, setRefreshing] = useState(false);
 
     const [ dayNum, setDayNum ] = useState<number>((getDay(new Date()).weekDayNumber));
@@ -568,6 +560,25 @@ export default function Skema({ navigation }: {
             }
         });
 
+    /**
+     * Calculates the color of a given module from it's status.
+     * @param opacity opacity of the color
+     * @param modul the module to calculate the color for
+     * @returns a string color in RGBA-format
+     */
+    const calcColor: (opacity: number, modul: Modul) => string = (opacity: number, modul: Modul) => {
+        if(modul.changed) {
+            return scheme == "dark" ? `rgba(207, 207, 0, ${opacity})` : `rgba(194, 101, 35, ${opacity})`;
+        }
+
+        if(modul.cancelled) {
+            return scheme == "dark" ? `rgba(201, 32, 32, ${opacity})` : `rgba(201, 32, 32, ${opacity})`;
+        }
+
+        return scheme == "dark" ? `rgba(31, 222, 34, ${opacity})` : `rgba(28, 135, 0, ${opacity})`;
+        
+    };
+
     return (
         <View>
             <View style={{
@@ -990,7 +1001,7 @@ export default function Skema({ navigation }: {
                                                         width: "100%",
                                                     }}>
                                                         <View style={{
-                                                            backgroundColor: calcColor(0.5, modul),
+                                                            backgroundColor: calcColor(0.6, modul),
                                                             borderRadius: 5,
 
                                                             width: "100%",

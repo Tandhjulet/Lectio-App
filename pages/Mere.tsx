@@ -337,11 +337,15 @@ For at kunne hjælpe dig har vi brug for lidt information:
                             <Section header={"KONTROLPANEL"} roundedCorners={true} hideSurroundingSeparators={true}>
                                 <Cell
                                     cellStyle="RightDetail"
-                                    title={profile?.name.slice(0,23)}
-
+                                    title={profile?.name.slice(0,21)}
                                     detail={profile?.username.slice(0,13)}
 
                                     titleTextColor={theme.WHITE}
+                                    accessory="DisclosureIndicator"
+
+                                    onPress={() => {
+                                        navigation.navigate("UserSettings")
+                                    }}
                                 />
 
                                 <Cell

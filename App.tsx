@@ -57,6 +57,7 @@ import Constants from 'expo-constants';
 import { PostPurchase } from './modules/API';
 import LandingPage from './pages/login/LandingPage';
 import { themes } from './modules/Themes';
+import UserSettings from './pages/mere/UserSettings';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -109,10 +110,20 @@ export const isExpoGo = Constants.appOwnership === 'expo';
 
 const App = () => {
 
+  useEffect(() => {
+    getUnsecure("useDarkMode").then((v: {result: boolean}) => {
+      if(v.result == null) {
+        Appearance.setColorScheme(null);
+      } else {
+        Appearance.setColorScheme(v.result ? "dark" : "light");
+      }
+    })
+  })
+
+
   /**
    * Creates a connections to Apples IAP (WIP)
    */
-
   useEffect(() => {
     if(!isExpoGo) {
       initConnection().then(() => {
@@ -457,7 +468,8 @@ export function MereNavigator() {
       headerBackTitleVisible: false,
       contentStyle: {backgroundColor: theme.BLACK}
     }}>
-      <Settings.Screen name={"Settings"} component={Mere} options={{title: "Indstillinger"}} />
+      <Settings.Screen name={"Settings"} component={Mere} options={{title: "Mere"}} />
+      <Settings.Screen name={"UserSettings"} component={UserSettings} options={{title: "Brugerindstillinger"}} />
 
       <Settings.Screen name={"Absence"} component={Absence} options={{title: "Fravær"}} />
       <Settings.Screen name={"Afleveringer"} component={AfleveringNavigator} options={({ navigation, route }) => ({
