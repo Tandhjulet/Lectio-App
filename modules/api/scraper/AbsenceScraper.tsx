@@ -1,5 +1,6 @@
 import { getASPHeaders } from "./Helpers";
 import { scrapeHelper } from "./MessageScraper";
+import { parseDate } from "./OpgaveScraper";
 import { parseInfoString, replaceHTMLEntities } from "./SkemaScraper";
 
 export function scrapeAbsence(parser: any): Fag[] | null {
@@ -125,11 +126,11 @@ export type Registration = {
     studentNote?: string,
     teacherNote?: string,
 
-    modulStartTime: string,
+    modulStartTime: Date,
 
     modul: string,
 
-    registered: string,
+    registered: Date,
     registeredTime: string,
 
     absence: string,
@@ -227,12 +228,9 @@ export function scapeRegistration(parser: any): Registration[] {
                 studentNote: studentNote,
                 teacherNote: teacherNote,
 
-                modulStartTime: timeSpan?.toLocaleTimeString("de-DK", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                }) || "",
+                modulStartTime: timeSpan || new Date(),
 
-                registered: registreret.join(" "),
+                registered: parseDate(registreret.join(" ")),
                 registeredTime: time || "",
 
                 url: url,

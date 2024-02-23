@@ -267,13 +267,16 @@ export default function Absence({ navigation }: { navigation: any }) {
             
             getAbsenceRegistration(gymNummer).then((res: Registration[]) => {
 
+                res.sort((a, b) => (b.registered.valueOf() + b.modulStartTime.valueOf()) - (a.registered.valueOf() + a.modulStartTime.valueOf()));
+
                 const out: {[id: string]: Registration[]} = {};
-
                 res.forEach((reg) => {
-                    if(!(reg.registered in out)) 
-                        out[reg.registered] = []
+                    const str = reg.registered.toLocaleDateString("da-DK").replace(".", "/").replace(".", "-")
 
-                    out[reg.registered].push(reg);
+                    if(!(str in out)) 
+                        out[str] = []
+
+                    out[str].push(reg);
                 })
 
                 setRemappedRegs(out);
@@ -386,13 +389,16 @@ export default function Absence({ navigation }: { navigation: any }) {
             const gymNummer = (await getSecure("gym")).gymNummer;
             getAbsenceRegistration(gymNummer).then((res: Registration[]) => {
 
+                res.sort((a, b) => (b.registered.valueOf() + b.modulStartTime.valueOf()) - (a.registered.valueOf() + a.modulStartTime.valueOf()));
+                
                 const out: {[id: string]: Registration[]} = {};
-
                 res.forEach((reg) => {
-                    if(!(reg.registered in out)) 
-                        out[reg.registered] = []
+                    const str = reg.registered.toLocaleDateString("da-DK").replace(".", "/").replace(".", "-")
 
-                    out[reg.registered].push(reg);
+                    if(!(str in out)) 
+                        out[str] = []
+
+                    out[str].push(reg);
                 })
 
                 setRemappedRegs(out);
@@ -971,7 +977,10 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                                                                         flex: 0,
                                                                     }}>
-                                                                        {reg.modulStartTime}
+                                                                        {reg.modulStartTime?.toLocaleTimeString("de-DK", {
+                                                                            hour: "2-digit",
+                                                                            minute: "2-digit",
+                                                                        })}
                                                                     </Text>
                                                                 </View>
 
@@ -1148,7 +1157,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                     
                                                         color: hexToRgb(theme.WHITE.toString(), 0.6),
                                                     }}>
-                                                        {parseDate(registration?.registered || "").toLocaleDateString("da-DK", {
+                                                        {registration?.registered.toLocaleDateString("da-DK", {
                                                             day: "numeric",
                                                             month: "long",
                                                             year: "numeric",
