@@ -883,31 +883,34 @@ export default function Skema({ navigation }: {
 
                                     zIndex: 50,
 
-                                    transform: [{translateX: pan.x}],
+                                    transform: [{translateX: pan.x.interpolate({
+                                        inputRange: [0, width],
+                                        outputRange: [0, 75 * 2],
+                                    }) }],
                                 }}>
                                     <View style={{
                                         width: 75,
                                         aspectRatio: 1,
 
-                                        transform: [{translateX: -85}],
+                                        transform: [{translateX: -78}],
 
-                                        backgroundColor: theme.BLACK,
+                                        backgroundColor: theme.ACCENT_BLACK,
                                         borderRadius: 75,
+
+                                        display: "flex",
+                                        alignItems: "flex-end",
                                     }}>
                                         <View style={{
-                                            width: "100%",
+                                            width: "50%",
                                             height: "100%",
 
                                             borderRadius: 75,
-
-                                            borderWidth: 1,
-                                            borderColor: theme.WHITE,
 
                                             display: "flex",
                                             justifyContent: "center",
                                             alignItems: "center",
                                         }}>
-                                            <ArrowLeftIcon size={40} color={theme.WHITE} />
+                                            <ArrowLeftIcon size={20} color={theme.WHITE} />
                                         </View>
                                     </View>
 
@@ -915,25 +918,25 @@ export default function Skema({ navigation }: {
                                         width: 75,
                                         aspectRatio: 1,
 
-                                        transform: [{translateX: 85}],
+                                        transform: [{translateX: 78}],
 
-                                        backgroundColor: theme.BLACK,
+                                        backgroundColor: theme.ACCENT_BLACK,
                                         borderRadius: 75,
+
+                                        display: "flex",
+                                        alignItems: "flex-start",
                                     }}>
                                         <View style={{
-                                            width: "100%",
+                                            width: "50%",
                                             height: "100%",
 
                                             borderRadius: 75,
-
-                                            borderWidth: 1,
-                                            borderColor: theme.WHITE,
 
                                             display: "flex",
                                             justifyContent: "center",
                                             alignItems: "center",
                                         }}>
-                                            <ArrowRightIcon size={40} color={theme.WHITE} />
+                                            <ArrowRightIcon size={20} color={theme.WHITE} />
                                         </View>
                                     </View>
                                 </Animated.View>
