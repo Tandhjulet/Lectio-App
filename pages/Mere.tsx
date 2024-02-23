@@ -4,7 +4,7 @@ import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { themes } from "../modules/Themes";
 import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { AcademicCapIcon, BellSnoozeIcon, BuildingLibraryIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon } from "react-native-heroicons/solid";
-import { getUnsecure, removeSecure, removeUnsecure, secureGet, signOut } from "../modules/api/Authentication";
+import { getUnsecure, removeSecure, removeUnsecure, secureGet, signOutReq } from "../modules/api/Authentication";
 import { Profile, getProfile, saveProfile } from "../modules/api/scraper/Scraper";
 import { AuthContext } from "../modules/Auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -360,14 +360,14 @@ For at kunne hjælpe dig har vi brug for lidt information:
 
                                     onPress={() => {
                                         (async () => {
-                                            await signOut();
-
                                             await removeSecure("password");
                                             await removeSecure("username");
-                                            //await removeUnsecure("gym");
+                                            await removeSecure("gym");
 
-                                            signOut();
-                                            abort();
+                                            await signOutReq();
+                                            await abort();
+
+                                            await signOut();
                                         })();
                                     }}
                                 />

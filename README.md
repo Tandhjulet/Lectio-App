@@ -23,3 +23,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ### __KAN IKKE LAVE ENDNU__
 - abonnement (krypteret Lectio-ID og skole er det eneste som klienten må sende)
 - karakterer
+
+### __KENDTE FEJL__
+- login med forkerte logindetaljer går igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)

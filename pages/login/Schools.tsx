@@ -17,6 +17,7 @@ import {Cell, Section, TableView} from 'react-native-tableview-simple';
 import { themes } from '../../modules/Themes';
 import { getSchools } from '../../modules/api/scraper/Scraper';
 import { saveUnsecure, secureSave } from '../../modules/api/Authentication';
+import { replaceHTMLEntities } from '../../modules/api/scraper/SkemaScraper';
 
 /**
  * Finds first alphabet character in a string
@@ -42,10 +43,10 @@ const School = memo(function School({ index, section, navigation, gymNummer, gym
 
   return (
     <Pressable onPress={() => {
-      secureSave("gym", JSON.stringify({ "gymNummer": gymNummer, "gymName": gymName }))
-
-      navigation.navigate("Login", {
-        gym: [gymName, gymNummer]
+      secureSave("gym", JSON.stringify({ "gymNummer": gymNummer, "gymName": gymName })).then(() => {
+        navigation.navigate("Login", {
+          _gym: [gymName, gymNummer]
+        })
       })
 
     }}>
@@ -114,7 +115,7 @@ function parseData(data: {[id: string]: string}, contains?: string): {
     if(out[c] == undefined)
       out[c] = [];
 
-    out[c].push(schoolName)
+    out[c].push(replaceHTMLEntities(schoolName))
   }
 
   const sortedKeys = Object.keys(out).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase(), "da"))

@@ -10,8 +10,7 @@ export default function LandingPage({
     navigation: any,
 }) {
 
-    const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes["dark"];
 
     return (
         <View style={{

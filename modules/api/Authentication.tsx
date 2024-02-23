@@ -205,8 +205,8 @@ export async function getSecure(key: string): Promise<any> {
 /**
  * Sign out of lectio
  */
-export async function signOut() {
-    fetch(SCRAPE_URLS().LOG_UD, {
+export async function signOutReq() {
+    return await fetch(SCRAPE_URLS().LOG_UD, {
         method: "GET",
         credentials: "include",
         headers: {

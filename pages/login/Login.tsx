@@ -23,10 +23,18 @@ export default function Login({ route, navigation }: {
      */
     useFocusEffect(
         useCallback(() => {
-            getSecure("gym").then((gym: { gymName: string, gymNummer: string } | null) => {
-                setGym(gym)
-            })
-        }, [])
+            let _gym: string[] | null = null;
+            if(route?.params?._gym) {
+                _gym = route.params._gym;
+            }
+
+            if(_gym) {
+                setGym({
+                    gymName: _gym[0],
+                    gymNummer: _gym[1],
+                })
+            }
+        }, [route?.params?._gym])
     )
 
     const [username, setUsername] = useState("");
@@ -51,6 +59,8 @@ export default function Login({ route, navigation }: {
             username: username,
             gym: gym,
         }
+
+        console.log(payload);
         
         if(!(await signIn(payload))) {
             setTimeout(async () => {
@@ -156,6 +166,8 @@ export default function Login({ route, navigation }: {
 
                 <View style={{
                     ...styles.wrapper,
+                    backgroundColor: theme.BLACK,
+                    borderColor: hexToRgb(theme.ACCENT.toString(), 0.6),
                     shadowColor: (invalidCredentials) ? theme.RED : undefined,
                 }}>
                     <LockClosedIcon size={20} color={theme.WHITE} />
@@ -164,10 +176,11 @@ export default function Login({ route, navigation }: {
                         ref={passwdRef}
                         onFocus={() => setInvalidCredentials(false)}
                         onChangeText={(updated) => setPassword(updated)}
-                        placeholder="Password"
+                        placeholder="Kodeord"
                         secureTextEntry={true}
                         style={{
                             ...styles.textInput,
+                            color: theme.WHITE,
                         }}
                         textContentType="password"
                         autoComplete="current-password"
@@ -182,8 +195,9 @@ export default function Login({ route, navigation }: {
 
             <Text style={{
                 color: theme.RED,
-                marginTop: 10,
+                marginTop: 5,
                 opacity: invalidCredentials ? 1 : 0,
+                marginBottom: 5,
             }}>Dine oplysninger er ikke gyldige.</Text>
 
             <View style={{
