@@ -11,28 +11,23 @@ import { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/typ
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { CalendarDaysIcon, GlobeAltIcon, StarIcon } from 'react-native-heroicons/solid';
 import { Pressable } from 'react-native';
-import { themes } from '../modules/Themes';
+import { hexToRgb, themes } from '../modules/Themes';
 
 function Option({
     title,
     subtitle,
     price,
     sku,
-    recommended,
+    bottomSheetModalRef,
     style,
 }: {
     title: string,
     subtitle: string,
     price: string,
     sku: string,
-    recommended?: boolean,
+    bottomSheetModalRef: React.RefObject<BottomSheetModalMethods>,
     style?: ViewStyle,
 }) {
-    const [height, setHeight] = useState<number>(0);
-    const [width, setWidth] = useState<number>(0);
-
-    const OFFSET = 15;
-
     const scheme = useColorScheme();
     const theme = themes[scheme || "dark"];
 
@@ -65,61 +60,29 @@ function Option({
 
                 alignItems: "center",
                 justifyContent: "center",
+
+                paddingTop: 60,
             }}>
                 {title == "Månedligt" ? (
-                    <CalendarDaysIcon color={theme.LIGHT} size={100} />
+                    <CalendarDaysIcon color={theme.ACCENT} size={100} />
                 ) : (
-                    <GlobeAltIcon color={theme.LIGHT} size={100} />
+                    <GlobeAltIcon color={theme.ACCENT} size={100} />
                 )}
             </View>
-
-            {recommended && (
-                <View style={{
-                    position: "absolute",
-                    top: height / 2 * -1 + OFFSET,
-
-                    padding: 5,
-                    backgroundColor: theme.LIGHT,
-
-                    borderColor: theme.BLACK,
-                    borderRadius: 50,
-                    borderWidth: 2,
-
-                    display: "flex",
-                    flexDirection: "row",
-
-                    alignItems: "center",
-                    justifyContent: "center",
-
-                    right: width / 2 * -1 + OFFSET,
-
-                    transform: [{
-                        rotate: "45deg",
-                    }]
-                }} onLayout={(e) => {
-                    setHeight(e.nativeEvent.layout.height)
-                    setWidth(e.nativeEvent.layout.width)
-                }}>
-                    <Text style={{
-                        fontFamily: "CourierNewPS-BoldMT"
-                    }}>
-                        ANBEFALET
-                    </Text>
-                    
-                </View>
-            )}
 
             <Text style={{
                 color: theme.WHITE,
                 fontSize: 25,
+
+                fontWeight: "bold",
+                letterSpacing: 0.7,
             }}>
                 {title}
             </Text>
             <Text style={{
                 marginTop: 5,
 
-                color: theme.WHITE,
-                opacity: 0.8,
+                color: theme.ACCENT,
                 fontSize: 14,
 
                 fontFamily: "",
@@ -132,14 +95,16 @@ function Option({
                 flexGrow: 1,
             }} />
 
-            <View style={{
+            <Pressable style={{
                 backgroundColor: theme.DARK,
 
                 paddingHorizontal: 30,
                 paddingVertical: 5,
                 marginVertical: 10,
                 borderRadius: 20,
-            }}>
+            }} onPress={() => {
+                bottomSheetModalRef.current?.dismiss();
+            }} hitSlop={35}>
                 <Text style={{
                     textAlign: "center",
                     color: theme.WHITE,
@@ -148,7 +113,7 @@ function Option({
                 }}>
                     {price} kr
                 </Text>
-            </View>
+            </Pressable>
         </Pressable>
     )
 }
@@ -159,7 +124,7 @@ export default function Subscription({
     bottomSheetModalRef: React.RefObject<BottomSheetModalMethods>,
 }) {
 
-    const snapPoints = useMemo(() => ['65%'], []);
+    const snapPoints = useMemo(() => ['68%'], []);
 
     const scheme = useColorScheme();
     const theme = themes[scheme || "dark"];
@@ -174,7 +139,7 @@ export default function Subscription({
             enableOverDrag
 
             backgroundStyle={{
-                backgroundColor: theme.BLACK,
+                backgroundColor: theme.ACCENT_BLACK,
             }}
             handleIndicatorStyle={{
                 backgroundColor: theme.WHITE,
@@ -198,7 +163,8 @@ export default function Subscription({
 
                         fontSize: 25,
 
-                        fontFamily: "Palatino-Bold"
+                        fontWeight: "bold",
+                        letterSpacing: 1,
                     }}>
                         Opgrader din oplevelse
                     </Text>
@@ -236,7 +202,7 @@ export default function Subscription({
                             fontWeight: "bold",
                         }}>
                             ubegrænset adgang
-                        </Text>
+                        </Text>*
                         {" "}til Lectio Plus!
                     </Text>
 
@@ -281,7 +247,7 @@ export default function Subscription({
                             backgroundColor: theme.DARK,
                             borderRadius: 20,
                         }} />
-                        <Option title={'Månedligt'} subtitle={'1 mdr. varighed\nFornyes automatisk!'} sku={"com.tandhjulet.lectioplus.premium_monthly"} price={'9,99'} />
+                        <Option bottomSheetModalRef={bottomSheetModalRef} title={'Månedligt'} subtitle={'1 mdr. varighed\nFornyes automatisk!'} sku={"com.tandhjulet.lectioplus.premium_monthly"} price={'9,99'} />
  
                         <View style={{
                             position: "absolute",
@@ -300,9 +266,19 @@ export default function Subscription({
                             backgroundColor: theme.DARK,
                             borderRadius: 20,
                         }} />
-                        <Option title={'Årligt'} subtitle={'1 års varighed\nFornyes automatisk!'} price={'59,99'} sku={"com.tandhjulet.lectioplus.premium_yearly"} recommended />
+                        <Option bottomSheetModalRef={bottomSheetModalRef} title={'Årligt'} subtitle={'1 års varighed\nFornyes automatisk!'} price={'59,99'} sku={"com.tandhjulet.lectioplus.premium_yearly"} />
                     </View>
                 </View>
+                <Text style={{
+                    marginTop: 10,
+
+                    fontSize: 10,
+
+                    color: hexToRgb(theme.WHITE.toString(), 0.7),
+                    textAlign: "center",
+                }}>
+                    * På nuværende tidspunkt har du {"\n"} allerede ubegrænset adgang til Appen.
+                </Text>
             </View>
         </BottomSheetModal>
     )

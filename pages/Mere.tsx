@@ -21,6 +21,8 @@ import * as MailComposer from 'expo-mail-composer';
 export default function Mere({ navigation }: {navigation: any}) {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
+    const [loadingSubscription, setLoadingSubscription] = useState<boolean>();
+
     const { signOut } = useContext(AuthContext);
 
     const [loading, setLoading] = useState<boolean>(true);
@@ -50,6 +52,10 @@ export default function Mere({ navigation }: {navigation: any}) {
             setLoading(false);
         })();
     }, [])
+
+    useEffect(() => {
+        setLoadingSubscription(false);
+    }, [loadingSubscription])
 
     const scheme = useColorScheme();
     const theme = themes[scheme || "dark"];
@@ -261,8 +267,11 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                                     detail={"Fornyes d. " + renew.toLocaleDateString()}
 
-                                    accessory={"Checkmark"}
-                                    accessoryColor={theme.ACCENT}
+                                    accessory={!loadingSubscription && "Checkmark"}
+                                    accessoryColor={!loadingSubscription ? theme.ACCENT : undefined}
+                                    cellAccessoryView={loadingSubscription && (
+                                        <ActivityIndicator size={"small"} />
+                                    )}
                                 />
                                 
                                 <Cell 
@@ -270,7 +279,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     title="Administrer abonnement"
                                     titleTextColor={theme.ACCENT}
 
-                                    onPress={() => {}}
+                                    onPress={() => {
+                                        bottomSheetModalRef.current?.present();
+                                    }}
                                 />
 
                                 <Cell 
@@ -279,7 +290,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     titleTextColor={theme.ACCENT}
 
                                     onPress={() => {
-
+                                        setLoadingSubscription(true);
                                     }}
                                 />
                             </Section>
@@ -372,13 +383,6 @@ For at kunne hjælpe dig har vi brug for lidt information:
                                     }}
                                 />
                             </Section>
-
-                            <Text style={{
-                                color: theme.WHITE,
-                                opacity: 0.5,
-                            }}>
-                                BETA (v0.0.1)
-                            </Text>
 
                             <View style={{
                                 paddingVertical: 42,

@@ -20,7 +20,10 @@
         "simulator": true
       }
     },
-    "production": {}
+    "production": {
+      "distribution": "store",
+      "developmentClient": false
+    }
   },
   "submit": {
     "production": {}
