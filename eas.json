@@ -22,7 +22,8 @@
     },
     "production": {
       "distribution": "store",
-      "developmentClient": false
+      "developmentClient": false,
+      "autoIncrement": true
     }
   },
   "submit": {
