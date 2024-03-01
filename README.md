@@ -6,10 +6,13 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ## Prioriteringer/mangler ved appen
 
 ### __HØJ__
-- "Hent oplysninger" knap - indsigtsret
+- gratis prøveperiode
+- abonnement
+- opdater privatlivspolitik
 
 ### __MELLEM__
 - push notifs
+- login på lort net giver sort skærm
 
 ### __LAV__
 - spørgeskemaer
@@ -21,7 +24,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - optimer modulregnskab
 
 ### __KAN IKKE LAVE ENDNU__
-- abonnement (krypteret Lectio-ID og skole er det eneste som klienten må sende)
 - karakterer
 
 ### __KENDTE FEJL__

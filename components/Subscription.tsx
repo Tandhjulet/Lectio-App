@@ -5,13 +5,14 @@ import {
     BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View, ViewProps, ViewStyle, useColorScheme } from "react-native";
 import { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/types';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { CalendarDaysIcon, GlobeAltIcon, StarIcon } from 'react-native-heroicons/solid';
 import { Pressable } from 'react-native';
 import { hexToRgb, themes } from '../modules/Themes';
+import { Sku, getSubscriptions, requestSubscription, Subscription as Sub } from "react-native-iap";
 
 function Option({
     title,
@@ -24,16 +25,33 @@ function Option({
     title: string,
     subtitle: string,
     price: string,
-    sku: string,
+    sku: Sku,
     bottomSheetModalRef: React.RefObject<BottomSheetModalMethods>,
     style?: ViewStyle,
 }) {
+    const [subscription, setSubscription] = useState<string>();
+
+    useEffect(() => {
+
+        (async () => {
+            const sub = (await getSubscriptions({
+                skus: [sku]
+            }))[0];
+
+            setSubscription(sub.productId);
+        })();
+    }, [])
+
+    const handlePurchase = useCallback(async (sku: Sku) => {
+        await requestSubscription({sku});
+    }, []);
+
     const scheme = useColorScheme();
     const theme = themes[scheme || "dark"];
 
     return (
         <Pressable style={{
-            width: "40%",
+            width: 156,
             aspectRatio: 1 / 1.5,
 
             backgroundColor: theme.LIGHT,
@@ -47,8 +65,6 @@ function Option({
             paddingTop: 20,
 
             ...style,
-        }} onPress={() => {
-            //subscribe(sku, null);
         }}>
             <View style={{
                 position: "absolute",
@@ -103,7 +119,12 @@ function Option({
                 marginVertical: 10,
                 borderRadius: 20,
             }} onPress={() => {
-                bottomSheetModalRef.current?.dismiss();
+                (async () => {
+                    if(subscription == undefined) return;
+
+                    await handlePurchase(subscription)
+                    bottomSheetModalRef.current?.dismiss();
+                })();
             }} hitSlop={35}>
                 <Text style={{
                     textAlign: "center",
@@ -123,7 +144,6 @@ export default function Subscription({
 }: {
     bottomSheetModalRef: React.RefObject<BottomSheetModalMethods>,
 }) {
-
     const snapPoints = useMemo(() => ['68%'], []);
 
     const scheme = useColorScheme();
@@ -225,7 +245,7 @@ export default function Subscription({
                         Lectio Plus tilbyder følgende muligheder
                     </Text>
 
-
+                    
                     <View style={{
                         display: "flex",
                         flexDirection: "row",
@@ -236,7 +256,7 @@ export default function Subscription({
                         <View style={{
                             position: "absolute",
 
-                            width: "40%",
+                            width: 156,
                             aspectRatio: 1 / 1.5,
 
                             transform: [{
@@ -247,15 +267,21 @@ export default function Subscription({
                             backgroundColor: theme.DARK,
                             borderRadius: 20,
                         }} />
-                        <Option bottomSheetModalRef={bottomSheetModalRef} title={'Månedligt'} subtitle={'1 mdr. varighed\nFornyes automatisk!'} sku={"com.tandhjulet.lectioplus.premium_monthly"} price={'9,99'} />
+                        <Option
+                            bottomSheetModalRef={bottomSheetModalRef}
+                            title={'Månedligt'}
+                            subtitle={'1 mdr. varighed\nFornyes automatisk!'}
+                            sku={"premium_monthly"}
+                            price={'9,00'}
+                        />
  
                         <View style={{
                             position: "absolute",
 
-                            width: "40%",
+                            width: 156,
                             aspectRatio: 1 / 1.5,
 
-                            left: "40%",
+                            left: 156,
                             marginLeft: 25,
 
                             transform: [{
@@ -266,7 +292,13 @@ export default function Subscription({
                             backgroundColor: theme.DARK,
                             borderRadius: 20,
                         }} />
-                        <Option bottomSheetModalRef={bottomSheetModalRef} title={'Årligt'} subtitle={'1 års varighed\nFornyes automatisk!'} price={'59,99'} sku={"com.tandhjulet.lectioplus.premium_yearly"} />
+                        <Option
+                            bottomSheetModalRef={bottomSheetModalRef}
+                            title={'Årligt'}
+                            subtitle={'1 års varighed\nFornyes automatisk!'}
+                            price={'59,00'}
+                            sku={"premium_yearly"}
+                        />
                     </View>
                 </View>
                 <Text style={{
@@ -277,7 +309,7 @@ export default function Subscription({
                     color: hexToRgb(theme.WHITE.toString(), 0.7),
                     textAlign: "center",
                 }}>
-                    * På nuværende tidspunkt har du {"\n"} allerede ubegrænset adgang til Appen.
+                    * På nuværende tidspunkt har du {"\n"} allerede ubegrænset adgang til appen.
                 </Text>
             </View>
         </BottomSheetModal>

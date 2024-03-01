@@ -27,6 +27,10 @@ export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: stri
         "S_OPGAVE": `https://www.lectio.dk/lectio/${gymNummer}/ElevAflevering.aspx?elevid=${elevId}&exerciseid=${klasseId}&prevurl=OpgaverElev.aspx`,
         "MODUL_REGNSKAB": `https://www.lectio.dk/lectio/${gymNummer}/subnav/modulregnskab.aspx?holdelementid=${elevId}`,
         "CACHE": `https://www.lectio.dk/lectio/${gymNummer}/cache/DropDown.aspx`,
+
+        "LECTIOPLUS_SAVE_RECEIPT": `https://lectioplus.com/api/v1/save-receipt`,
+        "LECTIOPLUS_GET": `https://lectioplus.com/api/v1`,
+        "LECTIOPLUS_FREE_TRIAL": `https://lectioplus.com/api/v1`,
     } as const;
 
     return _URLS;

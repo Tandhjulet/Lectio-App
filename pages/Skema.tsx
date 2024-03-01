@@ -2,7 +2,7 @@ import { ActivityIndicator, Animated, DimensionValue, Dimensions, LogBox, Modal,
 import NavigationBar from "../components/Navbar";
 import { createRef, useCallback, useEffect, useRef, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
-import { getSecure, getUnsecure, isAuthorized } from "../modules/api/Authentication";
+import { secureGet, getUnsecure, isAuthorized } from "../modules/api/Authentication";
 import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
 import { hexToRgb, themes } from "../modules/Themes";
 import { ArrowLeftIcon, ArrowRightIcon, BackwardIcon, ChatBubbleBottomCenterTextIcon, ChevronLeftIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";
@@ -200,7 +200,7 @@ export default function Skema({ navigation }: {
                 setLoading(true);
             }
 
-            const gymNummer = (await getSecure("gym")).gymNummer;
+            const gymNummer = (await secureGet("gym")).gymNummer;
 
             setLoadWeekDate(loadDate);
             setDaysOfThreeWeeks([...getDaysOfThreeWeeks(loadDate)])
@@ -237,7 +237,7 @@ export default function Skema({ navigation }: {
             return;
         
         (async () => {
-            const gymNummer = (await getSecure("gym")).gymNummer;
+            const gymNummer = (await secureGet("gym")).gymNummer;
             getSkema(gymNummer, loadDate).then(({ payload, rateLimited }) => {
                 if(!rateLimited && payload != null) {
                     setSkema([...payload.days]);

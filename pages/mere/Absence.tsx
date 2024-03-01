@@ -2,7 +2,7 @@ import { ActivityIndicator, Animated, Dimensions, Pressable, RefreshControl, Scr
 import NavigationBar from "../../components/Navbar";
 import { ReactElement, RefObject, createRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getAbsence, getAbsenceRegistration } from "../../modules/api/scraper/Scraper";
-import { getSecure, getUnsecure } from "../../modules/api/Authentication";
+import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { hexToRgb, themes } from "../../modules/Themes";
 import { AbsenceReason, AbsenceRegistration, AbsenceType, Fag, ModuleAbsence, Registration, postRegistration } from "../../modules/api/scraper/AbsenceScraper";
 import RateLimit from "../../components/RateLimit";
@@ -181,7 +181,7 @@ const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
 
 export default function Absence({ navigation }: { navigation: any }) {
 
-    //const gymNummer = useRef((await getSecure("gym")).gymNummer).current;
+    //const gymNummer = useRef((await secureGet("gym")).gymNummer).current;
 
     const [ almindeligt, setAlmindeligt ] = useState<ModuleAbsence[]>();
     const [ skriftligt, setSkriftligt ] = useState<ModuleAbsence[]>();
@@ -221,7 +221,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                 }
             }
             
-            const gymNummer = (await getSecure("gym")).gymNummer;
+            const gymNummer = (await secureGet("gym")).gymNummer;
 
             getAbsence(gymNummer, true).then(({ payload, rateLimited }): any => {
                 setRateLimited(rateLimited)
@@ -294,7 +294,7 @@ export default function Absence({ navigation }: { navigation: any }) {
             return;
 
         (async () => {
-            const gymNummer: string = (await getSecure("gym")).gymNummer;
+            const gymNummer: string = (await secureGet("gym")).gymNummer;
 
             const out: ChartedAbsence = {
                 almindeligt: {
@@ -386,7 +386,7 @@ export default function Absence({ navigation }: { navigation: any }) {
         if(!registrationRefreshing) return;
 
         (async () => {
-            const gymNummer = (await getSecure("gym")).gymNummer;
+            const gymNummer = (await secureGet("gym")).gymNummer;
             getAbsenceRegistration(gymNummer).then((res: Registration[]) => {
 
                 res.sort((a, b) => (b.registered.valueOf() + b.modulStartTime.valueOf()) - (a.registered.valueOf() + a.modulStartTime.valueOf()));
@@ -1094,7 +1094,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                 else if (typeof absenceReason == "function") return;
                                                
                                                 setSendLoading(true);
-                                                const gymNummer = (await getSecure("gym")).gymNummer;
+                                                const gymNummer = (await secureGet("gym")).gymNummer;
 
                                                 await postRegistration({
                                                     reason: absenceReason,

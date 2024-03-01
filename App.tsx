@@ -12,7 +12,7 @@ import Absence from './pages/mere/Absence';
 import TeachersAndStudents from './pages/mere/TeachersAndStudents';
 import BeskedView from './pages/beskeder/BeskedView';
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
-import { authorize, getSecure, getUnsecure, saveUnsecure, secureGet, secureSave } from './modules/api/Authentication';
+import { authorize, secureGet, getUnsecure, saveUnsecure, secureSave } from './modules/api/Authentication';
 import SplashScreen from './pages/SplashScreen';
 import { AuthContext } from './modules/Auth';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -22,7 +22,7 @@ import { scrapePeople } from './modules/api/scraper/class/PeopleList';
 import Afleveringer from './pages/Afleveringer';
 import AfleveringView from './pages/afleveringer/AfleveringView';
 import ModulRegnskab from './pages/mere/ModulRegnskab';
-import { Appearance, Button, Pressable, Text, View, useColorScheme } from 'react-native';
+import { Appearance, Button, EmitterSubscription, Pressable, Text, View, useColorScheme } from 'react-native';
 import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronLeftIcon, PencilSquareIcon } from 'react-native-heroicons/solid';
 import { HeaderStyleInterpolators, TransitionPresets, createStackNavigator } from '@react-navigation/stack';
 import { cleanUp } from './modules/api/storage/Storage';
@@ -30,10 +30,14 @@ import { cleanUp } from './modules/api/storage/Storage';
 import {
   ProductPurchase,
   Purchase,
+  PurchaseError,
   SubscriptionPurchase,
+  clearProductsIOS,
+  clearTransactionIOS,
   finishTransaction,
   getAvailablePurchases,
   initConnection,
+  purchaseErrorListener,
   purchaseUpdatedListener,
   requestPurchase,
   requestSubscription,
@@ -54,10 +58,11 @@ LogBox.ignoreLogs(["Sending"]) // dårligt, men umiddelbart eneste løsning.
 
 import * as Linking from 'expo-linking';
 import Constants from 'expo-constants';
-import { PostPurchase } from './modules/API';
 import LandingPage from './pages/login/LandingPage';
 import { themes } from './modules/Themes';
 import UserSettings from './pages/mere/UserSettings';
+import receiptValid, { hasSubscription, tryFreeTrial } from './components/LectioPlusAPI';
+import { SubState, SubscriptionContext } from './modules/Sub';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -77,35 +82,6 @@ export type SignInPayload = {
   password: string | null,
 }
 
-export const subSkus: Readonly<string[]> = [
-  'com.tandhjulet.lectioplus.premium_yearly',
-  'com.tandhjulet.lectioplus.premium_monthly',
-];
-
-export const subscribe = async (sku: string, offerToken: string | null) => {
-  try {
-    await requestSubscription({
-      sku,
-      ...(offerToken && {subscriptionOffers: [{sku, offerToken}]}),
-    });
-  } catch (err) {
-    console.warn(err);
-  }
-};
-
-export const checkSubscribed = async () => {
-  const purchases = await getAvailablePurchases();
-  await Promise.all(purchases.map(async purchase => {
-    switch(purchase.productId) {
-      case "com.tandhjulet.lectioplus.premium_yearly":
-      case "com.tandhjulet.lectioplus.premium_monthly":
-        
-        break;
-    }
-    console.log(purchase);
-  }))
-}
-
 export const isExpoGo = Constants.appOwnership === 'expo';
 
 const App = () => {
@@ -122,28 +98,42 @@ const App = () => {
 
 
   /**
-   * Creates a connections to Apples IAP (WIP)
+   * Creates a connections to Apples IAP
    */
   useEffect(() => {
+    let purchaseListener: EmitterSubscription | null;
+    let errorListener: EmitterSubscription | null;
     if(!isExpoGo) {
-      initConnection().then(() => {
+      initConnection().then(async () => {
+        await clearProductsIOS();
+        await clearTransactionIOS();
+
         console.log("init connection!");
 
-        purchaseUpdatedListener(async (purchase: SubscriptionPurchase | ProductPurchase) => {
-         const receipt = purchase.transactionReceipt;
-   
-         if(receipt) {
-           console.log("purchase!")
-           console.log(receipt);
-   
-           await finishTransaction({
-             purchase,
-             isConsumable: false,
-           })
-         }
+        errorListener = purchaseErrorListener(async (error: PurchaseError) => {
+          console.log(error.message);
+        })
+
+        purchaseListener = purchaseUpdatedListener(async (purchase: SubscriptionPurchase | ProductPurchase) => {
+          
+          const receipt = purchase.transactionReceipt;
+    
+          if(receipt && await receiptValid(receipt)) {
+            console.log("purchase!")
+    
+            await finishTransaction({
+              purchase,
+            })
+          }
+
         })
    
        })
+    }
+
+    return () => {
+      purchaseListener?.remove();
+      errorListener?.remove();
     }
   }, []);
 
@@ -191,7 +181,7 @@ const App = () => {
       };
 
       payload = {
-        gym: await getSecure("gym"),
+        gym: await secureGet("gym"),
         password: await secureGet("password"),
         username: await secureGet("username"),
       }
@@ -212,6 +202,18 @@ const App = () => {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      if (await hasSubscription())  {
+        dispatchSubscription({ type: "SUBSCRIBED" })
+      } else if (await tryFreeTrial()) {
+        dispatchSubscription({ type: "FREE_TRIAL" })
+      } else {
+        dispatchSubscription({ type: "NOT_SUBSCRIBED" })
+      }
+    })();
+  }, [])
 
   /**
    * Auth Context passed to the rest of the app
@@ -243,10 +245,38 @@ const App = () => {
     []
   );
 
+  const subscriptionContext = useMemo(
+    () => ({
+      subscribed: () => {
+        dispatchSubscription({ type: "SUBSCRIBED" })
+      },
+      notSubscribed: () => {
+        dispatchSubscription({ type: "NOT_SUBSCRIBED" })
+      }
+    }),
+    []
+  )
+
+  const [subscriptionState, dispatchSubscription]: [subscriptionState: any, dispatchSubscription: any] = useReducer<any>(
+    (prev: any, action: SubState) => {
+      return {
+        loading: false,
+        hasSubscription: action.type !== "NOT_SUBSCRIBED",
+        freeTrial: action.type === "FREE_TRIAL",
+      }
+    },
+    {       
+      hasSubscription: undefined,
+      freeTrial: undefined,
+      loading: true, 
+    }
+  )
+
   const scheme = useColorScheme();
   const theme = themes[scheme || "dark"];
   
   return (
+  <SubscriptionContext.Provider value={subscriptionContext}>
     <AuthContext.Provider value={authContext}>
       <NavigationContainer theme={{colors: {
         background: theme.BLACK.toString(),
@@ -315,6 +345,7 @@ const App = () => {
           )}
       </NavigationContainer>
     </AuthContext.Provider>
+  </SubscriptionContext.Provider>
   );
 }
 

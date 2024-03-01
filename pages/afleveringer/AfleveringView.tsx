@@ -5,7 +5,7 @@ import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { Opgave, OpgaveDetails, STATUS } from "../../modules/api/scraper/OpgaveScraper";
 import { formatDate } from "../Afleveringer";
 import { getAflevering } from "../../modules/api/scraper/Scraper";
-import { getSecure, getUnsecure } from "../../modules/api/Authentication";
+import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { themes } from "../../modules/Themes";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
@@ -34,7 +34,7 @@ export default function AfleveringView({ navigation, route }: {
         setLoading(true);
 
         (async () => {
-            const gym: { gymName: string, gymNummer: string } = await getSecure("gym")
+            const gym: { gymName: string, gymNummer: string } = await secureGet("gym")
             setGym(gym);
 
             getAflevering(gym.gymNummer, aflevering.id).then(async (v) => {

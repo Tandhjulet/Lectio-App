@@ -301,7 +301,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     title={"Privatlivspolitik"}
 
                                     titleTextColor={theme.WHITE}
-                                    accessory="DisclosureIndicator"
+                                    accessory="Detail"
 
                                     onPress={() => {
                                         WebBrowser.openBrowserAsync("https://lectioplus.com/privatliv", {
@@ -316,9 +316,27 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                                 <Cell
                                     cellStyle="Basic"
-                                    title={"Kontakt Lectio Plus"}
+                                    title={"Slutbrugerlicensaftale"}
 
                                     titleTextColor={theme.WHITE}
+                                    accessory="Detail"
+
+                                    onPress={() => {
+                                        WebBrowser.openBrowserAsync("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/", {
+                                            controlsColor: theme.ACCENT.toString(),
+                                            dismissButtonStyle: "close",
+                                            presentationStyle: WebBrowserPresentationStyle.POPOVER,
+
+                                            toolbarColor: theme.ACCENT_BLACK.toString(),
+                                        })
+                                    }}
+                                />
+
+                                <Cell
+                                    cellStyle="Basic"
+                                    title={"Kontakt Lectio Plus"}
+
+                                    titleTextColor={theme.ACCENT}
                                     accessory="DisclosureIndicator"
 
                                     onPress={() => {

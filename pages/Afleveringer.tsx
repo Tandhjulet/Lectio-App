@@ -1,7 +1,7 @@
 import { NavigationProp } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, ColorSchemeName, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
-import { getSecure, getUnsecure } from "../modules/api/Authentication";
+import { secureGet, getUnsecure } from "../modules/api/Authentication";
 import { getAfleveringer } from "../modules/api/scraper/Scraper";
 import { Opgave, STATUS } from "../modules/api/scraper/OpgaveScraper";
 import { Theme, hexToRgb, themes } from "../modules/Themes";
@@ -426,7 +426,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
         (async () => {
             setLoading(true);
 
-            const gymNummer = (await getSecure("gym")).gymNummer;
+            const gymNummer = (await secureGet("gym")).gymNummer;
 
             getAfleveringer(gymNummer).then(({payload, rateLimited}): any => {
                 setOpgaveCount(countOpgaver(payload));
@@ -449,7 +449,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
             return;
 
         (async () => {
-            const gymNummer = (await getSecure("gym")).gymNummer;
+            const gymNummer = (await secureGet("gym")).gymNummer;
 
             getAfleveringer(gymNummer, true).then(({payload, rateLimited}): any => {
                 setOpgaveCount(countOpgaver(payload));

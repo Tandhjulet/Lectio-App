@@ -16,7 +16,8 @@
       "config": {
         "usesNonExemptEncryption": false
       },
-      "bundleIdentifier": "com.tandhjulet.lectioplus"
+      "bundleIdentifier": "com.tandhjulet.lectioplus",
+      "buildNumber": "2"
     },
     "extra": {
       "eas": {

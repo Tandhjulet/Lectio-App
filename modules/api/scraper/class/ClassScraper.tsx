@@ -1,6 +1,6 @@
 // @ts-ignore
 import DomSelector from 'react-native-dom-parser';
-import { getSecure, getUnsecure, saveUnsecure } from "../../Authentication"
+import { secureGet, getUnsecure, saveUnsecure } from "../../Authentication"
 import { SCRAPE_URLS, getASPHeaders } from '../Helpers';
 
 export type Klasse = {
@@ -13,7 +13,7 @@ export async function getClasses(): Promise<Klasse[] | null> {
     if(classes != null)
         return classes;
 
-    const gym: { gymName: string, gymNummer: string } = await getSecure("gym")
+    const gym: { gymName: string, gymNummer: string } = await secureGet("gym")
 
     const payload: {[id: string]: string} = {
         ...(await getASPHeaders(SCRAPE_URLS(gym.gymNummer).CLASS_LIST)),

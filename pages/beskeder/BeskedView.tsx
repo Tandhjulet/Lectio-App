@@ -5,7 +5,7 @@ import { hexToRgb, themes } from "../../modules/Themes";
 import { useCallback, useEffect, useState } from "react";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { getMessage } from "../../modules/api/scraper/Scraper";
-import { getSecure, getUnsecure } from "../../modules/api/Authentication";
+import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { UserIcon } from "react-native-heroicons/solid";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
@@ -44,7 +44,7 @@ export default function BeskedView({ navigation, route }: {
         (async () => {
             setLoading(true);
 
-            const gym: { gymName: string, gymNummer: string } = await getSecure("gym");
+            const gym: { gymName: string, gymNummer: string } = await secureGet("gym");
             setGym(gym);
 
             setPeople(await getPeople() ?? {});
@@ -61,7 +61,7 @@ export default function BeskedView({ navigation, route }: {
             return;
 
         (async () => {
-            const gym: { gymName: string, gymNummer: string } = await getSecure("gym");
+            const gym: { gymName: string, gymNummer: string } = await secureGet("gym");
             setGym(gym);
 
             setPeople(await getPeople() ?? {});

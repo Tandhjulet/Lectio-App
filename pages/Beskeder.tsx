@@ -3,7 +3,7 @@ import NavigationBar from "../components/Navbar";
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { Profile, getMessages, getProfile, scrapeCache } from "../modules/api/scraper/Scraper";
 import { hexToRgb, themes } from "../modules/Themes";
-import { getSecure, getUnsecure } from "../modules/api/Authentication";
+import { secureGet, getUnsecure } from "../modules/api/Authentication";
 import { LectioMessage } from "../modules/api/scraper/MessageScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronRightIcon, EnvelopeIcon, EnvelopeOpenIcon, PaperAirplaneIcon, PencilSquareIcon, SunIcon, TrashIcon, XCircleIcon } from "react-native-heroicons/solid";
@@ -320,7 +320,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
         setLoading(true);
 
         (async () => {
-            const gym = await getSecure("gym");
+            const gym = await secureGet("gym");
             setGym(gym);
 
             if(profile == null) {

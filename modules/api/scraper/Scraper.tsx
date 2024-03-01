@@ -7,7 +7,7 @@ import { Fag, Registration, scapeRegistration, scrapeAbsence } from './AbsenceSc
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LectioMessage, ThreadMessage, scrapeMessage, scrapeMessages } from './MessageScraper';
-import { getSecure, saveUnsecure } from '../Authentication';
+import { secureGet, saveUnsecure } from '../Authentication';
 import { Hold, holdScraper, scrapeHoldListe } from './hold/HoldScraper';
 import { HEADERS, SCRAPE_URLS, getASPHeaders, parseASPHeaders } from './Helpers';
 import { Opgave, OpgaveDetails, scrapeOpgave, scrapeOpgaver } from './OpgaveScraper';
@@ -126,14 +126,10 @@ export async function fetchProfile(): Promise<Profile> {
     let ERROR = false;
     console.log("Fetching profile...")
 
-    let gym: {gymName: string, gymNummer: string} | null = await getSecure("gym");
+    let gym: {gymName: string, gymNummer: string} | null = await secureGet("gym");
     if(gym == null)
         gym = { gymName: "", gymNummer: "" }
     
-    let username = await getUsername();
-    if(username == null)
-        username = "";
-
     const authFetch = await getSaved(Key.FORSIDE);
     let text;
 
@@ -179,7 +175,6 @@ export async function fetchProfile(): Promise<Profile> {
 
     return {
         name: realName,
-        username: username,
 
         elevId: elevID.split("?")[1].replace(/\D/gm, ""),
     
@@ -197,7 +192,6 @@ export async function fetchProfile(): Promise<Profile> {
 
 export type Profile = {
     name: string,
-    username: string,
     
     elevId: string,
     school: string,
@@ -229,11 +223,6 @@ export async function saveProfile(newProfile: Profile) {
 
     const stringifiedValue = JSON.stringify(newProfile);
     await SecureStore.setItemAsync("profile", stringifiedValue);
-}
-
-async function getUsername() {
-    const res = await SecureStore.getItemAsync("username");
-    return res;
 }
 
 export async function getProfile(): Promise<Profile> {

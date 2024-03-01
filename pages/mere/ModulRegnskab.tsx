@@ -3,7 +3,7 @@ import { ActivityIndicator, RefreshControl, ScrollView, Text, View, useColorSche
 import { getProfile, scrapeModulRegnskab } from "../../modules/api/scraper/Scraper";
 import { Hold } from "../../modules/api/scraper/hold/HoldScraper";
 import { Modulregnskab } from "../../modules/api/scraper/hold/ModulRegnskabScraper";
-import { getSecure, getUnsecure } from "../../modules/api/Authentication";
+import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { themes } from "../../modules/Themes";
 
@@ -21,7 +21,7 @@ export default function ModulRegnskab() {
             setLoading(true);
 
             const profile = await getProfile();
-            const gym: {gymName: string, gymNummer: string} = await getSecure("gym")
+            const gym: {gymName: string, gymNummer: string} = await secureGet("gym")
 
             const out: Modulregnskab[] = [];
 
@@ -47,7 +47,7 @@ export default function ModulRegnskab() {
 
         (async () => {
             const profile = await getProfile();
-            const gym: {gymName: string, gymNummer: string} = await getSecure("gym")
+            const gym: {gymName: string, gymNummer: string} = await secureGet("gym")
 
             const out: Modulregnskab[] = [];
 
