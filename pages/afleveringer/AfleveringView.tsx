@@ -79,7 +79,7 @@ export default function AfleveringView({ navigation, route }: {
     }, []);
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
     
     return (
         <View style={{

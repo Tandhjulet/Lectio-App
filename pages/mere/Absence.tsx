@@ -59,7 +59,7 @@ const PaginationIndicator = ({
     })
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     return (
         <View style={{
@@ -412,7 +412,7 @@ export default function Absence({ navigation }: { navigation: any }) {
     }, [registrationRefreshing])
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     return (
         <GestureHandlerRootView>

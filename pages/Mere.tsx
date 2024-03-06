@@ -1,9 +1,9 @@
-import { ActivityIndicator, Linking, NativeModules, ScrollView, StyleSheet, Switch, Text, View, useColorScheme } from "react-native";
+import { ActivityIndicator, Alert, Linking, NativeModules, ScrollView, StyleSheet, Switch, Text, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { themes } from "../modules/Themes";
 import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { AcademicCapIcon, BellSnoozeIcon, BuildingLibraryIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon } from "react-native-heroicons/solid";
+import { AcademicCapIcon, BellSnoozeIcon, BuildingLibraryIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon, XMarkIcon } from "react-native-heroicons/solid";
 import { getUnsecure, removeSecure, removeUnsecure, secureGet, signOutReq } from "../modules/api/Authentication";
 import { Profile, getProfile, saveProfile } from "../modules/api/scraper/Scraper";
 import { AuthContext } from "../modules/Auth";
@@ -17,23 +17,23 @@ import * as WebBrowser from 'expo-web-browser';
 import { WebBrowserPresentationStyle } from "expo-web-browser";
 import * as Device from 'expo-device';
 import * as MailComposer from 'expo-mail-composer';
+import { hasSubscription } from "../components/LectioPlusAPI";
+import { SubscriptionContext } from "../modules/Sub";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function Mere({ navigation }: {navigation: any}) {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
-    const [loadingSubscription, setLoadingSubscription] = useState<boolean>();
+    const [loadingSubscription, setLoadingSubscription] = useState<boolean>(false);
 
     const { signOut } = useContext(AuthContext);
+    const { subscriptionState, dispatchSubscription } = useContext(SubscriptionContext);
 
     const [loading, setLoading] = useState<boolean>(true);
 
     const [profile, setProfile] = useState<Profile>();
-
-    const [aflysteLektioner, setAflysteLektioner] = useState<boolean>();
-    const [ændredeLektioner, setÆndredeLektioner] = useState<boolean>();
-    const [beskeder, setBeskeder] = useState<boolean>();
-
-    const [showNotifications, setShowNotifications] = useState<boolean>(false);
+    
+    const [endDate, setEndDate] = useState<Date>();
 
     const renew = new Date();
     renew.setDate(renew.getDate() + 1);
@@ -42,23 +42,68 @@ export default function Mere({ navigation }: {navigation: any}) {
 
     useEffect(() => {
         (async () => {
-            const prof = await getProfile() 
+            const prof = await getProfile()
             setProfile(prof);
+            
+            const { result, endDate } = await hasSubscription(false);
 
-            setAflysteLektioner(prof.notifications.aflysteLektioner);
-            setÆndredeLektioner(prof.notifications.ændredeLektioner);
-            setBeskeder(prof.notifications.beskeder);
-    
+            if(result === null) {
+                dispatchSubscription({ type: "SERVER_DOWN"})
+            } else {
+                dispatchSubscription({ type: result ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
+            }
+            setEndDate(endDate)
+
             setLoading(false);
         })();
     }, [])
 
+    useFocusEffect(
+        useCallback(() => {
+            getUnsecure("subscriptionEndDate").then((data) => {
+                const date = data.date;
+                setEndDate(new Date(date));
+            })
+        }, [])
+    )
+
     useEffect(() => {
-        setLoadingSubscription(false);
+        if(!loadingSubscription) return;
+
+        (async () => {
+            const { result, endDate } = await hasSubscription();
+
+            if(result === null) {
+                dispatchSubscription({ type: "SERVER_DOWN"})
+            } else {
+                dispatchSubscription({ type: result ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
+            }
+            setLoadingSubscription(false);
+
+            setEndDate(endDate)
+        })();
     }, [loadingSubscription])
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
+
+    const subscriptionTitle: () => string = () => {
+        // @ts-ignore
+        if(subscriptionState?.serverDown)
+            return "Lectio Plus' server er nede"
+
+        // @ts-ignore
+        return subscriptionState?.hasSubscription ? "Dit abonnement er aktivt" : "Du har ikke et gyldigt abonnement"
+    }
+
+    const subscriptionSubtitle: () => string = () => {
+        // @ts-ignore
+        if(subscriptionState?.serverDown)
+            return "Har du et abonnement får du det snart igen"
+
+        // @ts-ignore
+        return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate?.toLocaleDateString() ?? "") : "Abonnementer virker ikke på tværs af enheder";
+    }
 
     return (
     <GestureHandlerRootView>
@@ -187,90 +232,26 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 />
                             </Section>
 
-                            {showNotifications && (
-                                <Section header={"NOTIFIKATIONER"} roundedCorners={true} hideSurroundingSeparators={true}>
-                                    <Cell
-                                        isDisabled
-                                        cellStyle="Basic"
-                                        title="Aflyste lektioner"
-                                        titleTextColor={theme.WHITE}
-                                        cellAccessoryView={<Switch 
-                                            disabled
-                                            trackColor={{false: '#767577', true: "#4ca300"}}
-
-                                            onValueChange={() => setAflysteLektioner((prev) => {
-                                                setProfile((profile) => {
-                                                    if(profile != null) {
-                                                        profile.notifications.aflysteLektioner = !prev;
-                                                        saveProfile(profile);
-                                                    }
-                                                    return profile;
-                                                })
-                                                return !prev
-                                            })}
-                                            value={aflysteLektioner}
-                                        />}
-                                    />
-                                    <Cell
-                                        isDisabled
-                                        cellStyle="Basic"
-                                        title="Ændrede lektioner"
-                                        titleTextColor={theme.WHITE}
-                                        cellAccessoryView={<Switch 
-                                            disabled
-                                            trackColor={{false: '#767577', true: "#4ca300"}}
-
-                                            onValueChange={() => setÆndredeLektioner((prev) => {
-                                                setProfile((profile) => {
-                                                    if(profile != null) {
-                                                        profile.notifications.ændredeLektioner = !prev;
-                                                        saveProfile(profile);
-                                                    }
-                                                    return profile;
-                                                })
-                                                return !prev
-                                            })}
-                                            value={ændredeLektioner}
-                                        />}
-                                    />
-                                    <Cell
-                                        isDisabled
-                                        cellStyle="Basic"
-                                        title="Beskeder"
-                                        titleTextColor={theme.WHITE}
-                                        cellAccessoryView={<Switch 
-                                            disabled
-
-                                            trackColor={{false: '#767577', true: "#4ca300"}}
-                                            onValueChange={() => setBeskeder((prev) => {
-                                                setProfile((profile) => {
-                                                    if(profile != null) {
-                                                        profile.notifications.beskeder = !prev;
-                                                        saveProfile(profile);
-                                                    }
-
-                                                    return profile;
-                                                })
-                                                return !prev
-                                            })}
-                                            value={beskeder}
-                                        />}
-                                    />
-                                </Section>
-                            )}
-
                             <Section header={"ABONNEMENT"} roundedCorners={true} hideSurroundingSeparators={true} >
-                                <Cell 
-                                    cellStyle="Subtitle"
-                                    title="Dit abonnement er aktivt"
+                                <Cell
+                                    cellStyle={"Subtitle"}
+
+                                    // @ts-ignore
+                                    title={subscriptionTitle()}
                                     titleTextColor={theme.WHITE}
 
-                                    detail={"Fornyes d. " + renew.toLocaleDateString()}
+                                    // @ts-ignore
+                                    detail={subscriptionSubtitle()}
+                                    
+                                    // @ts-ignore
+                                    accessory={!loadingSubscription && subscriptionState?.hasSubscription && "Checkmark"}
+                                    accessoryColor={theme.ACCENT}
 
-                                    accessory={!loadingSubscription && "Checkmark"}
-                                    accessoryColor={!loadingSubscription ? theme.ACCENT : undefined}
-                                    cellAccessoryView={loadingSubscription && (
+                                    cellAccessoryView={loadingSubscription ? (
                                         <ActivityIndicator size={"small"} />
+                                    // @ts-ignore
+                                    ) : !subscriptionState?.hasSubscription && (
+                                        <XMarkIcon color={theme.RED} />
                                     )}
                                 />
                                 
@@ -280,7 +261,18 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     titleTextColor={theme.ACCENT}
 
                                     onPress={() => {
-                                        bottomSheetModalRef.current?.present();
+                                        // @ts-ignore
+                                        if(!subscriptionState?.hasSubscription && !subscriptionState?.serverDown) {
+                                            bottomSheetModalRef.current?.present();
+                                        } else {
+                                            WebBrowser.openBrowserAsync("https://apps.apple.com/account/subscriptions", {
+                                                controlsColor: theme.ACCENT.toString(),
+                                                dismissButtonStyle: "close",
+                                                presentationStyle: WebBrowserPresentationStyle.POPOVER,
+
+                                                toolbarColor: theme.ACCENT_BLACK.toString(),
+                                            })
+                                        }
                                     }}
                                 />
 
@@ -365,9 +357,9 @@ For at kunne hjælpe dig har vi brug for lidt information:
 
                             <Section header={"KONTROLPANEL"} roundedCorners={true} hideSurroundingSeparators={true}>
                                 <Cell
-                                    cellStyle="RightDetail"
-                                    title={profile?.name.slice(0,21)}
-                                    detail={profile?.username.slice(0,13)}
+                                    cellStyle="Subtitle"
+                                    title={profile?.name}
+                                    detail={profile?.school}
 
                                     titleTextColor={theme.WHITE}
                                     accessory="DisclosureIndicator"

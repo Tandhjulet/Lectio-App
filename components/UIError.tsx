@@ -43,7 +43,7 @@ export default function UIError({ details }: {
     details: string[]
 }) {
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     return (
         <FlyInView style={{

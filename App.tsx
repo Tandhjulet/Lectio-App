@@ -61,8 +61,9 @@ import Constants from 'expo-constants';
 import LandingPage from './pages/login/LandingPage';
 import { themes } from './modules/Themes';
 import UserSettings from './pages/mere/UserSettings';
-import receiptValid, { hasSubscription, tryFreeTrial } from './components/LectioPlusAPI';
+import receiptValid, { hasSubscription } from './components/LectioPlusAPI';
 import { SubState, SubscriptionContext } from './modules/Sub';
+import ThankYou from './pages/ThankYou';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -85,7 +86,6 @@ export type SignInPayload = {
 export const isExpoGo = Constants.appOwnership === 'expo';
 
 const App = () => {
-
   useEffect(() => {
     getUnsecure("useDarkMode").then((v: {result: boolean}) => {
       if(v.result == null) {
@@ -108,8 +108,6 @@ const App = () => {
         await clearProductsIOS();
         await clearTransactionIOS();
 
-        console.log("init connection!");
-
         errorListener = purchaseErrorListener(async (error: PurchaseError) => {
           console.log(error.message);
         })
@@ -119,8 +117,8 @@ const App = () => {
           const receipt = purchase.transactionReceipt;
     
           if(receipt && await receiptValid(receipt)) {
-            console.log("purchase!")
-    
+            dispatchSubscription({ type: "SUBSCRIBED" })
+
             await finishTransaction({
               purchase,
             })
@@ -205,12 +203,11 @@ const App = () => {
 
   useEffect(() => {
     (async () => {
-      if (await hasSubscription())  {
-        dispatchSubscription({ type: "SUBSCRIBED" })
-      } else if (await tryFreeTrial()) {
-        dispatchSubscription({ type: "FREE_TRIAL" })
+      const { result } = await hasSubscription();
+      if(result === null) {
+        dispatchSubscription({ type: "SERVER_DOWN"})
       } else {
-        dispatchSubscription({ type: "NOT_SUBSCRIBED" })
+        dispatchSubscription({ type: result ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
       }
     })();
   }, [])
@@ -228,8 +225,6 @@ const App = () => {
           await secureSave("username", payload.username);
           await secureSave("password", payload.password);
           
-          console.log("authorized.")
-
           dispatch({ type: 'SIGN_IN' })
           return true;
         }
@@ -245,38 +240,26 @@ const App = () => {
     []
   );
 
-  const subscriptionContext = useMemo(
-    () => ({
-      subscribed: () => {
-        dispatchSubscription({ type: "SUBSCRIBED" })
-      },
-      notSubscribed: () => {
-        dispatchSubscription({ type: "NOT_SUBSCRIBED" })
-      }
-    }),
-    []
-  )
-
   const [subscriptionState, dispatchSubscription]: [subscriptionState: any, dispatchSubscription: any] = useReducer<any>(
     (prev: any, action: SubState) => {
       return {
         loading: false,
-        hasSubscription: action.type !== "NOT_SUBSCRIBED",
-        freeTrial: action.type === "FREE_TRIAL",
+        hasSubscription: action.type === "SUBSCRIBED",
+        serverDown: action.type === "SERVER_DOWN",
       }
     },
-    {       
+    {
+      serverDown: false,
       hasSubscription: undefined,
-      freeTrial: undefined,
       loading: true, 
     }
   )
 
   const scheme = useColorScheme();
-  const theme = themes[scheme || "dark"];
+  const theme = themes[scheme ?? "dark"];
   
   return (
-  <SubscriptionContext.Provider value={subscriptionContext}>
+  <SubscriptionContext.Provider value={{ subscriptionState, dispatchSubscription }}>
     <AuthContext.Provider value={authContext}>
       <NavigationContainer theme={{colors: {
         background: theme.BLACK.toString(),
@@ -321,7 +304,7 @@ const App = () => {
                   }} />
 
                   <AppStack.Screen name="Schools" component={Schools} options={{
-                    header: ({ navigation, route, options, back }) => Header({ navigation, route, options, back })
+                    header: ({ route, options }) => Header({ route, options })
                   }} />
                 </AppStack.Navigator>
               ) : (
@@ -339,6 +322,10 @@ const App = () => {
                   <Tab.Screen name="Mere" component={MereNavigator} options={{
                     header: () => <></>
                   }} />
+
+                  <Tab.Screen name="Tak" component={ThankYou} options={{
+                    header: () => <></>
+                  }} />
                 </Tab.Navigator>
               )}
             </>
@@ -352,7 +339,7 @@ const App = () => {
 export function SkemaNavigator() {
 
   const scheme = useColorScheme();
-  const theme = themes[scheme || "dark"];
+  const theme = themes[scheme ?? "dark"];
 
   return (
     <SkemaNav.Navigator initialRouteName="Skema" screenOptions={{
@@ -377,7 +364,7 @@ export function SkemaNavigator() {
 export function BeskedNavigator() {
 
   const scheme = useColorScheme();
-  const theme = themes[scheme || "dark"];
+  const theme = themes[scheme ?? "dark"];
 
   return (
     <Messages.Navigator initialRouteName="BeskedList" screenOptions={{
@@ -423,7 +410,7 @@ export function BeskedNavigator() {
 export function AfleveringNavigator() {
 
   const scheme = useColorScheme();
-  const theme = themes[scheme || "dark"];
+  const theme = themes[scheme ?? "dark"];
 
   return (
     <Opgaver.Navigator initialRouteName="AfleveringList" screenOptions={{
@@ -483,7 +470,7 @@ export function AfleveringNavigator() {
 export function MereNavigator() {
 
   const scheme = useColorScheme();
-  const theme = themes[scheme || "dark"];
+  const theme = themes[scheme ?? "dark"];
 
   return (
     <Settings.Navigator initialRouteName="Settings" screenOptions={{

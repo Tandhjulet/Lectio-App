@@ -41,7 +41,7 @@ const FlyInView: React.FC<FlyInViewProps> = props => {
 
 export default function RateLimit() {
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     return (
         <FlyInView style={{

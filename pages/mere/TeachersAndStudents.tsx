@@ -66,7 +66,7 @@ const UserCell = memo(function UserCell({ index, item, section, gym }: {
 
 }) {
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     return (
         <>
@@ -142,7 +142,7 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
     const [filter, setFilter] = useState<string>("");
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
 
     const parseFormattedData = useCallback((data: {

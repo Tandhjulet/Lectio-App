@@ -124,7 +124,6 @@ export async function getSchools(): Promise<{[id: string]: string;}> {
 
 export async function fetchProfile(): Promise<Profile> {
     let ERROR = false;
-    console.log("Fetching profile...")
 
     let gym: {gymName: string, gymNummer: string} | null = await secureGet("gym");
     if(gym == null)
@@ -142,7 +141,6 @@ export async function fetchProfile(): Promise<Profile> {
             },
         })
         text = await res.text();
-        console.log("Sending request, nothing stored...")
     } else {
         text = authFetch.value.body;
     }
@@ -171,7 +169,6 @@ export async function fetchProfile(): Promise<Profile> {
 
     if(ERROR)
         console.warn("getProfile called without login.")
-    console.log("Profile fetched!")
 
     return {
         name: realName,

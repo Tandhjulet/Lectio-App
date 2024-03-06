@@ -3,13 +3,12 @@ import { SCRAPE_URLS } from "../modules/api/scraper/Helpers";
 import { getProfile } from "../modules/api/scraper/Scraper";
 
 export default async function receiptValid(receipt: string): Promise<boolean> {
-    const id = await secureGet("userId");
+    const profile = await getProfile();
 
-    const body = JSON.stringify(id ? {
+    const body = JSON.stringify({
         "receipt": receipt,
-        "userId": id,
-    } : {
-        "receipt": receipt,
+        "name": profile.name,
+        "id": profile.elevId,
     }).trim();
 
     const res: Response = await fetch(SCRAPE_URLS().LECTIOPLUS_SAVE_RECEIPT, {
@@ -20,21 +19,25 @@ export default async function receiptValid(receipt: string): Promise<boolean> {
         body: body,
     })
 
+
     if(res.status != 200) return false;
     // if problem occurs dont finish the transaction
     // as the subscription probably wont be persisted.
 
     const json = await res.json();
+    if(json.code !== "OK") return false;
 
-    if(!id && json.code === "OK") {
-        await secureSave("userId", json.userId);
-    }
-    return json.code === "OK";
+    await secureSave("userId", json.userId);
+    await saveUnsecure("subscriptionEndDate", {date: json.endDate});
+    
+    return true;
 }
 
-export async function hasSubscription(): Promise<boolean> {
+export async function hasSubscription(save: boolean = true): Promise<{result: boolean | null, endDate?: Date}> {
     const userId = await secureGet("userId");
-    if(!userId) return false;
+    if(!userId) return {
+        result: false,
+    };
 
     const body = JSON.stringify({
         "userId": userId,
@@ -48,44 +51,16 @@ export async function hasSubscription(): Promise<boolean> {
         body: body,
     })
 
-    if(res.status != 200) return true;
-    // if the server is down/slow make the user
-    // have a subscription to avoid complaints.
-
-    return (await res.json()).valid;
-}
-
-// NOT IMPLEMENTED ON SERVER YET (WIP)
-export async function tryFreeTrial(): Promise <boolean> {
-    const userId = await secureGet("userId");
-    if(userId) return false;
-    
-    const profile = await getProfile();
-    const gym = (await secureGet("gym")).gymNummer;
-
-    const body = JSON.stringify({
-        "name": profile.name,
-        "elevId": profile.elevId,
-        "gym": gym,
-    }).trim();
-
-    const res: Response = await fetch(SCRAPE_URLS().LECTIOPLUS_FREE_TRIAL, {
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: body,
-    })
-
-    if(res.status != 200) return false;
-    // if the server is down, the user
-    // cannot receive a free trial
+    if(res.status != 200) return {
+        result: null,
+    };;
 
     const json = await res.json();
-    if(json.code === "OK") { // a free trial has been provided to the user
-        await secureSave("userId", json.userId);
-        return true;
-    }
+    if(save)
+        await saveUnsecure("subscriptionEndDate", {date: json.endDate})
 
-    return false;
+    return {
+        result: json.valid,
+        endDate: new Date(json.endDate),
+    }
 }

@@ -54,7 +54,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
     const [ headers, setHeaders ] = useState<{[id: string]: string}>();
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     /**
      * Used in the message-modal to make the x-icon appear so you can clear 
@@ -774,8 +774,6 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                 })
 
                             });
-                        } else {
-                            console.log("Invalid args passed.")
                         }
                     }}>
                         {!sendingMessage ? 

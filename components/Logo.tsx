@@ -55,7 +55,7 @@ export default function Logo({
     }, [opacity, scale]);
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     return (
         <Animated.View style={{

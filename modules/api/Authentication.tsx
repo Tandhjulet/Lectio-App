@@ -15,7 +15,12 @@ export async function secureGet(key: string) {
     const stringifiedValue = await SecureStore.getItemAsync(key);
     if(stringifiedValue == null)
         return null;
-    return JSON.parse(stringifiedValue);
+    
+    try {
+        return JSON.parse(stringifiedValue);
+    } catch {
+        return stringifiedValue;
+    }
 }
 
 /**
@@ -26,8 +31,6 @@ export async function secureGet(key: string) {
  * @returns a boolean value indicating whether the request succeded or not
  */
 export async function validate(gymNummer: string, username: string, password: string): Promise<boolean> {
-    console.log("validate called, sending request...")
-
     const payload: {[id: string]: string} = {
         ...(await getASPHeaders(SCRAPE_URLS(gymNummer).LOGIN_URL)),
 
@@ -113,7 +116,6 @@ export async function _isAuthorized(gymNummer: string) {
     });
 
     if(res.status == 303) {
-        console.log("status: 303")
         return _isAuthorized(gymNummer);
     }
 
@@ -124,8 +126,6 @@ export async function _isAuthorized(gymNummer: string) {
         })
     }
 
-    console.log("validation process finished.\nresult: " + isAuth)
-
     return isAuth;
 }
 
@@ -135,8 +135,6 @@ export async function _isAuthorized(gymNummer: string) {
  * @returns true if success, otherwise false
  */
 export async function authorize({ gym, password, username }: SignInPayload): Promise<boolean> {
-    console.log("authorize called!")
-
     if(gym == null || password == null || username == null) {
         return false;
     }

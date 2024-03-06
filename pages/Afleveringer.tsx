@@ -471,7 +471,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     return (
         <View style={{

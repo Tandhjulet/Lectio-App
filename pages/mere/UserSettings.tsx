@@ -9,7 +9,7 @@ export default function UserSettings() {
     const [darkMode, setDarkMode] = useState<boolean>()
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     useEffect(() => {
         (async () => {
@@ -31,9 +31,9 @@ export default function UserSettings() {
                 setDarkMode(scheme == "dark");
             });
         } else {
-            saveUnsecure("useDarkMode", {result: (scheme || "dark") == "dark"}).then(() => {
-                Appearance.setColorScheme(scheme || "dark");
-                setDarkMode((scheme || "dark") == "dark");
+            saveUnsecure("useDarkMode", {result: (scheme ?? "dark") == "dark"}).then(() => {
+                Appearance.setColorScheme(scheme ?? "dark");
+                setDarkMode((scheme ?? "dark") == "dark");
             });
         }
     }, [useDefault, scheme]);

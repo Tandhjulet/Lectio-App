@@ -5,7 +5,7 @@ import { themes } from "../modules/Themes";
 
 export default function SplashScreen({ navigation }: { navigation: any }) {
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     return (
     <View style={{

@@ -1,4 +1,4 @@
-import { ActivityIndicator, Animated, DimensionValue, Dimensions, LogBox, Modal, PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
+import { ActivityIndicator, Animated, DimensionValue, Dimensions, LogBox, Modal, PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { createRef, useCallback, useEffect, useRef, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
@@ -15,7 +15,6 @@ import { Key, getSaved } from "../modules/api/storage/Storage";
 import { SCHEMA_SEP_CHAR } from "../modules/Config";
 import Logo from "../components/Logo";
 import PagerView from "react-native-pager-view";
-import { TouchableHighlight } from "react-native-gesture-handler";
 
 /**
  * 
@@ -516,7 +515,7 @@ export default function Skema({ navigation }: {
     const scrollRef = createRef<ScrollView>();
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     const pan = useRef(new Animated.ValueXY()).current;
 
@@ -581,6 +580,66 @@ export default function Skema({ navigation }: {
 
     return (
         <View>
+            <Modal 
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(!modalVisible);
+                }}
+
+                style={{
+                    position: "absolute",
+                    overflow: "hidden",
+                }}
+            >
+                <TouchableWithoutFeedback style={{
+                    position: "absolute",
+
+                    overflow: "hidden",
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                }} onPress={() => {
+                    setModalVisible(!modalVisible);
+                }}>
+                    <View style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+
+                        paddingTop: 22,
+                        paddingBottom: 200,
+
+                        backgroundColor: 'rgba(52, 52, 52, 0.6)',
+                    }}>
+                        <View style={{
+                            margin: 20,
+
+                            backgroundColor: theme.BLACK,
+                            borderRadius: 20,
+
+                            paddingHorizontal: 35,
+                            paddingVertical: 20,
+
+                            alignItems: 'center',
+                            shadowColor: '#000',
+                            shadowOffset: {
+                                width: 0,
+                                height: 2,
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 4,
+                            elevation: 5,
+                        }}>
+                            <Text style={{
+                                color: theme.WHITE,
+                            }}>
+                                {skema != null && skema[dayNum - 2] != undefined && skema[dayNum - 2].skemaNoter}
+                            </Text>
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
+
             <View style={{
                 paddingTop: 50,
         
@@ -658,63 +717,9 @@ export default function Skema({ navigation }: {
                             <ClipboardDocumentListIcon color={theme.DARK} />
                         </View>
                     </TouchableOpacity>
-
-                    <Modal 
-                        transparent={true}
-                        visible={modalVisible}
-                        onRequestClose={() => {
-                            setModalVisible(!modalVisible);
-                        }}
-                    >
-                        <TouchableWithoutFeedback style={{
-                            position: "absolute",
-
-                            width: "100%",
-                            height: "100%",
-                        }} onPress={() => {
-                            setModalVisible(!modalVisible);
-                        }}>
-                            <View style={{
-                                flex: 1,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-
-                                paddingTop: 22,
-                                paddingBottom: 200,
-
-                                backgroundColor: 'rgba(52, 52, 52, 0.6)',
-                            }}>
-                                <View style={{
-                                    margin: 20,
-
-                                    backgroundColor: theme.BLACK,
-                                    borderRadius: 20,
-
-                                    paddingHorizontal: 35,
-                                    paddingVertical: 20,
-
-                                    alignItems: 'center',
-                                    shadowColor: '#000',
-                                    shadowOffset: {
-                                        width: 0,
-                                        height: 2,
-                                    },
-                                    shadowOpacity: 0.25,
-                                    shadowRadius: 4,
-                                    elevation: 5,
-                                }}>
-                                    <Text style={{
-                                        color: theme.WHITE,
-                                    }}>
-                                        {skema != null && skema[dayNum - 2] != undefined && skema[dayNum - 2].skemaNoter}
-                                    </Text>
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
-
-                    </Modal>
                 </View>
             </View>
+
 
             <View style={{
                 backgroundColor: theme.ACCENT_BLACK,
@@ -981,11 +986,15 @@ export default function Skema({ navigation }: {
                                         const widthNum = parseInt(width.replace("%", ""));
 
                                         return (
-                                            <Pressable key={index} onPress={() => {
-                                                navigation.navigate("Modul View", {
-                                                    modul: modul,
-                                                })
-                                            }}>
+                                            <TouchableHighlight
+                                                key={index}
+
+                                                onPress={() => {
+                                                    navigation.navigate("Modul View", {
+                                                        modul: modul,
+                                                    })
+                                                }}
+                                            >
                                                 <View style={{
                                                     position:"absolute",
 
@@ -1066,7 +1075,7 @@ export default function Skema({ navigation }: {
                                                         </View>
                                                     </View>
                                                 </View>
-                                            </Pressable>
+                                            </TouchableHighlight>
                                         )
                                     })}
                                 </View>

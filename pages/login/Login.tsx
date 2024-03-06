@@ -59,8 +59,6 @@ export default function Login({ route, navigation }: {
             username: username,
             gym: gym,
         }
-
-        console.log(payload);
         
         if(!(await signIn(payload))) {
             setTimeout(async () => {
@@ -73,7 +71,7 @@ export default function Login({ route, navigation }: {
     }
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     return (
         <View style={{

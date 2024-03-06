@@ -39,7 +39,7 @@ const School = memo(function School({ index, section, navigation, gymNummer, gym
   gymName: string,
 }) {
   const scheme = useColorScheme();
-  const theme = themes[scheme || "dark"];
+  const theme = themes[scheme ?? "dark"];
 
   return (
     <Pressable onPress={() => {
@@ -160,7 +160,7 @@ const Schools = ({ navigation }: any) => {
   }, [])
 
   const scheme = useColorScheme();
-  const theme = themes[scheme || "dark"];
+  const theme = themes[scheme ?? "dark"];
 
   return (
       <View style={{paddingBottom: 40, minHeight: "100%"}}>

@@ -113,7 +113,7 @@ export default function ModulView({ navigation, route }: {
         return <></>;
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     return (
         <View style={{

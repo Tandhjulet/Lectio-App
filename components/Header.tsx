@@ -7,25 +7,21 @@ import { Fragment } from "react";
 import { getWeekNumber } from "../modules/api/scraper/Scraper";
 import { themes } from "../modules/Themes";
 
-export default function Header({ navigation, route, options, back }: {
-    navigation: NativeStackNavigationProp<ParamListBase, string, undefined>;
+export default function Header({ route, options }: {
     route: Route<string>,
     options: NativeStackNavigationOptions,
-    back: {
-        title: string;
-    } | undefined,
 }) {
     const title = getHeaderTitle(options, route.name);
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     if(title === "Schools") {
         return (<Fragment>
             <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
                 <View style={{
                     ...styles.defaultHeaderContainer,
-                    backgroundColor: theme.BLACK,
+                    backgroundColor: theme.ACCENT_BLACK,
                 }}>
                     <Text style={{
                         fontSize: 20,
@@ -40,7 +36,7 @@ export default function Header({ navigation, route, options, back }: {
         <Fragment>
             <View style={{
                     ...styles.defaultHeaderContainer,
-                    backgroundColor: theme.BLACK,
+                    backgroundColor: theme.ACCENT_BLACK,
                 }}>
                 <Text style={{
                     fontSize: 20,

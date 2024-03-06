@@ -13,6 +13,7 @@ import { CalendarDaysIcon, GlobeAltIcon, StarIcon } from 'react-native-heroicons
 import { Pressable } from 'react-native';
 import { hexToRgb, themes } from '../modules/Themes';
 import { Sku, getSubscriptions, requestSubscription, Subscription as Sub } from "react-native-iap";
+import { useNavigation } from '@react-navigation/native';
 
 function Option({
     title,
@@ -29,6 +30,7 @@ function Option({
     bottomSheetModalRef: React.RefObject<BottomSheetModalMethods>,
     style?: ViewStyle,
 }) {
+    const nav = useNavigation();
     const [subscription, setSubscription] = useState<string>();
 
     useEffect(() => {
@@ -47,7 +49,7 @@ function Option({
     }, []);
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     return (
         <Pressable style={{
@@ -65,6 +67,16 @@ function Option({
             paddingTop: 20,
 
             ...style,
+        }} onPress={() => {
+            (async () => {
+                if(subscription == undefined) return;
+                await handlePurchase(subscription)
+
+                // @ts-ignore
+                nav.navigate("Tak");
+                
+                bottomSheetModalRef.current?.dismiss();
+            })();
         }}>
             <View style={{
                 position: "absolute",
@@ -111,21 +123,14 @@ function Option({
                 flexGrow: 1,
             }} />
 
-            <Pressable style={{
+            <View style={{
                 backgroundColor: theme.DARK,
 
                 paddingHorizontal: 30,
                 paddingVertical: 5,
                 marginVertical: 10,
                 borderRadius: 20,
-            }} onPress={() => {
-                (async () => {
-                    if(subscription == undefined) return;
-
-                    await handlePurchase(subscription)
-                    bottomSheetModalRef.current?.dismiss();
-                })();
-            }} hitSlop={35}>
+            }}>
                 <Text style={{
                     textAlign: "center",
                     color: theme.WHITE,
@@ -134,20 +139,20 @@ function Option({
                 }}>
                     {price} kr
                 </Text>
-            </Pressable>
+            </View>
         </Pressable>
     )
 }
 
 export default function Subscription({
-    bottomSheetModalRef
+    bottomSheetModalRef,
 }: {
     bottomSheetModalRef: React.RefObject<BottomSheetModalMethods>,
 }) {
     const snapPoints = useMemo(() => ['68%'], []);
 
     const scheme = useColorScheme();
-    const theme = themes[scheme || "dark"];
+    const theme = themes[scheme ?? "dark"];
 
     return (
         <BottomSheetModal

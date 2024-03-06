@@ -1,19 +1,10 @@
 import { createContext } from "react";
 
-type Sub = {
-    subscribed: () => void,
-    notSubscribed: () => void,
-}
-
 export type SubState = {
-    type: "SUBSCRIBED" | "NOT_SUBSCRIBED" | "FREE_TRIAL"
+    type: "SUBSCRIBED" | "NOT_SUBSCRIBED" | "SERVER_DOWN",
 }
 
-export const SubscriptionContext = createContext<Sub>({
-    subscribed: () => {
-        console.log("wrong auth context called.")
-    },
-    notSubscribed: () => {
-        console.log("wrong auth context called.")
-    },
-  });
+export const SubscriptionContext = createContext<{ subscriptionState: unknown; dispatchSubscription: any; }>({
+    dispatchSubscription: (action: {type: SubState}) => {},
+    subscriptionState: null,
+});

@@ -2,6 +2,7 @@
 import DomSelector from 'react-native-dom-parser';
 import { secureGet, getUnsecure } from "../../Authentication"
 import { SCRAPE_URLS, getASPHeaders } from '../Helpers';
+import { replaceHTMLEntities } from '../SkemaScraper';
 
 export type Person = {
     type: "LÆRER" | "ELEV"
@@ -80,10 +81,10 @@ export async function extractDataFromTable(table: any, className: string): Promi
             personId = matches[0].replace("laererid=", "");
         }
 
-        const fornavn = trElement.children[3].firstChild.firstChild.firstChild.text;
-        const efternavn = trElement.children[4].firstChild.firstChild.text;
+        const fornavn = replaceHTMLEntities(trElement.children[3].firstChild.firstChild.firstChild.text);
+        const efternavn = replaceHTMLEntities(trElement.children[4].firstChild.firstChild.text);
         const navn = fornavn + " " + efternavn;
-        const fullID = navn + " (" + trElement.children[2].firstChild.firstChild.text + ")";
+        const fullID = replaceHTMLEntities(navn + " (" + trElement.children[2].firstChild.firstChild.text + ")");
 
         out[navn] = {
             billedeId: id,

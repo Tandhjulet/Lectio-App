@@ -62,7 +62,7 @@ const NavigationBar: React.FC<Props> = ({
 }) => {
 
   const scheme = useColorScheme();
-  const theme = themes[scheme || "dark"];
+  const theme = themes[scheme ?? "dark"];
 
   return (
     <>
