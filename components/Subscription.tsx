@@ -3,16 +3,17 @@ import {
     BottomSheetModalProvider,
     BottomSheetScrollView,
     BottomSheetTextInput,
+    useBottomSheetDynamicSnapPoints,
 } from '@gorhom/bottom-sheet';
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, View, ViewProps, ViewStyle, useColorScheme } from "react-native";
+import { Dimensions, StyleSheet, Text, View, ViewProps, ViewStyle, useColorScheme } from "react-native";
 import { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/types';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { CalendarDaysIcon, GlobeAltIcon, StarIcon } from 'react-native-heroicons/solid';
 import { Pressable } from 'react-native';
 import { hexToRgb, themes } from '../modules/Themes';
-import { Sku, getSubscriptions, requestSubscription, Subscription as Sub } from "react-native-iap";
+import { Sku, getSubscriptions, requestSubscription,  purchaseUpdatedListener, Purchase } from "react-native-iap";
 import { useNavigation } from '@react-navigation/native';
 
 function Option({
@@ -34,6 +35,12 @@ function Option({
     const [subscription, setSubscription] = useState<string>();
 
     useEffect(() => {
+        const subscription = purchaseUpdatedListener((purchase: Purchase) => {
+            // @ts-ignore
+            nav.navigate("Tak");
+
+            bottomSheetModalRef.current?.dismiss();
+          });
 
         (async () => {
             const sub = (await getSubscriptions({
@@ -42,6 +49,10 @@ function Option({
 
             setSubscription(sub.productId);
         })();
+
+        return () => {
+            subscription.remove();
+        }
     }, [])
 
     const handlePurchase = useCallback(async (sku: Sku) => {
@@ -71,11 +82,6 @@ function Option({
             (async () => {
                 if(subscription == undefined) return;
                 await handlePurchase(subscription)
-
-                // @ts-ignore
-                nav.navigate("Tak");
-                
-                bottomSheetModalRef.current?.dismiss();
             })();
         }}>
             <View style={{
@@ -149,8 +155,6 @@ export default function Subscription({
 }: {
     bottomSheetModalRef: React.RefObject<BottomSheetModalMethods>,
 }) {
-    const snapPoints = useMemo(() => ['90%'], []);
-
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
 
@@ -158,7 +162,6 @@ export default function Subscription({
         <BottomSheetModal
             ref={bottomSheetModalRef}
             index={0}
-            snapPoints={snapPoints}
 
             bottomInset={89}
             enableOverDrag
@@ -169,13 +172,11 @@ export default function Subscription({
             handleIndicatorStyle={{
                 backgroundColor: theme.WHITE,
             }}
+            enableDynamicSizing
         >
-            <View style={{
-                height: "100%",
-                width: "100%",
-
+            <BottomSheetScrollView style={{
                 display: 'flex',
-            }}>
+            }} scrollEnabled={false}>
                 <View style={{
                     display: "flex",
                     flexDirection: "column",
@@ -307,7 +308,7 @@ export default function Subscription({
                     </View>
                 </View>
                 <Text style={{
-                    marginTop: 10,
+                    marginVertical: 10,
 
                     fontSize: 10,
 
@@ -316,7 +317,7 @@ export default function Subscription({
                 }}>
                     * På nuværende tidspunkt har du {"\n"} allerede ubegrænset adgang til appen.
                 </Text>
-            </View>
+            </BottomSheetScrollView>
         </BottomSheetModal>
     )
 }
