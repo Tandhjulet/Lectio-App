@@ -35,9 +35,6 @@ export default function Mere({ navigation }: {navigation: any}) {
     
     const [endDate, setEndDate] = useState<Date>();
 
-    const renew = new Date();
-    renew.setDate(renew.getDate() + 1);
-
     //const [development, setDevelopment] = useState<boolean>(false);
 
     useEffect(() => {

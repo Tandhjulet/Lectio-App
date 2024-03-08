@@ -149,7 +149,7 @@ export default function Subscription({
 }: {
     bottomSheetModalRef: React.RefObject<BottomSheetModalMethods>,
 }) {
-    const snapPoints = useMemo(() => ['68%'], []);
+    const snapPoints = useMemo(() => ['90%'], []);
 
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
