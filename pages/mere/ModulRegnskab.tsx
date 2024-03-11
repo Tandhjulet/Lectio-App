@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, RefreshControl, ScrollView, Text, View, useColorScheme } from "react-native";
-import { getProfile, scrapeModulRegnskab } from "../../modules/api/scraper/Scraper";
+import { getIfCachedOrDefault, getProfile, scrapeModulRegnskab } from "../../modules/api/scraper/Scraper";
 import { Hold } from "../../modules/api/scraper/hold/HoldScraper";
 import { Modulregnskab } from "../../modules/api/scraper/hold/ModulRegnskabScraper";
 import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { themes } from "../../modules/Themes";
+import { Key } from "../../modules/api/storage/Storage";
 
 export default function ModulRegnskab() {
     const [ loading, setLoading ] = useState<boolean>(false);
@@ -26,15 +27,27 @@ export default function ModulRegnskab() {
             const out: Modulregnskab[] = [];
 
             for(let hold of profile.hold) {
-                await scrapeModulRegnskab(gym.gymNummer, hold.holdId).then((modulRegnskab) => {
+                await getIfCachedOrDefault<Modulregnskab>(Key.MODULREGNSKAB, hold.holdId).then((modulRegnskab) => {
                     if(modulRegnskab != null && modulRegnskab.held != 0) {
                         out.push(modulRegnskab)
                     }
-                });
+                })
             }
 
-            setModulRegnskab([...out])
+            if(out.length === 0) {
+                for(let hold of profile.hold) {
+                    await scrapeModulRegnskab(gym.gymNummer, hold.holdId, true).then((modulRegnskab) => {
+                        if(modulRegnskab != null && modulRegnskab.held != 0) {
+                            out.push(modulRegnskab)
+                        }
+                    });
+                }
+            } else {
+                setRefreshing(true);
+            }
             setLoading(false);
+
+            setModulRegnskab([...out])
         })();
     }, [])
 

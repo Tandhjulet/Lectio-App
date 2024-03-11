@@ -21,6 +21,8 @@ export enum Key {
     FORSIDE,
 
     HOLD_MEMBERS,
+
+    REGISTRATION,
 }
 
 export type SaveStructure = {

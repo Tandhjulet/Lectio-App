@@ -6,12 +6,10 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ## Prioriteringer/mangler ved appen
 
 ### __HØJ__
-- abonnement
 
 ### __MELLEM__
 - push notifs
 - login på lort net giver sort skærm
-- url på beskeder
 
 ### __LAV__
 - spørgeskemaer

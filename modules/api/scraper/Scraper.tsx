@@ -12,7 +12,7 @@ import { Hold, holdScraper, scrapeHoldListe } from './hold/HoldScraper';
 import { HEADERS, SCRAPE_URLS, getASPHeaders, parseASPHeaders } from './Helpers';
 import { Opgave, OpgaveDetails, scrapeOpgave, scrapeOpgaver } from './OpgaveScraper';
 import { modulRegnskabScraper, Modulregnskab } from './hold/ModulRegnskabScraper';
-import { Key, getSaved, saveFetch } from '../storage/Storage';
+import { Key, Result, getSaved, saveFetch } from '../storage/Storage';
 import { Timespan } from '../storage/Timespan';
 import { CacheParams, scrapePeople, stringifyCacheParams } from './cache/CacheScraper';
 import { Person } from './class/ClassPictureScraper';
@@ -40,6 +40,14 @@ export async function scrapeCache(gymNummer: string, params?: CacheParams): Prom
     await saveFetch(Key.CACHE_PEOPLE, people, Timespan.HOUR * 3, params == undefined ? "" : ("?" + stringifyCacheParams(params)));
 
     return people;
+}
+
+export async function getIfCachedOrDefault<V>(key: Key, identifier: string = ""): Promise<V | null> {
+    const saved = await getSaved(key, identifier);
+    if(saved.valid)
+        return saved.value;
+
+    return null;
 }
 
 export async function scrapeHold(holdId: string, gymNummer: string, bypassCache: boolean = false) {
@@ -491,8 +499,7 @@ export async function getAbsence(gymNummer: string, bypassCache: boolean = false
     };
 }
 
-export async function getAbsenceRegistration(gymNummer: string, bypassCache: boolean = false): Promise<Registration[]> {
-    
+export async function getAbsenceRegistration(gymNummer: string): Promise<Registration[]> { 
     const res = await fetch(SCRAPE_URLS(gymNummer).ABSENCE_REGISTRATION, {
         method: "GET",
         credentials: 'include',
@@ -504,7 +511,7 @@ export async function getAbsenceRegistration(gymNummer: string, bypassCache: boo
     const parser = await treat(res);
     const registration = scapeRegistration(parser);
 
-    return registration;
+    return registration
 }
 
 export function getWeekNumber(d: any): number {
