@@ -18,7 +18,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ### __OPTIMERINGER__
 - optimer søge algoritme i elev og lære listen
 - optimer skemaets parsing algoritme af moduler
-- optimer modulregnskab
 
 ### __KAN IKKE LAVE ENDNU__
 - karakterer

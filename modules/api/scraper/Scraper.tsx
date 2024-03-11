@@ -491,7 +491,7 @@ export async function getAbsence(gymNummer: string, bypassCache: boolean = false
     const absence = scrapeAbsence(parser);
 
     if(absence != null)
-        await saveFetch(Key.FRAVÆR, absence, Timespan.MINUTE * 5)
+        await saveFetch(Key.FRAVÆR, absence, Timespan.HOUR)
 
     return {
         payload: absence,
@@ -499,7 +499,14 @@ export async function getAbsence(gymNummer: string, bypassCache: boolean = false
     };
 }
 
-export async function getAbsenceRegistration(gymNummer: string): Promise<Registration[]> { 
+export async function getAbsenceRegistration(gymNummer: string, bypassCache: boolean = false): Promise<Registration[]> { 
+    if(!bypassCache) {
+        const saved = await getSaved(Key.REGISTRATION);
+        if(saved.valid && saved.value != null) {
+            return saved.value;
+        }   
+    }
+
     const res = await fetch(SCRAPE_URLS(gymNummer).ABSENCE_REGISTRATION, {
         method: "GET",
         credentials: 'include',
@@ -510,6 +517,10 @@ export async function getAbsenceRegistration(gymNummer: string): Promise<Registr
 
     const parser = await treat(res);
     const registration = scapeRegistration(parser);
+
+    if(registration != null) {
+        await saveFetch(Key.REGISTRATION, registration, Timespan.HOUR)
+    }
 
     return registration
 }

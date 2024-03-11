@@ -24,7 +24,7 @@ import { useFocusEffect } from "@react-navigation/native";
 export default function Mere({ navigation }: {navigation: any}) {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
-    const [loadingSubscription, setLoadingSubscription] = useState<boolean>(true);
+    const [loadingSubscription, setLoadingSubscription] = useState<boolean>(false);
 
     const { signOut } = useContext(AuthContext);
     const { subscriptionState, dispatchSubscription } = useContext(SubscriptionContext);

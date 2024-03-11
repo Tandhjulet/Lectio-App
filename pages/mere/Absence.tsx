@@ -199,6 +199,39 @@ export default function Absence({ navigation }: { navigation: any }) {
 
     const [ sendLoading, setSendLoading ] = useState<boolean>(false);
 
+    const handleAbsenceData = useCallback((payload: Fag[], out: ChartedAbsence) => {
+        const almindeligt = [...payload.map(load => load.almindeligt).filter((modul) => modul.absent > 0)].sort((a,b) => {
+            return b.absent - a.absent;
+        });
+
+        const skriftligt = [...payload.map(load => load.skriftligt)].filter((modul) => modul.absent > 0).sort((a,b) => {
+            return b.absent - a.absent;
+        });
+
+        almindeligt.forEach((fag: ModuleAbsence) => {
+            out.almindeligt.absent += fag.absent;
+            out.almindeligt.teams.push(fag.team); 
+        })
+
+        skriftligt.forEach((fag: ModuleAbsence) => {
+            out.skriftligt.absent += fag.absent;
+            out.skriftligt.teams.push(fag.team);
+        })
+
+        payload.forEach((fag: Fag) => {
+            out.almindeligt.settled += fag.almindeligt.settled;
+            out.almindeligt.yearly += fag.almindeligt.yearly;
+
+            out.skriftligt.settled += fag.skriftligt.settled;
+            out.skriftligt.yearly += fag.skriftligt.yearly;
+        })
+
+        setAlmindeligt(almindeligt);
+        setSkriftligt(skriftligt);
+
+        setChartedAbsence(out);
+    }, [])
+
     /**
      * Fetches the absence on page load
      */
@@ -223,42 +256,13 @@ export default function Absence({ navigation }: { navigation: any }) {
             
             const gymNummer = (await secureGet("gym")).gymNummer;
 
-            getAbsence(gymNummer, true).then(({ payload, rateLimited }): any => {
+            await getAbsence(gymNummer).then(({ payload, rateLimited }): any => {
                 setRateLimited(rateLimited)
                 if(payload == null) {
                     return;
                 }
 
-                const almindeligt = [...payload.map(load => load.almindeligt).filter((modul) => modul.absent > 0)].sort((a,b) => {
-                    return b.absent - a.absent;
-                });
-
-                const skriftligt = [...payload.map(load => load.skriftligt)].filter((modul) => modul.absent > 0).sort((a,b) => {
-                    return b.absent - a.absent;
-                });
-
-                almindeligt.forEach((fag: ModuleAbsence) => {
-                    out.almindeligt.absent += fag.absent;
-                    out.almindeligt.teams.push(fag.team); 
-                })
-
-                skriftligt.forEach((fag: ModuleAbsence) => {
-                    out.skriftligt.absent += fag.absent;
-                    out.skriftligt.teams.push(fag.team);
-                })
-
-                payload.forEach((fag: Fag) => {
-                    out.almindeligt.settled += fag.almindeligt.settled;
-                    out.almindeligt.yearly += fag.almindeligt.yearly;
-
-                    out.skriftligt.settled += fag.skriftligt.settled;
-                    out.skriftligt.yearly += fag.skriftligt.yearly;
-                })
-
-                setAlmindeligt(almindeligt);
-                setSkriftligt(skriftligt);
-
-                setChartedAbsence(out);
+                handleAbsenceData(payload, out);
                 setLoading(false);
             })
 
@@ -267,10 +271,11 @@ export default function Absence({ navigation }: { navigation: any }) {
             
             getAbsenceRegistration(gymNummer).then((res: Registration[]) => {
 
-                res.sort((a, b) => (b.registered.valueOf() + b.modulStartTime.valueOf()) - (a.registered.valueOf() + a.modulStartTime.valueOf()));
-
                 const out: {[id: string]: Registration[]} = {};
                 res.forEach((reg) => {
+                    if(typeof reg.registered === "string") reg.registered = new Date(reg.registered);
+                    if(typeof reg.modulStartTime === "string") reg.modulStartTime = new Date(reg.modulStartTime);
+
                     const str = reg.registered.toLocaleDateString("da-DK").replace(".", "/").replace(".", "-")
 
                     if(!(str in out)) 
@@ -279,8 +284,11 @@ export default function Absence({ navigation }: { navigation: any }) {
                     out[str].push(reg);
                 })
 
+                res.sort((a, b) => (b.registered.valueOf() + b.modulStartTime.valueOf()) - (a.registered.valueOf() + a.modulStartTime.valueOf()));
+
                 setRemappedRegs(out);
             })
+            
 
         });
         
@@ -914,15 +922,20 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                                 borderColor: color,
                                                                 borderWidth: 2,
 
-                                                                position: "relative"
+                                                                position: "relative",
                                                             }}>
-                                                                <PieChart data={[{
-                                                                    value: parseFloat(reg.absence),
-                                                                    color: hexToRgb(color, 0.2),
-                                                                }, {
-                                                                    value: 100-parseFloat(reg.absence),
-                                                                    color: theme.BLACK.toString(),
-                                                                }]} radius={30} />
+                                                                <View style={{
+                                                                    height: 60,
+                                                                    width: 60,
+                                                                }}>
+                                                                    <PieChart data={[{
+                                                                        value: parseFloat(reg.absence),
+                                                                        color: hexToRgb(color, 0.2),
+                                                                    }, {
+                                                                        value: 100-parseFloat(reg.absence),
+                                                                        color: theme.BLACK.toString(),
+                                                                    }]} radius={30} />
+                                                                </View>
 
                                                                 <View style={{
                                                                     position: "absolute",
