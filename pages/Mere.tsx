@@ -47,7 +47,7 @@ export default function Mere({ navigation }: {navigation: any}) {
             } else {
                 dispatchSubscription({ type: result ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
             }
-            setEndDate(endDate)
+            setEndDate(endDate ?? new Date())
             setLoadingSubscription(false);
         })();
     }, [])
@@ -65,7 +65,7 @@ export default function Mere({ navigation }: {navigation: any}) {
             }
             setLoadingSubscription(false);
 
-            setEndDate(endDate)
+            setEndDate(endDate ?? new Date())
         })();
     }, [loadingSubscription])
 

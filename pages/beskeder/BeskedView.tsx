@@ -1,5 +1,5 @@
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View, useColorScheme } from "react-native";
-import { LectioMessage, ThreadMessage } from "../../modules/api/scraper/MessageScraper";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View, useColorScheme } from "react-native";
+import { LectioMessage, TextComponent, ThreadMessage } from "../../modules/api/scraper/MessageScraper";
 import { NavigationProp, RouteProp } from "@react-navigation/native";
 import { hexToRgb, themes } from "../../modules/Themes";
 import { useCallback, useEffect, useState } from "react";
@@ -10,6 +10,9 @@ import { UserIcon } from "react-native-heroicons/solid";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
 import ProfilePicture from "../../components/ProfilePicture";
+import * as WebBrowser from 'expo-web-browser';
+import { WebBrowserPresentationStyle } from "expo-web-browser";
+
 
 /**
  * Removes the extra data associated to each name
@@ -80,6 +83,12 @@ export default function BeskedView({ navigation, route }: {
 
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
+
+    const cleanURL = (url: string) => {
+        if(url.endsWith("'")) url = url.slice(0,url.length-1);
+        if(url.startsWith("'")) url = url.slice(1,url.length);
+        return url;
+    }
 
     return (
         <View style={{
@@ -154,10 +163,52 @@ export default function BeskedView({ navigation, route }: {
                                         marginHorizontal: 5,
                                     }} />
         
-                                    <Text style={{
-                                        color: theme.WHITE,
-                                    }}>
-                                        {message.body}
+                                    <Text>
+                                        {message.body.map((component: TextComponent, index: number) => {
+                                            if(component.isBreakLine)
+                                                return (
+                                                    <Text 
+                                                        key={index}
+                                                    >
+                                                        {"\n"}
+                                                    </Text>
+                                                )
+                                            if(component.isLink) {
+                                                return (
+                                                    <Text
+                                                        key={index}
+                                                        onPress={() => {
+                                                            if(component.url == null) return;
+
+                                                            WebBrowser.openBrowserAsync(cleanURL(component.url), {
+                                                                controlsColor: theme.ACCENT.toString(),
+                                                                dismissButtonStyle: "close",
+                                                                presentationStyle: WebBrowserPresentationStyle.POPOVER,
+                    
+                                                                toolbarColor: theme.ACCENT_BLACK.toString(),
+                                                            })
+                                                        }}
+                                                        style={{
+                                                            color: "lightblue"
+                                                        }}
+                                                    >
+                                                        {component.inner?.trim()}
+                                                    </Text>
+                                                )
+                                            }
+
+                                            return (
+                                                <Text
+                                                    key={index}
+                                                    style={{
+                                                        color: theme.WHITE,
+                                                    }}
+                                                >
+                                                    {component.inner?.trim()}
+                                                </Text>
+                                            )
+                                            
+                                        })}
                                     </Text>
                             </View>
                         </View>

@@ -1,3 +1,5 @@
+import { StringOmit } from "@rneui/base";
+
 export type LectioMessage = {
     title: string,
     sender: string,
@@ -8,11 +10,20 @@ export type LectioMessage = {
     messageId: string,
 }
 
-export function scrapeHelper(elements:any) {
-    let out: string = "";
+export function scrapeHelper(elements:any, opts?: {
+    isLink: boolean,
+    url: string,
+}): TextComponent[] {
+    let out: TextComponent[] = [];
+
     for(let child of elements) {
         if(child.tagName == "br") {
-            out += "\n"
+            out.push({
+                inner: "",
+                isBreakLine: true,
+                isLink: false,
+                url: null,
+            })
         } else if ( child.tagName == "a" ||
                     (child.classList != null && (
                         child.classList.includes("'bb_b'") ||
@@ -21,10 +32,21 @@ export function scrapeHelper(elements:any) {
                         child.classList.includes("message-attachements")
                     ))) // nemt at forstå 
         {
-            out += scrapeHelper(child.children);
+            scrapeHelper(child.children, {
+                // if it was already defined as a link dont override, otherwise check
+                isLink: opts?.isLink === true ? true : child.tagName === "a",
+                url: (child.tagName === "a") ? child.attributes.href : null,
+            }).forEach((v) => {
+                out.push(v);
+            })
         } else {
             const text: string = child.text;
-            out += text.trim();
+            out.push({
+                inner: text,
+                isBreakLine: false,
+                isLink: opts?.isLink ?? false,
+                url: opts?.url ?? null,
+            })
         }
     }
     return out;
@@ -49,7 +71,7 @@ export async function scrapeMessage(parser: any): Promise<ThreadMessage[] | null
         const sender: string = gridRowMessage.firstChild.firstChild.firstChild.text.trim();
         const time: string = gridRowMessage.firstChild.lastChild.text.trim();
 
-        const body: string = scrapeHelper(gridRowMessage.lastChild.firstChild.firstChild.lastChild.children);
+        const body: TextComponent[] = scrapeHelper(gridRowMessage.lastChild.firstChild.firstChild.lastChild.children);
         const title: string = gridRowMessage.lastChild.firstChild.firstChild.firstChild.firstChild.lastChild.firstChild.text;
 
         out.push({
@@ -122,5 +144,12 @@ export type ThreadMessage = {
     sender: string,
     date: string,
     title: string,
-    body: string,
+    body: TextComponent[],
+}
+
+export type TextComponent = {
+    inner: string | null,
+    isBreakLine: boolean,
+    isLink: boolean,
+    url: string | null,
 }

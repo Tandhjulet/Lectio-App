@@ -7,11 +7,11 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 
 ### __HØJ__
 - abonnement
-- opdater privatlivspolitik
 
 ### __MELLEM__
 - push notifs
 - login på lort net giver sort skærm
+- url på beskeder
 
 ### __LAV__
 - spørgeskemaer

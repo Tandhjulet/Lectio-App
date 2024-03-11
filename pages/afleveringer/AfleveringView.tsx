@@ -197,7 +197,7 @@ export default function AfleveringView({ navigation, route }: {
                                                     cellContentView={
                                                         <>
                                                             <Text style={{
-                                                                color: theme.WHITE,
+                                                                color: scheme === "dark" ? "#fff" : "#000",
                                                                 paddingBottom: 5,
                                                                 paddingTop: 8,
                                                                 fontSize: 16,

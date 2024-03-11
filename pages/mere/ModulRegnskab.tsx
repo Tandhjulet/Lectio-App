@@ -101,6 +101,8 @@ export default function ModulRegnskab() {
                             hideSurroundingSeparators
                         >
                             {modulRegnskab?.map((modul: Modulregnskab, index: number) => {
+                                const width = parseFloat(modul.afvigelse.replace("%", "").replace(",", "."));
+
                                 return (
                                     <Cell
                                         key={index}
@@ -117,11 +119,12 @@ export default function ModulRegnskab() {
                                                 justifyContent: "space-between",
                                                 alignItems: "center",
 
+                                                paddingTop: 5,
+
                                                 flexDirection: "row",
                                                 width: "100%",
                                             }}>
                                                 <View style={{
-                                                    flexGrow: 1,
                                                 }}>
                                                     <Text style={{
                                                         color: theme.WHITE,
@@ -147,25 +150,49 @@ export default function ModulRegnskab() {
 
                                                     flexDirection: "column",
 
-                                                    paddingTop: 12,
-
                                                     gap: 5,
                                                     flexGrow: 1,
                                                 }}>
                                                     <View style={{
-                                                        width: 125,
+                                                        display: "flex",
+                                                        justifyContent: "space-between",
+                                                        flexDirection: "row",
+
+                                                        width: 150,
+                                                    }}>
+                                                        <Text style={{
+                                                            color: theme.LIGHT,
+                                                        }}>
+                                                            -75%
+                                                        </Text>
+
+                                                        <Text style={{
+                                                            color: theme.LIGHT,
+                                                        }}>
+                                                            75%
+                                                        </Text>
+                                                    </View>
+                                                    
+                                                    <View style={{
+                                                        width: 150,
                                                         height: 5,
                                                         backgroundColor: theme.LIGHT,
                                                         borderRadius: 100,
 
-                                                        position: "relative"
+                                                        position: "relative",
+                                                        overflow: "hidden",
                                                     }}>
                                                         <View style={{
-                                                            height: "100%",
-                                                            width: parseFloat(modul.afvigelse.replace("%", "").replace(",", ".")) + (125/2),
-                                                            borderRadius: 100,
+                                                            height: 5,
+                                                            width: Math.abs(width),
+                                                            transform: [{
+                                                                translateX: width < 0 ? width+0.5 : 0,
+                                                            }],
 
                                                             backgroundColor: theme.DARK,
+
+                                                            position: "absolute",
+                                                            left: "50%",
                                                         }} />
 
                                                         <View

@@ -1,5 +1,4 @@
 import { getASPHeaders } from "./Helpers";
-import { scrapeHelper } from "./MessageScraper";
 import { parseDate } from "./OpgaveScraper";
 import { parseInfoString, replaceHTMLEntities } from "./SkemaScraper";
 
@@ -7,7 +6,7 @@ export function scrapeAbsence(parser: any): Fag[] | null {
     const table = parser.getElementById("s_m_Content_Content_SFTabStudentAbsenceDataTable");
     if(table == null)
         return null;
-
+ 
     const tableData = table.children;
 
     const out: Fag[] = []
@@ -176,6 +175,27 @@ export async function postRegistration(reg: AbsenceRegistration, url: string, gy
     });
 }
 
+function scrapeHelper(elements:any) {
+    let out: string = "";
+    for(let child of elements) {
+        if(child.tagName == "br") {
+            out += "\n"
+        } else if ( child.tagName == "a" ||
+                    (child.classList != null && (
+                        child.classList.includes("'bb_b'") ||
+                        child.classList.includes("'bb_i'") ||
+                        child.classList.includes("'bb_u'") ||
+                        child.classList.includes("message-attachements")
+                    ))) // nemt at forstå 
+        {
+            out += scrapeHelper(child.children);
+        } else {
+            const text: string = child.text;
+            out += text.trim();
+        }
+    }
+    return out;
+}
 
 export function scapeRegistration(parser: any): Registration[] {
     const tables = parser.getElementsByClassName("ls-table-layout1");

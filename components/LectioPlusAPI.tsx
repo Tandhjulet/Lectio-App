@@ -33,10 +33,11 @@ export default async function receiptValid(receipt: string): Promise<boolean> {
     return true;
 }
 
-export async function hasSubscription(save: boolean = true): Promise<{result: boolean | null, endDate?: Date}> {
+export async function hasSubscription(save: boolean = true): Promise<{result: boolean | null, endDate: Date | null}> {
     const userId = await secureGet("userId");
     if(!userId) return {
         result: false,
+        endDate: null,
     };
 
     const body = JSON.stringify({
@@ -53,6 +54,7 @@ export async function hasSubscription(save: boolean = true): Promise<{result: bo
 
     if(res.status != 200) return {
         result: null,
+        endDate: null,
     };;
 
     const json = await res.json();
