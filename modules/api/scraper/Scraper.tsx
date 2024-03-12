@@ -94,7 +94,7 @@ export async function scrapeModulRegnskab(gymNummer: string, holdId: string, byp
     const hold = await modulRegnskabScraper(parser);
 
     if(hold != null)
-        await saveFetch(Key.MODULREGNSKAB, hold, Timespan.HOUR * 3, holdId);
+        await saveFetch(Key.MODULREGNSKAB, hold, -1, holdId);
     
     return hold;
 }

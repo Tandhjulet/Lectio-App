@@ -1,4 +1,4 @@
-import { ActivityIndicator, Animated, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useColorScheme } from "react-native";
+import { ActivityIndicator, Animated, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, useColorScheme } from "react-native";
 import NavigationBar from "../../components/Navbar";
 import { ReactElement, RefObject, createRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getAbsence, getAbsenceRegistration } from "../../modules/api/scraper/Scraper";
@@ -396,11 +396,11 @@ export default function Absence({ navigation }: { navigation: any }) {
         (async () => {
             const gymNummer = (await secureGet("gym")).gymNummer;
             getAbsenceRegistration(gymNummer).then((res: Registration[]) => {
-
-                res.sort((a, b) => (b.registered.valueOf() + b.modulStartTime.valueOf()) - (a.registered.valueOf() + a.modulStartTime.valueOf()));
-                
                 const out: {[id: string]: Registration[]} = {};
                 res.forEach((reg) => {
+                    if(typeof reg.registered === "string") reg.registered = new Date(reg.registered);
+                    if(typeof reg.modulStartTime === "string") reg.modulStartTime = new Date(reg.modulStartTime);
+
                     const str = reg.registered.toLocaleDateString("da-DK").replace(".", "/").replace(".", "-")
 
                     if(!(str in out)) 
@@ -408,6 +408,8 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                     out[str].push(reg);
                 })
+
+                res.sort((a, b) => (b.registered.valueOf() + b.modulStartTime.valueOf()) - (a.registered.valueOf() + a.modulStartTime.valueOf()));
 
                 setRemappedRegs(out);
 
@@ -421,6 +423,25 @@ export default function Absence({ navigation }: { navigation: any }) {
 
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
+
+    const handlePress = (reg: Registration) => {
+        bottomSheetAbsenceRegistrationRef.current?.dismiss();
+
+        setRegistration(reg);
+        setCommentField(reg.studentNote?.split("\n").slice(1).join("\n"));
+
+        if(reg.studentProvidedReason) {
+            let note = reg.studentNote?.split("\n")[0]?.toLowerCase();
+            if(note?.toLowerCase() == "skolerelaterede aktiviteter")
+                note = "skolerelateret";
+
+            setAbsenceReason(AbsenceReason[note?.replaceAll(" ", "_").toUpperCase() as keyof typeof AbsenceReason]);
+        } else {
+            setAbsenceReason(null);
+        }
+
+        bottomSheetModalRef.current?.present();
+    }
 
     return (
         <GestureHandlerRootView>
@@ -886,147 +907,135 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                     const color = fraværColors[colorIndex];
 
                                                     return (
-                                                        <Pressable style={{
-                                                            paddingVertical: 10,
-                                                            paddingLeft: 0,
-
-                                                            borderBottomColor: hexToRgb(theme.WHITE.toString(), 0.2),
-                                                            borderBottomWidth: i+1 == remappedRegs[key].length ? StyleSheet.hairlineWidth : 0,
-
-                                                            display: "flex",
-                                                            flexDirection: "row",
-                                                            alignItems: "center",
-
-                                                            width: "100%",
-                                                            gap: 15,
-                                                        }} key={i} onPress={() => {
-                                                            bottomSheetAbsenceRegistrationRef.current?.dismiss();
-
-                                                            setRegistration(reg);
-                                                            setCommentField(reg.studentNote?.split("\n").slice(1).join("\n"));
-
-                                                            if(reg.studentProvidedReason) {
-                                                                let note = reg.studentNote?.split("\n")[0]?.toLowerCase();
-                                                                if(note?.toLowerCase() == "skolerelaterede aktiviteter")
-                                                                    note = "skolerelateret";
-
-                                                                setAbsenceReason(AbsenceReason[note?.replaceAll(" ", "_").toUpperCase() as keyof typeof AbsenceReason]);
-                                                            } else {
-                                                                setAbsenceReason(null);
-                                                            }
-
-                                                            bottomSheetModalRef.current?.present();
-                                                        }}>
+                                                        <TouchableOpacity
+                                                            key={i}
+                                                            onPress={() => handlePress(reg)}
+                                                        >
                                                             <View style={{
-                                                                borderRadius: 999,
-                                                                borderColor: color,
-                                                                borderWidth: 2,
+                                                                paddingVertical: 10,
+                                                                paddingLeft: 0,
 
-                                                                position: "relative",
-                                                            }}>
-                                                                <View style={{
-                                                                    height: 60,
-                                                                    width: 60,
-                                                                }}>
-                                                                    <PieChart data={[{
-                                                                        value: parseFloat(reg.absence),
-                                                                        color: hexToRgb(color, 0.2),
-                                                                    }, {
-                                                                        value: 100-parseFloat(reg.absence),
-                                                                        color: theme.BLACK.toString(),
-                                                                    }]} radius={30} />
-                                                                </View>
+                                                                borderBottomColor: hexToRgb(theme.WHITE.toString(), 0.2),
+                                                                borderBottomWidth: i+1 == remappedRegs[key].length ? StyleSheet.hairlineWidth : 0,
 
-                                                                <View style={{
-                                                                    position: "absolute",
-                                                                    width: 60, // width and width of chart is 60 if radius is 30
-                                                                    height: 60,
-
-                                                                    display: "flex",
-                                                                    justifyContent: "center",
-                                                                    alignItems: "center",
-                                                                }}>
-                                                                    <Text style={{
-                                                                        color: color,
-                                                                        fontFamily: "bold",
-                                                                        letterSpacing: 0.6,
-                                                                    }}>
-                                                                        {reg.absence}%
-                                                                    </Text>
-                                                                </View>
-                                                            </View>
-
-                                                            <View style={{
                                                                 display: "flex",
-                                                                gap: 5,
+                                                                flexDirection: "row",
+                                                                alignItems: "center",
 
                                                                 width: "100%",
-                                                            }}>
+                                                                gap: 15,
+                                                            }} key={i}>
+                                                                <View style={{
+                                                                    borderRadius: 999,
+                                                                    borderColor: color,
+                                                                    borderWidth: 2,
+
+                                                                    position: "relative",
+                                                                }}>
+                                                                    <View style={{
+                                                                        height: 60,
+                                                                        width: 60,
+                                                                    }}>
+                                                                        <PieChart data={[{
+                                                                            value: parseFloat(reg.absence),
+                                                                            color: hexToRgb(color, 0.2),
+                                                                        }, {
+                                                                            value: 100-parseFloat(reg.absence),
+                                                                            color: theme.BLACK.toString(),
+                                                                        }]} radius={30} />
+                                                                    </View>
+
+                                                                    <View style={{
+                                                                        position: "absolute",
+                                                                        width: 60, // width and width of chart is 60 if radius is 30
+                                                                        height: 60,
+
+                                                                        display: "flex",
+                                                                        justifyContent: "center",
+                                                                        alignItems: "center",
+                                                                    }}>
+                                                                        <Text style={{
+                                                                            color: color,
+                                                                            fontFamily: "bold",
+                                                                            letterSpacing: 0.6,
+                                                                        }}>
+                                                                            {reg.absence}%
+                                                                        </Text>
+                                                                    </View>
+                                                                </View>
+
                                                                 <View style={{
                                                                     display: "flex",
-                                                                    flexDirection: "row",
-
-                                                                    justifyContent: "space-between",
-                                                                    alignItems: "center",
-
-                                                                    paddingRight: 15*5,
+                                                                    gap: 5,
 
                                                                     width: "100%",
                                                                 }}>
-                                                                    <Text style={{
-                                                                        color: theme.WHITE,
-                                                                        fontSize: 15,
-                                                                        fontWeight: "bold",
-                                                                        letterSpacing: 0.5,
+                                                                    <View style={{
+                                                                        display: "flex",
+                                                                        flexDirection: "row",
 
-                                                                        flex: 0,
+                                                                        justifyContent: "space-between",
+                                                                        alignItems: "center",
+
+                                                                        paddingRight: 15*5,
+
+                                                                        width: "100%",
                                                                     }}>
-                                                                        {reg.modul}
-                                                                    </Text>
+                                                                        <Text style={{
+                                                                            color: theme.WHITE,
+                                                                            fontSize: 15,
+                                                                            fontWeight: "bold",
+                                                                            letterSpacing: 0.5,
 
-                                                                    <Text style={{
-                                                                        color: hexToRgb(theme.WHITE.toString(), 0.6),
-                                                                        fontSize: 15,
+                                                                            flex: 0,
+                                                                        }}>
+                                                                            {reg.modul}
+                                                                        </Text>
 
-                                                                        flex: 0,
+                                                                        <Text style={{
+                                                                            color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                                            fontSize: 15,
+
+                                                                            flex: 0,
+                                                                        }}>
+                                                                            {reg.modulStartTime?.toLocaleTimeString("de-DK", {
+                                                                                hour: "2-digit",
+                                                                                minute: "2-digit",
+                                                                            })}
+                                                                        </Text>
+                                                                    </View>
+
+                                                                    <View style={{
+                                                                        backgroundColor: hexToRgb(color, 0.2),
+
+                                                                        paddingHorizontal: 20,
+                                                                        paddingVertical: 10,
+
+                                                                        borderRadius: 5,
+                                                                        alignSelf: "flex-start",
                                                                     }}>
-                                                                        {reg.modulStartTime?.toLocaleTimeString("de-DK", {
-                                                                            hour: "2-digit",
-                                                                            minute: "2-digit",
-                                                                        })}
-                                                                    </Text>
-                                                                </View>
-
-                                                                <View style={{
-                                                                    backgroundColor: hexToRgb(color, 0.2),
-
-                                                                    paddingHorizontal: 20,
-                                                                    paddingVertical: 10,
-
-                                                                    borderRadius: 5,
-                                                                    alignSelf: "flex-start",
-                                                                }}>
-                                                                    <Text style={{
-                                                                        color: color,
-                                                                        flex: 0,
-
-                                                                        fontWeight: "bold",
-                                                                    }}>
-                                                                        {!reg.studentProvidedReason ? "Ikke angivet" : reg.studentNote?.split("\n")[0]}
-                                                                    </Text>
-                                                                    {reg.studentNote?.split("\n").length == 2 && (
                                                                         <Text style={{
                                                                             color: color,
                                                                             flex: 0,
 
-                                                                            fontWeight: "normal",
+                                                                            fontWeight: "bold",
                                                                         }}>
-                                                                            {reg.studentNote.split("\n")[1]}
+                                                                            {!reg.studentProvidedReason ? "Ikke angivet" : reg.studentNote?.split("\n")[0]}
                                                                         </Text>
-                                                                    )}
+                                                                        {reg.studentNote?.split("\n").length == 2 && (
+                                                                            <Text style={{
+                                                                                color: color,
+                                                                                flex: 0,
+
+                                                                                fontWeight: "normal",
+                                                                            }}>
+                                                                                {reg.studentNote.split("\n")[1]}
+                                                                            </Text>
+                                                                        )}
+                                                                    </View>
                                                                 </View>
                                                             </View>
-                                                        </Pressable>
+                                                        </TouchableOpacity>
                                                     )
                                                 })}
                                             </View>
