@@ -9,13 +9,12 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 
 ### __MELLEM__
 - push notifs
-- login på lort net giver sort skærm
+- gør så appen kan bruges uden/med manglende internet
+- fravær registering er lidt langsomt
 
 ### __LAV__
 - spørgeskemaer
 - dokumenter
-
-### __OPTIMERINGER__
 - optimer søge algoritme i elev og lære listen
 - optimer skemaets parsing algoritme af moduler
 

@@ -1,72 +1,21 @@
-import { ActivityIndicator, FlatList, Image, ImageBackground, Modal, Pressable, ScrollView, SectionList, StyleSheet, Text, TextInput, TouchableHighlight, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
+import { ActivityIndicator, FlatList, Image, ImageBackground, Modal, Pressable, ScrollView, SectionList, SectionListData, StyleSheet, Text, TextInput, TouchableHighlight, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../../components/Navbar";
-import React, { memo, useCallback, useEffect, useState } from "react";
+import React, { Suspense, memo, useCallback, useEffect, useState } from "react";
 import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import { themes } from "../../modules/Themes";
+import { Theme, themes } from "../../modules/Themes";
 import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import ProfilePicture from "../../components/ProfilePicture";
 
-/**
- * returns the given object with keys sorted alphanumerically.
- * @param obj the object to sort
- * @returns the sorted object
- * @author sinclairzx81 <https://stackoverflow.com/users/8525946/sinclairzx81>
- */
-const sort = (obj: any) => Object.keys(obj).sort()
-        .reduce((acc: any, c: any) => { acc[c] = obj[c]; return acc }, {})
+import 'react-native-console-time-polyfill';
 
-/**
- * Formats, sorts and optionally filters data so that it's ready to be rendered
- * @param data data to parse
- * @param contains a string to filter the data with
- * @returns filtered data
- */
-function parseData(data: {[id: string]: Person}): {
-    letter: string,
-    data: Person[];
-}[] {
-    let out: { [id: string] : Person[]} = {}
-  
-    for(let name in data) {
-        if(out[name[0]] == undefined)
-            out[name[0]] = [];
-
-        out[name[0]].push(data[name])
-    }
-
-    for(let key in out) {
-        out[key].sort((a, b) => a.navn.localeCompare(b.navn, "da"));
-    }
-  
-    out = sort(out);
-
-    const formattedOut: {
-        letter: string,
-        data: Person[];
-    }[] = [];
-
-    for(let key in out) {
-        formattedOut.push({
-            letter: key,
-            data: out[key],
-        })
-    }
-
-    return formattedOut;
-}
-
-const UserCell = memo(function UserCell({ index, item, section, gym }: {
-    index: number,
+const UserCell = memo(function UserCell({ item, gym, theme }: {
     item: Person,
-    section: any,
     gym: any,
-
+    theme: Theme
 }) {
-    const scheme = useColorScheme();
-    const theme = themes[scheme ?? "dark"];
 
     return (
         <>
@@ -75,12 +24,6 @@ const UserCell = memo(function UserCell({ index, item, section, gym }: {
                 paddingVertical: 15,
                 
                 backgroundColor: theme.BLACK,
-
-                borderTopLeftRadius: index == 0 ? 20 : 0,
-                borderTopRightRadius: index == 0 ? 20 : 0,
-
-                borderBottomLeftRadius: index == section.data.length - 1 ? 20 : 0,
-                borderBottomRightRadius: index == section.data.length - 1 ? 20 : 0,
 
                 display: 'flex',
                 gap: 10,
@@ -135,47 +78,54 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
         data: Person[];
     }[]>([]);
 
-    const [rawPeople, setRawPeople] = useState<{
-        letter: string,
-        data: Person[];
-    }[]>([]);
-    const [filter, setFilter] = useState<string>("");
+    const [rawPeople, setRawPeople] = useState<{[id: string]: Person}>({});
 
+    const [namelist, setNamelist] = useState<string[]>([]);
+    const [filteredNamelist, setFilteredNamelist] = useState<string[]>([]);
+
+    const [query, setQuery] = useState<string>();
+
+    
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
 
+    const filterSearch = useCallback(function filterSearch(filterText: string, reuse: boolean) {
+        if(reuse && filteredNamelist.length === 0) reuse = false;
 
-    const parseFormattedData = useCallback((data: {
+        setFilteredNamelist((reuse ? filteredNamelist : namelist).filter((name) => {
+            return name.toLowerCase().includes(filterText.toLowerCase());
+        }));
+    }, [filteredNamelist, namelist])
+
+    const parseData = useCallback(function parseData(data: {[id: string]: Person}, list: string[], filter?: string): {
         letter: string,
         data: Person[];
-    }[], contains: string) => {
+    }[] {
         const out: {
             letter: string,
             data: Person[];
         }[] = [];
 
-        data.forEach((v) => {
-            if(contains.length > 0 && (!(contains.toLowerCase().includes(v.letter.toLowerCase()))))
-                return;
+        let letter: string = "";
+        let index: number = 0;
 
-            const i = out.push({
-                letter: v.letter,
-                data: [],
-            })-1;
+        for(let name of list) {
+            if(filter != null && !name.toLowerCase().includes(filter.toLowerCase())) continue;
 
-            for(let person of v.data) {
-                if(contains.length > 0 && (!(person.rawName.toLowerCase().includes(contains.toLowerCase()))))
-                    continue;
+            if(letter != name[0]) {
+                index = out.push({
+                    letter: name[0],
+                    data: [],
+                })-1;
 
-                out[i].data.push(person);
+                letter = name[0];
             }
 
-            if(out[i].data.length === 0)
-                out.pop();
-        })
+            out[index].data.push(data[name]);
+        }
 
         return out;
-    }, [])
+    }, []);
 
     /**
      * Fetches the people to be rendered on page load
@@ -192,26 +142,37 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                 setLoading(false);
                 return;
             }
+            setRawPeople(peopleList)
 
-            const parsedPeople = parseData(peopleList);
-            setRawPeople(parsedPeople)
-            setPeople(parsedPeople)
+            const _namelist = Object.keys(peopleList).sort();
+
+            setNamelist(_namelist)
+            setFilteredNamelist(_namelist);
+
+            setPeople(parseData(peopleList, _namelist))
 
             setLoading(false)
         })();
     }, [])
+
+    const renderItem = useCallback(({ item, index }: {
+        item: string,
+        index: number,
+    }) => <UserCell item={rawPeople[item]} gym={gym} theme={theme} />, [rawPeople]);
+
+    const renderItemSectionList = useCallback(({ item, index }: {
+        item: Person,
+        index: number,
+    }) => <UserCell item={item} gym={gym} theme={theme} />, []);
 
     return (
         <View style={{height: '100%',width:'100%'}}>
             {!loading &&
                 <>
                     <TextInput placeholder="Søg efter lære eller elev..." onChangeText={(text) => {
-                        setFilter(text);
-                        if(text.length > filter.length) {
-                            setPeople(parseFormattedData(people, text));
-                        } else {
-                            setPeople(parseFormattedData(rawPeople, text));
-                        }
+                        filterSearch(text, text.length > (query?.length ?? 0));
+                        setQuery(text);
+                        //setPeople(parseData(rawPeople, namelist, text));
                     }} style={{
                         color: theme.WHITE,
                         fontSize: 15,
@@ -255,56 +216,76 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                                 <View style={{
                                     marginHorizontal: 0,
                                 }}>
-                                    <SectionList
-                                        sections={people}
+                                    {query && query.length > 0 ? (
+                                        <FlatList
+                                            data={filteredNamelist}
+                                            renderItem={renderItem}
+                                            keyExtractor={(item, index) => item + index}
+                                            contentContainerStyle={{ paddingBottom: 200 }}
 
-                                        SectionSeparatorComponent={() => {
-                                            return (
-                                                <View style={{
-                                                    marginVertical: 3,
-                                                }} />
-                                            )
-                                        }}
-                                        renderItem={({item, index, section}) => {
-                                            return <UserCell section={section} item={item} index={index} gym={gym} />
-                                        }}
+                                            getItemLayout={(data, index) => {
+                                                return {length: 70 + StyleSheet.hairlineWidth, offset: index * (70 + StyleSheet.hairlineWidth), index: index}
+                                            }}
 
-                                        renderSectionHeader={(data) => {
-                                            
-                                            return (
-                                                <View style={{
-                                                    paddingTop: 7.5,
-                                                    paddingBottom: 2,
+                                            directionalLockEnabled={true}
+                                            removeClippedSubviews
 
-                                                    backgroundColor: theme.BLACK,
-                                                    opacity: 0.9,
-                                                }}>
-                                                    <Text style={{
-                                                        color: theme.WHITE,
-                                                        fontWeight: "bold",
+                                            maxToRenderPerBatch={1}
+                                            initialNumToRender={8}
+                                            windowSize={3}
+
+                                            keyboardDismissMode="on-drag"
+                                            keyboardShouldPersistTaps="always"
+                                        />
+                                    ) : (
+                                        <SectionList
+                                            sections={people}
+
+                                            SectionSeparatorComponent={() => {
+                                                return (
+                                                    <View style={{
+                                                        marginVertical: 3,
+                                                    }} />
+                                                )
+                                            }}
+                                            renderItem={renderItemSectionList}
+
+                                            renderSectionHeader={(data) => {
+                                                
+                                                return (
+                                                    <View style={{
+                                                        paddingTop: 7.5,
+                                                        paddingBottom: 2,
+
+                                                        backgroundColor: theme.BLACK,
+                                                        opacity: 0.9,
                                                     }}>
-                                                        {data.section.letter.toUpperCase()}
-                                                    </Text>
-                                                </View>
-                                            )
-                                        }}
+                                                        <Text style={{
+                                                            color: theme.WHITE,
+                                                            fontWeight: "bold",
+                                                        }}>
+                                                            {data.section.letter.toUpperCase()}
+                                                        </Text>
+                                                    </View>
+                                                )
+                                            }}
 
-                                        keyExtractor={(item, index) => item.navn + "-" + item.billedeId + ":" + index}
+                                            keyExtractor={(item, index) => item.navn + "-" + item.billedeId + ":" + index}
 
-                                        contentContainerStyle={{ paddingBottom: 200 }}
+                                            getItemLayout={(data, index) => {
+                                                return {length: 70 + StyleSheet.hairlineWidth, offset: index * (70 + StyleSheet.hairlineWidth), index: index}
+                                            }}
 
-                                        getItemLayout={(data, index) => {
-                                            return {length: 70 + StyleSheet.hairlineWidth, offset: index * (70 + StyleSheet.hairlineWidth), index: index}
-                                        }}
+                                            stickySectionHeadersEnabled
+                                            directionalLockEnabled={true}
 
-                                        stickySectionHeadersEnabled={false}
-                                        directionalLockEnabled={true}
+                                            maxToRenderPerBatch={1}
+                                            initialNumToRender={8}
 
-                                        maxToRenderPerBatch={1}
-
-                                        keyboardDismissMode="on-drag"
-                                        keyboardShouldPersistTaps="always"
-                                    />
+                                            keyboardDismissMode="on-drag"
+                                            keyboardShouldPersistTaps="always"
+                                        />
+                                    )}
                                 </View>
                             </>
                         }
