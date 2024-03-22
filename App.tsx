@@ -64,6 +64,7 @@ import UserSettings from './pages/mere/UserSettings';
 import receiptValid, { hasSubscription } from './components/LectioPlusAPI';
 import { SubState, SubscriptionContext } from './modules/Sub';
 import ThankYou from './pages/ThankYou';
+import Grades from './pages/mere/Grades';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -494,6 +495,7 @@ export function MereNavigator() {
         headerShown: false,
       })} />
       <Settings.Screen name={"ModulRegnskab"} component={ModulRegnskab} options={{title: "Modulregnskab"}} />
+      <Settings.Screen name={"Grades"} component={Grades} options={{title: "Karakterer"}} />
       <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Lærere og elever"}} />
     </Settings.Navigator>
   )

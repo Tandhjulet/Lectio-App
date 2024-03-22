@@ -173,7 +173,9 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     }} />
                                 }
                                 accessory="DisclosureIndicator"
-                                isDisabled
+                                onPress={() => {
+                                    navigation.navigate("Grades")
+                                }}
                             />
 
                             <Cell

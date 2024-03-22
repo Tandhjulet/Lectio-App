@@ -17,6 +17,7 @@ import { Timespan } from '../storage/Timespan';
 import { CacheParams, scrapePeople, stringifyCacheParams } from './cache/CacheScraper';
 import { Person } from './class/ClassPictureScraper';
 import treat, { _treat, treatRaw } from './TextTreater';
+import { Grade, parseGrades } from './GradeScraper';
 
 export async function scrapeCache(gymNummer: string, params?: CacheParams): Promise<Person[]> {
     const saved = await getSaved(Key.CACHE_PEOPLE);
@@ -72,6 +73,21 @@ export async function scrapeHold(holdId: string, gymNummer: string, bypassCache:
         await saveFetch(Key.HOLD_MEMBERS, hold, Timespan.DAY, holdId);
 
     return hold;
+}
+
+export async function scrapeGrades(gymNummer: string, elevId: string, bypassCache: boolean = false): Promise<Grade[]> {
+    const res = await fetch(SCRAPE_URLS(gymNummer, elevId).GRADES, {
+        method: "GET",
+        credentials: 'include',
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+        },
+    });
+
+    const parser = await treat(res);
+    const grades = parseGrades(parser);
+
+    return grades;
 }
 
 export async function scrapeModulRegnskab(gymNummer: string, holdId: string, bypassCache: boolean = false): Promise<Modulregnskab | null> {
