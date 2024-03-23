@@ -6,22 +6,17 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ## Prioriteringer/mangler ved appen
 
 ### __HØJ__
-- skema virker ik'
-- lectio plus' server er nede??
+- skema swipe mellem dage virker ikke ordentligt
 
 ### __MELLEM__
 - push notifs
 - gør så appen kan bruges uden/med manglende internet
 - fravær registering er lidt langsomt
-- cache og refreshing af karakterer
 
 ### __LAV__
 - spørgeskemaer
 - dokumenter
 - optimer skemaets parsing algoritme af moduler
-
-### __KAN IKKE LAVE ENDNU__
-- karakterer
 
 ### __KENDTE FEJL__
 - login med forkerte logindetaljer går igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)

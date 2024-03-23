@@ -1,7 +1,7 @@
 import { SCHEMA_SEP_CHAR } from "../../Config";
 
 export function scrapeSchema(parser: any, raw: string): Week | null {
-    const table = parser.getElementById("s_m_Content_Content_SkemaNyMedNavigation_skema_skematabel");
+    const table = parser.getElementById("s_m_Content_Content_SkemaMedNavigation_skema_skematabel");
 
     if(table == null) {
         return null;

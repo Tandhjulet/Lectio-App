@@ -58,6 +58,8 @@ export default function Mere({ navigation }: {navigation: any}) {
         (async () => {
             const { result, endDate } = await hasSubscription();
 
+            console.log(result, endDate);
+
             if(result === null) {
                 dispatchSubscription({ type: "SERVER_DOWN"})
             } else {

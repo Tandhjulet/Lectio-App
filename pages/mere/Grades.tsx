@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useState } from "react"
 import { getProfile, scrapeGrades } from "../../modules/api/scraper/Scraper";
 import { secureGet } from "../../modules/api/Authentication";
-import { ScrollView, StyleSheet, Text, useColorScheme, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { Grade } from "../../modules/api/scraper/GradeScraper";
 import { hexToRgb, Theme, themes } from "../../modules/Themes";
 
@@ -115,6 +115,9 @@ export default function Grades() {
 
     const [grades, setGrades] = useState<Grade[]>();
 
+    const [ loading, setLoading ] = useState<boolean>(true);
+    const [ refreshing, setRefreshing ] = useState<boolean>(false);
+
     const calculateAverage: (title: string, weighted?: boolean) => string = useCallback((title: string, weighted: boolean = true) => {
 
         let accumulator: number = 0;
@@ -139,188 +142,221 @@ export default function Grades() {
 
             const grades = await scrapeGrades(gymNummer, profile.elevId);
             setGrades(grades);
+
+            setLoading(false);
         })();
     }, [])
+
+    useEffect(() => {
+        if(!refreshing) return;
+
+        (async () => {
+            const { gymNummer } = await secureGet("gym");
+            const profile = await getProfile();
+
+            const grades = await scrapeGrades(gymNummer, profile.elevId, true);
+            setGrades(grades);
+            setRefreshing(false);
+        })();
+    }, [refreshing])
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+    }, []);
 
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
 
     return (
-        <ScrollView style={{
-            minHeight: "100%",
-            minWidth: "100%",
-        }}>
-            <View style={{
-                display: "flex",
-                flexDirection: "row",
-            }}>
-                <View style={{
-                    paddingVertical: 15,
-
-                    width: "35%",
-
-                    display: "flex",
-                    flexDirection: "column",
-
-                    alignItems: "center",
-                    backgroundColor: theme.ACCENT_BLACK,
-                }}>
+        <View>
+            <ScrollView style={{
+                minHeight: "100%",
+                minWidth: "100%",
+            }} refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }>
+                {loading ? 
                     <View style={{
-                        borderRightColor: hexToRgb(theme.WHITE.toString(), 0.2),
-                        borderRightWidth: 1,
-                        width: "100%",
-                        paddingHorizontal: 15,
-                        paddingVertical: 5,
+                        marginTop: "50%",
                     }}>
-                        <Text
-                            adjustsFontSizeToFit
-                            minimumFontScale={0.3}
-
-                            style={{
-                                color: theme.WHITE,
-                                fontWeight: "bold",
-                                fontSize: 15,
-                                letterSpacing: 0.4,
-                                textAlign: "center",
-
-                                flexShrink: 1,
-                            }}
-                        >
-                            Fag
-                        </Text>
+                        <ActivityIndicator size={"small"} />
                     </View>
-                </View>
+                    :
+                    <>
+                        <View style={{
+                            display: "flex",
+                            flexDirection: "row",
+                        }}>
+                            <View style={{
+                                paddingVertical: 15,
 
-                <View style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    width: "65%",
-
-                    borderBottomColor: hexToRgb(theme.LIGHT.toString(), 0.6),
-                    borderBottomWidth: StyleSheet.hairlineWidth,
-
-                    backgroundColor: theme.ACCENT_BLACK,
-                }}>
-                    {grades && Object.keys(grades[0].karakterer).map((title, index) => { 
-                        const width = (1-(Object.keys(grades[0].karakterer).length/4))*100;
-
-                        return (
-                            <View key={title + index + "header"} style={{
-                                width: `${width}%`,
+                                width: "35%",
 
                                 display: "flex",
-                                justifyContent: "center",
+                                flexDirection: "column",
+
                                 alignItems: "center",
+                                backgroundColor: theme.ACCENT_BLACK,
                             }}>
                                 <View style={{
                                     borderRightColor: hexToRgb(theme.WHITE.toString(), 0.2),
-                                    borderRightWidth: Object.keys(grades[0].karakterer).length-1 !== index ? 1 : 0,
+                                    borderRightWidth: 1,
                                     width: "100%",
+                                    paddingHorizontal: 15,
                                     paddingVertical: 5,
                                 }}>
-                                    <Text style={{
-                                        color: theme.WHITE,
-                                        textAlign: "center",
-                                    }}>
-                                        {title}
+                                    <Text
+                                        adjustsFontSizeToFit
+                                        minimumFontScale={0.3}
+
+                                        style={{
+                                            color: theme.WHITE,
+                                            fontWeight: "bold",
+                                            fontSize: 15,
+                                            letterSpacing: 0.4,
+                                            textAlign: "center",
+
+                                            flexShrink: 1,
+                                        }}
+                                    >
+                                        Fag
                                     </Text>
                                 </View>
                             </View>
-                        )
-                    })}
-                </View>
-            </View>
 
-            <View style={{
-                display: "flex",
-                flexDirection: "column",
-            }}>
-                {grades?.map((grade: Grade, i: number) => <Cell key={i} grade={grade} theme={theme} />)}
-            </View>
+                            <View style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                width: "65%",
 
-            <View style={{
-                display: "flex",
-                flexDirection: "row",
+                                borderBottomColor: hexToRgb(theme.LIGHT.toString(), 0.6),
+                                borderBottomWidth: StyleSheet.hairlineWidth,
 
-                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.15),
-                alignItems: "center"
-            }}>
-                <View style={{
-                    paddingVertical: 20,
+                                backgroundColor: theme.ACCENT_BLACK,
+                            }}>
+                                {grades && Object.keys(grades[0].karakterer).map((title, index) => { 
+                                    const width = (1-(Object.keys(grades[0].karakterer).length/4))*100;
 
-                    width: "35%",
+                                    return (
+                                        <View key={title + index + "header"} style={{
+                                            width: `${width}%`,
 
-                    display: "flex",
-                    flexDirection: "column",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}>
+                                            <View style={{
+                                                borderRightColor: hexToRgb(theme.WHITE.toString(), 0.2),
+                                                borderRightWidth: Object.keys(grades[0].karakterer).length-1 !== index ? 1 : 0,
+                                                width: "100%",
+                                                paddingVertical: 5,
+                                            }}>
+                                                <Text style={{
+                                                    color: theme.WHITE,
+                                                    textAlign: "center",
+                                                }}>
+                                                    {title}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    )
+                                })}
+                            </View>
+                        </View>
 
-                    alignItems: "center",
-
-                    gap: 7.5,
-
-                }}>
-                    <View style={{
-                        borderRightColor: hexToRgb(theme.WHITE.toString(), 0.2),
-                        borderRightWidth: 1,    
-                        width: "100%",
-                        paddingHorizontal: 15,
-                    }}>
-                        <Text style={{
-                            color: theme.WHITE,
-                            fontWeight: "bold",
-                            fontSize: 15,
-
-                            textAlign: "center",
+                        <View style={{
+                            display: "flex",
+                            flexDirection: "column",
                         }}>
-                            Vægtet gennemsnit
-                        </Text>
-                    </View>
-                </View>
+                            {grades?.map((grade: Grade, i: number) => <Cell key={i} grade={grade} theme={theme} />)}
+                        </View>
 
-                <View style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    width: "65%",
-                }}>
-                    {grades && Object.keys(grades[0].karakterer).map((title, index) => {
-                        const width = (1-(Object.keys(grades[0].karakterer).length/4))*100;
+                        <View style={{
+                            display: "flex",
+                            flexDirection: "row",
 
-                        return (
-                            <View key={title + index + "footer"} style={{
-                                width: `${width}%`,
+                            backgroundColor: hexToRgb(theme.WHITE.toString(), 0.15),
+                            alignItems: "center"
+                        }}>
+                            <View style={{
+                                paddingVertical: 20,
+
+                                width: "35%",
 
                                 display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-
                                 flexDirection: "column",
 
-                                borderRightColor: hexToRgb(theme.WHITE.toString(), 0.2),
-                                borderRightWidth: Object.keys(grades[0].karakterer).length-1 !== index ? 1 : 0,
+                                alignItems: "center",
+
+                                gap: 7.5,
+
                             }}>
-                                <Text style={{
-                                    color: theme.WHITE,
-                                    fontWeight: "bold",
-                                    fontSize: 20,
+                                <View style={{
+                                    borderRightColor: hexToRgb(theme.WHITE.toString(), 0.2),
+                                    borderRightWidth: 1,    
+                                    width: "100%",
+                                    paddingHorizontal: 15,
                                 }}>
-                                    {calculateAverage(title)}
-                                </Text>
-                                
-                                <Text style={{
-                                    color: hexToRgb(theme.WHITE.toString(), 0.8),
-                                    fontSize: 14,
-                                }}>
-                                    ({calculateAverage(title, false)})
-                                </Text>
+                                    <Text style={{
+                                        color: theme.WHITE,
+                                        fontWeight: "bold",
+                                        fontSize: 15,
+
+                                        textAlign: "center",
+                                    }}>
+                                        Vægtet gennemsnit
+                                    </Text>
+                                </View>
                             </View>
-                        )
-                    })}
-                </View>
 
-            </View>
+                            <View style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                width: "65%",
+                            }}>
+                                {grades && Object.keys(grades[0].karakterer).map((title, index) => {
+                                    const width = (1-(Object.keys(grades[0].karakterer).length/4))*100;
 
-            <View style={{
-                paddingBottom: 89,
-            }} />
-        </ScrollView>
+                                    return (
+                                        <View key={title + index + "footer"} style={{
+                                            width: `${width}%`,
+
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+
+                                            flexDirection: "column",
+
+                                            borderRightColor: hexToRgb(theme.WHITE.toString(), 0.2),
+                                            borderRightWidth: Object.keys(grades[0].karakterer).length-1 !== index ? 1 : 0,
+                                        }}>
+                                            <Text style={{
+                                                color: theme.WHITE,
+                                                fontWeight: "bold",
+                                                fontSize: 20,
+                                            }}>
+                                                {calculateAverage(title)}
+                                            </Text>
+                                            
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 0.8),
+                                                fontSize: 14,
+                                            }}>
+                                                ({calculateAverage(title, false)})
+                                            </Text>
+                                        </View>
+                                    )
+                                })}
+                            </View>
+
+                        </View>
+
+                        <View style={{
+                            paddingBottom: 89,
+                        }} />
+                    </>
+                }
+            </ScrollView>
+        </View>
     )
 }

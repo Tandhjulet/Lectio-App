@@ -141,22 +141,17 @@ export default function Skema({ navigation }: {
                 copy.setDate(prev.getDate()-1)
             }
 
-            if(t == "ADD") {
-                setDayNum(() => {
-                    const num = getDay(copy).weekDayNumber;
-
-                    return num;
-                })
-            } else if(t == "REMOVE") {
-                setDayNum(() => {
-                    const num = getDay(copy).weekDayNumber;
-    
-                    return num;
-                })
-            }
+            setDayNum(getDay(copy).weekDayNumber)
+            
 
             if(getWeekNumber(prev) != getWeekNumber(copy)) {
-                setLoadDate(copy);
+                setLoadDate(() => {
+                    const week = prev > copy ? getPrevWeek(selectedDay) : getNextWeek(selectedDay);
+
+                    setSelectedDay(copy);
+                    return week;
+                })
+
                 if(t == "ADD") pagerRef.current?.setPage(2);
                 else if (t == "REMOVE") pagerRef.current?.setPage(0);
             }

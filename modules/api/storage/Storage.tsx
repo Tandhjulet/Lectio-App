@@ -23,6 +23,7 @@ export enum Key {
     HOLD_MEMBERS,
 
     REGISTRATION,
+    GRADES,
 }
 
 export type SaveStructure = {

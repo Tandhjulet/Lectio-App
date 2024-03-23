@@ -76,6 +76,13 @@ export async function scrapeHold(holdId: string, gymNummer: string, bypassCache:
 }
 
 export async function scrapeGrades(gymNummer: string, elevId: string, bypassCache: boolean = false): Promise<Grade[]> {
+    if(!bypassCache) {
+        const saved = await getSaved(Key.GRADES);
+        if(saved.valid && saved.value != null) {
+            return saved.value;
+        }
+    }
+
     const res = await fetch(SCRAPE_URLS(gymNummer, elevId).GRADES, {
         method: "GET",
         credentials: 'include',
@@ -86,6 +93,9 @@ export async function scrapeGrades(gymNummer: string, elevId: string, bypassCach
 
     const parser = await treat(res);
     const grades = parseGrades(parser);
+
+    if(grades != null)
+        await saveFetch(Key.GRADES, grades, -1);
 
     return grades;
 }
@@ -284,7 +294,7 @@ export async function getSkema(gymNummer: string, date: Date): Promise<{ payload
             "Accept-Language": "da-DK,da;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6",
             "Cache-Control": "no-cache",
             "Pragma": "no-cache",
-            "Referer": `https://www.lectio.dk/lectio/${gymNummer}/SkemaNy.aspx`,
+            "Referer": `https://www.lectio.dk/lectio/${gymNummer}/SkemaNy.aspx}`,
             "Sec-Ch-Ua": `"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"`,
             "Sec-Ch-Ua-Mobile": "?0",
             "Sec-Ch-Ua-Platform": `"Windows"`,

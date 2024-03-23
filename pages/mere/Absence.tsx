@@ -272,10 +272,16 @@ export default function Absence({ navigation }: { navigation: any }) {
             getAbsenceRegistration(gymNummer).then((res: Registration[]) => {
 
                 const out: {[id: string]: Registration[]} = {};
-                res.forEach((reg) => {
-                    if(typeof reg.registered === "string") reg.registered = new Date(reg.registered);
-                    if(typeof reg.modulStartTime === "string") reg.modulStartTime = new Date(reg.modulStartTime);
+                res.sort((a, b) => {
+                    if(typeof a.registered === "string") a.registered = new Date(a.registered);
+                    if(typeof a.modulStartTime === "string") a.modulStartTime = new Date(a.modulStartTime);
+                    if(typeof b.registered === "string") b.registered = new Date(b.registered);
+                    if(typeof b.modulStartTime === "string") b.modulStartTime = new Date(b.modulStartTime);
 
+                    return (b.registered.valueOf() + b.modulStartTime.valueOf()) - (a.registered.valueOf() + a.modulStartTime.valueOf())
+                });
+
+                res.forEach((reg) => {
                     const str = reg.registered.toLocaleDateString("da-DK").replace(".", "/").replace(".", "-")
 
                     if(!(str in out)) 
@@ -283,8 +289,6 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                     out[str].push(reg);
                 })
-
-                res.sort((a, b) => (b.registered.valueOf() + b.modulStartTime.valueOf()) - (a.registered.valueOf() + a.modulStartTime.valueOf()));
 
                 setRemappedRegs(out);
             })
@@ -397,6 +401,16 @@ export default function Absence({ navigation }: { navigation: any }) {
             const gymNummer = (await secureGet("gym")).gymNummer;
             getAbsenceRegistration(gymNummer).then((res: Registration[]) => {
                 const out: {[id: string]: Registration[]} = {};
+
+                res.sort((a, b) => {
+                    if(typeof a.registered === "string") a.registered = new Date(a.registered);
+                    if(typeof a.modulStartTime === "string") a.modulStartTime = new Date(a.modulStartTime);
+                    if(typeof b.registered === "string") b.registered = new Date(b.registered);
+                    if(typeof b.modulStartTime === "string") b.modulStartTime = new Date(b.modulStartTime);
+
+                    return (b.registered.valueOf() + b.modulStartTime.valueOf()) - (a.registered.valueOf() + a.modulStartTime.valueOf())
+                });
+
                 res.forEach((reg) => {
                     if(typeof reg.registered === "string") reg.registered = new Date(reg.registered);
                     if(typeof reg.modulStartTime === "string") reg.modulStartTime = new Date(reg.modulStartTime);
@@ -408,9 +422,6 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                     out[str].push(reg);
                 })
-
-                res.sort((a, b) => (b.registered.valueOf() + b.modulStartTime.valueOf()) - (a.registered.valueOf() + a.modulStartTime.valueOf()));
-
                 setRemappedRegs(out);
 
                 setSendLoading(false);
