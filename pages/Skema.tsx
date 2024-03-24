@@ -125,377 +125,368 @@ export default function Skema({ navigation }: {
 
     const [ profile, setProfile ] = useState<Profile>();
 
-    /**
+        /**
      * Used in the gestureRecognizer to go to the next/previous day
      * @param t if it should go to the next day or the previous, respectively "ADD" or "REMOVE"
      */
-    const daySelector = (t: "ADD" | "REMOVE") => {
-        if(loading) return;
-
-        setSelectedDay((prev) => {
-            const copy = new Date(prev);
-    
-            if(t == "ADD") {
-                copy.setDate(prev.getDate()+1)
-            } else {
-                copy.setDate(prev.getDate()-1)
-            }
-
-            setDayNum(getDay(copy).weekDayNumber)
-            
-
-            if(getWeekNumber(prev) != getWeekNumber(copy)) {
-                setLoadDate(() => {
-                    const week = prev > copy ? getPrevWeek(selectedDay) : getNextWeek(selectedDay);
-
-                    setSelectedDay(copy);
-                    return week;
-                })
-
-                if(t == "ADD") pagerRef.current?.setPage(2);
-                else if (t == "REMOVE") pagerRef.current?.setPage(0);
-            }
-            
-            return copy;
-        });
-    }
-
-    /**
-     * Parses the schema for the currently selected day in the schema viewer
-     * @param skema all of the modules for the week
-     */
-    function parseSkema(skema: Day[]) {
-        if(skema == null)
-            return;
-
-        const out = calculateIntersects(skema[dayNum - 1].moduler)
-        const depthAssigned = assignDepth(out);
-
-        const flattened = flatten(depthAssigned);
-
-        setDay(flattened);
-    }
-
-    /**
-     * Fetches the data needed to display the page, on page load.
-     * If anything is cached it will render that whilst waiting for the server to respond.
-     */
-    useEffect(() => {
-        (async () => {
-            setBlockScroll(true);
-
-            const saved = await getSaved(Key.SKEMA, getWeekNumber(loadDate).toString());
-            let hasCache = false;
-            if(saved.valid && saved.value != null) {
-                setSkema(saved.value.days);
-                setModulTimings(saved.value.modul);
-                hasCache = true;
-            } else {
-                setLoading(true);
-            }
-
-            const gymNummer = (await secureGet("gym")).gymNummer;
-
-            setLoadWeekDate(loadDate);
-            setDaysOfThreeWeeks([...getDaysOfThreeWeeks(loadDate)])
-
-            setProfile(await getProfile());
-
-            getSkema(gymNummer, loadDate).then(({ payload, rateLimited }) => {
-                if(!rateLimited && payload != null) {
-                    setSkema([...payload.days]);
-                    setModulTimings([...payload.modul]);
+        const daySelector = (t: "ADD" | "REMOVE") => {
+            setSelectedDay((prev) => {
+                const copy = new Date(prev);
+        
+                if(t == "ADD") {
+                    copy.setDate(prev.getDate()+1)
                 } else {
-                    if(!hasCache) {
+                    copy.setDate(prev.getDate()-1)
+                }
+                
+                if(getWeekNumber(prev) != getWeekNumber(copy)) {
+                    setLoadDate(copy);
+                } else {
+                    setDayNum(getDay(copy).weekDayNumber)
+                }
+                
+                return copy;
+            });
+        }
+    
+        /**
+         * Parses the schema for the currently selected day in the schema viewer
+         * @param skema all of the modules for the week
+         */
+        function parseSkema(skema: Day[]) {
+            if(skema == null)
+                return;
+    
+            const out = calculateIntersects(skema[dayNum - 1].moduler)
+            const depthAssigned = assignDepth(out);
+    
+            const flattened = flatten(depthAssigned);
+    
+            setDay(flattened);
+        }
+    
+        /**
+         * Fetches the data needed to display the page, on page load.
+         * If anything is cached it will render that whilst waiting for the server to respond.
+         */
+        useEffect(() => {
+            (async () => {
+                setBlockScroll(true);
+    
+                const saved = await getSaved(Key.SKEMA, getWeekNumber(loadDate).toString());
+                let hasCache = false;
+                if(saved.valid && saved.value != null) {
+                    setSkema(saved.value.days);
+                    setModulTimings(saved.value.modul);
+                    hasCache = true;
+                } else {
+                    setLoading(true);
+                }
+    
+                const gymNummer = (await secureGet("gym")).gymNummer;
+    
+                setLoadWeekDate(loadDate);
+
+                setDayNum(getDay(selectedDay).weekDayNumber)
+                setDaysOfThreeWeeks([...getDaysOfThreeWeeks(loadDate)])
+    
+                setProfile(await getProfile());
+    
+                getSkema(gymNummer, loadDate).then(({ payload, rateLimited }) => {
+                    if(!rateLimited && payload != null) {
+                        setSkema([...payload.days]);
+                        setModulTimings([...payload.modul]);
+                    } else {
+                        if(!hasCache) {
+                            setSkema(null);
+                            setModulTimings([]);
+                        }
+                    }
+                    setLoading(false);
+                    setBlockScroll(false);
+                    setRateLimited(rateLimited)
+                })
+            })();
+    
+        }, [loadDate])
+    
+        useEffect(() => {
+            pagerRef.current?.setPageWithoutAnimation(1);
+        }, [daysOfThreeWeeks]);
+    
+        /**
+         * Used for drag-to-refresh functionality
+         */
+        useEffect(() => {
+            if(refreshing == false) 
+                return;
+            
+            (async () => {
+                const gymNummer = (await secureGet("gym")).gymNummer;
+                getSkema(gymNummer, loadDate).then(({ payload, rateLimited }) => {
+                    if(!rateLimited && payload != null) {
+                        setSkema([...payload.days]);
+                        setModulTimings([...payload.modul]);
+                    } else {
                         setSkema(null);
                         setModulTimings([]);
                     }
-                }
-                setLoading(false);
-                setBlockScroll(false);
-                setRateLimited(rateLimited)
-            })
-        })();
-
-    }, [loadDate])
-
-    useEffect(() => {
-        pagerRef.current?.setPageWithoutAnimation(1);
-    }, [daysOfThreeWeeks]);
-
-    /**
-     * Used for drag-to-refresh functionality
-     */
-    useEffect(() => {
-        if(refreshing == false) 
-            return;
-        
-        (async () => {
-            const gymNummer = (await secureGet("gym")).gymNummer;
-            getSkema(gymNummer, loadDate).then(({ payload, rateLimited }) => {
-                if(!rateLimited && payload != null) {
-                    setSkema([...payload.days]);
-                    setModulTimings([...payload.modul]);
-                } else {
-                    setSkema(null);
-                    setModulTimings([]);
-                }
-                setRateLimited(rateLimited)
-                setRefreshing(false)
-            })
-        })();
-
-    }, [refreshing])
-
-    /**
-     * Used to update the module view when you change the date you're viewing
-     */
-    useEffect(() => {
-        if(skema == null || skema.length == 0 || skema[dayNum - 1] == null) 
-            return;
-
-        const extrenumDates = findExtremumDates(skema[dayNum - 1].moduler, {
-            min: modulTimings[0],
-            max: modulTimings[modulTimings.length - 1],
-        })
-        if(extrenumDates == null)
-            return;
-        
-        const hoursBetween = hoursBetweenDates(extrenumDates, 1)
-        setHoursToMap(hoursBetween)
-
-        parseSkema(skema)
-    }, [modulTimings, dayNum])
-
-    /**
-     * Compares two dates without taking account for time.
-     * E.g for this function 07/01/2024 19:09 === 07/01/2024 00:01
-     * @param d1
-     * @param d2 
-     * @returns true if they are equal, otherwise false
-     */
-    const dateCompare = (d1: Date, d2: Date) => {
-        return (d1.getMonth() == d2.getMonth() &&
-                d1.getDate() == d2.getDate() &&
-                d1.getFullYear() == d2.getFullYear())
-    }
-
-    /**
-     * Used to calculate how long down a module should be on the schema view
-     * @param date the date to calculate the top-property of
-     * @returns a number used for formatting
-     */
-    function calculateTop(date: ModulDate) {
-        const min: Date = formatDate(date.startNum.toString())
-        const out = ((min.getHours() - Math.min(...hoursToMap))*60 + min.getMinutes());
-        return (out == Infinity || out == -Infinity) ? 0 : out;
-    }
-
-    /**
-     * Searches the given dict for any overlaps
-     * @param dict dict containing module intersects
-     * @param startDate the start date formatted as a number
-     * @param endDate the end date formatted as a number
-     * @returns the overlap if any are detected, else null
-     */
-    function searchDateDict(dict: {[id: string]: any}, startDate: number, endDate: number): string | null {
-        const xmin1 = formatDate(startDate.toString())
-        const xmax1 = formatDate(endDate.toString())
-
-        for(let key of Object.keys(dict)) {
-            const xmin2 = formatDate(key.split("-")[0]);
-            const xmax2 = formatDate(key.split("-")[1]);
-
-            if(xmax1 >= xmin2 && xmax2 >= xmin1) { // if true timestamps are overlapping
-                return key
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Assigns depth to the given dictionary
-     * @param intersections a dict containing module intersects
-     * @param depth the current depth
-     * @returns a depth assigned dict
-     */
-    function _depth(intersections: {[id: string]: {
-        moduler: Modul[],
-        contains: any,
-
-        depth?: number,
-        maxDepth?: number,
-    }}, depth = 1) {
-        const out = intersections;
-
-        for(let key in intersections) {
-            out[key].depth = depth + (out[key].moduler.length - 1);
-            _depth(out[key].contains, depth + (out[key].moduler.length - 1) + 1)
-        }
-
-        return out;
-    }
-
-    let MAXDEPTH = 0;
-    /**
-     * Recursively sets the max depth in the given dict.
-     * @param intersections a depth-assigned dict containing module intersects
-     * @returns the max depth encountered in the dict
-     */
-    function _maxDepth(intersections: {[id: string]: {
-        moduler: Modul[],
-        contains: any,
-
-        depth?: number,
-        maxDepth?: number,
-    }}) {
-        const out = intersections;
-
-        for(let key in intersections) {
-            if((out[key].depth ?? 0) > MAXDEPTH) {
-                MAXDEPTH = out[key].depth ?? MAXDEPTH;
-            }
-            _maxDepth(out[key].contains)
-        }
-
-        return MAXDEPTH;
-    }
-
-    /**
-     * 
-     * @param depthAssigned a depth-assigned dict containing module intersects
-     * @returns a flattened dict containing width and left (%) properties used for formatting
-     */
-    function flatten(depthAssigned: {[id: string]: {
-        moduler: Modul[],
-        contains: any,
-
-        depth?: number,
-        maxDepth?: number,
-    }}) {
-        let out: {
-            modul: Modul,
-
-            width: string,
-            left: string,
-        }[] = []
-
-        for(let key in depthAssigned) {
-            const width = Math.floor(1/(depthAssigned[key].maxDepth ?? 1)*100).toString() + "%";
-
-            depthAssigned[key].moduler.forEach((modul: Modul, index: number) => {
-                const left = Math.floor((1-((depthAssigned[key].depth ?? 0)-index)/(depthAssigned[key].maxDepth ?? 1))*100) + "%";
-
-                out.push({
-                    modul: modul,
-                    width: width,
-                    left: left,
+                    setRateLimited(rateLimited)
+                    setRefreshing(false)
                 })
+            })();
+    
+        }, [refreshing])
+    
+        /**
+         * Used to update the module view when you change the date you're viewing
+         */
+        useEffect(() => {
+            if(skema == null || skema.length == 0 || skema[dayNum - 1] == null) 
+                return;
+    
+            const extrenumDates = findExtremumDates(skema[dayNum - 1].moduler, {
+                min: modulTimings[0],
+                max: modulTimings[modulTimings.length - 1],
             })
-
-            out = [
-                ...out,
-                ...flatten(depthAssigned[key].contains),
-            ]
+            if(extrenumDates == null)
+                return;
+            
+            const hoursBetween = hoursBetweenDates(extrenumDates, 1)
+            setHoursToMap(hoursBetween)
+    
+            parseSkema(skema)
+        }, [modulTimings, dayNum])
+    
+        /**
+         * Compares two dates without taking account for time.
+         * E.g for this function 07/01/2024 19:09 === 07/01/2024 00:01
+         * @param d1
+         * @param d2 
+         * @returns true if they are equal, otherwise false
+         */
+        const dateCompare = (d1: Date, d2: Date) => {
+            return (d1.getMonth() == d2.getMonth() &&
+                    d1.getDate() == d2.getDate() &&
+                    d1.getFullYear() == d2.getFullYear())
         }
-
-        return out;
-    }
-
-    /**
-     * 
-     * @param intersections intersections calculated by {@link calculateIntersects}
-     * plus some additional info needed for the function to be able to recurse correctly
-     * @param calcDepth if the depth needs to be calculated again
-     * @param maxDepth the highest depth yet encoutered
-     * @returns a depth-assigned dict containing module intersects
-     * @see {@link calculateIntersects}
-     */
-    function assignDepth(intersections: {[id: string]: {
-        moduler: Modul[],
-        contains: any,
-
-        depth?: number,
-        maxDepth?: number,
-    }}, calcDepth: boolean = true, maxDepth: number = 0) {
-        let out = intersections;
-
-        if(calcDepth) {
-            out = _depth(intersections);
+    
+        /**
+         * Used to calculate how long down a module should be on the schema view
+         * @param date the date to calculate the top-property of
+         * @returns a number used for formatting
+         */
+        function calculateTop(date: ModulDate) {
+            const min: Date = formatDate(date.startNum.toString())
+            const out = ((min.getHours() - Math.min(...hoursToMap))*60 + min.getMinutes());
+            return (out == Infinity || out == -Infinity) ? 0 : out;
         }
-
-        for(let key in out) {
-            MAXDEPTH = 0;
-            maxDepth = _maxDepth(out[key].contains);
-            if(maxDepth == 0) {
-                maxDepth = out[key].depth ?? 0;
+    
+        /**
+         * Searches the given dict for any overlaps
+         * @param dict dict containing module intersects
+         * @param startDate the start date formatted as a number
+         * @param endDate the end date formatted as a number
+         * @returns the overlap if any are detected, else null
+         */
+        function searchDateDict(dict: {[id: string]: any}, startDate: number, endDate: number): string | null {
+            const xmin1 = formatDate(startDate.toString())
+            const xmax1 = formatDate(endDate.toString())
+    
+            for(let key of Object.keys(dict)) {
+                const xmin2 = formatDate(key.split("-")[0]);
+                const xmax2 = formatDate(key.split("-")[1]);
+    
+                if(xmax1 >= xmin2 && xmax2 >= xmin1) { // if true timestamps are overlapping
+                    return key
+                }
             }
-            out[key].maxDepth = maxDepth
-
-            assignDepth(out[key].contains, false, maxDepth)
+            return null;
         }
-
-        return out;
-    }   
-
-    /**
-     * This function calculates the intersects of the modules and formats them into a dict. An intersection is when two modules have overlapping times.
-     * E.g module A starts at 08:00 and ends 09:30, whilst module B starts 09:00 and ends 10:00. The app needs to be able to register this, and render without 
-     * overlapping the two modules. Hence this function.
-     * @param modules a list of modules for the selected day
-     * @returns a dict of all the intersects. The keys are formatted as "{INTERSECT_START_DATE}-{INTERSECT_END_DATE}".
-     * Every entry contains any internal children intersections. This makes it easy to render if any modules.
-     */
-    function calculateIntersects(modules: Modul[]) {
-        const out: {[id: string]: {
+    
+        /**
+         * Assigns depth to the given dictionary
+         * @param intersections a dict containing module intersects
+         * @param depth the current depth
+         * @returns a depth assigned dict
+         */
+        function _depth(intersections: {[id: string]: {
             moduler: Modul[],
             contains: any,
-        }} = {}
-
-        const sortedModules = modules.sort((a,b) => {
-            return (a.timeSpan.diff - b.timeSpan.diff)
-        }).reverse();
-
-        sortedModules.forEach((modul: Modul) => {
-            const key = searchDateDict(out, modul.timeSpan.startNum, modul.timeSpan.endNum)
-            if(key == null) {
-                out[`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}`] = {
-                    contains: {},
-                    moduler: [modul],
+    
+            depth?: number,
+            maxDepth?: number,
+        }}, depth = 1) {
+            const out = intersections;
+    
+            for(let key in intersections) {
+                out[key].depth = depth + (out[key].moduler.length - 1);
+                _depth(out[key].contains, depth + (out[key].moduler.length - 1) + 1)
+            }
+    
+            return out;
+        }
+    
+        let MAXDEPTH = 0;
+        /**
+         * Recursively sets the max depth in the given dict.
+         * @param intersections a depth-assigned dict containing module intersects
+         * @returns the max depth encountered in the dict
+         */
+        function _maxDepth(intersections: {[id: string]: {
+            moduler: Modul[],
+            contains: any,
+    
+            depth?: number,
+            maxDepth?: number,
+        }}) {
+            const out = intersections;
+    
+            for(let key in intersections) {
+                if((out[key].depth ?? 0) > MAXDEPTH) {
+                    MAXDEPTH = out[key].depth ?? MAXDEPTH;
                 }
-            } else {
-                if(`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}` == key) {
-                    out[`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}`].moduler.push(modul)
+                _maxDepth(out[key].contains)
+            }
+    
+            return MAXDEPTH;
+        }
+    
+        /**
+         * 
+         * @param depthAssigned a depth-assigned dict containing module intersects
+         * @returns a flattened dict containing width and left (%) properties used for formatting
+         */
+        function flatten(depthAssigned: {[id: string]: {
+            moduler: Modul[],
+            contains: any,
+    
+            depth?: number,
+            maxDepth?: number,
+        }}) {
+            let out: {
+                modul: Modul,
+    
+                width: string,
+                left: string,
+            }[] = []
+    
+            for(let key in depthAssigned) {
+                const width = Math.floor(1/(depthAssigned[key].maxDepth ?? 1)*100).toString() + "%";
+    
+                depthAssigned[key].moduler.forEach((modul: Modul, index: number) => {
+                    const left = Math.floor((1-((depthAssigned[key].depth ?? 0)-index)/(depthAssigned[key].maxDepth ?? 1))*100) + "%";
+    
+                    out.push({
+                        modul: modul,
+                        width: width,
+                        left: left,
+                    })
+                })
+    
+                out = [
+                    ...out,
+                    ...flatten(depthAssigned[key].contains),
+                ]
+            }
+    
+            return out;
+        }
+    
+        /**
+         * 
+         * @param intersections intersections calculated by {@link calculateIntersects}
+         * plus some additional info needed for the function to be able to recurse correctly
+         * @param calcDepth if the depth needs to be calculated again
+         * @param maxDepth the highest depth yet encoutered
+         * @returns a depth-assigned dict containing module intersects
+         * @see {@link calculateIntersects}
+         */
+        function assignDepth(intersections: {[id: string]: {
+            moduler: Modul[],
+            contains: any,
+    
+            depth?: number,
+            maxDepth?: number,
+        }}, calcDepth: boolean = true, maxDepth: number = 0) {
+            let out = intersections;
+    
+            if(calcDepth) {
+                out = _depth(intersections);
+            }
+    
+            for(let key in out) {
+                MAXDEPTH = 0;
+                maxDepth = _maxDepth(out[key].contains);
+                if(maxDepth == 0) {
+                    maxDepth = out[key].depth ?? 0;
+                }
+                out[key].maxDepth = maxDepth
+    
+                assignDepth(out[key].contains, false, maxDepth)
+            }
+    
+            return out;
+        }   
+    
+        /**
+         * This function calculates the intersects of the modules and formats them into a dict. An intersection is when two modules have overlapping times.
+         * E.g module A starts at 08:00 and ends 09:30, whilst module B starts 09:00 and ends 10:00. The app needs to be able to register this, and render without 
+         * overlapping the two modules. Hence this function.
+         * @param modules a list of modules for the selected day
+         * @returns a dict of all the intersects. The keys are formatted as "{INTERSECT_START_DATE}-{INTERSECT_END_DATE}".
+         * Every entry contains any internal children intersections. This makes it easy to render if any modules.
+         */
+        function calculateIntersects(modules: Modul[]) {
+            const out: {[id: string]: {
+                moduler: Modul[],
+                contains: any,
+            }} = {}
+    
+            const sortedModules = modules.sort((a,b) => {
+                return (a.timeSpan.diff - b.timeSpan.diff)
+            }).reverse();
+    
+            sortedModules.forEach((modul: Modul) => {
+                const key = searchDateDict(out, modul.timeSpan.startNum, modul.timeSpan.endNum)
+                if(key == null) {
+                    out[`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}`] = {
+                        contains: {},
+                        moduler: [modul],
+                    }
                 } else {
-                    const intersects = calculateIntersects([modul]);
-                    out[key].contains = { 
-                        ...out[key].contains,
-                        ...intersects,
+                    if(`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}` == key) {
+                        out[`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}`].moduler.push(modul)
+                    } else {
+                        const intersects = calculateIntersects([modul]);
+                        out[key].contains = { 
+                            ...out[key].contains,
+                            ...intersects,
+                        }
                     }
                 }
-            }
-        })
-
-        return out
-    }
-
-    /**
-     * Returns a different greeting depending on the time
-     * @returns a greeting
-     */
-    const getTimeOfDayAsString: () => string = () => {
-        const d = new Date()
-        if(d.getHours() < 8) {
-            return "Godmorgen"
-        } else if (d.getHours() < 11) {
-            return "Godformiddag"
-        } else if (d.getHours() < 13) {
-            return "Godmiddag"
-        } else if (d.getHours() < 20) {
-            return "Goddag"
+            })
+    
+            return out
         }
-        return "Godaften"
-    }
+    
+        /**
+         * Returns a different greeting depending on the time
+         * @returns a greeting
+         */
+        const getTimeOfDayAsString: () => string = () => {
+            const d = new Date()
+            if(d.getHours() < 8) {
+                return "Godmorgen"
+            } else if (d.getHours() < 11) {
+                return "Godformiddag"
+            } else if (d.getHours() < 13) {
+                return "Godmiddag"
+            } else if (d.getHours() < 20) {
+                return "Goddag"
+            }
+            return "Godaften"
+        }
 
     /**
      * Used for auto-refresh
@@ -675,12 +666,6 @@ export default function Skema({ navigation }: {
                     <TouchableOpacity onPress={() => {
                         if(loading) return;
 
-                        if(loadDate > new Date()) {
-                            pagerRef.current?.setPage(0);
-                        } else {
-                            pagerRef.current?.setPage(2);
-                        }
-
                         setLoadDate(new Date());
                         setSelectedDay(new Date());
                         setDayNum(getDay(new Date()).weekDayNumber)
@@ -721,8 +706,9 @@ export default function Skema({ navigation }: {
             }}>
                 <PagerView
                     ref={pagerRef}
-                    initialPage={2}
+                    initialPage={1}
                     orientation={"horizontal"}
+                    offscreenPageLimit={3}
                     overdrag
 
                     style={{
