@@ -88,6 +88,8 @@ function hoursBetweenDates(dates: {
     return out;
 }
 
+const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
+
 /**
  * 
  * @param param0 Navigation prop
@@ -140,6 +142,8 @@ export default function Skema({ navigation }: {
                 }
                 
                 if(getWeekNumber(prev) != getWeekNumber(copy)) {
+                    if(t === "ADD") pagerRef.current?.setPage(2);
+                    else if(t === "REMOVE") pagerRef.current?.setPage(0);
                     setLoadDate(copy);
                 } else {
                     setDayNum(getDay(copy).weekDayNumber)
@@ -704,7 +708,7 @@ export default function Skema({ navigation }: {
             <View style={{
                 backgroundColor: theme.ACCENT_BLACK,
             }}>
-                <PagerView
+                <AnimatedPagerView
                     ref={pagerRef}
                     initialPage={1}
                     orientation={"horizontal"}
@@ -790,7 +794,7 @@ export default function Skema({ navigation }: {
                             </View>
                         )
                     })}
-                </PagerView>
+                </AnimatedPagerView>
             </View>
 
             <View style={{
