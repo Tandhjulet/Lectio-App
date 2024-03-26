@@ -18,6 +18,7 @@ import { CacheParams, scrapePeople, stringifyCacheParams } from './cache/CacheSc
 import { Person } from './class/ClassPictureScraper';
 import treat, { _treat, treatRaw } from './TextTreater';
 import { Grade, parseGrades } from './GradeScraper';
+import { Folder, parseDocuments, parseFolders, Document } from './DocumentScraper';
 
 export async function scrapeCache(gymNummer: string, params?: CacheParams): Promise<Person[]> {
     const saved = await getSaved(Key.CACHE_PEOPLE);
@@ -73,6 +74,37 @@ export async function scrapeHold(holdId: string, gymNummer: string, bypassCache:
         await saveFetch(Key.HOLD_MEMBERS, hold, Timespan.DAY, holdId);
 
     return hold;
+}
+
+export async function scrapeFolders(gymNummer: string, elevId: string, folderId: string, bypassCache: boolean = false): Promise<Folder[]> {
+    const res = await fetch(SCRAPE_URLS(gymNummer, elevId, folderId).DOCUMENTS, {
+        method: "GET",
+        credentials: 'include',
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+        },
+    });
+    const parser = await treat(res);
+    const folders = parseFolders(parser);
+
+    return folders;
+}
+
+export async function scrapeDocuments(gymNummer: string, elevId: string, folderId: string, bypassCache: boolean = false): Promise<Document[]> {
+    const res = await fetch(SCRAPE_URLS(gymNummer, elevId, folderId).DOCUMENTS, {
+        method: "GET",
+        credentials: 'include',
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+        },
+    });
+
+    const text = await res.text();
+
+    const parser = await treatRaw(text);
+    const documents = parseDocuments(parser);
+
+    return documents;
 }
 
 export async function scrapeGrades(gymNummer: string, elevId: string, bypassCache: boolean = false): Promise<Grade[]> {

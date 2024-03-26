@@ -1,4 +1,5 @@
 import { SCHEMA_SEP_CHAR } from "../../Config";
+var he = require('he');
 
 export function scrapeSchema(parser: any, raw: string): Week | null {
     const table = parser.getElementById("s_m_Content_Content_SkemaMedNavigation_skema_skematabel");
@@ -429,13 +430,7 @@ function parseLektieNote(href: string, raw: string) {
 }
 
 export const replaceHTMLEntities = (toFix: string) => {
-    return (decodeURIComponent(toFix)
-        .replaceAll("&amp;", "&")
-        .replaceAll("&lt;", "<")
-        .replaceAll("&gt;", ">")
-        .replaceAll("&quot;", "\"")
-        .replaceAll("&apos;", "'")
-        .replaceAll("&#39;", "'"));
+    return he.decode(decodeURIComponent(toFix))
 }
 
 const fixString = (toFix: string) => {

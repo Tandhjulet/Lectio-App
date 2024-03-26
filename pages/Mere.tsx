@@ -179,6 +179,21 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     navigation.navigate("Grades")
                                 }}
                             />
+                            
+                            <Cell
+                                cellStyle="Basic"
+                                title="Dokumenter"
+                                titleTextColor={theme.WHITE}
+                                image={
+                                    <Square2StackIcon color={theme.ACCENT} style={{
+                                        opacity: 0.85,
+                                    }}  />
+                                }
+                                accessory="DisclosureIndicator"
+                                onPress={() => {
+                                    navigation.navigate("Documents")
+                                }}
+                            />
 
                             <Cell
                                 cellStyle="Basic"
@@ -186,19 +201,6 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 titleTextColor={theme.WHITE}
                                 image={
                                     <ClipboardDocumentListIcon color={theme.ACCENT} style={{
-                                        opacity: 0.85,
-                                    }}  />
-                                }
-                                accessory="DisclosureIndicator"
-                                isDisabled
-                            />
-
-                            <Cell
-                                cellStyle="Basic"
-                                title="Dokumenter"
-                                titleTextColor={theme.WHITE}
-                                image={
-                                    <Square2StackIcon color={theme.ACCENT} style={{
                                         opacity: 0.85,
                                     }}  />
                                 }

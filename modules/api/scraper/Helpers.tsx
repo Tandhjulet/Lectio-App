@@ -28,6 +28,8 @@ export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: stri
         "MODUL_REGNSKAB": `https://www.lectio.dk/lectio/${gymNummer}/subnav/modulregnskab.aspx?holdelementid=${elevId}`,
         "CACHE": `https://www.lectio.dk/lectio/${gymNummer}/cache/DropDown.aspx`,
         "GRADES": `https://www.lectio.dk/lectio/${gymNummer}/grades/grade_report.aspx?elevid=${elevId}&culture=da-DK`,
+        "FOLDERS": `https://www.lectio.dk/lectio/${gymNummer}/DokumentOversigt.aspx?elevid=${elevId}`,
+        "DOCUMENTS": `https://www.lectio.dk/lectio/${gymNummer}/DokumentOversigt.aspx?elevid=${elevId}&folderid=${klasseId}`,
 
         "LECTIOPLUS_SAVE_RECEIPT": `https://lectioplus.com/api/v1/save-receipt`,
         "LECTIOPLUS_GET": `https://lectioplus.com/api/v1/validate`,

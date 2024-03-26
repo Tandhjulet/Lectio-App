@@ -10,12 +10,11 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ### __MELLEM__
 - push notifs
 - gør så appen kan bruges uden/med manglende internet
+- gør så man kan åbne dokumenter
 
 ### __LAV__
 - spørgeskemaer
-- dokumenter
 - optimer skemaets parsing algoritme af moduler
-- skema swipe til ny uge reflekteres ikke i top bar
 
 ### __KENDTE FEJL__
 - login med forkerte logindetaljer går igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)
