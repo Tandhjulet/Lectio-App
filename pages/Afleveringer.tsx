@@ -7,6 +7,7 @@ import { Opgave, STATUS } from "../modules/api/scraper/OpgaveScraper";
 import { Theme, hexToRgb, themes } from "../modules/Themes";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { AdjustmentsVerticalIcon, ChevronRightIcon } from "react-native-heroicons/solid";
+import { HeaderBackButton } from "@react-navigation/elements";
 import RateLimit from "../components/RateLimit";
 import Logo from "../components/Logo";
 
@@ -187,9 +188,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
     useEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <View style={{
-
-                }}>
+                <View>
                     <Pressable
                         onPress={() => {
                             setModalVisible(true)
@@ -199,24 +198,25 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
                             backgroundColor: "rgba(0,122,255,0.2)",
                             borderRadius: 100,
+                        }}
+                    >
+                        <View style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
                         }}>
-                            <View style={{
-                                display: "flex",
-                                flexDirection: "row",
-                                alignItems: "center",
-                            }}>
-                                <AdjustmentsVerticalIcon color={"rgba(0,122,255,1)"} />
+                            <AdjustmentsVerticalIcon color={"rgba(0,122,255,1)"} />
 
-                                {(sortedBy != null) &&
-                                    <Text style={{
-                                        color: "rgba(0,122,255,1)",
-                                        marginLeft: 2.5,
-                                        marginRight: 1,
-                                    }}>
-                                        {sortedBy}
-                                    </Text>
-                                }
-                            </View>
+                            {(sortedBy != null) &&
+                                <Text style={{
+                                    color: "rgba(0,122,255,1)",
+                                    marginLeft: 2.5,
+                                    marginRight: 1,
+                                }}>
+                                    {sortedBy}
+                                </Text>
+                            }
+                        </View>
                     </Pressable>
 
                     <Modal
@@ -415,6 +415,13 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                         </View>
                     </Modal>
                 </View>
+            ),
+            headerLeft: () => (
+                <View style={{
+                    marginLeft: -15,
+                }}>
+                    <HeaderBackButton labelVisible={false} />
+                </View>
             )
         })
     }, [navigation, modalVisible])
@@ -575,6 +582,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
                                                         gap: 4,
                                                         marginVertical: 7.5,
+                                                        maxWidth: "90%",
                                                     }}>
                                                         <Text 
                                                             numberOfLines={1}

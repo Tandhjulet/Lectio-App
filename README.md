@@ -10,11 +10,10 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ### __MELLEM__
 - push notifs
 - gør så appen kan bruges uden/med manglende internet
-- fravær uden react-native-gifted-charts men med react-native-progress istedet
 
 ### __LAV__
 - spørgeskemaer
 - optimer skemaets parsing algoritme af moduler
 
 ### __KENDTE FEJL__
-- login med forkerte logindetaljer går igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)
+- login med forkerte logindetaljer gr igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)

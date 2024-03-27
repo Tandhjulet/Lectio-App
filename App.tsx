@@ -89,15 +89,11 @@ export const isExpoGo = Constants.appOwnership === 'expo';
 
 const App = () => {
   useEffect(() => {
-    getUnsecure("useDarkMode").then((v: {result: boolean}) => {
-      if(v.result == null) {
-        Appearance.setColorScheme(null);
-      } else {
-        Appearance.setColorScheme(v.result ? "dark" : "light");
-      }
-    })
+    getUnsecure("useDarkMode").then(
+      (v: {result: boolean | null}) =>
+        Appearance.setColorScheme((v.result ?? true) ? "dark" : "light")
+    )
   })
-
 
   /**
    * Creates a connections to Apples IAP
@@ -426,44 +422,9 @@ export function AfleveringNavigator() {
       headerBackTitleVisible: false,
       contentStyle: {backgroundColor: theme.BLACK}
     }}>
-      <Opgaver.Screen name={"AfleveringList"} component={Afleveringer} options={({ navigation, route }) => ({
-        headerRight: () => (
-          <Pressable
-            style={{
-                padding: 4,
-
-                backgroundColor: "rgba(0,122,255,0.2)",
-                borderRadius: 100,
-            }}
-          >
-            <View style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-            }}>
-                <AdjustmentsVerticalIcon color={"rgba(0,122,255,1)"} />
-                  <Text style={{
-                      color: "rgba(0,122,255,1)",
-                      marginLeft: 2.5,
-                      marginRight: 1,
-                  }}>
-                    Venter
-                  </Text>
-            </View>
-          </Pressable>
-        ),
-        headerLeft: () => (
-          <View style={{
-            position: "absolute",
-            left: 0,
-          }}>
-            <HeaderBackButton labelVisible={false} onPress={() => {
-              navigation.goBack();
-            }} />
-          </View>
-        ),
-        headerTitle: "Afleveringer",
-      })} />
+      <Opgaver.Screen name={"AfleveringList"} component={Afleveringer} options={{
+        title: "Afleveringer",
+      }} />
       <Opgaver.Screen name={"AfleveringView"} component={AfleveringView} options={{title: "Aflevering"}} />
     </Opgaver.Navigator>
   )

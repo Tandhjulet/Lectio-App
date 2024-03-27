@@ -9,12 +9,12 @@ import RateLimit from "../../components/RateLimit";
 import { VictoryChart, VictoryContainer, VictoryLabel, VictoryPie, VictoryTheme } from "victory-native";
 import PagerView, { PagerViewOnPageScrollEventData } from "react-native-pager-view";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import { PieChart } from "react-native-gifted-charts";
 import { BottomSheetModal, BottomSheetModalProvider, BottomSheetScrollView, BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView, TextInput } from "react-native-gesture-handler";
 import { parseDate } from "../../modules/api/scraper/OpgaveScraper";
 import { BellIcon, CalendarDaysIcon, ClockIcon, EyeDropperIcon, LockClosedIcon, PaperAirplaneIcon, PaperClipIcon } from "react-native-heroicons/solid";
 import { NumberProp, SvgProps } from "react-native-svg";
+import * as Progress from 'react-native-progress';
 
 type ChartedAbsence = {
     almindeligt: {
@@ -943,18 +943,12 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                                                                     position: "relative",
                                                                 }}>
-                                                                    <View style={{
-                                                                        height: 60,
-                                                                        width: 60,
-                                                                    }}>
-                                                                        <PieChart data={[{
-                                                                            value: parseFloat(reg.absence),
-                                                                            color: hexToRgb(color, 0.2),
-                                                                        }, {
-                                                                            value: 100-parseFloat(reg.absence),
-                                                                            color: theme.BLACK.toString(),
-                                                                        }]} radius={30} />
-                                                                    </View>
+                                                                    <Progress.Pie
+                                                                        size={60}
+                                                                        progress={parseFloat(reg.absence)}
+                                                                        color={hexToRgb(color, 0.2)}
+                                                                        borderWidth={1}
+                                                                    />
 
                                                                     <View style={{
                                                                         position: "absolute",
@@ -1232,13 +1226,12 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                                                 position: "relative"
                                             }}>
-                                                <PieChart data={[{
-                                                    value: parseFloat(registration?.absence || "0"),
-                                                    color: hexToRgb(color, 0.2),
-                                                }, {
-                                                    value: 100-parseFloat(registration?.absence || "0"),
-                                                    color: theme.BLACK.toString(),
-                                                }]} radius={40} />
+                                                <Progress.Pie
+                                                    size={80}
+                                                    progress={parseFloat(registration?.absence || "0")}
+                                                    color={hexToRgb(color, 0.2)}
+                                                    borderWidth={1}
+                                                />
 
                                                 <View style={{
                                                     position: "absolute",

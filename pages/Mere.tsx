@@ -89,7 +89,7 @@ export default function Mere({ navigation }: {navigation: any}) {
             return "Har du et abonnement får du det snart igen"
 
         // @ts-ignore
-        return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate?.toLocaleDateString() ?? "") : "Abonnementer virker ikke på tværs af enheder";
+        return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate?.toLocaleDateString() ?? "") : "Et abonnement giver ubegrænset adgang til Lectio Plus";
     }
 
     return (
@@ -215,7 +215,7 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                                 // @ts-ignore
                                 title={subscriptionTitle()}
-                                titleTextColor={theme.WHITE}
+                                titleTextColor={scheme == "dark" ? "#FFF" : "#000"}
 
                                 // @ts-ignore
                                 detail={subscriptionSubtitle()}
