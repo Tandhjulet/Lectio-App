@@ -4,6 +4,7 @@ import treat, { _treat, treatRaw } from './TextTreater';
 
 export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: string, type?: "bcstudent" | "bcteacher", selectedFolder: number = -70) {
     const _URLS = {
+        "BASE_URL": "https://www.lectio.dk",
         "GYM_LIST": "https://www.lectio.dk/lectio/login_list.aspx?showall=1",
         "LOGIN_URL": `https://www.lectio.dk/lectio/${gymNummer}/login.aspx`,
         "FORSIDE": `https://www.lectio.dk/lectio/${gymNummer}/forside.aspx`,

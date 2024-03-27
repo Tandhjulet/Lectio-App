@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { getProfile, scrapeDocuments, scrapeFolders } from "../../modules/api/scraper/Scraper";
 import { secureGet } from "../../modules/api/Authentication";
 import { Folder, Document } from "../../modules/api/scraper/DocumentScraper";
-import { Dimensions, ScrollView, StyleSheet, Text, useColorScheme, View } from "react-native";
+import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { Cell, TableView } from "react-native-tableview-simple";
 import { ClipboardDocumentIcon, DocumentArrowDownIcon, DocumentIcon, DocumentTextIcon, FilmIcon, FolderIcon, FolderOpenIcon } from "react-native-heroicons/outline";
 import { NavigationProp, RouteProp, useNavigation } from "@react-navigation/native";
@@ -10,6 +10,11 @@ import { hexToRgb, themes } from "../../modules/Themes";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React from "react";
+import FileViewer from "react-native-file-viewer";
+import RNFS from "react-native-fs";
+import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
+import * as Progress from 'react-native-progress';
+import { VideoCameraIcon } from "react-native-heroicons/solid";
 
 export default function Documents({ route }: {
     route: any,
@@ -21,20 +26,99 @@ export default function Documents({ route }: {
     const [folders, setFolders] = useState<Folder[] | undefined>(currentFolder?.subfolders ?? undefined);
     const [documents, setDocuments] = useState<Document[]>();
 
+    const [progress, setProgress] = useState<number>(-1);
+
     function getUrlExtension(url: string) {
         return (url.split(/[#?]/)[0].split(".").pop() ?? "").trim();
     }
+
+    const openFile = useCallback(async (document: Document) => {
+        if(progress !== -1) return;
+
+        function calculateSize(size: string): number {
+            let factor: number = 1;
+            switch(size.split(" ")[1].toUpperCase()) {
+                case "KB":
+                    factor = 1_000;
+                    break;
+                case "MB":
+                    factor = 1_000_000;
+                    break;
+                case "GB":
+                    factor = 1_000_000_000;
+                    break;
+            }
+
+            return parseFloat(size.split(" ")[0].replace(",", "."))*factor;
+        }
+
+        const extension = getUrlExtension(document.fileName);
+        const expectedSize = calculateSize(document.size);
+
+        const fileURI = RNFS.CachesDirectoryPath + "/tempfile." + extension;
+
+        RNFS.downloadFile({
+            fromUrl: SCRAPE_URLS().BASE_URL + document.url,
+            toFile: fileURI,
+            cacheable: true,
+
+            discretionary: true,
+            background: false,
+
+            begin() {
+                setProgress(0);
+            },
+            progress(downloadProgress) {
+                const progress = Math.min((downloadProgress.bytesWritten / (downloadProgress.contentLength == -1 ? expectedSize : downloadProgress.contentLength)), 1);
+                setProgress(progress);
+            },
+            progressInterval: 100,
+            progressDivider: 5,
+        }).promise.then(() => {
+            FileViewer.open(fileURI, {
+                displayName: document.fileName,
+                showAppsSuggestions: true,
+                showOpenWithDialog: true,
+            })
+            setProgress(-1);
+        })
+    }, [progress])
       
 
     const findIcon = useCallback((extension: string) => {
         switch(extension) {
+            case "ppt":
+            case "ppsm":
+            case "ppsx":
+            case "pot":
+            case "pps":
+            case "pptm":
             case "pptx":
                 return <FilmIcon size={30} color={theme.RED} />
             case "doc":
+            case "docm":
+            case "dotx":
+            case "dot":
+            case "txt":
+            case "rtf":
+            case "odt":
             case "docx":
                 return <DocumentTextIcon size={30} />
             case "pdf":
                 return <ClipboardDocumentIcon size={30} color={hexToRgb(theme.RED.toString(), 0.8)} />
+            case "mp4":
+            case "jpg":
+            case "jpeg":
+            case "svg":
+            case "webp":
+            case "png":
+            case "webm":
+            case "gif":
+            case "gifv":
+            case "mpg":
+            case "mpeg":
+            case "mov":
+                return <VideoCameraIcon size={30} color={theme.ACCENT} />
             default:
                 return <DocumentIcon size={30} color={hexToRgb(theme.WHITE.toString(), 0.8)} />
         }
@@ -69,121 +153,168 @@ export default function Documents({ route }: {
     const {width, height} = Dimensions.get("screen");
 
     return (
-        <ScrollView style={{
+        <View style={{
             height: "100%",
             width: "100%",
         }}>
-            <TableView style={{
-                paddingBottom: 89,
+            <ScrollView style={{
+                height: "100%",
+                width: "100%",
             }}>
-                {folders?.map((folder, i) => {
-                    return (
-                        <Cell
-                            key={i}
-                            cellStyle="Basic"
-                            accessory="DisclosureIndicator"
-                            cellImageView={
-                                <FolderOpenIcon />
-                            }
-                            title={folder.name}
-                            titleTextStyle={{
-                                marginLeft: 10,
-                                fontSize: 16,
-                            }}
-                            contentContainerStyle={{
-                                height: 60,
-                                borderBottomColor: hexToRgb(theme.WHITE.toString(), 0.1),
-                                borderBottomWidth: StyleSheet.hairlineWidth,
-                            }}
+                <TableView style={{
+                    paddingBottom: 89,
+                }}>
+                    {folders?.map((folder, i) => {
+                        return (
+                            <Cell
+                                key={i}
+                                cellStyle="Basic"
+                                accessory="DisclosureIndicator"
+                                cellImageView={
+                                    <FolderOpenIcon />
+                                }
+                                title={folder.name}
+                                titleTextStyle={{
+                                    marginLeft: 10,
+                                    fontSize: 16,
+                                }}
+                                contentContainerStyle={{
+                                    height: 60,
+                                    borderBottomColor: hexToRgb(theme.WHITE.toString(), 0.1),
+                                    borderBottomWidth: StyleSheet.hairlineWidth,
+                                }}
 
-                            onPress={() => {
-                                navigation.push("Documents", {
-                                    currentFolder: folder,
-                                    folders: folder.subfolders,
-                                })
-                            }}
-                        />
-                    )
-                })}
+                                onPress={() => {
+                                    navigation.push("Dokumenter", {
+                                        currentFolder: folder,
+                                        folders: folder.subfolders,
+                                    })
+                                }}
+                            />
+                        )
+                    })}
 
-                {documents?.map((document, i) => {
-                    return (
-                        <Cell
-                            key={i}
-                            cellStyle="Subtitle"
-                            accessory="DisclosureIndicator"
-                            cellContentView={
-                                <React.Fragment key={i}>
-                                    <View style={{
-                                        display: "flex",
-                                        flexDirection: "row",
-                                        alignItems: "center",
+                    {documents?.map((document, i) => {
+                        const extensionKnown = !(findIcon(getUrlExtension(document.fileName)).props.color == hexToRgb(theme.WHITE.toString(), 0.8));
+                        
+                        const name = extensionKnown ? document.fileName.replace(new RegExp("\\." + getUrlExtension(document.fileName) + "$"), "") : document.fileName;
 
-                                        width: "95%",
-                                        height: 60,
-                                        gap: 10,
-                                    }}>
-                                        {findIcon(getUrlExtension(document.fileName))}
 
-                                        <View style={{
+                        return (
+                            <Cell
+                                key={i}
+                                cellStyle="Subtitle"
+                                accessory="DisclosureIndicator"
+                                cellContentView={
+                                    <React.Fragment key={i}>
+                                        <TouchableOpacity style={{
                                             display: "flex",
-                                            flexDirection: "column",
-                                            width: "100%",
-                                            gap: 2,
-                                        }}>
-                                            <Text style={{
-                                                color: theme.WHITE,
-                                                fontSize: 15,
-                                                letterSpacing: -0.32,
-                                                width: "87.5%",
-                                                fontWeight: "bold",
-                                            }} ellipsizeMode="middle" numberOfLines={1}>
-                                                {document.fileName}
-                                            </Text>
+                                            flexDirection: "row",
+                                            alignItems: "center",
+
+                                            width: "95%",
+                                            height: 60,
+                                            gap: 10,
+                                        }} onPress={() => openFile(document)}>
+                                            {findIcon(getUrlExtension(document.fileName))}
 
                                             <View style={{
                                                 display: "flex",
-                                                justifyContent: "space-between",
-                                                flexDirection: "row",
-                                                width: "87.5%",
+                                                flexDirection: "column",
+                                                width: "100%",
+                                                gap: 2,
                                             }}>
                                                 <Text style={{
-                                                    color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                    color: theme.WHITE,
                                                     fontSize: 15,
                                                     letterSpacing: -0.32,
+                                                    width: "87.5%",
+                                                    fontWeight: "bold",
                                                 }} ellipsizeMode="middle" numberOfLines={1}>
-                                                    {" "}{document.date}
+                                                    {name}
                                                 </Text>
 
-                                                <Text style={{
-                                                    color: hexToRgb(theme.WHITE.toString(), 0.6),
-                                                    fontSize: 15,
-                                                    letterSpacing: -0.32,
-                                                }} ellipsizeMode="middle" numberOfLines={1}>
-                                                    {document.size}
-                                                </Text>
+                                                <View style={{
+                                                    display: "flex",
+                                                    justifyContent: "space-between",
+                                                    flexDirection: "row",
+                                                    width: "87.5%",
+                                                }}>
+                                                    <Text style={{
+                                                        color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                        fontSize: 15,
+                                                        letterSpacing: -0.32,
+                                                    }} ellipsizeMode="middle" numberOfLines={1}>
+                                                        {" "}{document.date}
+                                                    </Text>
+
+                                                    <Text style={{
+                                                        color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                        fontSize: 15,
+                                                        letterSpacing: -0.32,
+                                                    }} ellipsizeMode="middle" numberOfLines={1}>
+                                                        {document.size}
+                                                    </Text>
+                                                </View>
                                             </View>
-                                        </View>
-                                    </View>
-                                    <View style={{
-                                        position: "absolute",
-                                        bottom: 0,
+                                        </TouchableOpacity>
+                                        <View style={{
+                                            position: "absolute",
+                                            bottom: 0,
 
-                                        width: width,
-                                        borderBottomColor: hexToRgb(theme.WHITE.toString(), 0.1),
-                                        borderBottomWidth: StyleSheet.hairlineWidth,
-                                    }} />
-                                </React.Fragment>
-                            }
-                        />
-                    )
-                })}
-            </TableView>
+                                            width: width,
+                                            borderBottomColor: hexToRgb(theme.WHITE.toString(), 0.1),
+                                            borderBottomWidth: StyleSheet.hairlineWidth,
+                                        }} />
+                                    </React.Fragment>
+                                }
+                            />
+                        )
+                    })}
+                </TableView>
 
-            {(folders == undefined || folders.length == 0) && (documents == undefined || documents.length == 0) && (
+                {(folders == undefined || folders.length == 0) && (documents == undefined || documents.length == 0) && (
+                    <View style={{
+                        position: "absolute",
+
+                        height: height / 2,
+                        width: width,
+
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+
+                        gap: 5,
+                        opacity: 0.8,
+
+                        paddingHorizontal: 20,
+                    }}>
+                        <Text style={{
+                            color: theme.WHITE,
+                            fontWeight: "500",
+                            fontSize: 21,
+                            letterSpacing: 0.7,
+                            textAlign: "center",
+                        }}>
+                            Folderen er tom
+                        </Text>
+
+                        <Text style={{
+                            color: theme.WHITE,
+                            fontWeight: "normal",
+                            fontSize: 16,
+                            textAlign: "center",
+                            opacity: 0.9,
+                        }}>
+                            Der er ingen dokumenter eller under-foldere i denne folder.
+                        </Text>
+                    </View>
+                )}
+            </ScrollView>
+
+        {progress != -1 && (
                 <View style={{
                     position: "absolute",
-
                     height: height / 2,
                     width: width,
 
@@ -191,32 +322,35 @@ export default function Documents({ route }: {
                     justifyContent: "center",
                     alignItems: "center",
 
-                    gap: 5,
-                    opacity: 0.8,
-
-                    paddingHorizontal: 20,
+                    pointerEvents: "none",
                 }}>
-                    <Text style={{
-                        color: theme.WHITE,
-                        fontWeight: "500",
-                        fontSize: 21,
-                        letterSpacing: 0.7,
-                        textAlign: "center",
-                    }}>
-                        Folderen er tom
-                    </Text>
+                    <View style={{
+                        backgroundColor: theme.ACCENT_BLACK,
+                        borderRadius: 5,
+                        paddingHorizontal: 20,
+                        paddingVertical: 15,
 
-                    <Text style={{
-                        color: theme.WHITE,
-                        fontWeight: "normal",
-                        fontSize: 16,
-                        textAlign: "center",
-                        opacity: 0.9,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+
+                        gap: 5,
                     }}>
-                        Der er ingen dokumenter eller under-foldere i denne folder.
-                    </Text>
+                        <Text style={{
+                            color: theme.WHITE,
+                        }}>
+                            Henter fil...
+                        </Text>
+
+                        <Progress.Pie
+                            size={48}
+                            progress={progress}
+                            color={theme.LIGHT.toString()}
+                            borderWidth={1}
+                        />
+                    </View>
                 </View>
             )}
-        </ScrollView>
+        </View>
     )
 }

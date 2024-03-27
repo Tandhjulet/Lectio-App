@@ -10,7 +10,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ### __MELLEM__
 - push notifs
 - gør så appen kan bruges uden/med manglende internet
-- gør så man kan åbne dokumenter
+- fravær uden react-native-gifted-charts men med react-native-progress istedet
 
 ### __LAV__
 - spørgeskemaer

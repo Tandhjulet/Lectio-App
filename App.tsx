@@ -497,7 +497,19 @@ export function MereNavigator() {
       })} />
       <Settings.Screen name={"ModulRegnskab"} component={ModulRegnskab} options={{title: "Modulregnskab"}} />
       <Settings.Screen name={"Grades"} component={Grades} options={{title: "Karakterer"}} />
-      <Settings.Screen name={"Documents"} component={Documents} options={{title: "Dokumenter"}} />
+      <Settings.Screen name={"Dokumenter"} component={Documents} options={
+        ({ route }) => {
+          const params = route.params ?? {};
+
+          // @ts-ignore
+          const name: string = "currentFolder" in params ? params.currentFolder.name : "Dokumenter";
+
+          return {
+            title: name.trim(),
+            headerBackTitleVisible: true
+          }
+        }
+      } />
       <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Lærere og elever"}} />
     </Settings.Navigator>
   )

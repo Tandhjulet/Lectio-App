@@ -191,7 +191,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 }
                                 accessory="DisclosureIndicator"
                                 onPress={() => {
-                                    navigation.navigate("Documents")
+                                    navigation.navigate("Dokumenter")
                                 }}
                             />
 
