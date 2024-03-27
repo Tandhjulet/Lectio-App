@@ -1,6 +1,6 @@
 import { getASPHeaders } from "./Helpers";
 import { parseDate } from "./OpgaveScraper";
-import { parseInfoString, replaceHTMLEntities } from "./SkemaScraper";
+import { replaceHTMLEntities } from "./SkemaScraper";
 
 export function scrapeAbsence(parser: any): Fag[] | null {
     const table = parser.getElementById("s_m_Content_Content_SFTabStudentAbsenceDataTable");
@@ -182,9 +182,9 @@ function scrapeHelper(elements:any) {
             out += "\n"
         } else if ( child.tagName == "a" ||
                     (child.classList != null && (
-                        child.classList.includes("'bb_b'") ||
-                        child.classList.includes("'bb_i'") ||
-                        child.classList.includes("'bb_u'") ||
+                        child.classList.includes("bb_b") ||
+                        child.classList.includes("bb_i") ||
+                        child.classList.includes("bb_u") ||
                         child.classList.includes("message-attachements")
                     ))) // nemt at forstå 
         {

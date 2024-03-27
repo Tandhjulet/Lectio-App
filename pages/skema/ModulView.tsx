@@ -37,8 +37,6 @@ export default function ModulView({ navigation, route }: {
     const [members, setMembers] = useState<{ [id: string]: Person }>({})
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>();
 
-    const [ billedeId, setBilledeId ] = useState<string>();
-
     const [loading, setLoading] = useState<boolean>(true)
     const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -53,21 +51,20 @@ export default function ModulView({ navigation, route }: {
             const gym: { gymName: string, gymNummer: string } = await secureGet("gym")
             setGym(gym);
 
-            const people = await getPeople();
-            if(people != null && modul.lærerNavn != null)
-                if(people[CLEAN_NAME(modul.lærerNavn)] != null)
-                    setBilledeId(people[CLEAN_NAME(modul.lærerNavn)].billedeId);
-
-            for(let hold of profile.hold) {
-                if(hold.holdNavn == modul.team) {
-                    const v = await scrapeHold(hold.holdId, gym.gymNummer);
-                    if(v == null)
-                        setMembers({})
-                    else
-                        setMembers(v)
-                    break;
-                }
+            const holdId = profile.hold.find((hold) => hold.holdNavn === modul.team)?.holdId;
+            if(!holdId) {
+                setRefreshing(false);
+                return;
             }
+
+            scrapeHold(holdId, gym.gymNummer, true).then((v) => {
+                if(v == null)
+                    setMembers({})
+                else
+                    setMembers(v)
+                setRefreshing(false);
+            })
+
             setLoading(false);
         })();
     }, [])
@@ -84,24 +81,21 @@ export default function ModulView({ navigation, route }: {
                 return;
             
             const profile = await getProfile();
-            profile.hold.forEach((hold: Hold, i: number) => {
+            const holdId = profile.hold.find((hold) => hold.holdNavn === modul.team)?.holdId;
+            if(!holdId) {
+                setRefreshing(false);
+                return;
+            }
 
-                if(hold.holdNavn == modul.team) {
-                    scrapeHold(hold.holdId, gym.gymNummer, true).then((v) => {
-                        if(v == null)
-                            setMembers({})
-                        else
-                            setMembers(v)
-                        setRefreshing(false);
-                    })
-                }
-
-                if(i == profile.hold.length - 1) {
-                    setRefreshing(false);
-                }
+            scrapeHold(holdId, gym.gymNummer, true).then((v) => {
+                if(v == null)
+                    setMembers({})
+                else
+                    setMembers(v)
+                setRefreshing(false);
             })
-
-
+        
+            setRefreshing(false);
         })();
     }, [refreshing])
 

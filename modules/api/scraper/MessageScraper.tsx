@@ -26,9 +26,9 @@ export function scrapeHelper(elements:any, opts?: {
             })
         } else if ( child.tagName == "a" ||
                     (child.classList != null && (
-                        child.classList.includes("'bb_b'") ||
-                        child.classList.includes("'bb_i'") ||
-                        child.classList.includes("'bb_u'") ||
+                        child.classList.includes("bb_b") ||
+                        child.classList.includes("bb_i") ||
+                        child.classList.includes("bb_u") ||
                         child.classList.includes("message-attachements")
                     ))) // nemt at forstå 
         {

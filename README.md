@@ -13,7 +13,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 
 ### __LAV__
 - spørgeskemaer
-- optimer skemaets parsing algoritme af moduler
+- skema rework (skema parsing optimering)
 
 ### __KENDTE FEJL__
 - login med forkerte logindetaljer gr igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)

@@ -243,7 +243,7 @@ function parseIconString(info: any): {homework: boolean, comment: boolean} {
         return {homework: false, comment: false}
     }
 
-    if(!info.classList.includes("'s2skemabrikIcons'")) {
+    if(!info.classList.includes("s2skemabrikIcons")) {
         return {homework: false, comment: false};
     }
     
@@ -270,7 +270,6 @@ export function parseInfoString(info: any): {
     team: string,
     changed: boolean,
     cancelled: boolean,
-    modul?: string,
 } {
 
     const out: {
@@ -279,7 +278,6 @@ export function parseInfoString(info: any): {
         team: string,
         changed: boolean,
         cancelled: boolean,
-        modul?: string,
     } = {
         teacher: [],
         lokale: "",
@@ -298,42 +296,38 @@ export function parseInfoString(info: any): {
         out.cancelled = true;
     }
 
-    if("children" in info) {
-        info.children.forEach((element: any) => {
-            if(element.text.endsWith(". modul - "))
-                out["modul"] = element.text.replace(". modul - ", "")
+    info.children.forEach((element: any) => {
+        if(element.text == ` ${SCHEMA_SEP_CHAR} `) 
+            return;
 
-            if(element.text == ` ${SCHEMA_SEP_CHAR} `) 
+        if(element.text.includes(` ${SCHEMA_SEP_CHAR} `)) {
+            out["lokale"] = replaceHTMLEntities(element.text.replace(` ${SCHEMA_SEP_CHAR} `, ""))
+        }
+
+        if("attributes" in element) {
+
+            const attr: string = element.attributes["data-lectioContextCard"];
+            if(attr == undefined)
                 return;
 
-            if(element.text.includes(` ${SCHEMA_SEP_CHAR} `)) {
-                out["lokale"] = element.text.replace(` ${SCHEMA_SEP_CHAR} `, "")
+            if(attr.startsWith("T")) {
+                const teacherInitials: string = element.children[0].text;
+                out["teacher"].push(replaceHTMLEntities(teacherInitials));
+
+            } else if (attr.startsWith("HE")) {
+                out["team"] = replaceHTMLEntities(element.children[0].text);
             }
-
-            if("attributes" in element) {
-                const attr: string = element.attributes["data-lectioContextCard"];
-                if(attr == undefined)
-                    return;
-
-                if(attr.startsWith("'T")) {
-                    const teacherInitials: string = element.children[0].text;
-                    out["teacher"].push(teacherInitials);
-
-                } else if (attr.startsWith("'HE")) {
-                    out["team"] = element.children[0].text;
-                }
-            }
-        });
-
-        if(info.firstChild.tagName == "span" && info.firstChild.attributes["data-lectioContextCard"] == undefined) {
-            out["team"] = info.firstChild.firstChild.text.replaceAll("&amp;", "&");
         }
-        if(out["lokale"].startsWith("...")) {
-            out["lokale"] = out["lokale"].replace(/\.\.\./, "");
-        }
-        if(out["lokale"] == "") {
-            out["lokale"] = "..."
-        }
+    });
+
+    if(info.firstChild.tagName == "span" && info.firstChild.attributes["data-lectioContextCard"] == undefined) {
+        out["team"] = replaceHTMLEntities(info.firstChild.firstChild.text);
+    }
+    if(out["lokale"].startsWith("...")) {
+        out["lokale"] = out["lokale"].replace(/\.\.\./, "");
+    }
+    if(out["lokale"] == "") {
+        out["lokale"] = "..."
     }
 
     return out;
@@ -399,7 +393,7 @@ function parseLektieNote(href: string, raw: string) {
         extra?: string[],
     } = {};
 
-    const regExp = new RegExp(`<a href=${fixString(href)}.*?>`, "gms");
+    const regExp = new RegExp(`<a href="${fixString(href)}.*?>`, "gms");
     let matches;
 
     while((matches = regExp.exec(raw)) != null) {
