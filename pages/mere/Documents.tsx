@@ -4,17 +4,16 @@ import { secureGet } from "../../modules/api/Authentication";
 import { Folder, Document } from "../../modules/api/scraper/DocumentScraper";
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { Cell, TableView } from "react-native-tableview-simple";
-import { ClipboardDocumentIcon, DocumentArrowDownIcon, DocumentIcon, DocumentTextIcon, FilmIcon, FolderIcon, FolderOpenIcon } from "react-native-heroicons/outline";
-import { NavigationProp, RouteProp, useNavigation } from "@react-navigation/native";
+import { FolderOpenIcon } from "react-native-heroicons/outline";
+import {useNavigation } from "@react-navigation/native";
 import { hexToRgb, themes } from "../../modules/Themes";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React from "react";
 import FileViewer from "react-native-file-viewer";
 import RNFS from "react-native-fs";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import * as Progress from 'react-native-progress';
-import { VideoCameraIcon } from "react-native-heroicons/solid";
+import File from "../../modules/File";
 
 export default function Documents({ route }: {
     route: any,
@@ -28,29 +27,10 @@ export default function Documents({ route }: {
 
     const [progress, setProgress] = useState<number>(-1);
 
-    function getUrlExtension(url: string) {
-        return (url.split(/[#?]/)[0].split(".").pop() ?? "").trim();
-    }
+    const { calculateSize, getUrlExtension, findIcon } = File();
 
     const openFile = useCallback(async (document: Document) => {
         if(progress !== -1) return;
-
-        function calculateSize(size: string): number {
-            let factor: number = 1;
-            switch(size.split(" ")[1].toUpperCase()) {
-                case "KB":
-                    factor = 1_000;
-                    break;
-                case "MB":
-                    factor = 1_000_000;
-                    break;
-                case "GB":
-                    factor = 1_000_000_000;
-                    break;
-            }
-
-            return parseFloat(size.split(" ")[0].replace(",", "."))*factor;
-        }
 
         const extension = getUrlExtension(document.fileName);
         const expectedSize = calculateSize(document.size);
@@ -83,47 +63,6 @@ export default function Documents({ route }: {
             setProgress(-1);
         })
     }, [progress])
-      
-
-    const findIcon = useCallback((extension: string) => {
-        switch(extension) {
-            case "ppt":
-            case "ppsm":
-            case "ppsx":
-            case "pot":
-            case "pps":
-            case "pptm":
-            case "pptx":
-                return <FilmIcon size={30} color={theme.RED} />
-            case "doc":
-            case "docm":
-            case "dotx":
-            case "dot":
-            case "txt":
-            case "rtf":
-            case "odt":
-            case "docx":
-                return <DocumentTextIcon size={30} />
-            case "pdf":
-                return <ClipboardDocumentIcon size={30} color={hexToRgb(theme.RED.toString(), 0.8)} />
-            case "mp4":
-            case "jpg":
-            case "jpeg":
-            case "svg":
-            case "webp":
-            case "png":
-            case "webm":
-            case "gif":
-            case "gifv":
-            case "mpg":
-            case "mpeg":
-            case "mov":
-                return <VideoCameraIcon size={30} color={theme.ACCENT} />
-            default:
-                return <DocumentIcon size={30} color={hexToRgb(theme.WHITE.toString(), 0.8)} />
-        }
-
-    }, [])
 
     useEffect(() => {
         navigation.setOptions({

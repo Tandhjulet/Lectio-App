@@ -1,4 +1,6 @@
 import { StringOmit } from "@rneui/base";
+import { SCRAPE_URLS } from "./Helpers";
+import { replaceHTMLEntities } from "./SkemaScraper";
 
 export type LectioMessage = {
     title: string,
@@ -17,6 +19,8 @@ export function scrapeHelper(elements:any, opts?: {
     let out: TextComponent[] = [];
 
     for(let child of elements) {
+        //if(child.classList.includes("message-attachements")) continue;
+
         if(child.tagName == "br") {
             out.push({
                 inner: "",
@@ -28,10 +32,8 @@ export function scrapeHelper(elements:any, opts?: {
                     (child.classList != null && (
                         child.classList.includes("bb_b") ||
                         child.classList.includes("bb_i") ||
-                        child.classList.includes("bb_u") ||
-                        child.classList.includes("message-attachements")
-                    ))) // nemt at forstå 
-        {
+                        child.classList.includes("bb_u")
+                    ))) { // nemt at forstå 
             scrapeHelper(child.children, {
                 // if it was already defined as a link dont override, otherwise check
                 isLink: opts?.isLink === true ? true : child.tagName === "a",
@@ -39,15 +41,40 @@ export function scrapeHelper(elements:any, opts?: {
             }).forEach((v) => {
                 out.push(v);
             })
+        } else if (child.classList != null && child.classList.includes("message-attachements")) {
+            const parent = child;
+            child.children.forEach((child: any, i: number) => {
+                if(i%2 !== 0) return;
+
+                if(child.tagName === "a") {
+                    out.push({
+                        inner: child.firstChild.text,
+                        size: parent.children[i+1].text.replace(", ", "").trim(),
+                        isFile: true,
+                        url: "https://www.lectio.dk" + replaceHTMLEntities(child.attributes.href),
+                    })
+                }
+            })
         } else {
             const text: string = child.text;
             out.push({
                 inner: text,
-                isBreakLine: false,
                 isLink: opts?.isLink ?? false,
                 url: opts?.url ?? null,
             })
         }
+    }
+
+    if(!!out[out.length-1].isFile) {
+        let i = 0;
+        out.forEach((v) => {
+            if(v.isFile) i++;
+        })
+
+        out = [
+            ...out.slice(0, out.length - 2 - i),
+            ...out.slice(out.length - i)
+        ];
     }
     return out;
 }
@@ -149,7 +176,9 @@ export type ThreadMessage = {
 
 export type TextComponent = {
     inner: string | null,
-    isBreakLine: boolean,
-    isLink: boolean,
+    isBreakLine?: boolean,
+    isLink?: boolean,
+    isFile?: boolean,
+    size?: string,
     url: string | null,
 }

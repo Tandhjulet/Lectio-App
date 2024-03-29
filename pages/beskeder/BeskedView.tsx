@@ -1,4 +1,4 @@
-import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View, useColorScheme } from "react-native";
+import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, Text, TouchableOpacity, View, useColorScheme } from "react-native";
 import { LectioMessage, TextComponent, ThreadMessage } from "../../modules/api/scraper/MessageScraper";
 import { NavigationProp, RouteProp } from "@react-navigation/native";
 import { hexToRgb, themes } from "../../modules/Themes";
@@ -12,6 +12,11 @@ import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
 import ProfilePicture from "../../components/ProfilePicture";
 import * as WebBrowser from 'expo-web-browser';
 import { WebBrowserPresentationStyle } from "expo-web-browser";
+import React from "react";
+import File from "../../modules/File";
+import FileViewer from "react-native-file-viewer";
+import RNFS from "react-native-fs";
+import * as Progress from 'react-native-progress';
 
 
 /**
@@ -35,10 +40,14 @@ export default function BeskedView({ navigation, route }: {
         [id: string]: Person;
     }>({});
 
+    const [progress, setProgress] = useState<number>(-1);
+
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>();
 
     const message: LectioMessage = route.params?.message;
     const headers = route.params?.headers;
+
+    const { calculateSize, findIcon, getUrlExtension } = File();
 
     /**
      * Fetches the message body upon page load
@@ -90,14 +99,62 @@ export default function BeskedView({ navigation, route }: {
         return url;
     }
 
+    const openFile = useCallback(async (component: TextComponent) => {
+        if(progress !== -1) return;
+        if(!component.url) return;
+
+        const extension = getUrlExtension(component.inner || "");
+        const expectedSize = calculateSize((component.size || "").replace("(", "").replace(")", ""));
+
+        const fileURI = RNFS.CachesDirectoryPath + "/tempfile." + extension;
+
+        RNFS.downloadFile({
+            fromUrl: component.url,
+            toFile: fileURI,
+            cacheable: true,
+
+            discretionary: true,
+            background: false,
+
+            begin() {
+                setProgress(0);
+            },
+            progress(downloadProgress) {
+                const progress = Math.min((downloadProgress.bytesWritten / (downloadProgress.contentLength == -1 ? expectedSize : downloadProgress.contentLength)), 1);
+                setProgress(progress);
+            },
+            progressInterval: 100,
+            progressDivider: 5,
+        }).promise.then(() => {
+            FileViewer.open(fileURI, {
+                displayName: component.inner || "Dokument",
+                showAppsSuggestions: true,
+                showOpenWithDialog: true,
+            })
+            setProgress(-1);
+        })
+    }, [progress])
+
+    const {height, width} = Dimensions.get("screen");
+
     return (
         <View style={{
             backgroundColor: theme.BLACK,
             width: "100%",
         }}>
-
             {loading ? 
-                <ActivityIndicator size={"small"} color={theme.ACCENT} />
+                <View style={{
+                    position: "absolute",
+                    height: height / 3,
+                    width: "100%",
+
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+
+                }}>
+                    <ActivityIndicator size={"small"} color={theme.ACCENT} />
+                </View>
             :
                 <ScrollView style={{
                     paddingVertical: 20,
@@ -110,16 +167,20 @@ export default function BeskedView({ navigation, route }: {
                 }>  
                     {threadMessages?.map((message: ThreadMessage, i: number) => (
                         <View key={i} style={{
-                            paddingHorizontal: 10,
-                            paddingVertical: 20,
-        
-                            backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
-        
-                            borderRadius: 5,
+                            display: "flex",
+                            flexDirection: "column",
 
-                            marginTop: 20,
+                            gap: 5,
+                            marginTop: i === 0 ? 0 : 20,
                         }}>
-                                
+                            <View style={{
+                                paddingHorizontal: 10,
+                                paddingVertical: 20,
+            
+                                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
+            
+                                borderRadius: 5,
+                            }}>
                                 <View style={{
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -165,6 +226,8 @@ export default function BeskedView({ navigation, route }: {
         
                                     <Text>
                                         {message.body.map((component: TextComponent, index: number) => {
+                                            if(component.isFile) return;
+
                                             if(component.isBreakLine)
                                                 return (
                                                     <Text 
@@ -210,7 +273,32 @@ export default function BeskedView({ navigation, route }: {
                                             
                                         })}
                                     </Text>
+                                </View>
                             </View>
+                            {message.body.filter((v) => v.isFile).map((file, i) => (
+                                <TouchableOpacity key={threadMessages.length + i} style={{
+                                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
+                                    width: "100%",
+                                    padding: 5,
+                                    borderRadius: 5,
+
+                                    display: "flex",
+                                    flexDirection: "row",
+
+                                    gap: 5,
+                                    alignItems: "center",
+                                }} onPress={() => {
+                                    openFile(file);
+                                }}>
+                                    {file.inner && findIcon(getUrlExtension(file.inner))}
+
+                                    <Text style={{
+                                        color: "lightblue"
+                                    }}>
+                                        {file.inner}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
                         </View>
                     ))}
                 
@@ -219,6 +307,46 @@ export default function BeskedView({ navigation, route }: {
                     }} />
                 </ScrollView>
             }
+
+            {progress != -1 && (
+                <View style={{
+                    position: "absolute",
+                    height: height / 2,
+                    width: width,
+
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+
+                    pointerEvents: "none",
+                }}>
+                    <View style={{
+                        backgroundColor: theme.ACCENT_BLACK,
+                        borderRadius: 5,
+                        paddingHorizontal: 20,
+                        paddingVertical: 15,
+
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+
+                        gap: 5,
+                    }}>
+                        <Text style={{
+                            color: theme.WHITE,
+                        }}>
+                            Henter fil...
+                        </Text>
+
+                        <Progress.Pie
+                            size={48}
+                            progress={progress}
+                            color={theme.LIGHT.toString()}
+                            borderWidth={1}
+                        />
+                    </View>
+                </View>
+            )}
         </View>
     )
 }

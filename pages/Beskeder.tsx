@@ -23,6 +23,7 @@ import { KeyboardAvoidingView } from "react-native";
 import { sendMessage } from "../modules/api/beskeder/sendBesked";
 import Logo from "../components/Logo";
 import ProfilePicture from "../components/ProfilePicture";
+import File from "../modules/File";
 
 export default function Beskeder({ navigation }: {navigation: NavigationProp<any>}) {
     const [ loading, setLoading ] = useState<boolean>(true);
