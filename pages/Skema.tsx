@@ -1,4 +1,4 @@
-import { ActivityIndicator, Animated, DimensionValue, Dimensions, LogBox, Modal, PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
+import { ActivityIndicator, Alert, Animated, DimensionValue, Dimensions, LogBox, Modal, PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { createRef, useCallback, useEffect, useRef, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
@@ -977,6 +977,22 @@ export default function Skema({ navigation }: {
                                                         key={index}
 
                                                         onPress={() => {
+                                                            if(modul.href.includes("proevehold")) {
+                                                                Alert.alert("Eksamen",
+                                                                            "Du kan desværre ikke se yderligere information om din eksamen i Lectio Plus.",
+                                                                            [
+                                                                                {
+                                                                                    text: "OK",
+                                                                                    style: "cancel",
+                                                                                    isPreferred: true,
+                                                                                }
+                                                                            ],
+                                                                            {
+                                                                                cancelable: true,
+                                                                            })
+                                                                return;
+                                                            };
+
                                                             navigation.navigate("Modul View", {
                                                                 modul: modul,
                                                             })

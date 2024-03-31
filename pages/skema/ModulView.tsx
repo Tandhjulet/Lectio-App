@@ -53,7 +53,7 @@ export default function ModulView({ navigation, route }: {
 
             const holdId = profile.hold.find((hold) => hold.holdNavn === modul.team)?.holdId;
             if(!holdId) {
-                setRefreshing(false);
+                setLoading(false);
                 return;
             }
 
@@ -62,7 +62,7 @@ export default function ModulView({ navigation, route }: {
                     setMembers({})
                 else
                     setMembers(v)
-                setRefreshing(false);
+                setLoading(false);
             })
 
             setLoading(false);
@@ -77,8 +77,10 @@ export default function ModulView({ navigation, route }: {
             return;
 
         (async () => {
-            if(gym == null)
+            if(gym == null) {
+                setRefreshing(false);
                 return;
+            }
             
             const profile = await getProfile();
             const holdId = profile.hold.find((hold) => hold.holdNavn === modul.team)?.holdId;
