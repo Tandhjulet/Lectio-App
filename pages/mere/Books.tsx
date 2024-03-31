@@ -47,7 +47,6 @@ export default function Books() {
             }}>
                 {books?.map((book: Book, i) => {
                     const diff = 1-(parseDate(book.afleveringsfrist).valueOf() - new Date().valueOf())/(parseDate(book.afleveringsfrist).valueOf() - parseDate(book.udlånt).valueOf());
-                    console.log(diff)
 
                     return (
                         <View

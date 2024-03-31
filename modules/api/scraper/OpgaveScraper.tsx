@@ -176,8 +176,6 @@ export async function scrapeOpgave(parser: any): Promise<OpgaveDetails | null> {
     const opgaveIndlæg = parser.getElementById("m_Content_RecipientGV");
     out.opgaveIndlæg = scrapeIndlæg(opgaveIndlæg);
 
-    console.log(out.opgaveBeskrivelse);
-
     return out;
 }
 

@@ -502,7 +502,6 @@ export default function Skema({ navigation }: {
     const {width,height} = Dimensions.get('screen');
 
     const pagerRef = createRef<PagerView>();
-    const scrollRef = createRef<ScrollView>();
 
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
@@ -514,7 +513,7 @@ export default function Skema({ navigation }: {
 
     const panResponder = 
         PanResponder.create({
-            onStartShouldSetPanResponder : () => true,
+            onStartShouldSetPanResponder : () => false,
             onMoveShouldSetPanResponder : (e, gestureState) => {
                 const {dx, dy} = gestureState;
                 return (Math.abs(dx) > threshold) && (Math.abs(dy) < (threshold / 2));
@@ -836,14 +835,15 @@ export default function Skema({ navigation }: {
                         </View>
                         :
                         <ScrollView style={{
-                            flex: 1,
                             zIndex: 50,
+                            minHeight: "100%",
+                            flex: 1,
                         }} refreshControl={
                             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                        } ref={scrollRef}>
+                        } scrollEnabled>
                             <View style={{
                                 paddingTop: 20,
-                            }} /> 
+                            }} />
 
                             {skema == null && 
                                 <View style={{
@@ -875,12 +875,11 @@ export default function Skema({ navigation }: {
                                     justifyContent: 'center',
                                     alignItems: 'center',
 
-                                    flexDirection: 'column-reverse',
-
-                                    minHeight: '40%',
+                                    paddingTop: 35,
 
                                     gap: 5,
                                 }}>
+                                    <Logo size={60} />
                                     <Text style={{
                                         color: theme.WHITE,
                                         textAlign: 'center'
@@ -889,7 +888,6 @@ export default function Skema({ navigation }: {
                                         {"\n"}
                                         Nyd din dag!
                                     </Text>
-                                    <Logo size={60} />
                                 </View>
                             )
                             :
