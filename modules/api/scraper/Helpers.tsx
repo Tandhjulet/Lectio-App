@@ -31,6 +31,7 @@ export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: stri
         "GRADES": `https://www.lectio.dk/lectio/${gymNummer}/grades/grade_report.aspx?elevid=${elevId}&culture=da-DK`,
         "FOLDERS": `https://www.lectio.dk/lectio/${gymNummer}/DokumentOversigt.aspx?elevid=${elevId}`,
         "DOCUMENTS": `https://www.lectio.dk/lectio/${gymNummer}/DokumentOversigt.aspx?elevid=${elevId}&folderid=${klasseId}`,
+        "BOOKS": `https://www.lectio.dk/lectio/${gymNummer}/BD/UserReservations.aspx?ElevID=${elevId}`,
 
         "LECTIOPLUS_SAVE_RECEIPT": `https://lectioplus.com/api/v1/save-receipt`,
         "LECTIOPLUS_GET": `https://lectioplus.com/api/v1/validate`,

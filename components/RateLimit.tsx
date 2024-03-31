@@ -1,4 +1,4 @@
-import { Animated, Text, View, ViewStyle, useColorScheme } from "react-native";
+import { Animated, Text, View, ViewProps, ViewStyle, useColorScheme } from "react-native";
 import React, { PropsWithChildren, useEffect, useRef } from "react";
 import { themes } from "../modules/Themes";
 
@@ -11,7 +11,7 @@ const FlyInView: React.FC<FlyInViewProps> = props => {
         Animated.sequence([
             Animated.timing(flyAnim, {
                 toValue: 0,
-                delay: 1000,
+                delay: 500,
                 duration: 500,
                 useNativeDriver: true,
             }),
@@ -39,7 +39,9 @@ const FlyInView: React.FC<FlyInViewProps> = props => {
     );
   };
 
-export default function RateLimit() {
+export default function RateLimit({ paddingTop = 10 }: {
+    paddingTop?: number,
+}) {
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
 
@@ -47,7 +49,7 @@ export default function RateLimit() {
         <FlyInView style={{
             zIndex: 25,
 
-            paddingTop: 45,
+            paddingTop: paddingTop,
             paddingBottom: 10,
 
             width: "100%",

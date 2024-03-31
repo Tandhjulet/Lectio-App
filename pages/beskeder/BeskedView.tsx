@@ -125,8 +125,8 @@ export default function BeskedView({ navigation, route }: {
             },
             progressInterval: 100,
             progressDivider: 5,
-        }).promise.then(() => {
-            FileViewer.open(fileURI, {
+        }).promise.then(async () => {
+            await FileViewer.open(fileURI, {
                 displayName: component.inner || "Dokument",
                 showAppsSuggestions: true,
                 showOpenWithDialog: true,
@@ -252,7 +252,10 @@ export default function BeskedView({ navigation, route }: {
                                                             })
                                                         }}
                                                         style={{
-                                                            color: "lightblue"
+                                                            color: scheme === "dark" ? "lightblue" : "darkblue",
+                                                            fontWeight: component.isBold ? "bold" : "normal",
+                                                            textDecorationLine: component.isUnderlined ? "underline" : "none",
+                                                            fontStyle: component.isItalic ? "italic" : "normal",
                                                         }}
                                                     >
                                                         {component.inner?.trim()}
@@ -265,6 +268,9 @@ export default function BeskedView({ navigation, route }: {
                                                     key={index}
                                                     style={{
                                                         color: theme.WHITE,
+                                                        fontWeight: component.isBold ? "bold" : "normal",
+                                                        textDecorationLine: component.isUnderlined ? "underline" : "none",
+                                                        fontStyle: component.isItalic ? "italic" : "normal",
                                                     }}
                                                 >
                                                     {component.inner?.trim()}
@@ -293,7 +299,7 @@ export default function BeskedView({ navigation, route }: {
                                     {file.inner && findIcon(getUrlExtension(file.inner))}
 
                                     <Text style={{
-                                        color: "lightblue"
+                                        color: scheme === "dark" ? "lightblue" : "darkblue"
                                     }}>
                                         {file.inner}
                                     </Text>

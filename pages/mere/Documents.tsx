@@ -54,8 +54,8 @@ export default function Documents({ route }: {
             },
             progressInterval: 100,
             progressDivider: 5,
-        }).promise.then(() => {
-            FileViewer.open(fileURI, {
+        }).promise.then(async () => {
+            await FileViewer.open(fileURI, {
                 displayName: document.fileName,
                 showAppsSuggestions: true,
                 showOpenWithDialog: true,

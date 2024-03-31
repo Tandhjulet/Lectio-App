@@ -894,181 +894,185 @@ export default function Skema({ navigation }: {
                             )
                             :
                             <View>
-                                {hoursToMap.map((hour: number, index: number) => {
-                                    return (
-                                        <View key={index} style={{
-                                            position: "absolute",
-                                            top: (hour - Math.min(...hoursToMap)) * 60,
+                                {skema != null && (
+                                    <>
+                                        {hoursToMap.map((hour: number, index: number) => {
+                                            return (
+                                                <View key={index} style={{
+                                                    position: "absolute",
+                                                    top: (hour - Math.min(...hoursToMap)) * 60,
 
-                                            display: "flex",
-                                            flexDirection: "row",
-                                            alignItems: "center",
+                                                    display: "flex",
+                                                    flexDirection: "row",
+                                                    alignItems: "center",
 
-                                            left: 40,
-                                            paddingRight: 41,
-                                            gap: 7.5,
+                                                    left: 40,
+                                                    paddingRight: 41,
+                                                    gap: 7.5,
 
-                                            transform: [{
-                                                translateY: -(17 / 2),
-                                            }],
+                                                    transform: [{
+                                                        translateY: -(17 / 2),
+                                                    }],
 
-                                            zIndex: 1,
-                                        }}>
-                                            <Text style={{
-                                                color: hexToRgb(theme.WHITE.toString(), 0.8),
-                                                width: 39,
-
-                                                textAlign: "center",
-                                                textAlignVertical: "center",
-                                            }}>
-                                                {hour.toString().padStart(2, "0")}:00
-                                            </Text>
-                                            <View style={{
-                                                height: StyleSheet.hairlineWidth,
-                                                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.6),
-                                                flex: 1,
-                                            }} />
-                                        </View>
-                                    )
-                                })}
-
-                                {modulTimings.map((modulTiming: ModulDate, index: number) => {
-                                    return (
-                                        <View key={index} style={{
-                                            position: "absolute",
-                                            height: modulTiming.diff,
-                                            width: 30,
-
-                                            borderTopRightRadius: 7.5,
-                                            borderBottomRightRadius: 7.5,
-
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            alignItems: "center",
-
-                                            backgroundColor: hexToRgb(theme.WHITE.toString(), 0.15),
-
-                                            top: calculateTop(modulTiming)
-                                        }}>
-                                            <Text style={{
-                                                color: theme.WHITE,
-                                                fontWeight: "bold",
-                                                opacity: 0.7,
-                                            }}>
-                                                {index+1}.
-                                            </Text>
-                                        </View>
-                                    )
-                                })}
-
-                                <View style={{
-                                    position: "relative",
-                                    marginLeft: 40 + 7.5 + 38,
-
-                                    zIndex: 5,
-                                }}>
-                                    {day != null && day.map(({ modul, width, left}, index: number) => {
-                                        const widthNum = parseInt(width.replace("%", ""));
-
-                                        return (
-                                            <TouchableHighlight
-                                                key={index}
-
-                                                onPress={() => {
-                                                    navigation.navigate("Modul View", {
-                                                        modul: modul,
-                                                    })
-                                                }}
-                                            >
-                                                <View style={{
-                                                    position:"absolute",
-
-                                                    top: calculateTop(modul.timeSpan),
-                                                    height: modul.timeSpan.diff,
-                                                    
-                                                    width: width as DimensionValue,
-                                                    left: left as DimensionValue,
-
-                                                    zIndex: 5,
+                                                    zIndex: 1,
                                                 }}>
-                                                    <View style={{
-                                                        width: "100%",
+                                                    <Text style={{
+                                                        color: hexToRgb(theme.WHITE.toString(), 0.8),
+                                                        width: 39,
+
+                                                        textAlign: "center",
+                                                        textAlignVertical: "center",
                                                     }}>
+                                                        {hour.toString().padStart(2, "0")}:00
+                                                    </Text>
+                                                    <View style={{
+                                                        height: StyleSheet.hairlineWidth,
+                                                        backgroundColor: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                        flex: 1,
+                                                    }} />
+                                                </View>
+                                            )
+                                        })}
+
+                                        {modulTimings.map((modulTiming: ModulDate, index: number) => {
+                                            return (
+                                                <View key={index} style={{
+                                                    position: "absolute",
+                                                    height: modulTiming.diff,
+                                                    width: 30,
+
+                                                    borderTopRightRadius: 7.5,
+                                                    borderBottomRightRadius: 7.5,
+
+                                                    display: "flex",
+                                                    justifyContent: "center",
+                                                    alignItems: "center",
+
+                                                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.15),
+
+                                                    top: calculateTop(modulTiming)
+                                                }}>
+                                                    <Text style={{
+                                                        color: theme.WHITE,
+                                                        fontWeight: "bold",
+                                                        opacity: 0.7,
+                                                    }}>
+                                                        {index+1}.
+                                                    </Text>
+                                                </View>
+                                            )
+                                        })}
+
+                                        <View style={{
+                                            position: "relative",
+                                            marginLeft: 40 + 7.5 + 38,
+
+                                            zIndex: 5,
+                                        }}>
+                                            {day != null && day.map(({ modul, width, left}, index: number) => {
+                                                const widthNum = parseInt(width.replace("%", ""));
+
+                                                return (
+                                                    <TouchableHighlight
+                                                        key={index}
+
+                                                        onPress={() => {
+                                                            navigation.navigate("Modul View", {
+                                                                modul: modul,
+                                                            })
+                                                        }}
+                                                    >
                                                         <View style={{
-                                                            backgroundColor: calcColor(0.6, modul),
-                                                            borderRadius: 5,
+                                                            position:"absolute",
 
-                                                            width: "100%",
-                                                            height: "100%",
+                                                            top: calculateTop(modul.timeSpan),
+                                                            height: modul.timeSpan.diff,
+                                                            
+                                                            width: width as DimensionValue,
+                                                            left: left as DimensionValue,
 
-                                                            overflow: "hidden",
-
-                                                            paddingHorizontal: 10,
-                                                            paddingVertical: modul.timeSpan.diff > 25 ? 5 : 2.5,
+                                                            zIndex: 5,
                                                         }}>
                                                             <View style={{
-                                                                position: 'absolute',
-                                                                backgroundColor: calcColor(1, modul),
-
-                                                                borderRadius: 100,
-
-                                                                minHeight: modul.timeSpan.diff,
-                                                                width: 4,
-
-                                                                left: 0,
-                                                            }} />
-
-                                                            {modul.timeSpan.diff > 30 && (
-                                                                <Text style={{
-                                                                    color: calcColor(1, modul),
-                                                                    fontSize: 12.5,
-                                                                }}>
-                                                                    {modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim()}
-                                                                </Text>
-                                                            )}
-
-                                                            <Text style={{
-                                                                color: calcColor(1, modul),
-                                                                fontWeight: "bold",
+                                                                width: "100%",
                                                             }}>
-                                                                {modul.teacher.length == 0 ? modul.team : (modul.team + " - " + modul.teacher.join(", "))}
-                                                            </Text>
-
-                                                            {modul.timeSpan.diff > 70 && (
                                                                 <View style={{
-                                                                    position: "absolute",
-                                                                    top: widthNum > 75 ? 0 : undefined,
-                                                                    bottom: widthNum > 75 ? undefined : 0,
-                                                                    right: 0,
+                                                                    backgroundColor: calcColor(0.6, modul),
+                                                                    borderRadius: 5,
 
-                                                                    display: 'flex',
-                                                                    flexDirection: 'row',
-                                                                    gap: 5,
-                                                                    
-                                                                    margin: 5,
+                                                                    width: "100%",
+                                                                    height: "100%",
+
+                                                                    overflow: "hidden",
+
+                                                                    paddingHorizontal: 10,
+                                                                    paddingVertical: modul.timeSpan.diff > 25 ? 5 : 2.5,
                                                                 }}>
-                                                                    {modul.comment ?
-                                                                        <ChatBubbleBottomCenterTextIcon color={calcColor(1, modul)} />
-                                                                    : null}
-                                                
-                                                                    {modul.homework ?
-                                                                        <InboxStackIcon color={calcColor(1, modul)} />
-                                                                    : null}
-                                                                    
-                                                                </View>
-                                                            )}
-                                                        </View>
-                                                    </View>
-                                                </View>
-                                            </TouchableHighlight>
-                                        )
-                                    })}
-                                </View>
+                                                                    <View style={{
+                                                                        position: 'absolute',
+                                                                        backgroundColor: calcColor(1, modul),
 
-                                <View style={{
-                                    width: "100%",
-                                    height: hoursToMap.length * 60 + (110 + 81) + 60
-                                }} />
+                                                                        borderRadius: 100,
+
+                                                                        minHeight: modul.timeSpan.diff,
+                                                                        width: 4,
+
+                                                                        left: 0,
+                                                                    }} />
+
+                                                                    {modul.timeSpan.diff > 30 && (
+                                                                        <Text style={{
+                                                                            color: calcColor(1, modul),
+                                                                            fontSize: 12.5,
+                                                                        }}>
+                                                                            {modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim()}
+                                                                        </Text>
+                                                                    )}
+
+                                                                    <Text style={{
+                                                                        color: calcColor(1, modul),
+                                                                        fontWeight: "bold",
+                                                                    }}>
+                                                                        {modul.teacher.length == 0 ? modul.team : (modul.team + " - " + modul.teacher.join(", "))}
+                                                                    </Text>
+
+                                                                    {modul.timeSpan.diff > 70 && (
+                                                                        <View style={{
+                                                                            position: "absolute",
+                                                                            top: widthNum > 75 ? 0 : undefined,
+                                                                            bottom: widthNum > 75 ? undefined : 0,
+                                                                            right: 0,
+
+                                                                            display: 'flex',
+                                                                            flexDirection: 'row',
+                                                                            gap: 5,
+                                                                            
+                                                                            margin: 5,
+                                                                        }}>
+                                                                            {modul.comment ?
+                                                                                <ChatBubbleBottomCenterTextIcon color={calcColor(1, modul)} />
+                                                                            : null}
+                                                        
+                                                                            {modul.homework ?
+                                                                                <InboxStackIcon color={calcColor(1, modul)} />
+                                                                            : null}
+                                                                            
+                                                                        </View>
+                                                                    )}
+                                                                </View>
+                                                            </View>
+                                                        </View>
+                                                    </TouchableHighlight>
+                                                )
+                                            })}
+                                        </View>
+
+                                        <View style={{
+                                            width: "100%",
+                                            height: hoursToMap.length * 60 + (110 + 81) + 60
+                                        }} />
+                                    </>
+                                )}
                             </View>
                             }
                         </ScrollView>
@@ -1147,7 +1151,7 @@ export default function Skema({ navigation }: {
                 </View>
             </View>
 
-            {rateLimited && <RateLimit />}
+            {rateLimited && <RateLimit paddingTop={45} />}
         </View>
     )
 }

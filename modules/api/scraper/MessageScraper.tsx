@@ -14,6 +14,9 @@ export type LectioMessage = {
 
 export function scrapeHelper(elements:any, opts?: {
     isLink: boolean,
+    isItalic: boolean,
+    isBold: boolean,
+    isUnderlined: boolean,
     url: string,
 }): TextComponent[] {
     let out: TextComponent[] = [];
@@ -37,6 +40,9 @@ export function scrapeHelper(elements:any, opts?: {
             scrapeHelper(child.children, {
                 // if it was already defined as a link dont override, otherwise check
                 isLink: opts?.isLink === true ? true : child.tagName === "a",
+                isBold: opts?.isLink === true ? true : (child.classList != null && child.classList.includes("bb_b")),
+                isItalic: opts?.isLink === true ? true : (child.classList != null && child.classList.includes("bb_i")),
+                isUnderlined: opts?.isLink === true ? true : (child.classList != null && child.classList.includes("bb_u")),
                 url: (child.tagName === "a") ? child.attributes.href : null,
             }).forEach((v) => {
                 out.push(v);
@@ -59,8 +65,11 @@ export function scrapeHelper(elements:any, opts?: {
             const text: string = child.text;
             out.push({
                 inner: text,
-                isLink: opts?.isLink ?? false,
+                isLink: opts?.isLink,
                 url: opts?.url ?? null,
+                isBold: opts?.isBold,
+                isItalic: opts?.isItalic,
+                isUnderlined: opts?.isUnderlined,
             })
         }
     }
@@ -178,6 +187,9 @@ export type TextComponent = {
     inner: string | null,
     isBreakLine?: boolean,
     isLink?: boolean,
+    isBold?: boolean,
+    isItalic?: boolean,
+    isUnderlined?: boolean,
     isFile?: boolean,
     size?: string,
     url: string | null,

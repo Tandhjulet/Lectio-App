@@ -13,7 +13,7 @@ import Logo from "../components/Logo";
 
 /**
  * Formats the dates weekday as text.
- * E.g 07/01/2024 => "Søndag"
+ * E.g 07/01/2024 => "Søndag d. 7/1"
  * @param date date to format
  * @returns a weekday text
  */
@@ -21,7 +21,7 @@ export const formatDate = (date: Date) => {
     const weekday = ["Søndag","Mandag","Tirsdag","Onsdag","Torsdag","Fredag","Lørdag"];
     const dateName = weekday[date.getDay()];
 
-    return dateName + " " + date.getDate() + "/" + (date.getMonth()+1);
+    return dateName + " d. " + date.getDate() + "/" + (date.getMonth()+1);
 }
 
 /**
@@ -64,34 +64,6 @@ const countdown = (date: Date): string => {
         out.push(hours == 1 ? hours + " time" : hours + " timer")
 
     return out.join(" og ")
-}
-
-/**
- * Calculates color from a linear gradient ([255,0,0] to [255,252,0]) 
- * depending on how soon the assignment is due. If the assignment is due in more than 14 days it will
- * return white.
- * @param date date to calculate color from
- * @returns a color
- */
-const calculateColor = (date: Date, theme: ColorSchemeName) => {
-    const COLOR1 = [255, 0, 0]
-    const COLOR2 = [255, 252, 0]
-
-    const diff = date.valueOf() - new Date().valueOf();
-    const hours = Math.floor(diff / (1000*60*60));
-    if(hours > 24*14 || hours < 0)
-        return theme == "dark" ? themes.dark.WHITE : hexToRgb(themes.light.WHITE.toString(), 0.6);
-
-
-    const percent = hours/(24*14)
-
-    const res = [
-        COLOR1[0] + percent * (COLOR2[0] - COLOR1[0]),
-        COLOR1[1] + percent * (COLOR2[1] - COLOR1[1]),
-        COLOR1[2] + percent * (COLOR2[2] - COLOR1[2]),
-                ]
-
-    return `rgb(${res[0]}, ${res[1]}, ${res[2]})`;
 }
 
 /**
@@ -181,6 +153,50 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
     const [modalVisible, setModalVisible] = useState<boolean>(false);
 
     const [refreshing, setRefreshing] = useState<boolean>(false);
+
+    /**
+     * Calculates color from a linear gradient ([255,0,0] to [255,252,0]) 
+     * depending on how soon the assignment is due. If the assignment is due in more than 14 days it will
+     * return white.
+     * @param date date to calculate color from
+     * @returns a color
+     */
+    const calculateColor = useCallback((date: Date, theme: ColorSchemeName, opgaveStatus: STATUS) => {
+        const COLOR1 = [255, 0, 0]
+        const COLOR2 = [255, 252, 0]
+
+        const diff = date.valueOf() - new Date().valueOf();
+        const hours = Math.floor(diff / (1000*60*60));
+        if(hours > 24*14 || hours < 0) {
+            if(theme == "dark")
+                switch(opgaveStatus) {
+                    case STATUS.IKKE_AFLEVERET:
+                        return themes.dark.RED;
+                    case STATUS.AFLEVERET:
+                        return themes.dark.LIGHT;
+                    case STATUS.VENTER:
+                        return themes.dark.WHITE;
+                }
+            switch(opgaveStatus) {
+                case STATUS.IKKE_AFLEVERET:
+                    return themes.dark.RED;
+                case STATUS.AFLEVERET:
+                    return themes.dark.LIGHT;
+                case STATUS.VENTER:
+                    return hexToRgb(themes.light.WHITE.toString(), 0.6);
+            }
+        }
+
+        const percent = hours/(24*14)
+
+        const res = [
+            COLOR1[0] + percent * (COLOR2[0] - COLOR1[0]),
+            COLOR1[1] + percent * (COLOR2[1] - COLOR1[1]),
+            COLOR1[2] + percent * (COLOR2[2] - COLOR1[2]),
+                    ]
+
+        return `rgb(${res[0]}, ${res[1]}, ${res[2]})`;
+    }, [])
 
     /**
      * Renders the filter-button
@@ -522,7 +538,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                     {sortedBy == "Alle" ?
                                         "Du har ingen opgaver"
                                     :
-                                        `Du har ingen opgaver der ${sortedBy == "Afleveret" && "er "}${sortedBy.toLowerCase()}.`
+                                        `Du har ingen opgaver der ${sortedBy == "Afleveret" ? "er " : ""}${sortedBy.toLowerCase()}.`
                                     }
                                 </Text>
                                 <Logo size={40} />
@@ -556,7 +572,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                                     paddingVertical: 5,
                                                 }}>
                                                     <View style={{
-                                                        backgroundColor: calculateColor(new Date(opgave.date), scheme),
+                                                        backgroundColor: calculateColor(new Date(opgave.date), scheme, opgave.status),
                                                         height: "100%",
                                                         width: 7.5,
 
@@ -631,7 +647,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
                         <View 
                             style={{
-                                paddingVertical: 100,
+                                paddingTop: 89,
                             }}
                         />
                     </TableView>

@@ -66,6 +66,7 @@ import { SubState, SubscriptionContext } from './modules/Sub';
 import ThankYou from './pages/ThankYou';
 import Grades from './pages/mere/Grades';
 import Documents from './pages/mere/Documents';
+import Books from './pages/mere/Books';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -472,6 +473,7 @@ export function MereNavigator() {
         }
       } />
       <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Lærere og elever"}} />
+      <Settings.Screen name={"Books"} component={Books} options={{title: "Bøger"}} />
     </Settings.Navigator>
   )
 }

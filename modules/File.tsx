@@ -28,7 +28,7 @@ export default function File() {
         return parseFloat(size.split(" ")[0].replace(",", "."))*factor;
     }
 
-    const findIcon = useCallback((extension: string) => {
+    const findIcon = useCallback((extension: string, size: number = 30) => {
         switch(extension) {
             case "ppt":
             case "ppsm":
@@ -37,7 +37,7 @@ export default function File() {
             case "pps":
             case "pptm":
             case "pptx":
-                return <FilmIcon size={30} color={theme.RED} />
+                return <FilmIcon size={size} color={theme.RED} />
             case "doc":
             case "docm":
             case "dotx":
@@ -46,9 +46,9 @@ export default function File() {
             case "rtf":
             case "odt":
             case "docx":
-                return <DocumentTextIcon size={30} />
+                return <DocumentTextIcon size={size} />
             case "pdf":
-                return <ClipboardDocumentIcon size={30} color={hexToRgb(theme.RED.toString(), 0.8)} />
+                return <ClipboardDocumentIcon size={size} color={hexToRgb(theme.RED.toString(), 0.8)} />
             case "mp4":
             case "jpg":
             case "jpeg":
@@ -61,9 +61,9 @@ export default function File() {
             case "mpg":
             case "mpeg":
             case "mov":
-                return <VideoCameraIcon size={30} color={theme.ACCENT} />
+                return <VideoCameraIcon size={size} color={theme.ACCENT} />
             default:
-                return <DocumentIcon size={30} color={hexToRgb(theme.WHITE.toString(), 0.8)} />
+                return <DocumentIcon size={size} color={hexToRgb(theme.WHITE.toString(), 0.8)} />
         }
 
     }, [])

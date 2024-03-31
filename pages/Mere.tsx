@@ -3,7 +3,7 @@ import NavigationBar from "../components/Navbar";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { themes } from "../modules/Themes";
 import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { AcademicCapIcon, BellSnoozeIcon, BuildingLibraryIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon, XMarkIcon } from "react-native-heroicons/solid";
+import { AcademicCapIcon, BellSnoozeIcon, BookOpenIcon, BuildingLibraryIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon, XMarkIcon } from "react-native-heroicons/solid";
 import { getUnsecure, removeSecure, removeUnsecure, secureGet, signOutReq } from "../modules/api/Authentication";
 import { Profile, getProfile, saveProfile } from "../modules/api/scraper/Scraper";
 import { AuthContext } from "../modules/Auth";
@@ -193,7 +193,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 }}
                             />
 
-                            <Cell
+                            {/* <Cell
                                 cellStyle="Basic"
                                 title="Spørgeskemaer"
                                 titleTextColor={theme.WHITE}
@@ -204,7 +204,22 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 }
                                 accessory="DisclosureIndicator"
                                 isDisabled
-                            />
+                            /> */}
+
+                            <Cell
+                                cellStyle="Basic"
+                                title="Bøger"
+                                titleTextColor={theme.WHITE}
+                                image={
+                                    <BookOpenIcon color={theme.ACCENT} style={{
+                                        opacity: 0.85,
+                                    }}  />
+                                }
+                                accessory="DisclosureIndicator"
+                                onPress={() => {
+                                    navigation.navigate("Books")
+                                }}
+                            />  
                         </Section>
 
                         <Section header={"ABONNEMENT"} roundedCorners={true} hideSurroundingSeparators={true} >

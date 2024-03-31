@@ -10,13 +10,12 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ### __MELLEM__
 - push notifs
 - gør så appen kan bruges uden/med manglende internet
-- tilbagemelding for afleveringer
 
 ### __LAV__
 - spørgeskemaer
-- skema rework (skema parsing optimering)
-- filer i afleveringer (aflevere filer og åbne afleverede filer)
+- skema rework (skema parsing optimering, kan ikke åbne eksaminer)
+- aflevere filer
 - vedhæft filer i beskeder
 
 ### __KENDTE FEJL__
-- login med forkerte logindetaljer gr igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)
+- login med forkerte logindetaljer gr igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)!

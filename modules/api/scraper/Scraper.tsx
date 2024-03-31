@@ -19,6 +19,7 @@ import { Person } from './class/ClassPictureScraper';
 import treat, { _treat, treatRaw } from './TextTreater';
 import { Grade, parseGrades } from './GradeScraper';
 import { Folder, parseDocuments, parseFolders, Document } from './DocumentScraper';
+import { parseBooks } from './BookScraper';
 
 export async function scrapeCache(gymNummer: string, params?: CacheParams): Promise<Person[]> {
     const saved = await getSaved(Key.CACHE_PEOPLE);
@@ -453,7 +454,6 @@ export async function getAflevering(gymNummer: string, id: string, bypassCache: 
         }
     }
 
-
     const profile = await getProfile();
 
     const res = await fetch(SCRAPE_URLS(gymNummer, profile.elevId, id).S_OPGAVE, {
@@ -581,6 +581,21 @@ export async function getAbsenceRegistration(gymNummer: string, bypassCache: boo
     }
 
     return registration
+}
+
+export async function scrapeBooks(gymNummer: string, elevID: string) {
+    const res = await fetch(SCRAPE_URLS(gymNummer, elevID).BOOKS, {
+        method: "GET",
+        credentials: 'include',
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+        },
+    });
+
+    const parser = await treat(res);
+    const books = parseBooks(parser);
+
+    return books;
 }
 
 export function getWeekNumber(d: any): number {

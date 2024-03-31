@@ -7,12 +7,14 @@ import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { themes } from "../../modules/Themes";
 import { Key } from "../../modules/api/storage/Storage";
+import RateLimit from "../../components/RateLimit";
 
 export default function ModulRegnskab() {
     const [ loading, setLoading ] = useState<boolean>(false);
     const [ modulRegnskab, setModulRegnskab ] = useState<Modulregnskab[]>();
 
     const [refreshing, setRefreshing] = useState<boolean>(false);
+    const [rateLimited, setRateLimited] = useState(false);
 
     /**
      * Fetches the modul calculations on page load
@@ -64,15 +66,21 @@ export default function ModulRegnskab() {
 
             const out: Modulregnskab[] = [];
 
+            let ERRORED = false;
             for(let hold of profile.hold) {
                 await scrapeModulRegnskab(gym.gymNummer, hold.holdId, true).then((modulRegnskab) => {
                     if(modulRegnskab != null && modulRegnskab.held != 0) {
                         out.push(modulRegnskab)
+                    } else {
+                        ERRORED = true;
                     }
                 });
             }
 
-            setModulRegnskab([...out])
+            if(!ERRORED) {
+                setModulRegnskab([...out])
+                setRateLimited(true);
+            }
             setRefreshing(false);
         })();
     }, [refreshing])
@@ -246,6 +254,8 @@ export default function ModulRegnskab() {
                     </TableView>
                 </ScrollView>
             }
+
+            {rateLimited && <RateLimit />}
         </View>
     )
 }
