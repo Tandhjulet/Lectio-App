@@ -11,6 +11,8 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - push notifs
 - gør så appen kan bruges uden/med manglende internet
 - cache vises først, nyt information fetches, cache opdateres og vises for alle sider
+- hjemmeside:
+  - hjemmeside skal søge om der er en der har købt med samme navn og så update receeipten hvis der er, istedet for at indsætte en ny for hvert køb, for at undgå unødvendige documents i databasen
 
 ### __LAV__
 - spørgeskemaer
