@@ -13,6 +13,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - cache vises først, nyt information fetches, cache opdateres og vises for alle sider
 - hjemmeside:
   - hjemmeside skal søge om der er en der har købt med samme navn og så update receeipten hvis der er, istedet for at indsætte en ny for hvert køb, for at undgå unødvendige documents i databasen
+  - cloudflare kan omgås gennem http://192.121.118.64/
 
 ### __LAV__
 - spørgeskemaer
