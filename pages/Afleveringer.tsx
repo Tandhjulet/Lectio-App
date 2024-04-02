@@ -1,5 +1,5 @@
 import { NavigationProp } from "@react-navigation/native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { ActivityIndicator, ColorSchemeName, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import { secureGet, getUnsecure } from "../modules/api/Authentication";
 import { getAfleveringer } from "../modules/api/scraper/Scraper";
@@ -10,6 +10,7 @@ import { AdjustmentsVerticalIcon, ChevronRightIcon } from "react-native-heroicon
 import { HeaderBackButton } from "@react-navigation/elements";
 import RateLimit from "../components/RateLimit";
 import Logo from "../components/Logo";
+import { SubscriptionContext } from "../modules/Sub";
 
 /**
  * Formats the dates weekday as text.
@@ -132,6 +133,8 @@ const filterData = (data: {
 }
 
 export default function Afleveringer({ navigation }: {navigation: NavigationProp<any>}) {
+    const { subscriptionState } = useContext(SubscriptionContext);
+
     const [afleveringer, setAfleveringer] = useState<{
         [id: string]: Opgave[];
     }>({})
@@ -636,6 +639,12 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                         }
 
                                         onPress={() => {
+                                            // @ts-ignore
+                                            if(!subscriptionState?.hasSubscription) {
+                                                navigation.navigate("NoAccess")
+                                                return;
+                                            }
+
                                             navigation.navigate("AfleveringView", {
                                                 opgave: opgave,
                                             })

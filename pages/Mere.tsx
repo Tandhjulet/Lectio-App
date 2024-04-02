@@ -30,7 +30,10 @@ export default function Mere({ navigation }: {navigation: any}) {
     const { subscriptionState, dispatchSubscription } = useContext(SubscriptionContext);
 
     const [profile, setProfile] = useState<Profile>();
-    
+    const [gym, setGym] = useState<{
+        gymNummer: string,
+        gymName: string,
+    }>()
     const [endDate, setEndDate] = useState<Date>();
 
     //const [development, setDevelopment] = useState<boolean>(false);
@@ -41,6 +44,7 @@ export default function Mere({ navigation }: {navigation: any}) {
             setProfile(prof);
             
             const { result, endDate } = await hasSubscription(true);
+            setGym((await secureGet("gym")))
 
             if(result === null) {
                 dispatchSubscription({ type: "SERVER_DOWN"})
@@ -84,7 +88,7 @@ export default function Mere({ navigation }: {navigation: any}) {
     const subscriptionSubtitle: () => string = () => {
         // @ts-ignore
         if(subscriptionState?.serverDown)
-            return "Har du et abonnement får du det snart igen"
+            return "Dette abonnement er midlertidigt"
 
         // @ts-ignore
         return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate?.toLocaleDateString() ?? "") : "Et abonnement giver ubegrænset adgang til Lectio Plus";
@@ -174,6 +178,12 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 }
                                 accessory="DisclosureIndicator"
                                 onPress={() => {
+                                    // @ts-ignore
+                                    if(!subscriptionState?.hasSubscription) {
+                                        navigation.navigate("NoAccess")
+                                        return;
+                                    }
+
                                     navigation.navigate("Grades")
                                 }}
                             />
@@ -189,6 +199,12 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 }
                                 accessory="DisclosureIndicator"
                                 onPress={() => {
+                                    // @ts-ignore
+                                    if(!subscriptionState?.hasSubscription) {
+                                        navigation.navigate("NoAccess")
+                                        return;
+                                    }
+
                                     navigation.navigate("Dokumenter")
                                 }}
                             />
@@ -217,6 +233,12 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 }
                                 accessory="DisclosureIndicator"
                                 onPress={() => {
+                                    // @ts-ignore
+                                    if(!subscriptionState?.hasSubscription) {
+                                        navigation.navigate("NoAccess")
+                                        return;
+                                    }
+
                                     navigation.navigate("Books")
                                 }}
                             />  
@@ -247,7 +269,8 @@ export default function Mere({ navigation }: {navigation: any}) {
                             
                             <Cell 
                                 cellStyle="Basic"
-                                title="Administrer abonnement"
+                                // @ts-ignore
+                                title={(!subscriptionState?.hasSubscription && !subscriptionState?.serverDown) ? "Køb abonnement" : "Administrer abonnement"}
                                 titleTextColor={theme.ACCENT}
 
                                 onPress={() => {
@@ -330,7 +353,7 @@ export default function Mere({ navigation }: {navigation: any}) {
 
 ---------------
 For at kunne hjælpe dig har vi brug for lidt information:
-🏫: ${profile?.school}
+🏫: ${gym?.gymNummer}
 🧑🏻‍🎓: ${profile?.elevId}
 📱: ${Device.modelName}, ${Device.osVersion}`)
 
@@ -349,7 +372,7 @@ For at kunne hjælpe dig har vi brug for lidt information:
                             <Cell
                                 cellStyle="Subtitle"
                                 title={profile?.name}
-                                detail={profile?.school}
+                                detail={gym?.gymName}
 
                                 titleTextColor={theme.WHITE}
                                 accessory="DisclosureIndicator"

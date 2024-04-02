@@ -242,8 +242,6 @@ export async function fetchProfile(): Promise<Profile> {
 
         elevId: elevID.split("?")[1].replace(/\D/gm, ""),
     
-        school: gym.gymName,
-    
         notifications: {
             aflysteLektioner: false,
             ændredeLektioner: false,
@@ -258,7 +256,6 @@ export type Profile = {
     name: string,
     
     elevId: string,
-    school: string,
 
     notifications: {
         aflysteLektioner: boolean,

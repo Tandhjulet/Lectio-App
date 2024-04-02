@@ -7,7 +7,7 @@ import {
 } from '@gorhom/bottom-sheet';
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Dimensions, StyleSheet, Text, View, ViewProps, ViewStyle, useColorScheme } from "react-native";
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View, ViewProps, ViewStyle, useColorScheme } from "react-native";
 import { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/types';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { CalendarDaysIcon, GlobeAltIcon, StarIcon } from 'react-native-heroicons/solid';
@@ -16,7 +16,7 @@ import { hexToRgb, themes } from '../modules/Themes';
 import { Sku, getSubscriptions, requestSubscription,  purchaseUpdatedListener, Purchase } from "react-native-iap";
 import { useNavigation } from '@react-navigation/native';
 
-function Option({
+export function Option({
     title,
     subtitle,
     price,
@@ -28,7 +28,7 @@ function Option({
     subtitle: string,
     price: string,
     sku: Sku,
-    bottomSheetModalRef: React.RefObject<BottomSheetModalMethods>,
+    bottomSheetModalRef?: React.RefObject<BottomSheetModalMethods>,
     style?: ViewStyle,
 }) {
     const nav = useNavigation();
@@ -39,7 +39,7 @@ function Option({
             // @ts-ignore
             nav.navigate("Tak");
 
-            bottomSheetModalRef.current?.dismiss();
+            bottomSheetModalRef && bottomSheetModalRef.current?.dismiss();
           });
 
         (async () => {
@@ -63,7 +63,7 @@ function Option({
     const theme = themes[scheme ?? "dark"];
 
     return (
-        <Pressable style={{
+        <TouchableOpacity style={{
             width: 156,
             aspectRatio: 1 / 1.5,
 
@@ -146,7 +146,7 @@ function Option({
                     {price} kr
                 </Text>
             </View>
-        </Pressable>
+        </TouchableOpacity>
     )
 }
 

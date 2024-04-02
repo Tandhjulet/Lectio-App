@@ -4,10 +4,12 @@ import { getProfile } from "../modules/api/scraper/Scraper";
 
 export default async function receiptValid(receipt: string): Promise<boolean> {
     const profile = await getProfile();
+    const { gymNummer } = await secureGet("gym")
 
     const body = JSON.stringify({
         "receipt": receipt,
         "name": profile.name,
+        "gym": gymNummer,
         "id": profile.elevId,
     }).trim();
 
@@ -27,21 +29,19 @@ export default async function receiptValid(receipt: string): Promise<boolean> {
     const json = await res.json();
     if(json.code !== "OK") return false;
 
-    await secureSave("userId", json.userId);
     await saveUnsecure("subscriptionEndDate", {date: json.endDate});
     
     return true;
 }
 
 export async function hasSubscription(save: boolean = true): Promise<{result: boolean | null, endDate: Date | null}> {
-    const userId = await secureGet("userId");
-    if(!userId) return {
-        result: false,
-        endDate: null,
-    };
+    const profile = await getProfile();
+    const { gymNummer } = await secureGet("gym")
 
     const body = JSON.stringify({
-        "userId": userId,
+        "name": profile.name,
+        "gym": gymNummer,
+        "id": profile.elevId,
     }).trim();
     
     const res: Response = await fetch(SCRAPE_URLS().LECTIOPLUS_GET, {

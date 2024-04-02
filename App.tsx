@@ -67,6 +67,7 @@ import ThankYou from './pages/ThankYou';
 import Grades from './pages/mere/Grades';
 import Documents from './pages/mere/Documents';
 import Books from './pages/mere/Books';
+import NoAccess from './pages/NoAccess';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -91,8 +92,8 @@ export const isExpoGo = Constants.appOwnership === 'expo';
 const App = () => {
   useEffect(() => {
     getUnsecure("useDarkMode").then(
-      (v: {result: boolean | null}) =>
-        Appearance.setColorScheme((v.result ?? true) ? "dark" : "light")
+      (v: {result: boolean | null} | null) =>
+        Appearance.setColorScheme((v?.result ?? true) ? "dark" : "light")
     )
   })
 
@@ -243,7 +244,7 @@ const App = () => {
     (prev: any, action: SubState) => {
       return {
         loading: false,
-        hasSubscription: action.type === "SUBSCRIBED",
+        hasSubscription: action.type !== "NOT_SUBSCRIBED",
         serverDown: action.type === "SERVER_DOWN",
       }
     },
@@ -321,10 +322,6 @@ const App = () => {
                   <Tab.Screen name="Mere" component={MereNavigator} options={{
                     header: () => <></>
                   }} />
-
-                  <Tab.Screen name="Tak" component={ThankYou} options={{
-                    header: () => <></>
-                  }} />
                 </Tab.Navigator>
               )}
             </>
@@ -356,6 +353,7 @@ export function SkemaNavigator() {
         header: () => <></>
       }} />
       <SkemaNav.Screen name={"Modul View"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.team })} />
+      <Settings.Screen name={"NoAccess"} component={NoAccess} options={{title: "Køb abonnement", headerShown: false}} />
     </SkemaNav.Navigator>
   )
 }
@@ -474,6 +472,11 @@ export function MereNavigator() {
       } />
       <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Lærere og elever"}} />
       <Settings.Screen name={"Books"} component={Books} options={{title: "Bøger"}} />
+
+      <Settings.Screen name={"NoAccess"} component={NoAccess} options={{title: "Køb abonnement", headerShown: false}} />
+      <Settings.Screen name="Tak" component={ThankYou} options={{
+        header: () => <></>
+      }} />
     </Settings.Navigator>
   )
 }

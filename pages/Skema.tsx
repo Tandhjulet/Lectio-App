@@ -1,6 +1,6 @@
 import { ActivityIndicator, Alert, Animated, DimensionValue, Dimensions, LogBox, Modal, PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
-import { createRef, useCallback, useEffect, useRef, useState } from "react";
+import { createRef, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
 import { secureGet, getUnsecure, isAuthorized } from "../modules/api/Authentication";
 import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
@@ -15,6 +15,7 @@ import { Key, getSaved } from "../modules/api/storage/Storage";
 import { SCHEMA_SEP_CHAR } from "../modules/Config";
 import Logo from "../components/Logo";
 import PagerView from "react-native-pager-view";
+import { SubscriptionContext } from "../modules/Sub";
 
 /**
  * 
@@ -98,6 +99,7 @@ const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
 export default function Skema({ navigation }: {
     navigation: NavigationProp<any>,
 }) {
+    const { subscriptionState } = useContext(SubscriptionContext);
     const [refreshing, setRefreshing] = useState(false);
 
     const [ dayNum, setDayNum ] = useState<number>((getDay(new Date()).weekDayNumber));
@@ -142,6 +144,13 @@ export default function Skema({ navigation }: {
                 }
                 
                 if(getWeekNumber(prev) != getWeekNumber(copy)) {
+                    // @ts-ignore
+                    if(!subscriptionState?.hasSubscription) {
+                        navigation.navigate("NoAccess")
+                        pagerRef.current?.setPageWithoutAnimation(1);
+                        return prev;
+                    }
+
                     if(t === "ADD") pagerRef.current?.setPage(2);
                     else if(t === "REMOVE") pagerRef.current?.setPage(0);
                     setLoadDate(copy);
@@ -724,6 +733,15 @@ export default function Skema({ navigation }: {
                     onPageSelected={(e) => {
                         if(blockScroll)
                             return;
+
+                        if(e.nativeEvent.position == 2 || e.nativeEvent.position == 0) {
+                            // @ts-ignore
+                            if(!subscriptionState?.hasSubscription) {
+                                navigation.navigate("NoAccess")
+                                pagerRef.current?.setPageWithoutAnimation(1);
+                                return;
+                            }
+                        }
                         
                         if(e.nativeEvent.position == 2) {
                             setLoadDate(() => {

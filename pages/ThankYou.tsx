@@ -4,13 +4,13 @@ import { CakeIcon } from "react-native-heroicons/solid";
 import React, { createRef, useCallback, useEffect } from "react";
 
 import Confetti from 'react-native-confetti';
-import { useFocusEffect } from "@react-navigation/native";
+import { NavigationProp, useFocusEffect } from "@react-navigation/native";
 
 
 export default function ThankYou({
     navigation,
 }: {
-    navigation: any
+    navigation: NavigationProp<any>,
 }) {
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
@@ -77,7 +77,8 @@ export default function ThankYou({
             <Button 
                 title="Kom i gang"
                 onPress={() => {
-                    navigation.navigate("SkemaNavigator")
+                    // @ts-ignore
+                    navigation.popToTop();
                 }}
             />
 
