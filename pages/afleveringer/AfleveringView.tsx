@@ -216,28 +216,34 @@ export default function AfleveringView({ navigation, route }: {
                                                             Opgavebeskrivelse
                                                         </Text>
 
-                                                        {opgaveDetails.opgaveBeskrivelse?.map((document, i) => (
-                                                            <TouchableOpacity style={{
-                                                                display: "flex",
-                                                                flexDirection: "row",
-                                                                alignItems: "center",
+                                                        <View style={{
+                                                            display: "flex",
+                                                            flexDirection: "column",
+                                                            gap: 5,
+                                                        }}>
+                                                            {opgaveDetails.opgaveBeskrivelse?.map((document, i) => (
+                                                                <TouchableOpacity style={{
+                                                                    display: "flex",
+                                                                    flexDirection: "row",
+                                                                    alignItems: "center",
 
-                                                                gap: 7.5,
-                                                            }} key={i} onPress={() => {
-                                                                openFile(document)
-                                                            }}>
-                                                                {findIcon(getUrlExtension(document.fileName))}
-                                                                
-                                                                <Text
-                                                                    style={{
-                                                                        color: scheme == "dark" ? "lightblue" : "darkblue",
-                                                                    }}
-                                                                    numberOfLines={2}
-                                                                >
-                                                                    {document.fileName}
-                                                                </Text>
-                                                            </TouchableOpacity>
-                                                        ))}
+                                                                    gap: 7.5,
+                                                                }} key={i} onPress={() => {
+                                                                    openFile(document)
+                                                                }}>
+                                                                    {findIcon(getUrlExtension(document.fileName))}
+                                                                    
+                                                                    <Text
+                                                                        style={{
+                                                                            color: scheme == "dark" ? "lightblue" : "darkblue",
+                                                                        }}
+                                                                        numberOfLines={2}
+                                                                    >
+                                                                        {document.fileName}
+                                                                    </Text>
+                                                                </TouchableOpacity>
+                                                            ))}
+                                                        </View>
                                                     </View>
                                                 }
                                             />
@@ -464,7 +470,7 @@ export default function AfleveringView({ navigation, route }: {
                                                     flexDirection: "row",
                                                 }}>
                                                     <Text style={{
-                                                        color: theme.ACCENT.toString(),
+                                                        color: theme.WHITE.toString(),
                                                         fontWeight: "bold",
                                                         fontSize: 12.5,
                                                     }}>

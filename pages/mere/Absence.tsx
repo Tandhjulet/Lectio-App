@@ -1,6 +1,6 @@
 import { ActivityIndicator, Animated, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, useColorScheme } from "react-native";
 import NavigationBar from "../../components/Navbar";
-import { ReactElement, RefObject, createRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ReactElement, RefObject, createRef, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { getAbsence, getAbsenceRegistration } from "../../modules/api/scraper/Scraper";
 import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { hexToRgb, themes } from "../../modules/Themes";
@@ -15,6 +15,7 @@ import { parseDate } from "../../modules/api/scraper/OpgaveScraper";
 import { BellIcon, CalendarDaysIcon, ClockIcon, EyeDropperIcon, LockClosedIcon, PaperAirplaneIcon, PaperClipIcon } from "react-native-heroicons/solid";
 import { NumberProp, SvgProps } from "react-native-svg";
 import * as Progress from 'react-native-progress';
+import { SubscriptionContext } from "../../modules/Sub";
 
 type ChartedAbsence = {
     almindeligt: {
@@ -408,7 +409,16 @@ export default function Absence({ navigation }: { navigation: any }) {
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
 
+    const { subscriptionState } = useContext(SubscriptionContext);
+
     const handlePress = (reg: Registration) => {
+        // @ts-ignore
+        if(!subscriptionState?.hasSubscription) {
+            navigation.navigate("NoAccess")
+            return;
+        }
+
+
         bottomSheetAbsenceRegistrationRef.current?.dismiss();
 
         setRegistration(reg);

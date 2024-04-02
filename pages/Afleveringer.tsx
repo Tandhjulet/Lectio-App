@@ -437,7 +437,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
             ),
             headerLeft: () => (
                 <View style={{
-                    marginLeft: -15,
+                    marginLeft: 0,
                 }}>
                     <HeaderBackButton labelVisible={false} />
                 </View>
