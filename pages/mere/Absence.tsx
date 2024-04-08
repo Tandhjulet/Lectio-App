@@ -193,8 +193,9 @@ export default function Absence({ navigation }: { navigation: any }) {
 
     const [ refreshing, setRefreshing ] = useState(false);
     const [ registrationRefreshing, setRegistrationRefreshing ] = useState(false);
+    const [ registrationLoading, setRegistrationLoading ] = useState(true);
 
-    const [ remappedRegs, setRemappedRegs ] = useState<{[id: string]: Registration[]}>();
+    const [ remappedRegs, setRemappedRegs ] = useState<{[id: string]: Registration[]} | null>();
 
     const [ absenceReason, setAbsenceReason] = useState<AbsenceReason | ((absenceReason: AbsenceReason) => string) | null>(null);
 
@@ -271,7 +272,12 @@ export default function Absence({ navigation }: { navigation: any }) {
             return gymNummer;
         })().then(async (gymNummer: string) => { // render registrations after absence
             
-            getAbsenceRegistration(gymNummer).then((res: Registration[]) => {
+            getAbsenceRegistration(gymNummer).then((res: Registration[] | null) => {
+                if(!res) {
+                    setRemappedRegs(null);
+                    setRegistrationLoading(false);
+                    return;
+                }
 
                 const out: {[id: string]: Registration[]} = {};
                 res.sort((a, b) => {
@@ -293,6 +299,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                 })
 
                 setRemappedRegs(out);
+                setRegistrationLoading(false);
             })
             
 
@@ -373,7 +380,11 @@ export default function Absence({ navigation }: { navigation: any }) {
 
         (async () => {
             const gymNummer = (await secureGet("gym")).gymNummer;
-            getAbsenceRegistration(gymNummer).then((res: Registration[]) => {
+            getAbsenceRegistration(gymNummer, true).then((res: Registration[] | null) => {
+                if(!res) {
+                    setRemappedRegs(null);
+                    return;
+                }
                 const out: {[id: string]: Registration[]} = {};
 
                 res.sort((a, b) => {
@@ -868,6 +879,40 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                                     flexDirection: "column"
                                 }}>
+                                    {registrationLoading && (
+                                        <View style={{
+                                            height: height / 2,
+                                            width: width,
+
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}>
+                                            <ActivityIndicator size={"small"} />
+                                        </View>
+                                    )}
+                                    {remappedRegs == null && (
+                                        <View style={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                        
+                                            flexDirection: 'column-reverse',
+                        
+                                            minHeight: '40%',
+                        
+                                            gap: 20,
+                                        }}>
+                                            <Text style={{
+                                                color: theme.RED,
+                                                textAlign: 'center'
+                                            }}>
+                                                Der opstod en fejl.
+                                                {"\n"}
+                                                Du kan prøve igen ved at genindlæse.
+                                            </Text>
+                                        </View>
+                                    )}
                                     {remappedRegs != null && Object.keys(remappedRegs).map((key: string, i: number) => {
                                         return (
                                             <View key={key} style={{

@@ -425,7 +425,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                         }}>
                             Der opstod en fejl.
                             {"\n"}
-                            Du kan prøve igen ved at genstarte appen.
+                            Du kan prøve igen ved at genindlæse.
                         </Text>
 
                     </View>

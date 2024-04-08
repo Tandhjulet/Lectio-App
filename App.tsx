@@ -192,12 +192,12 @@ const App = () => {
             dispatch({ type: 'SIGN_OUT' });
           } else {
             dispatch({ type: 'SIGN_IN' });
-            setTimeout(() => scrapePeople(), 500);
+            setTimeout(() => scrapePeople(), 1500);
           }
         }, 100)
       } else {
         dispatch({ type: 'SIGN_IN' });
-        setTimeout(() => scrapePeople(), 500);
+        setTimeout(() => scrapePeople(), 1500);
       }
     })();
   }, []);

@@ -54,7 +54,7 @@ export async function scrapePeople(force: boolean = false) {
                 await saveUnsecure("peopleListBackup", { stage: i, data: out })
                 //console.log("Saved stage " + i + "/" + klasser.length)
             }
-        }, ((i - (oldData == null ? 0 : oldData.stage)) + 1) * 1000))
+        }, ((i - (oldData == null ? 0 : oldData.stage)) + 1) * 2000))
     }
 }
 

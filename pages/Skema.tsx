@@ -594,6 +594,13 @@ export default function Skema({ navigation }: {
             return <></>;
         }
 
+        const day = new Date()
+        if(day.getMonth() == selectedDay.getMonth() &&
+            day.getDate() == selectedDay.getDate() &&
+            day.getFullYear() == selectedDay.getFullYear()) {
+            return <></>;
+        }
+
         return (
             <View
                 style={{
@@ -630,7 +637,7 @@ export default function Skema({ navigation }: {
                 </View>
             </View>
         )
-    }, [time, hoursToMap]);
+    }, [time, hoursToMap, selectedDay]);
 
     return (
         <View>
@@ -937,7 +944,7 @@ export default function Skema({ navigation }: {
                                     }}>
                                         Der opstod en fejl.
                                         {"\n"}
-                                        Du kan prøve igen ved at genstarte appen.
+                                        Du kan prøve igen ved at genindlæse.
                                     </Text>
 
                                 </View>

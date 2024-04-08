@@ -197,11 +197,11 @@ function scrapeHelper(elements:any) {
     return out;
 }
 
-export function scapeRegistration(parser: any): Registration[] {
+export function scapeRegistration(parser: any): Registration[] | null {
     const tables = parser.getElementsByClassName("ls-table-layout1");
 
     if(tables == null)
-        return [];
+        return null;
 
     const out: Registration[] = [];
 

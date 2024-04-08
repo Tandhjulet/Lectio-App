@@ -554,7 +554,7 @@ export async function getAbsence(gymNummer: string, bypassCache: boolean = false
     };
 }
 
-export async function getAbsenceRegistration(gymNummer: string, bypassCache: boolean = false): Promise<Registration[]> { 
+export async function getAbsenceRegistration(gymNummer: string, bypassCache: boolean = false): Promise<Registration[] | null> { 
     if(!bypassCache) {
         const saved = await getSaved(Key.REGISTRATION);
         if(saved.valid && saved.value != null) {
@@ -573,7 +573,7 @@ export async function getAbsenceRegistration(gymNummer: string, bypassCache: boo
     const parser = await treat(res);
     const registration = scapeRegistration(parser);
 
-    if(registration != null) {
+    if(registration.length > 0) {
         await saveFetch(Key.REGISTRATION, registration, Timespan.HOUR)
     }
 
