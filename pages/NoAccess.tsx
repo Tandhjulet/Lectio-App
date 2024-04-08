@@ -128,7 +128,7 @@ export default function NoAccess({
 
             <ScrollView style={{
                 width: "100%",
-                backgroundColor: theme.ACCENT_BLACK,
+                backgroundColor: scheme === "dark" ? hexToRgb(theme.WHITE.toString(), 0.2) : theme.ACCENT_BLACK,
 
                 flexShrink: 1,
                 borderRadius: 20,

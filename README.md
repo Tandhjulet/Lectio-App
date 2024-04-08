@@ -11,13 +11,16 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - push notifs
 - gør så appen kan bruges uden/med manglende internet
 - cache vises først, nyt information fetches, cache opdateres og vises for alle sider
-- afleveringer mangler tilbage knap
+-  abonnement stopper ikke når det blir cancellet
 
 ### __LAV__
 - spørgeskemaer
 - skema rework (skema parsing optimering, kan ikke åbne eksaminer)
 - aflevere filer
 - vedhæft filer i beskeder
+
+### __TEST__
+- afleveringer tilbage knap (misplaceret, kan ikke trykke)
 
 ### __KENDTE FEJL__
 - login med forkerte logindetaljer gr igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)!SS

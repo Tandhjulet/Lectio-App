@@ -68,6 +68,7 @@ import Grades from './pages/mere/Grades';
 import Documents from './pages/mere/Documents';
 import Books from './pages/mere/Books';
 import NoAccess from './pages/NoAccess';
+import { Opgave } from './modules/api/scraper/OpgaveScraper';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -404,31 +405,6 @@ export function BeskedNavigator() {
   )
 }
 
-export function AfleveringNavigator() {
-
-  const scheme = useColorScheme();
-  const theme = themes[scheme ?? "dark"];
-
-  return (
-    <Opgaver.Navigator initialRouteName="AfleveringList" screenOptions={{
-      gestureEnabled: true,
-      headerStyle: {
-        backgroundColor: theme.ACCENT_BLACK.toString(),
-      },
-      headerTitleStyle: {
-        color: theme.WHITE.toString(),
-      },
-      headerBackTitleVisible: false,
-      contentStyle: {backgroundColor: theme.BLACK}
-    }}>
-      <Opgaver.Screen name={"AfleveringList"} component={Afleveringer} options={{
-        title: "Afleveringer",
-      }} />
-      <Opgaver.Screen name={"AfleveringView"} component={AfleveringView} options={{title: "Aflevering"}} />
-    </Opgaver.Navigator>
-  )
-}
-
 export function MereNavigator() {
 
   const scheme = useColorScheme();
@@ -452,9 +428,21 @@ export function MereNavigator() {
       <Settings.Screen name={"UserSettings"} component={UserSettings} options={{title: "Brugerindstillinger"}} />
 
       <Settings.Screen name={"Absence"} component={Absence} options={{title: "Fravær"}} />
-      <Settings.Screen name={"Afleveringer"} component={AfleveringNavigator} options={({ navigation, route }) => ({
-        headerShown: false,
-      })} />
+
+      <Settings.Screen name={"Afleveringer"} component={Afleveringer} options={{
+        title: "Afleveringer",
+      }} />
+      <Settings.Screen name={"AfleveringView"} component={AfleveringView} options={({ route }) => {
+        const params = route.params ?? {};
+
+        // @ts-ignore
+        const title: string = "opgave" in params ? params.opgave.title : "Aflevering";
+
+        return {
+          title: title,
+        }
+      }} />
+
       <Settings.Screen name={"ModulRegnskab"} component={ModulRegnskab} options={{title: "Modulregnskab"}} />
       <Settings.Screen name={"Grades"} component={Grades} options={{title: "Karakterer"}} />
       <Settings.Screen name={"Dokumenter"} component={Documents} options={

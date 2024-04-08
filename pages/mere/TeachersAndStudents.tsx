@@ -80,7 +80,7 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
 
     const [rawPeople, setRawPeople] = useState<{[id: string]: Person}>({});
 
-    const [namelist, setNamelist] = useState<string[]>([]);
+    const [namelistAndClassList, setNamelistAndClassList] = useState<string[]>([]);
     const [filteredNamelist, setFilteredNamelist] = useState<string[]>([]);
 
     const [query, setQuery] = useState<string>();
@@ -90,12 +90,17 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
     const theme = themes[scheme ?? "dark"];
 
     const filterSearch = useCallback(function filterSearch(filterText: string, reuse: boolean) {
+        if(filterText === ":") {
+            setFilteredNamelist([]);
+            return;
+        }
+
         if(reuse && filteredNamelist.length === 0) reuse = false;
 
-        setFilteredNamelist((reuse ? filteredNamelist : namelist).filter((name) => {
+        setFilteredNamelist((reuse ? filteredNamelist : namelistAndClassList).filter((name) => {
             return name.toLowerCase().includes(filterText.toLowerCase());
         }));
-    }, [filteredNamelist, namelist])
+    }, [filteredNamelist, namelistAndClassList])
 
     const parseData = useCallback(function parseData(data: {[id: string]: Person}, list: string[], filter?: string): {
         letter: string,
@@ -138,18 +143,20 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
             setGym(gym);
 
             const peopleList: { [id: string]: Person } | null = await getPeople();
+
             if(peopleList == null) {
                 setLoading(false);
                 return;
             }
             setRawPeople(peopleList)
 
-            const _namelist = Object.keys(peopleList).sort();
+            const namelist = Object.keys(peopleList).sort();
+            const nameAndClasslist = namelist.flatMap((v) => v + ":" + peopleList[v].klasse);
 
-            setNamelist(_namelist)
-            setFilteredNamelist(_namelist);
+            setNamelistAndClassList(nameAndClasslist)
+            setFilteredNamelist(nameAndClasslist);
 
-            setPeople(parseData(peopleList, _namelist))
+            setPeople(parseData(peopleList, namelist))
 
             setLoading(false)
         })();
@@ -158,7 +165,11 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
     const renderItem = useCallback(({ item, index }: {
         item: string,
         index: number,
-    }) => <UserCell item={rawPeople[item]} gym={gym} theme={theme} />, [rawPeople]);
+    }) => {
+        const user = item.split(":")[0];
+
+        return <UserCell item={rawPeople[user]} gym={gym} theme={theme} />
+    }, [rawPeople]);
 
     const renderItemSectionList = useCallback(({ item, index }: {
         item: Person,

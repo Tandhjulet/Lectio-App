@@ -434,13 +434,6 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                         </View>
                     </Modal>
                 </View>
-            ),
-            headerLeft: () => (
-                <View style={{
-                    marginLeft: 0,
-                }}>
-                    <HeaderBackButton labelVisible={false} />
-                </View>
             )
         })
     }, [navigation, modalVisible])
