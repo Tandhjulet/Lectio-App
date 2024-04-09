@@ -22,7 +22,7 @@ import { scrapePeople } from './modules/api/scraper/class/PeopleList';
 import Afleveringer from './pages/Afleveringer';
 import AfleveringView from './pages/afleveringer/AfleveringView';
 import ModulRegnskab from './pages/mere/ModulRegnskab';
-import { Appearance, Button, EmitterSubscription, Pressable, Text, View, useColorScheme } from 'react-native';
+import { Appearance, Button, EmitterSubscription, Pressable, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronLeftIcon, PencilSquareIcon } from 'react-native-heroicons/solid';
 import { HeaderStyleInterpolators, TransitionPresets, createStackNavigator } from '@react-navigation/stack';
 import { cleanUp } from './modules/api/storage/Storage';
@@ -431,6 +431,29 @@ export function MereNavigator() {
 
       <Settings.Screen name={"Afleveringer"} component={Afleveringer} options={{
         title: "Afleveringer",
+        headerRight: () => (
+          <TouchableOpacity style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+
+            paddingVertical: 4,
+            paddingHorizontal: 6,
+
+            borderRadius: 100,
+
+            backgroundColor: "rgba(0,122,255,0.2)",
+        }}>
+            <AdjustmentsVerticalIcon color={"rgba(0,122,255,1)"} />
+            <Text style={{
+                color: "rgba(0,122,255,1)",
+                marginLeft: 2.5,
+                marginRight: 1,
+            }}>
+                Venter
+            </Text>
+        </TouchableOpacity>
+        )
       }} />
       <Settings.Screen name={"AfleveringView"} component={AfleveringView} options={({ route }) => {
         const params = route.params ?? {};

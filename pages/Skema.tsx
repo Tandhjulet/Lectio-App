@@ -16,6 +16,8 @@ import { SCHEMA_SEP_CHAR } from "../modules/Config";
 import Logo from "../components/Logo";
 import PagerView from "react-native-pager-view";
 import { SubscriptionContext } from "../modules/Sub";
+import Popover from "react-native-popover-view";
+import { Mode, Placement } from "react-native-popover-view/dist/Types";
 
 /**
  * 
@@ -124,7 +126,6 @@ export default function Skema({ navigation }: {
     const [ loading, setLoading ] = useState(true);
     const [ blockScroll, setBlockScroll ] = useState(true);
 
-    const [modalVisible, setModalVisible] = useState(false);
     const [rateLimited, setRateLimited] = useState(false);
 
     const [ profile, setProfile ] = useState<Profile>();
@@ -595,9 +596,9 @@ export default function Skema({ navigation }: {
         }
 
         const day = new Date()
-        if(day.getMonth() == selectedDay.getMonth() &&
+        if(!(day.getMonth() == selectedDay.getMonth() &&
             day.getDate() == selectedDay.getDate() &&
-            day.getFullYear() == selectedDay.getFullYear()) {
+            day.getFullYear() == selectedDay.getFullYear())) {
             return <></>;
         }
 
@@ -641,66 +642,6 @@ export default function Skema({ navigation }: {
 
     return (
         <View>
-            <Modal 
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => {
-                    setModalVisible(!modalVisible);
-                }}
-
-                style={{
-                    position: "absolute",
-                    overflow: "hidden",
-                }}
-            >
-                <TouchableWithoutFeedback style={{
-                    position: "absolute",
-
-                    overflow: "hidden",
-                    maxWidth: "100%",
-                    maxHeight: "100%",
-                }} onPress={() => {
-                    setModalVisible(!modalVisible);
-                }}>
-                    <View style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-
-                        paddingTop: 22,
-                        paddingBottom: 200,
-
-                        backgroundColor: 'rgba(52, 52, 52, 0.6)',
-                    }}>
-                        <View style={{
-                            margin: 20,
-
-                            backgroundColor: theme.BLACK,
-                            borderRadius: 20,
-
-                            paddingHorizontal: 35,
-                            paddingVertical: 20,
-
-                            alignItems: 'center',
-                            shadowColor: '#000',
-                            shadowOffset: {
-                                width: 0,
-                                height: 2,
-                            },
-                            shadowOpacity: 0.25,
-                            shadowRadius: 4,
-                            elevation: 5,
-                        }}>
-                            <Text style={{
-                                color: theme.WHITE,
-                            }}>
-                                {skema != null && skema[dayNum - 2] != undefined && skema[dayNum - 2].skemaNoter}
-                            </Text>
-                        </View>
-                    </View>
-                </TouchableWithoutFeedback>
-            </Modal>
-
             <View style={{
                 paddingTop: 50,
         
@@ -730,7 +671,6 @@ export default function Skema({ navigation }: {
                     flexDirection: 'row',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    gap: 20,
 
                     position: "absolute",
                     right: 0,
@@ -756,22 +696,61 @@ export default function Skema({ navigation }: {
                         </View>
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => {
-                        if(skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter == ""))
-                            return;
+                    <Popover
+                        placement={[Placement.BOTTOM, Placement.LEFT]}
 
-                        setModalVisible(true)
-                    }}>
-                        <View style={{
-                            backgroundColor: theme.LIGHT,
-                            padding: 5,
-                            borderRadius: 12.5,
+                        popoverStyle={{
+                            backgroundColor: hexToRgb(theme.ACCENT_BLACK.toString()),
+                            borderRadius: 7,
+                        }}
+                        backgroundStyle={{
+                            backgroundColor: "rgba(0,0,0,0.2)"
+                        }}
+                        offset={5}
+                        from={(
+                            <TouchableOpacity style={{
+                                backgroundColor: theme.LIGHT,
+                                padding: 5,
+                                borderRadius: 12.5,
+                                marginLeft: 20,
+    
+                                opacity: (skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter == "")) ? 0.5 : 1,
+                            }}>
+                                <ClipboardDocumentListIcon color={theme.DARK} />
+                            </TouchableOpacity>
+                        )}
+                    >
+                        <View>
+                            <View style={{
+                                width: width,
+                                paddingVertical: 12.5,
 
-                            opacity: (skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter == "")) ? 0.5 : 1,
-                        }}>
-                            <ClipboardDocumentListIcon color={theme.DARK} />
+                                backgroundColor: hexToRgb(scheme === "dark" ? "#FFFFFF" : "#000000", 0.1),
+                            }}>
+                                <Text style={{
+                                    color: scheme === "dark" ? "#FFF" : "#000",
+
+                                    fontWeight: "bold",
+                                    fontSize: 15,
+
+                                    textAlign: "center",
+                                }}>
+                                    Skema noter
+                                </Text>
+                            </View>
+
+                            <View style={{
+                                padding: 17.5,
+                                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.05),
+                            }}>
+                                <Text style={{
+                                    color: theme.WHITE,
+                                }}>
+                                    {skema != null && skema[dayNum - 2] != undefined && skema[dayNum - 2].skemaNoter}
+                                </Text>
+                            </View>
                         </View>
-                    </TouchableOpacity>
+                    </Popover>
                 </View>
             </View>
 

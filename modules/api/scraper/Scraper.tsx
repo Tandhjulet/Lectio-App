@@ -573,7 +573,7 @@ export async function getAbsenceRegistration(gymNummer: string, bypassCache: boo
     const parser = await treat(res);
     const registration = scapeRegistration(parser);
 
-    if(registration.length > 0) {
+    if(registration != null) {
         await saveFetch(Key.REGISTRATION, registration, Timespan.HOUR)
     }
 

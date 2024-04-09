@@ -1,4 +1,4 @@
-import { ActivityIndicator, Button, Image, Keyboard, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
+import { ActivityIndicator, Button, Image, Keyboard, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { Profile, getMessages, getProfile, scrapeCache } from "../modules/api/scraper/Scraper";
@@ -24,6 +24,8 @@ import { sendMessage } from "../modules/api/beskeder/sendBesked";
 import Logo from "../components/Logo";
 import ProfilePicture from "../components/ProfilePicture";
 import File from "../modules/File";
+import Popover from "react-native-popover-view/dist/Popover";
+import { Placement } from "react-native-popover-view/dist/Types";
 
 export default function Beskeder({ navigation }: {navigation: NavigationProp<any>}) {
     const [ loading, setLoading ] = useState<boolean>(true);
@@ -39,7 +41,6 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
     const [profile, setProfile] = useState<Profile>();
 
     const [sortedBy, setSortedBy] = useState<string>("Nyeste");
-    const [modalVisible, setModalVisible] = useState<boolean>(false);
 
     const [ sendingMessage, setSendingMessage ] = useState<boolean>(false);
 
@@ -105,6 +106,8 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
         return out;
     }
 
+    const [showPopover, setShowPopover] = useState(false);
+
     /**
      * Renders the filter and message-buttons
      */
@@ -147,72 +150,54 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                 <View style={{
                     marginRight: 15,
                 }}>
-                    <Pressable
-                        onPress={() => {
-                            setModalVisible(true)
+                    <Popover
+                        placement={[Placement.BOTTOM, Placement.LEFT]}
+                        isVisible={showPopover}
+                        onRequestClose={() => setShowPopover(false)}
+                        popoverStyle={{
+                            backgroundColor: theme.BLACK,
+                            borderRadius: 7.5,
                         }}
-                        style={{
-                            padding: 4,
+                        backgroundStyle={{
+                            backgroundColor: "rgba(0,0,0,0.2)"
+                        }}
+                        offset={5}
 
-                            backgroundColor: "rgba(0,122,255,0.2)",
-                            borderRadius: 100,
-                        }}
+                        from={(
+                            <TouchableOpacity style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                
+                                paddingVertical: 4,
+                                paddingHorizontal: 6,
+
+                                borderRadius: 100,
+
+                                backgroundColor: "rgba(0,122,255,0.2)",
+                            }} onPress={() => setShowPopover(true)}>
+                                <AdjustmentsVerticalIcon color={"rgba(0,122,255,1)"} />
+    
+                                {(sortedBy != null) &&
+                                    <Text style={{
+                                        color: "rgba(0,122,255,1)",
+                                        marginLeft: 2.5,
+                                        marginRight: 1,
+                                    }}>
+                                        {sortedBy}
+                                    </Text>
+                                }
+                            </TouchableOpacity>
+                        )}
                     >
                         <View style={{
-                            display: "flex",
-                            flexDirection: "row",
-                            alignItems: "center",
-                        }}>
-                            <AdjustmentsVerticalIcon color={"rgba(0,122,255,1)"} />
-
-                            {(sortedBy != null) &&
-                                <Text style={{
-                                    color: "rgba(0,122,255,1)",
-                                    marginLeft: 2.5,
-                                    marginRight: 1,
-                                }}>
-                                    {sortedBy}
-                                </Text>
-                            }
-                        </View>
-                    </Pressable>
-
-                    <Modal
-                        transparent
-                        visible={modalVisible}
-                        onRequestClose={() => {
-                            setModalVisible(!modalVisible)
-                        }}
-                        style={{
-                            position: "relative",
-
-                            bottom: 0,
-                            right: 0,
-                        }}
-                    >
-                        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-                            <View style={{
-                                position: 'absolute',
-                                top: 0,
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                backgroundColor: 'rgba(0,0,0,0.5)'
-                            }} />
-                        </TouchableWithoutFeedback>
-
-                        <View style={{
-                            position: "absolute",
-                            right: 50,
-                            top: 50,
-
                             borderRadius: 7.5,
                             backgroundColor: theme.BLACK,
 
                             paddingVertical: 10,
                         }}>
                             <Pressable onPress={() => {
-                                setModalVisible(false);
+                                setShowPopover(false);
                                 setSortedBy("Nyeste")
                             }}>
                                 <View style={{
@@ -247,7 +232,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                             }} />
 
                             <Pressable onPress={() => {
-                                setModalVisible(false);
+                                setShowPopover(false);
                                 setSortedBy("Ulæste")
                             }}>
                                 <View style={{
@@ -282,7 +267,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                             }} />
 
                             <Pressable onPress={() => {
-                                setModalVisible(false);
+                                setShowPopover(false);
                                 setSortedBy("Slettede")
                             }}>
                                 <View style={{
@@ -308,11 +293,11 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                 </View>
                             </Pressable>
                         </View>
-                    </Modal>
+                    </Popover>
                 </View>
             )
         })
-    }, [navigation, modalVisible])
+    }, [navigation, showPopover])
 
     /**
      * Fetches the messages on page load
