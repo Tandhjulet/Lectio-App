@@ -327,7 +327,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 accessory="Detail"
 
                                 onPress={() => {
-                                    WebBrowser.openBrowserAsync("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/", {
+                                    WebBrowser.openBrowserAsync("https://lectioplus.com/eula", {
                                         controlsColor: theme.ACCENT.toString(),
                                         dismissButtonStyle: "close",
                                         presentationStyle: WebBrowserPresentationStyle.POPOVER,
