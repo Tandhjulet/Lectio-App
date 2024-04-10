@@ -2,7 +2,7 @@ import { NavigationProp, RouteProp } from "@react-navigation/native"
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from "react-native";
 import { Cell, Section, Separator, TableView } from "react-native-tableview-simple";
-import { Opgave, OpgaveDetails, STATUS } from "../../modules/api/scraper/OpgaveScraper";
+import { Opgave, OpgaveDetails, Status } from "../../modules/api/scraper/OpgaveScraper";
 import { formatDate } from "../Afleveringer";
 import { getAflevering } from "../../modules/api/scraper/Scraper";
 import { secureGet, getUnsecure } from "../../modules/api/Authentication";
@@ -156,7 +156,7 @@ export default function AfleveringView({ navigation, route }: {
                         <Cell
                             cellStyle="RightDetail"
                             title="Status"
-                            detail={STATUS[aflevering.status]}
+                            detail={Status[aflevering.status]}
 
                             detailTextStyle={{
                                 textTransform: "capitalize",
@@ -236,7 +236,10 @@ export default function AfleveringView({ navigation, route }: {
                                                                     <Text
                                                                         style={{
                                                                             color: scheme == "dark" ? "lightblue" : "darkblue",
+                                                                            maxWidth: "90%",
                                                                         }}
+
+                                                                        ellipsizeMode="middle"
                                                                         numberOfLines={2}
                                                                     >
                                                                         {document.fileName}
@@ -371,7 +374,7 @@ export default function AfleveringView({ navigation, route }: {
                         }
                     </Section>
 
-                    {(opgaveDetails?.tilbagemedling || aflevering.elevNote) && (
+                    {((opgaveDetails?.tilbagemedling && (opgaveDetails.tilbagemedling.karakter !== "" || opgaveDetails.tilbagemedling.karakterNote !== "")) || aflevering.elevNote) && (
                         <Section
                             header="TILBAGEMELDING"
                             roundedCorners

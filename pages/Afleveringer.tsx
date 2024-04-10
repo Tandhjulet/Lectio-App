@@ -3,7 +3,7 @@ import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, ColorSchemeName, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import { secureGet, getUnsecure } from "../modules/api/Authentication";
 import { getAfleveringer } from "../modules/api/scraper/Scraper";
-import { Opgave, STATUS } from "../modules/api/scraper/OpgaveScraper";
+import { Opgave, Status } from "../modules/api/scraper/OpgaveScraper";
 import { Theme, hexToRgb, themes } from "../modules/Themes";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { AdjustmentsVerticalIcon, ChevronRightIcon } from "react-native-heroicons/solid";
@@ -91,13 +91,13 @@ const countOpgaver = (data: Opgave[] | null) => {
 
     data.forEach((opgave) => {
         switch(opgave.status) {
-            case STATUS.VENTER:
+            case Status.VENTER:
                 out.venter += 1
                 break;
-            case STATUS.AFLEVERET:
+            case Status.AFLEVERET:
                 out.afleveret += 1
                 break;
-            case STATUS.IKKE_AFLEVERET:
+            case Status.MANGLER:
                 out.mangler += 1
                 break;
         }
@@ -115,7 +115,7 @@ const countOpgaver = (data: Opgave[] | null) => {
  */
 const filterData = (data: {
     [id: string]: Opgave[];
-}, filter: STATUS | "ALL") => {
+}, filter: Status | "ALL") => {
     const out: {
         [id: string]: Opgave[];
     } = {};
@@ -150,7 +150,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
         mangler: number,
         afleveret: number,
     }>()
-    const [ sortedBy, setSortedBy ] = useState<string>("Venter");
+    const [ sortedBy, setSortedBy ] = useState<"Venter" | "Mangler" | "Afleveret" | "Alle">("Venter");
 
     const [loading, setLoading] = useState<boolean>(false)
     const [rateLimited, setRateLimited] = useState<boolean>(false)
@@ -164,7 +164,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
      * @param date date to calculate color from
      * @returns a color
      */
-    const calculateColor = useCallback((date: Date, theme: ColorSchemeName, opgaveStatus: STATUS) => {
+    const calculateColor = useCallback((date: Date, theme: ColorSchemeName, opgaveStatus: Status) => {
         const COLOR1 = [255, 0, 0]
         const COLOR2 = [255, 252, 0]
 
@@ -173,19 +173,19 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
         if(hours > 24*14 || hours < 0) {
             if(theme == "dark")
                 switch(opgaveStatus) {
-                    case STATUS.IKKE_AFLEVERET:
+                    case Status.MANGLER:
                         return themes.dark.RED;
-                    case STATUS.AFLEVERET:
+                    case Status.AFLEVERET:
                         return themes.dark.LIGHT;
-                    case STATUS.VENTER:
+                    case Status.VENTER:
                         return themes.dark.WHITE;
                 }
             switch(opgaveStatus) {
-                case STATUS.IKKE_AFLEVERET:
+                case Status.MANGLER:
                     return themes.dark.RED;
-                case STATUS.AFLEVERET:
+                case Status.AFLEVERET:
                     return themes.dark.LIGHT;
-                case STATUS.VENTER:
+                case Status.VENTER:
                     return hexToRgb(themes.light.WHITE.toString(), 0.6);
             }
         }
@@ -227,7 +227,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                 const formattedData = formatData(payload);
 
                 setRawAfleveringer(formattedData)
-                setAfleveringer(filterData(formattedData, STATUS.VENTER))
+                setAfleveringer(filterData(formattedData, Status.VENTER))
                 setRateLimited(rateLimited)
                 setLoading(false);
             })
@@ -250,7 +250,24 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                 const formattedData = formatData(payload);
 
                 setRawAfleveringer(formattedData)
-                setAfleveringer(filterData(formattedData, STATUS.VENTER))
+
+                let sortBy: Status | "ALL";
+                switch(sortedBy) {
+                    case "Afleveret":
+                        sortBy = Status.AFLEVERET;
+                        break;
+                    case "Alle":
+                        sortBy = "ALL";
+                        break;
+                    case "Mangler":
+                        sortBy = Status.MANGLER;
+                        break;
+                    case "Venter":
+                        sortBy = Status.VENTER;
+                        break;
+                }
+
+                setAfleveringer(filterData(formattedData, sortBy))
                 setRateLimited(rateLimited)
                 
                 setRefreshing(false);
@@ -358,7 +375,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
                     <TouchableOpacity onPress={() => {
                         setShowPopover(false);
-                        setAfleveringer(filterData(rawAfleveringer, STATUS.VENTER))
+                        setAfleveringer(filterData(rawAfleveringer, Status.VENTER))
                         setSortedBy("Venter")
                     }}>
                         <View style={{
@@ -400,7 +417,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
                     <TouchableOpacity onPress={() => {
                         setShowPopover(false);
-                        setAfleveringer(filterData(rawAfleveringer, STATUS.AFLEVERET))
+                        setAfleveringer(filterData(rawAfleveringer, Status.AFLEVERET))
                         setSortedBy("Afleveret")
                     }}>
                         <View style={{
@@ -442,7 +459,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
                     <TouchableOpacity onPress={() => {
                         setShowPopover(false);
-                        setAfleveringer(filterData(rawAfleveringer, STATUS.IKKE_AFLEVERET))
+                        setAfleveringer(filterData(rawAfleveringer, Status.MANGLER))
                         setSortedBy("Mangler")
                     }}>
                         <View style={{

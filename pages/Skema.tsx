@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, Animated, DimensionValue, Dimensions, LogBox, Modal, PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
+import { ActivityIndicator, Alert, Animated, ColorValue, DimensionValue, Dimensions, LogBox, Modal, PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { createRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
@@ -18,6 +18,7 @@ import PagerView from "react-native-pager-view";
 import { SubscriptionContext } from "../modules/Sub";
 import Popover from "react-native-popover-view";
 import { Mode, Placement } from "react-native-popover-view/dist/Types";
+import Constants from 'expo-constants';
 
 /**
  * 
@@ -179,6 +180,27 @@ export default function Skema({ navigation }: {
         setDay(flattened);
     }
 
+    const chooseSchema = useRef((skema: Day[], modulTimings: ModulDate[]) => {
+        const extrenumDates = findExtremumDates(skema[dayNum - 1].moduler, {
+            min: modulTimings[0],
+            max: modulTimings[modulTimings.length - 1],
+        })
+        if(extrenumDates == null)
+            return;
+        
+        const hoursBetween = hoursBetweenDates(extrenumDates, 2.5)
+        if(time.getHours() > Math.max(...hoursBetween)) {
+            setSelectedDay(new Date());
+            setDayNum(getDay(new Date()).weekDayNumber)
+        } else {
+            const currentDate = new Date();
+            currentDate.setDate(currentDate.getDate() + 1);
+
+            setSelectedDay(currentDate);
+            setDayNum(getDay(currentDate).weekDayNumber)
+        }
+    }).current
+
     /**
      * Fetches the data needed to display the page, on page load.
      * If anything is cached it will render that whilst waiting for the server to respond.
@@ -216,6 +238,8 @@ export default function Skema({ navigation }: {
                         setModulTimings([]);
                     }
                 }
+                chooseSchema(payload?.days ?? (hasCache ? saved.value.days : []), payload?.modul ?? (hasCache ? saved.value.modul : []))
+
                 setLoading(false);
                 setBlockScroll(false);
                 setRateLimited(rateLimited)
@@ -640,10 +664,26 @@ export default function Skema({ navigation }: {
         )
     }, [time, hoursToMap, selectedDay]);
 
+    const color = useRef((isSelectedDay: boolean, isToday: boolean, title: boolean) => {
+        if(isToday && isSelectedDay) {
+            return theme.WHITE;
+        }
+
+        if(isToday) {
+            return theme.LIGHT;
+        }
+
+        if(isSelectedDay) {
+            return theme.WHITE;
+        }
+
+        return title ? theme.WHITE : hexToRgb(scheme == "dark" ? "#FFFFFF" : "#000000", 0.5);
+    }).current;
+
     return (
         <View>
             <View style={{
-                paddingTop: 50,
+                paddingTop: Constants.statusBarHeight,
         
                 backgroundColor: theme.ACCENT_BLACK,
 
@@ -822,6 +862,14 @@ export default function Skema({ navigation }: {
                                 marginBottom: 10,
                             }}>
                                 {daysOfThreeWeeks[i].map((day,i) => {
+                                    const isSelectedDay =   day.date.getMonth() == selectedDay.getMonth() &&
+                                                            day.date.getDate() == selectedDay.getDate() &&
+                                                            day.date.getFullYear() == selectedDay.getFullYear();
+                                    
+                                    const isToday = day.date.getMonth() == time.getMonth() &&
+                                                    day.date.getDate() == time.getDate() &&
+                                                    day.date.getFullYear() == time.getFullYear();
+
                                     return (
                                         <Pressable key={i + "."} onPress={() => {
                                             setDayNum(day.weekDayNumber);
@@ -831,17 +879,15 @@ export default function Skema({ navigation }: {
                                                 opacity: pressed ? 0.6 : 1,
                                             }
                                         ]}>
-                                            <View style={{...styles.dayContainer, backgroundColor: (day.date.getMonth() == selectedDay.getMonth() &&
-                                                                                                    day.date.getDate() == selectedDay.getDate() &&
-                                                                                                    day.date.getFullYear() == selectedDay.getFullYear()) ? theme.LIGHT : theme.DARK}}>
+                                            <View style={{...styles.dayContainer, backgroundColor: isSelectedDay ? theme.LIGHT : hexToRgb(theme.WHITE.toString(), 0.15)}}>
                                                 <Text style={{
                                                     textTransform: 'lowercase',
-                                                    color: theme.ACCENT,
+                                                    color: color(isSelectedDay, isToday, false),
                                                     opacity: day.isWeekday ? 0.6 : 1,
                                                 }}>{day.dayName.slice(0,3)}.</Text>
 
                                                 <Text style={{
-                                                    color: theme.WHITE,
+                                                    color: color(isSelectedDay, isToday, true),
                                                     fontWeight: "bold",
                                                     fontSize: 20,
                                                     opacity: day.isWeekday ? 0.6 : 1,

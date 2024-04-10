@@ -12,10 +12,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - gør så appen kan bruges uden/med manglende internet
 - cache vises først, nyt information fetches, cache opdateres og vises for alle sider
 - gratis prøveperiode startes automatisk ved første app-opstart
-- kan ikke læse karaktereren 00
-- afleveringer refreshes til venter
-- "mangler" opgaver virker ikke i afleveringer
-- hvilken dag det er i dag inde på skemaet
 
 ### __LAV__
 - spørgeskemaer

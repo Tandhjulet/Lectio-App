@@ -2,9 +2,9 @@ import { Document } from "./DocumentScraper";
 import { SCRAPE_URLS } from "./Helpers";
 import { replaceHTMLEntities } from "./SkemaScraper";
 
-export enum STATUS {
+export enum Status {
     AFLEVERET,
-    IKKE_AFLEVERET,
+    MANGLER,
     VENTER,
 }
 
@@ -12,7 +12,7 @@ export type Opgave = {
     date: string,
     time: number,
     title: string,
-    status: STATUS,
+    status: Status, 
     team: string,
     absence: string,
     elevNote: string,
@@ -99,17 +99,21 @@ export async function scrapeOpgave(parser: any): Promise<OpgaveDetails | null> {
     }
 
     function scrapeKarakter(table: any): Karakter | undefined {
+        const tryScrape: (child: string) => string = (child: any) => {
+            try {
+                return child.firstChild.text.trim();
+            } catch {
+                return "";
+            }
+        }
+
         const content = table.lastChild;
         if(table == null) return undefined;
-        
-        try {
-            return {
-                karakter: content.children[5].firstChild.text.trim(),
-                karakterNote: content.children[6].firstChild.text.trim(),
-                student: content.children[1].firstChild.firstChild.firstChild.text,
-            }
-        } catch {
-            return undefined;
+    
+        return {
+            karakter: tryScrape(content.children[5]),
+            karakterNote: tryScrape(content.children[6]),
+            student: tryScrape(content.children[1].firstChild.firstChild),
         }
     }
 
@@ -214,7 +218,7 @@ export function scrapeOpgaver(parser: any): Opgave[] | null {
         out.push({
             absence: absence,
             date: parseDate(date).toString(),
-            status: STATUS[status as keyof typeof STATUS],
+            status: Status[status as keyof typeof Status],
             team: team,
             time: time,
             title: title,
