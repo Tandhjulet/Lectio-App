@@ -13,6 +13,8 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - cache vises først, nyt information fetches, cache opdateres og vises for alle sider
 - gratis prøveperiode startes automatisk ved første app-opstart
 - kan ikke læse karaktereren 00
+- afleveringer refreshes til venter
+- "mangler" opgaver virker ikke i afleveringer
 
 ### __LAV__
 - spørgeskemaer
