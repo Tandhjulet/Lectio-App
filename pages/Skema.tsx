@@ -2,7 +2,7 @@ import { ActivityIndicator, Alert, Animated, ColorValue, DimensionValue, Dimensi
 import NavigationBar from "../components/Navbar";
 import { createRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
-import { secureGet, getUnsecure, isAuthorized } from "../modules/api/Authentication";
+import { secureGet } from "../modules/api/Authentication";
 import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
 import { hexToRgb, themes } from "../modules/Themes";
 import { ArrowLeftIcon, ArrowRightIcon, BackwardIcon, ChatBubbleBottomCenterTextIcon, ChevronLeftIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";

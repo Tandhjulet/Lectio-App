@@ -2,7 +2,6 @@ import { ActivityIndicator, Animated, Keyboard, KeyboardAvoidingView, Pressable,
 import { hexToRgb, themes } from "../../modules/Themes";
 import { ArrowRightCircleIcon, ChevronDoubleRightIcon, LockClosedIcon, UserIcon } from "react-native-heroicons/solid";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { secureGet, getUnsecure, isAuthorized, secureSave, validate } from "../../modules/api/Authentication";
 import { SignInPayload } from "../../App";
 import { AuthContext } from "../../modules/Auth";
 import { useFocusEffect } from "@react-navigation/native";
