@@ -15,6 +15,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - kan ikke læse karaktereren 00
 - afleveringer refreshes til venter
 - "mangler" opgaver virker ikke i afleveringer
+- hvilken dag det er i dag inde på skemaet
 
 ### __LAV__
 - spørgeskemaer
