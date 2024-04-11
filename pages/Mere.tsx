@@ -43,13 +43,15 @@ export default function Mere({ navigation }: {navigation: any}) {
             const prof = await getProfile()
             setProfile(prof);
             
-            const { result, endDate } = await hasSubscription(true);
+            const { valid, endDate, freeTrial } = await hasSubscription(true);
             setGym((await secureGet("gym")))
 
-            if(result === null) {
+            if(freeTrial && valid) {
+                dispatchSubscription({ type: "FREE_TRIAL"})
+            } else if(valid === null) {
                 dispatchSubscription({ type: "SERVER_DOWN"})
             } else {
-                dispatchSubscription({ type: result ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
+                dispatchSubscription({ type: valid ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
             }
             setEndDate(endDate ?? new Date())
             setLoadingSubscription(false);
@@ -60,13 +62,16 @@ export default function Mere({ navigation }: {navigation: any}) {
         if(!loadingSubscription) return;
 
         (async () => {
-            const { result, endDate } = await hasSubscription();
+            const { valid, endDate, freeTrial } = await hasSubscription();
 
-            if(result === null) {
+            if(freeTrial && valid) {
+                dispatchSubscription({ type: "FREE_TRIAL"})
+            } else if(valid === null) {
                 dispatchSubscription({ type: "SERVER_DOWN"})
             } else {
-                dispatchSubscription({ type: result ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
+                dispatchSubscription({ type: valid ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
             }
+
             setLoadingSubscription(false);
 
             setEndDate(endDate ?? new Date())
@@ -81,6 +86,9 @@ export default function Mere({ navigation }: {navigation: any}) {
         if(subscriptionState?.serverDown)
             return "Lectio Plus' server er nede"
 
+        if(subscriptionState?.freeTrial)
+            return "Din prøveperiode er aktiv"
+
         // @ts-ignore
         return subscriptionState?.hasSubscription ? "Dit abonnement er aktivt" : "Du har ikke et gyldigt abonnement"
     }
@@ -90,8 +98,11 @@ export default function Mere({ navigation }: {navigation: any}) {
         if(subscriptionState?.serverDown)
             return "Dette abonnement er midlertidigt"
 
+        if(subscriptionState?.freeTrial)
+            return "Udløber d. " + (endDate?.toLocaleDateString() ?? "ukendt dato")
+
         // @ts-ignore
-        return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate?.toLocaleDateString() ?? "") : "Et abonnement giver ubegrænset adgang til Lectio Plus";
+        return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate?.toLocaleDateString() ?? "ukendt dato") : "Et abonnement giver ubegrænset adgang til Lectio Plus";
     }
 
     return (
@@ -270,12 +281,12 @@ export default function Mere({ navigation }: {navigation: any}) {
                             <Cell 
                                 cellStyle="Basic"
                                 // @ts-ignore
-                                title={(!subscriptionState?.hasSubscription && !subscriptionState?.serverDown) ? "Køb abonnement" : "Administrer abonnement"}
+                                title={((!subscriptionState?.hasSubscription && !subscriptionState?.serverDown) || subscriptionState?.freeTrial) ? "Køb abonnement" : "Administrer abonnement"}
                                 titleTextColor={theme.ACCENT}
 
                                 onPress={() => {
                                     // @ts-ignore
-                                    if(!subscriptionState?.hasSubscription && !subscriptionState?.serverDown) {
+                                    if((!subscriptionState?.hasSubscription && !subscriptionState?.serverDown) || subscriptionState?.freeTrial) {
                                         bottomSheetModalRef.current?.present();
                                     } else {
                                         WebBrowser.openBrowserAsync("https://apps.apple.com/account/subscriptions", {

@@ -11,7 +11,7 @@ import Schools from './pages/login/Schools';
 import Absence from './pages/mere/Absence';
 import TeachersAndStudents from './pages/mere/TeachersAndStudents';
 import BeskedView from './pages/beskeder/BeskedView';
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import { Reducer, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { authorize, secureGet, getUnsecure, saveUnsecure, secureSave } from './modules/api/Authentication';
 import SplashScreen from './pages/SplashScreen';
 import { AuthContext } from './modules/Auth';
@@ -204,11 +204,14 @@ const App = () => {
 
   useEffect(() => {
     (async () => {
-      const { result } = await hasSubscription();
-      if(result === null) {
+      const { valid, freeTrial } = await hasSubscription();
+
+      if(freeTrial && valid) {
+        dispatchSubscription({ type: "FREE_TRIAL"})
+      } else if(valid === null) {
         dispatchSubscription({ type: "SERVER_DOWN"})
       } else {
-        dispatchSubscription({ type: result ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
+        dispatchSubscription({ type: valid ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
       }
     })();
   }, [])
@@ -247,10 +250,12 @@ const App = () => {
         loading: false,
         hasSubscription: action.type !== "NOT_SUBSCRIBED",
         serverDown: action.type === "SERVER_DOWN",
+        freeTrial: action.type === "FREE_TRIAL",
       }
     },
     {
       serverDown: false,
+      freeTrial: false,
       hasSubscription: undefined,
       loading: true, 
     }
