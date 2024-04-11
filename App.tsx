@@ -192,12 +192,12 @@ const App = () => {
             dispatch({ type: 'SIGN_OUT' });
           } else {
             dispatch({ type: 'SIGN_IN' });
-            setTimeout(() => scrapePeople(), 1500);
+            setTimeout(() => scrapePeople(), 2500);
           }
         }, 100)
       } else {
         dispatch({ type: 'SIGN_IN' });
-        setTimeout(() => scrapePeople(), 1500);
+        setTimeout(() => scrapePeople(), 2500);
       }
     })();
   }, []);
@@ -355,6 +355,10 @@ export function SkemaNavigator() {
       }} />
       <SkemaNav.Screen name={"Modul View"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.team })} />
       <Settings.Screen name={"NoAccess"} component={NoAccess} options={{title: "Køb abonnement", headerShown: false}} />
+
+      <Settings.Screen name="Tak" component={ThankYou} options={{
+        header: () => <></>
+      }} />
     </SkemaNav.Navigator>
   )
 }

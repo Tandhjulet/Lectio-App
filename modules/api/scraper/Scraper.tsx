@@ -189,7 +189,7 @@ export async function getSchools(): Promise<{[id: string]: string;}> {
     return parsedGyms;
 }
 
-export async function fetchProfile(): Promise<Profile> {
+export async function fetchProfile(forside?: string): Promise<Profile> {
     let ERROR = false;
 
     let gym: {gymName: string, gymNummer: string} | null = await secureGet("gym");
@@ -199,17 +199,21 @@ export async function fetchProfile(): Promise<Profile> {
     const authFetch = await getSaved(Key.FORSIDE);
     let text;
 
-    if(!authFetch.valid || authFetch.value == null) {
-        const res = await fetch(SCRAPE_URLS(gym.gymNummer).FORSIDE, {
-            method: "GET",
-            credentials: 'include',
-            headers: {
-                "User-Agent": "Mozilla/5.0",
-            },
-        })
-        text = await res.text();
+    if(forside) {
+        text = forside;
     } else {
-        text = authFetch.value.body;
+        if(!authFetch.valid || authFetch.value == null) {
+            const res = await fetch(SCRAPE_URLS(gym.gymNummer).FORSIDE, {
+                method: "GET",
+                credentials: 'include',
+                headers: {
+                    "User-Agent": "Mozilla/5.0",
+                },
+            })
+            text = await res.text();
+        } else {
+            text = authFetch.value.body;
+        }
     }
 
     const parser = await treatRaw(text);

@@ -181,6 +181,10 @@ export default function Skema({ navigation }: {
     }
 
     const chooseSchema = useRef((skema: Day[], modulTimings: ModulDate[]) => {
+        if(hasBeenCalled.current) return;
+
+        hasBeenCalled.current = true;
+
         const extrenumDates = findExtremumDates(skema[dayNum - 1].moduler, {
             min: modulTimings[0],
             max: modulTimings[modulTimings.length - 1],
@@ -201,6 +205,8 @@ export default function Skema({ navigation }: {
         }
     }).current
 
+
+    const hasBeenCalled = useRef(false);
     /**
      * Fetches the data needed to display the page, on page load.
      * If anything is cached it will render that whilst waiting for the server to respond.
@@ -238,6 +244,7 @@ export default function Skema({ navigation }: {
                         setModulTimings([]);
                     }
                 }
+                
                 chooseSchema(payload?.days ?? (hasCache ? saved.value.days : []), payload?.modul ?? (hasCache ? saved.value.modul : []))
 
                 setLoading(false);
@@ -664,7 +671,7 @@ export default function Skema({ navigation }: {
         )
     }, [time, hoursToMap, selectedDay]);
 
-    const color = useRef((isSelectedDay: boolean, isToday: boolean, title: boolean) => {
+    const color = ((isSelectedDay: boolean, isToday: boolean, title: boolean) => {
         if(isToday && isSelectedDay) {
             return theme.WHITE;
         }
@@ -678,7 +685,7 @@ export default function Skema({ navigation }: {
         }
 
         return title ? theme.WHITE : hexToRgb(scheme == "dark" ? "#FFFFFF" : "#000000", 0.5);
-    }).current;
+    });
 
     return (
         <View>

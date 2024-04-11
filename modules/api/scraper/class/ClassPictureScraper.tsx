@@ -14,9 +14,7 @@ export type Person = {
     klasse?: string,
 }
 
-export async function scrapeStudentPictures(classId: string, className: string) {
-    const gym: { gymName: string, gymNummer: string } = await secureGet("gym")
-
+export async function scrapeStudentPictures(classId: string, className: string, gym: {gym: string, gymNummer: string}) {
     const payload: {[id: string]: string} = {
         ...(await getASPHeaders(SCRAPE_URLS(gym.gymNummer, undefined, classId).CLASS)),
 

@@ -6,6 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SignInPayload } from '../../App';
 import { SCRAPE_URLS, getASPHeaders } from './scraper/Helpers';
 import { Key, saveFetch } from './storage/Storage';
+import { treatRaw } from './scraper/TextTreater';
+import { scrapeHoldListe } from './scraper/hold/HoldScraper';
 
 /**
  * @param key the key of the item
@@ -37,7 +39,6 @@ export async function validate(gymNummer: string, username: string, password: st
         "__EVENTTARGET": "m$Content$submitbtn2",
         "m$Content$username": username,
         "m$Content$password": password,
-        "m$Content$AutologinCbx": "off",
         "masterfootervalue": "X1!ÆØÅ",
         "LectioPostbackId": "",
     }
@@ -48,15 +49,16 @@ export async function validate(gymNummer: string, username: string, password: st
     }
     const stringifiedData = parsedData.join("&");
 
-    const res = await fetch(SCRAPE_URLS(gymNummer).LOGIN_URL, {
+    await fetch(SCRAPE_URLS(gymNummer).LOGIN_URL, {
         method: "POST",
         credentials: "include",
         headers: {
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+            "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             "Accept-Encoding": "gzip, deflate, br",
             "Accept-Language": "da-DK,da;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6",
             "Cache-Control": "no-cache",
+            "Origin": "https://www.lectio.dk",
             "Pragma": "no-cache",
             "Referer": `https://www.lectio.dk/lectio/${gymNummer}/login.aspx`,
             "Sec-Ch-Ua": `"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"`,
@@ -72,15 +74,65 @@ export async function validate(gymNummer: string, username: string, password: st
         body: stringifiedData,
     });
 
-    const isAuth = (res.url == SCRAPE_URLS(gymNummer).FORSIDE);
+    const res2 = await fetch(SCRAPE_URLS(gymNummer).FORSIDE, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+        },
+        body: stringifiedData,
+    });
+    const isAuth = (res2.url == SCRAPE_URLS(gymNummer).FORSIDE);
+
     if(isAuth) {
-        const body = await res.text()
+        const body = await res2.text()
+
+        await _fetchProfile(body, gymNummer)
         await saveFetch(Key.FORSIDE, {
             body: body,
-        })
+        }, -1)
     }
 
     return isAuth;
+}
+
+async function _fetchProfile(text: string, gymNummer: string) {
+    const parser = await treatRaw(text);
+
+    let elevID = parser.getElementsByName("msapplication-starturl")[0];
+    if(elevID != null && "attributes" in elevID)
+        elevID = elevID.attributes.content
+    else {
+        console.warn("Rate limited!")
+        elevID = "";
+    }
+    if(elevID == "/lectio/" + gymNummer + "/default.aspx") {
+        elevID = "";
+    }
+
+    let realName = parser.getElementById("s_m_HeaderContent_MainTitle");
+    if(realName == null) {
+        realName = "";
+    } else {
+       realName = realName.firstChild.firstChild.text.split(", ")[0].replace("Eleven ", "").replace("Læreren ", "");
+    }
+
+    const profile = {
+        name: realName,
+
+        elevId: elevID.split("?")[1].replace(/\D/gm, ""),
+    
+        notifications: {
+            aflysteLektioner: false,
+            ændredeLektioner: false,
+            beskeder: false,
+        },
+
+        hold: await scrapeHoldListe(parser),
+    };
+
+    const stringifiedValue = JSON.stringify(profile);
+    await SecureStore.setItemAsync("profile", stringifiedValue);
 }
 
 /**
