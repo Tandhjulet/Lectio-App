@@ -193,7 +193,7 @@ export default function Skema({ navigation }: {
             return;
         
         const hoursBetween = hoursBetweenDates(extrenumDates, 2.5)
-        if(time.getHours() > Math.max(...hoursBetween)) {
+        if(time.getHours() < Math.max(...hoursBetween)) {
             setSelectedDay(new Date());
             setDayNum(getDay(new Date()).weekDayNumber)
         } else {
