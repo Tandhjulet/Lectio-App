@@ -69,6 +69,7 @@ import Documents from './pages/mere/Documents';
 import Books from './pages/mere/Books';
 import NoAccess from './pages/NoAccess';
 import { Opgave } from './modules/api/scraper/OpgaveScraper';
+import { hasProfileSaved } from './modules/api/scraper/Scraper';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -193,6 +194,18 @@ const App = () => {
           } else {
             dispatch({ type: 'SIGN_IN' });
             setTimeout(() => scrapePeople(), 2500);
+
+            if(await hasProfileSaved())
+              return;
+            
+            const { valid, freeTrial } = await hasSubscription();
+            if(freeTrial && valid) {
+              dispatchSubscription({ type: "FREE_TRIAL"})
+            } else if(valid === null) {
+              dispatchSubscription({ type: "SERVER_DOWN"})
+            } else {
+              dispatchSubscription({ type: valid ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
+            }
           }
         }, 100)
       } else {
@@ -204,6 +217,9 @@ const App = () => {
 
   useEffect(() => {
     (async () => {
+      if(!(await hasProfileSaved()))
+        return;
+
       const { valid, freeTrial } = await hasSubscription();
 
       if(freeTrial && valid) {

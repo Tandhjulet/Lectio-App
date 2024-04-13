@@ -180,17 +180,27 @@ export default function Skema({ navigation }: {
         setDay(flattened);
     }
 
-    const chooseSchema = useRef((skema: Day[], modulTimings: ModulDate[]) => {
+    const chooseSchema = useRef((skema: Day[] | null, modulTimings: ModulDate[]) => {
         if(hasBeenCalled.current) return;
+        if(skema == null || skema.length == 0) 
+            return;
 
         hasBeenCalled.current = true;
+        
+        let extrenumDates;
+        try {
+            extrenumDates = findExtremumDates(skema[dayNum - 1].moduler, {
+                min: modulTimings[0],
+                max: modulTimings[modulTimings.length - 1],
+            })
+        } catch {
+            const currentDate = new Date();
+            currentDate.setDate(currentDate.getDate() + 1);
 
-        const extrenumDates = findExtremumDates(skema[dayNum - 1].moduler, {
-            min: modulTimings[0],
-            max: modulTimings[modulTimings.length - 1],
-        })
-        if(extrenumDates == null)
+            setSelectedDay(currentDate);
+            setDayNum(getDay(currentDate).weekDayNumber)
             return;
+        }
         
         const hoursBetween = hoursBetweenDates(extrenumDates, 2.5)
         if(time.getHours() < Math.max(...hoursBetween)) {

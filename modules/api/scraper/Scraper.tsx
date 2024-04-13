@@ -272,7 +272,7 @@ export type Profile = {
 
 // this is so stupid, but it's the only way to get metro to stfu.
 
-let profile: Profile;
+export let profile: Profile;
 
 async function _getUnsecure(key: string) {
     const stringifiedValue = await AsyncStorage.getItem(key);
@@ -288,6 +288,17 @@ export async function saveProfile(newProfile: Profile) {
 
     const stringifiedValue = JSON.stringify(newProfile);
     await SecureStore.setItemAsync("profile", stringifiedValue);
+}
+
+export async function hasProfileSaved() {
+    const profileFetchDate = await _getUnsecure("lastScrapeProfile");
+    if(profileFetchDate != null && ((new Date().valueOf() - profileFetchDate.date) < Timespan.DAY)) {
+        const prof = await SecureStore.getItemAsync("profile");
+        if(prof != null) {
+            return true;
+        }
+    }
+    return false;
 }
 
 export async function getProfile(): Promise<Profile> {

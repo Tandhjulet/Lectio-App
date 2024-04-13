@@ -97,42 +97,47 @@ export async function validate(gymNummer: string, username: string, password: st
 }
 
 async function _fetchProfile(text: string, gymNummer: string) {
-    const parser = await treatRaw(text);
+    try {
+        const parser = await treatRaw(text);
 
-    let elevID = parser.getElementsByName("msapplication-starturl")[0];
-    if(elevID != null && "attributes" in elevID)
-        elevID = elevID.attributes.content
-    else {
-        console.warn("Rate limited!")
-        elevID = "";
+        let elevID = parser.getElementsByName("msapplication-starturl")[0];
+        if(elevID != null && "attributes" in elevID)
+            elevID = elevID.attributes.content
+        else {
+            console.warn("Rate limited!")
+            elevID = "";
+        }
+        if(elevID == "/lectio/" + gymNummer + "/default.aspx") {
+            elevID = "";
+        }
+
+        let realName = parser.getElementById("s_m_HeaderContent_MainTitle");
+        if(realName == null) {
+            realName = "";
+        } else {
+        realName = realName.firstChild.firstChild.text.split(", ")[0].replace("Eleven ", "").replace("Læreren ", "");
+        }
+
+        const profile = {
+            name: realName,
+
+            elevId: elevID.split("?")[1].replace(/\D/gm, ""),
+        
+            notifications: {
+                aflysteLektioner: false,
+                ændredeLektioner: false,
+                beskeder: false,
+            },
+
+            hold: await scrapeHoldListe(parser),
+        };
+
+        const stringifiedValue = JSON.stringify(profile);
+        await SecureStore.setItemAsync("profile", stringifiedValue);
+        await saveUnsecure("lastScrapeProfile", { date: (new Date()).valueOf() })
+    } catch {
+        console.warn("error occured whilst scraping")
     }
-    if(elevID == "/lectio/" + gymNummer + "/default.aspx") {
-        elevID = "";
-    }
-
-    let realName = parser.getElementById("s_m_HeaderContent_MainTitle");
-    if(realName == null) {
-        realName = "";
-    } else {
-       realName = realName.firstChild.firstChild.text.split(", ")[0].replace("Eleven ", "").replace("Læreren ", "");
-    }
-
-    const profile = {
-        name: realName,
-
-        elevId: elevID.split("?")[1].replace(/\D/gm, ""),
-    
-        notifications: {
-            aflysteLektioner: false,
-            ændredeLektioner: false,
-            beskeder: false,
-        },
-
-        hold: await scrapeHoldListe(parser),
-    };
-
-    const stringifiedValue = JSON.stringify(profile);
-    await SecureStore.setItemAsync("profile", stringifiedValue);
 }
 
 /**
