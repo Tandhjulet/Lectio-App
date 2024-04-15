@@ -194,11 +194,8 @@ export default function Skema({ navigation }: {
                 max: modulTimings[modulTimings.length - 1],
             })
         } catch {
-            const currentDate = new Date();
-            currentDate.setDate(currentDate.getDate() + 1);
-
-            setSelectedDay(currentDate);
-            setDayNum(getDay(currentDate).weekDayNumber)
+            setSelectedDay(new Date());
+            setDayNum(getDay(new Date()).weekDayNumber)
             return;
         }
         
@@ -208,7 +205,8 @@ export default function Skema({ navigation }: {
             setDayNum(getDay(new Date()).weekDayNumber)
         } else {
             const currentDate = new Date();
-            currentDate.setDate(currentDate.getDate() + 1);
+            if(currentDate.getDay() !== 0) 
+                currentDate.setDate(currentDate.getDate() + 1);
 
             setSelectedDay(currentDate);
             setDayNum(getDay(currentDate).weekDayNumber)

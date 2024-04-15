@@ -422,6 +422,16 @@ export default function Absence({ navigation }: { navigation: any }) {
 
     const { subscriptionState } = useContext(SubscriptionContext);
 
+    const treatNumber = (num: number | undefined) => {
+        if(num === undefined)
+            return 0;
+
+        return num.toLocaleString("da-DK", {
+            style: "decimal",
+            maximumFractionDigits: 2,
+        })
+    }
+
     const handlePress = (reg: Registration) => {
         // @ts-ignore
         if(!subscriptionState?.hasSubscription) {
@@ -564,7 +574,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                             color: theme.WHITE,
                                                             opacity: 0.8,
                                                         }}>
-                                                            {chartedAbsence?.almindeligt.absent.toString().replace(".", ",")} / {chartedAbsence?.almindeligt.settled.toString().replace(".", ",")}
+                                                            {treatNumber(chartedAbsence?.almindeligt.absent)} / {treatNumber(chartedAbsence?.almindeligt.settled)}
                                                         </Text>
                                                     </View>
 
@@ -594,7 +604,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                             color: theme.WHITE,
                                                             opacity: 0.8,
                                                         }}>
-                                                            {chartedAbsence?.almindeligt.absent.toString().replace(".", ",")} / {chartedAbsence?.almindeligt.yearly.toString().replace(".", ",")}
+                                                            {treatNumber(chartedAbsence?.almindeligt.absent)} / {treatNumber(chartedAbsence?.almindeligt.yearly)}
                                                         </Text>
                                                     </View>
                                                 </View>
@@ -739,7 +749,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                             color: theme.WHITE,
                                                             opacity: 0.8,
                                                         }}>
-                                                            {chartedAbsence?.skriftligt.absent.toString().replace(".", ",")} / {chartedAbsence?.skriftligt.yearly.toString().replace(".", ",")}
+                                                            {treatNumber(chartedAbsence?.skriftligt.absent)} / {treatNumber(chartedAbsence?.skriftligt.yearly)}
                                                         </Text>
                                                     </View>
 
@@ -769,7 +779,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                             color: theme.WHITE,
                                                             opacity: 0.8,
                                                         }}>
-                                                            {chartedAbsence?.skriftligt.absent.toString().replace(".", ",")} / {chartedAbsence?.skriftligt.yearly.toString().replace(".", ",")}
+                                                            {treatNumber(chartedAbsence?.skriftligt.absent)} / {treatNumber(chartedAbsence?.skriftligt.yearly)}
                                                         </Text>
                                                     </View>
                                                 </View>
@@ -973,7 +983,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                                 }}>
                                                                     <Progress.Pie
                                                                         size={60}
-                                                                        progress={parseFloat(reg.absence)}
+                                                                        progress={parseFloat(reg.absence)/100}
                                                                         color={hexToRgb(color, 0.2)}
                                                                         borderWidth={1}
                                                                     />
@@ -1256,7 +1266,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                             }}>
                                                 <Progress.Pie
                                                     size={80}
-                                                    progress={parseFloat(registration?.absence || "0")}
+                                                    progress={parseFloat(registration?.absence || "0")/100}
                                                     color={hexToRgb(color, 0.2)}
                                                     borderWidth={1}
                                                 />

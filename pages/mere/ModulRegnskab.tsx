@@ -248,7 +248,7 @@ export default function ModulRegnskab() {
 
                         <View
                             style={{
-                                paddingVertical: 100,
+                                paddingBottom: 89,
                             }}
                         />
                     </TableView>

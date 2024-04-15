@@ -11,7 +11,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - push notifs
 - gør så appen kan bruges uden/med manglende internet
 - cache vises først, nyt information fetches, cache opdateres og vises for alle sider
-- gratis prøveperiode startes automatisk ved første app-opstart
+- https://github.com/stevenselcuk/react-native-ask-for-review
 
 ### __LAV__
 - spørgeskemaer

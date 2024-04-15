@@ -101,9 +101,9 @@ async function _fetchProfile(text: string, gymNummer: string) {
         const parser = await treatRaw(text);
 
         let elevID = parser.getElementsByName("msapplication-starturl")[0];
-        if(elevID != null && "attributes" in elevID)
-            elevID = elevID.attributes.content
-        else {
+        if(elevID != null && "attributes" in elevID) {
+            elevID = elevID.attributes.content;
+        } else {
             console.warn("Rate limited!")
             elevID = "";
         }
@@ -115,7 +115,7 @@ async function _fetchProfile(text: string, gymNummer: string) {
         if(realName == null) {
             realName = "";
         } else {
-        realName = realName.firstChild.firstChild.text.split(", ")[0].replace("Eleven ", "").replace("Læreren ", "");
+            realName = realName.firstChild.firstChild.text.split(", ")[0].replace("Eleven ", "").replace("Læreren ", "");
         }
 
         const profile = {
@@ -135,8 +135,8 @@ async function _fetchProfile(text: string, gymNummer: string) {
         const stringifiedValue = JSON.stringify(profile);
         await SecureStore.setItemAsync("profile", stringifiedValue);
         await saveUnsecure("lastScrapeProfile", { date: (new Date()).valueOf() })
-    } catch {
-        console.warn("error occured whilst scraping")
+    } catch(err) {
+        console.warn(err)
     }
 }
 
