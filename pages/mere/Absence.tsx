@@ -1,9 +1,9 @@
 import { ActivityIndicator, Animated, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, useColorScheme } from "react-native";
 import NavigationBar from "../../components/Navbar";
-import { ReactElement, RefObject, createRef, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { ReactElement, RefObject, createRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { getAbsence, getAbsenceRegistration } from "../../modules/api/scraper/Scraper";
 import { secureGet, getUnsecure } from "../../modules/api/Authentication";
-import { hexToRgb, themes } from "../../modules/Themes";
+import { hexToRgb, Theme, themes } from "../../modules/Themes";
 import { AbsenceReason, AbsenceRegistration, AbsenceType, Fag, ModuleAbsence, Registration, postRegistration } from "../../modules/api/scraper/AbsenceScraper";
 import RateLimit from "../../components/RateLimit";
 import { VictoryChart, VictoryContainer, VictoryLabel, VictoryPie, VictoryTheme } from "victory-native";
@@ -16,6 +16,9 @@ import { BellIcon, CalendarDaysIcon, ClockIcon, EyeDropperIcon, LockClosedIcon, 
 import { NumberProp, SvgProps } from "react-native-svg";
 import * as Progress from 'react-native-progress';
 import { SubscriptionContext } from "../../modules/Sub";
+import { FlatList } from "react-native";
+import { SectionList } from "react-native";
+import Shake from "../../components/Shake";
 
 type ChartedAbsence = {
     almindeligt: {
@@ -195,11 +198,15 @@ export default function Absence({ navigation }: { navigation: any }) {
     const [ registrationRefreshing, setRegistrationRefreshing ] = useState(false);
     const [ registrationLoading, setRegistrationLoading ] = useState(true);
 
-    const [ remappedRegs, setRemappedRegs ] = useState<{[id: string]: Registration[]} | null>();
+    const [ remappedRegs, setRemappedRegs ] = useState<{
+        key: string,
+        data: Registration[],
+    }[]>([]);
 
     const [ absenceReason, setAbsenceReason] = useState<AbsenceReason | ((absenceReason: AbsenceReason) => string) | null>(null);
 
     const [ sendLoading, setSendLoading ] = useState<boolean>(false);
+    const [ sendError, setSendError ] = useState<boolean>(false);
 
     const handleAbsenceData = useCallback((payload: Fag[], out: ChartedAbsence) => {
         const almindeligt = [...payload.map(load => load.almindeligt).filter((modul) => modul.absent > 0)].sort((a,b) => {
@@ -274,12 +281,16 @@ export default function Absence({ navigation }: { navigation: any }) {
             
             getAbsenceRegistration(gymNummer).then((res: Registration[] | null) => {
                 if(!res) {
-                    setRemappedRegs(null);
+                    setRemappedRegs([]);
                     setRegistrationLoading(false);
                     return;
                 }
 
-                const out: {[id: string]: Registration[]} = {};
+                const out: {
+                    key: string,
+                    data: Registration[],
+                }[] = [];
+
                 res.sort((a, b) => {
                     if(typeof a.registered === "string") a.registered = new Date(a.registered);
                     if(typeof a.modulStartTime === "string") a.modulStartTime = new Date(a.modulStartTime);
@@ -289,14 +300,23 @@ export default function Absence({ navigation }: { navigation: any }) {
                     return (b.registered.valueOf() + b.modulStartTime.valueOf()) - (a.registered.valueOf() + a.modulStartTime.valueOf())
                 });
 
-                res.forEach((reg) => {
-                    const str = reg.registered.toLocaleDateString("da-DK").replace(".", "/").replace(".", "-")
+                let current = "";
+                let index = 0;
 
-                    if(!(str in out)) 
-                        out[str] = []
+                for(let reg of res) {
+                    const str = reg.registered.toLocaleDateString("da-DK").replace(".", "/").replace(".", "-");
 
-                    out[str].push(reg);
-                })
+                    if(current != str) {
+                        index = out.push({
+                            key: str,
+                            data: [],
+                        })-1;
+        
+                        current = str;
+                    }
+        
+                    out[index].data.push(reg);
+                }
 
                 setRemappedRegs(out);
                 setRegistrationLoading(false);
@@ -345,7 +365,7 @@ export default function Absence({ navigation }: { navigation: any }) {
         })();
     }, [refreshing]);
 
-    const radius = 110;
+    const radius = useRef(110).current;
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
@@ -382,10 +402,13 @@ export default function Absence({ navigation }: { navigation: any }) {
             const gymNummer = (await secureGet("gym")).gymNummer;
             getAbsenceRegistration(gymNummer, true).then((res: Registration[] | null) => {
                 if(!res) {
-                    setRemappedRegs(null);
+                    setRemappedRegs([]);
                     return;
                 }
-                const out: {[id: string]: Registration[]} = {};
+                const out: {
+                    key: string,
+                    data: Registration[]
+                }[] = [];
 
                 res.sort((a, b) => {
                     if(typeof a.registered === "string") a.registered = new Date(a.registered);
@@ -396,17 +419,23 @@ export default function Absence({ navigation }: { navigation: any }) {
                     return (b.registered.valueOf() + b.modulStartTime.valueOf()) - (a.registered.valueOf() + a.modulStartTime.valueOf())
                 });
 
-                res.forEach((reg) => {
-                    if(typeof reg.registered === "string") reg.registered = new Date(reg.registered);
-                    if(typeof reg.modulStartTime === "string") reg.modulStartTime = new Date(reg.modulStartTime);
+                let current = "";
+                let index = 0;
 
-                    const str = reg.registered.toLocaleDateString("da-DK").replace(".", "/").replace(".", "-")
+                for(let reg of res) {
+                    const str = reg.registered.toLocaleDateString("da-DK").replace(".", "/").replace(".", "-");
 
-                    if(!(str in out)) 
-                        out[str] = []
-
-                    out[str].push(reg);
-                })
+                    if(current != str) {
+                        index = out.push({
+                            key: str,
+                            data: [],
+                        })-1;
+        
+                        current = str;
+                    }
+        
+                    out[index].data.push(reg);
+                }
                 setRemappedRegs(out);
 
                 setSendLoading(false);
@@ -418,11 +447,11 @@ export default function Absence({ navigation }: { navigation: any }) {
     }, [registrationRefreshing])
 
     const scheme = useColorScheme();
-    const theme = themes[scheme ?? "dark"];
+    const theme = useMemo(() => themes[scheme ?? "dark"], [scheme]);
 
     const { subscriptionState } = useContext(SubscriptionContext);
 
-    const treatNumber = (num: number | undefined) => {
+    const treatNumber = useCallback((num: number | undefined) => {
         if(num === undefined)
             return 0;
 
@@ -430,17 +459,14 @@ export default function Absence({ navigation }: { navigation: any }) {
             style: "decimal",
             maximumFractionDigits: 2,
         })
-    }
+    }, []);
 
-    const handlePress = (reg: Registration) => {
+    const handlePress = useCallback((reg: Registration) => {
         // @ts-ignore
         if(!subscriptionState?.hasSubscription) {
             navigation.navigate("NoAccess")
             return;
         }
-
-
-        bottomSheetAbsenceRegistrationRef.current?.dismiss();
 
         setRegistration(reg);
         setCommentField(reg.studentNote?.split("\n").slice(1).join("\n"));
@@ -455,8 +481,153 @@ export default function Absence({ navigation }: { navigation: any }) {
             setAbsenceReason(null);
         }
 
+        bottomSheetAbsenceRegistrationRef.current?.dismiss();
         bottomSheetModalRef.current?.present();
-    }
+    }, []);
+
+    const renderItemSectionList = useCallback(({ item, index }: {
+        item: Registration,
+        index: number,
+    }) => <Registration reg={item} theme={theme} i={index} />, []);
+
+    const Registration = memo(function Registration({
+        reg,
+        theme,
+        i
+    }: {
+        reg: Registration,
+        theme: Theme,
+        i: number,
+    }) {
+        const colorIndex = fraværIndexes.findIndex((v) => v == (!reg.studentProvidedReason ? "Ikke angivet" : reg.studentNote?.split("\n")[0])?.toLowerCase())
+        const color = fraværColors[colorIndex];
+    
+        return (
+            <TouchableOpacity
+                onPress={() => handlePress(reg)}
+            >
+                <View style={{
+                    paddingVertical: 10,
+                    paddingLeft: 0,
+    
+                    borderBottomColor: hexToRgb(theme.WHITE.toString(), 0.2),
+    
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+    
+                    width: "100%",
+                    gap: 15,
+                }}>
+                    <View style={{
+                        borderRadius: 999,
+                        borderColor: color,
+                        borderWidth: 2,
+    
+                        position: "relative",
+                    }}>
+                        <Progress.Pie
+                            size={60}
+                            progress={parseFloat(reg.absence)/100}
+                            color={hexToRgb(color, 0.2)}
+                            borderWidth={1}
+                        />
+    
+                        <View style={{
+                            position: "absolute",
+                            width: 60, // width and width of chart is 60 if radius is 30
+                            height: 60,
+    
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}>
+                            <Text style={{
+                                color: color,
+                                fontFamily: "bold",
+                                letterSpacing: 0.6,
+                            }}>
+                                {reg.absence}%
+                            </Text>
+                        </View>
+                    </View>
+    
+                    <View style={{
+                        display: "flex",
+                        gap: 5,
+    
+                        width: "100%",
+                    }}>
+                        <View style={{
+                            display: "flex",
+                            flexDirection: "row",
+    
+                            justifyContent: "space-between",
+                            alignItems: "center",
+    
+                            paddingRight: 15*5,
+    
+                            width: "100%",
+                        }}>
+                            <Text style={{
+                                color: theme.WHITE,
+                                fontSize: 15,
+                                fontWeight: "bold",
+                                letterSpacing: 0.5,
+    
+                                flex: 0,
+                            }}>
+                                {reg.modul}
+                            </Text>
+    
+                            <Text style={{
+                                color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                fontSize: 15,
+    
+                                flex: 0,
+                            }}>
+                                {reg.modulStartTime?.toLocaleTimeString("de-DK", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                })}
+                            </Text>
+                        </View>
+    
+                        <View style={{
+                            backgroundColor: hexToRgb(color, 0.2),
+    
+                            paddingHorizontal: 20,
+                            paddingVertical: 10,
+    
+                            borderRadius: 5,
+                            alignSelf: "flex-start",
+                            maxWidth: "90%",
+                        }}>
+                            <Text style={{
+                                color: color,
+                                flex: 0,
+    
+                                fontWeight: "bold",
+                            }}>
+                                {!reg.studentProvidedReason ? "Ikke angivet" : reg.studentNote?.split("\n")[0]}
+                            </Text>
+                            {reg.studentNote?.split("\n").length == 2 && (
+                                <Text style={{
+                                    color: color,
+                                    flex: 0,
+    
+                                    fontWeight: "normal",
+                                    maxWidth: "90%",
+                                }}>
+                                    {reg.studentNote.split("\n")[1]}
+                                </Text>
+                            )}
+                        </View>
+                    </View>
+                </View>
+            </TouchableOpacity>
+        )
+    })
 
     return (
         <GestureHandlerRootView>
@@ -514,7 +685,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         gap: 25,
 
                                         paddingBottom: 150,
-                                        paddingTop: 25,
+                                        paddingTop: 15,
                                     }}>
                                         <View style={{
                                             display: 'flex',
@@ -875,218 +1046,104 @@ export default function Absence({ navigation }: { navigation: any }) {
                         </View>
                         
                         <View key="1">
-                            <ScrollView refreshControl={
-                                    <RefreshControl refreshing={registrationRefreshing} onRefresh={onRegistrationRefresh} />
-                                }>
+                            {remappedRegs == null && !registrationLoading && (
                                 <View style={{
                                     display: 'flex',
-
-                                    marginTop: 20,
-                                    marginHorizontal: 20,
-
-                                    paddingBottom: 150,
-                                    paddingTop: 25,
-
-                                    flexDirection: "column"
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                
+                                    flexDirection: 'column-reverse',
+                
+                                    minHeight: '40%',
+                
+                                    gap: 20,
                                 }}>
-                                    {registrationLoading && (
-                                        <View style={{
-                                            height: height / 2,
-                                            width: width,
-
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            alignItems: "center",
-                                        }}>
-                                            <ActivityIndicator size={"small"} />
-                                        </View>
-                                    )}
-                                    {remappedRegs == null && (
-                                        <View style={{
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                        
-                                            flexDirection: 'column-reverse',
-                        
-                                            minHeight: '40%',
-                        
-                                            gap: 20,
-                                        }}>
-                                            <Text style={{
-                                                color: theme.RED,
-                                                textAlign: 'center'
-                                            }}>
-                                                Der opstod en fejl.
-                                                {"\n"}
-                                                Du kan prøve igen ved at genindlæse.
-                                            </Text>
-                                        </View>
-                                    )}
-                                    {remappedRegs != null && Object.keys(remappedRegs).map((key: string, i: number) => {
-                                        return (
-                                            <View key={key} style={{
-                                                marginTop: i == 0 ? 0 : 25,
-                                            }}>
-                                                <View style={{
-                                                    display: "flex",
-                                                    justifyContent: "space-between",
-                                                    flexDirection: "row",
-                                                }}>
-                                                    <Text style={{
-                                                        color: hexToRgb(theme.ACCENT.toString(), 0.5),
-                                                        fontWeight: "normal",
-                                                        fontSize: 15,
-                                                        marginBottom: 5,
-                                                    }}>
-                                                        {["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"][parseDate(key).getDay()]} d. {key}
-                                                    </Text>
-
-                                                    <Text style={{
-                                                        color: hexToRgb(theme.WHITE.toString(), 0.4),
-                                                        fontWeight: "normal",
-                                                        fontSize: 15,
-                                                        marginBottom: 5,
-                                                    }}>
-                                                        {remappedRegs[key].length} {remappedRegs[key].length == 1 ? "modul" : "moduler"}
-                                                    </Text>
-                                                </View>
-                                                {remappedRegs[key].map((reg: Registration, i: number) => {
-                                                    const colorIndex = fraværIndexes.findIndex((v) => v == (!reg.studentProvidedReason ? "Ikke angivet" : reg.studentNote?.split("\n")[0])?.toLowerCase())
-                                                    const color = fraværColors[colorIndex];
-
-                                                    return (
-                                                        <TouchableOpacity
-                                                            key={i}
-                                                            onPress={() => handlePress(reg)}
-                                                        >
-                                                            <View style={{
-                                                                paddingVertical: 10,
-                                                                paddingLeft: 0,
-
-                                                                borderBottomColor: hexToRgb(theme.WHITE.toString(), 0.2),
-                                                                borderBottomWidth: i+1 == remappedRegs[key].length ? StyleSheet.hairlineWidth : 0,
-
-                                                                display: "flex",
-                                                                flexDirection: "row",
-                                                                alignItems: "center",
-
-                                                                width: "100%",
-                                                                gap: 15,
-                                                            }} key={i}>
-                                                                <View style={{
-                                                                    borderRadius: 999,
-                                                                    borderColor: color,
-                                                                    borderWidth: 2,
-
-                                                                    position: "relative",
-                                                                }}>
-                                                                    <Progress.Pie
-                                                                        size={60}
-                                                                        progress={parseFloat(reg.absence)/100}
-                                                                        color={hexToRgb(color, 0.2)}
-                                                                        borderWidth={1}
-                                                                    />
-
-                                                                    <View style={{
-                                                                        position: "absolute",
-                                                                        width: 60, // width and width of chart is 60 if radius is 30
-                                                                        height: 60,
-
-                                                                        display: "flex",
-                                                                        justifyContent: "center",
-                                                                        alignItems: "center",
-                                                                    }}>
-                                                                        <Text style={{
-                                                                            color: color,
-                                                                            fontFamily: "bold",
-                                                                            letterSpacing: 0.6,
-                                                                        }}>
-                                                                            {reg.absence}%
-                                                                        </Text>
-                                                                    </View>
-                                                                </View>
-
-                                                                <View style={{
-                                                                    display: "flex",
-                                                                    gap: 5,
-
-                                                                    width: "100%",
-                                                                }}>
-                                                                    <View style={{
-                                                                        display: "flex",
-                                                                        flexDirection: "row",
-
-                                                                        justifyContent: "space-between",
-                                                                        alignItems: "center",
-
-                                                                        paddingRight: 15*5,
-
-                                                                        width: "100%",
-                                                                    }}>
-                                                                        <Text style={{
-                                                                            color: theme.WHITE,
-                                                                            fontSize: 15,
-                                                                            fontWeight: "bold",
-                                                                            letterSpacing: 0.5,
-
-                                                                            flex: 0,
-                                                                        }}>
-                                                                            {reg.modul}
-                                                                        </Text>
-
-                                                                        <Text style={{
-                                                                            color: hexToRgb(theme.WHITE.toString(), 0.6),
-                                                                            fontSize: 15,
-
-                                                                            flex: 0,
-                                                                        }}>
-                                                                            {reg.modulStartTime?.toLocaleTimeString("de-DK", {
-                                                                                hour: "2-digit",
-                                                                                minute: "2-digit",
-                                                                            })}
-                                                                        </Text>
-                                                                    </View>
-
-                                                                    <View style={{
-                                                                        backgroundColor: hexToRgb(color, 0.2),
-
-                                                                        paddingHorizontal: 20,
-                                                                        paddingVertical: 10,
-
-                                                                        borderRadius: 5,
-                                                                        alignSelf: "flex-start",
-                                                                    }}>
-                                                                        <Text style={{
-                                                                            color: color,
-                                                                            flex: 0,
-
-                                                                            fontWeight: "bold",
-                                                                        }}>
-                                                                            {!reg.studentProvidedReason ? "Ikke angivet" : reg.studentNote?.split("\n")[0]}
-                                                                        </Text>
-                                                                        {reg.studentNote?.split("\n").length == 2 && (
-                                                                            <Text style={{
-                                                                                color: color,
-                                                                                flex: 0,
-
-                                                                                fontWeight: "normal",
-                                                                            }}>
-                                                                                {reg.studentNote.split("\n")[1]}
-                                                                            </Text>
-                                                                        )}
-                                                                    </View>
-                                                                </View>
-                                                            </View>
-                                                        </TouchableOpacity>
-                                                    )
-                                                })}
-                                            </View>
-                                        )
-                                    })}
+                                    <Text style={{
+                                        color: theme.RED,
+                                        textAlign: 'center'
+                                    }}>
+                                        Der opstod en fejl.
+                                        {"\n"}
+                                        Du kan prøve igen ved at genindlæse.
+                                    </Text>
                                 </View>
-                                
-                            </ScrollView>
+                            )}
+                            {registrationLoading && (
+                                <View style={{
+                                    height: height / 2,
+                                    width: width,
+
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                }}>
+                                    <ActivityIndicator size={"small"} />
+                                </View>
+                            )}
+                            {remappedRegs && (
+                                <SectionList
+                                    sections={remappedRegs}
+                                    renderItem={renderItemSectionList}
+
+                                    renderSectionHeader={(data) => (
+                                        <View style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            width: "100%",
+                                        }}>
+                                            {!(data.section.key === remappedRegs[0].key) && (
+                                                <View style={{
+                                                    width: "95%",
+                                                    height: StyleSheet.hairlineWidth,
+                                                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.25),
+                                                }} />
+                                            )}
+
+                                            <View style={{
+                                                marginTop: 12,
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                flexDirection: "row",
+                                                width: "100%",
+                                            }}>
+
+                                                <Text style={{
+                                                    color: hexToRgb(theme.ACCENT.toString(), 0.5),
+                                                    fontWeight: "normal",
+                                                    fontSize: 15,
+                                                    marginBottom: 5,
+                                                }}>
+                                                    {["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"][parseDate(data.section.key).getDay()]} d. {data.section.key}
+                                                </Text>
+
+                                                <Text style={{
+                                                    color: hexToRgb(theme.WHITE.toString(), 0.4),
+                                                    fontWeight: "normal",
+                                                    fontSize: 15,
+                                                    marginBottom: 5,
+                                                }}>
+                                                    {data.section.data.length} {data.section.data.length == 1 ? "modul" : "moduler"}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    )}
+
+                                    stickySectionHeadersEnabled={false}
+                                    keyExtractor={(item, index) => index + item.modul + item.registeredTime}
+
+                                    style={{
+                                        paddingHorizontal: 20,
+                                    }}
+
+                                    contentContainerStyle={{
+                                        paddingBottom: 150,
+                                    }}
+
+                                    refreshControl={
+                                        <RefreshControl refreshing={registrationRefreshing} onRefresh={onRegistrationRefresh} />
+                                    }
+                                />
+                            )}
                         </View>
 
                     </AnimatedPagerView>
@@ -1137,7 +1194,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                             display: "flex",
                                             justifyContent: "space-between",
                                             flexDirection: "row",
-                                        }}>
+                                        }}>     
                                             <Text style={{
                                                 fontSize: 17.5,
                                                 fontWeight: "bold",
@@ -1155,8 +1212,10 @@ export default function Absence({ navigation }: { navigation: any }) {
 
                                                 gap: 5,
                                             }} onPressIn={async () => {
-                                                if(absenceReason == null) return;
-                                                else if (typeof absenceReason == "function") return;
+                                                if(absenceReason == null || typeof absenceReason == "function")  {
+                                                    setSendError(!sendError);
+                                                    return;
+                                                };
                                                
                                                 setSendLoading(true);
                                                 const gymNummer = (await secureGet("gym")).gymNummer;
@@ -1302,14 +1361,16 @@ export default function Absence({ navigation }: { navigation: any }) {
                                             bottomSheetModalRef.current?.dismiss();
                                             bottomSheetAbsenceRegistrationRef.current?.present()
                                         }}>
-                                            <Text style={{
-                                                color: color,
-                                                fontWeight: "bold",
-                                                fontSize: 17.5,
-                                                textAlign: "center",
-                                            }}>
-                                                {absenceReason == null ? "Opgiv fraværsårsag" : AbsenceReason.toString(absenceReason)}
-                                            </Text>
+                                            <Shake shakeOn={() => absenceReason == null} deps={[sendError]} violence={2}>
+                                                <Text style={{
+                                                    color: color,
+                                                    fontWeight: "bold",
+                                                    fontSize: 17.5,
+                                                    textAlign: "center",
+                                                }}>
+                                                    {absenceReason == null ? "Opgiv fraværsårsag" : AbsenceReason.toString(absenceReason)}
+                                                </Text>
+                                            </Shake>
                                         </Pressable>
 
                                         <BottomSheetTextInput

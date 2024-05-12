@@ -1,4 +1,4 @@
-import { ActivityIndicator, Button, Image, Keyboard, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
+import { ActivityIndicator, Alert, Button, ColorValue, Image, Keyboard, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { Profile, getMessages, getProfile, scrapeCache } from "../modules/api/scraper/Scraper";
@@ -6,7 +6,7 @@ import { hexToRgb, themes } from "../modules/Themes";
 import { secureGet, getUnsecure } from "../modules/api/Authentication";
 import { LectioMessage } from "../modules/api/scraper/MessageScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronRightIcon, EnvelopeIcon, EnvelopeOpenIcon, PaperAirplaneIcon, PencilSquareIcon, SunIcon, TrashIcon, XCircleIcon } from "react-native-heroicons/solid";
+import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronRightIcon, DocumentIcon, EnvelopeIcon, EnvelopeOpenIcon, FolderIcon, FolderMinusIcon, PaperAirplaneIcon, PencilSquareIcon, SunIcon, TrashIcon, UserIcon, XCircleIcon } from "react-native-heroicons/solid";
 import { NavigationProp, useFocusEffect, useIsFocused } from "@react-navigation/native";
 import RateLimit from "../components/RateLimit";
 import {
@@ -26,15 +26,28 @@ import ProfilePicture from "../components/ProfilePicture";
 import File from "../modules/File";
 import Popover from "react-native-popover-view/dist/Popover";
 import { Placement } from "react-native-popover-view/dist/Types";
+import { PaperClipIcon } from "react-native-heroicons/outline";
+import { upload, UploadResult } from "../modules/api/filer/FileManager";
+import React from "react";
+import Shake from "../components/Shake";
 
 export default function Beskeder({ navigation }: {navigation: NavigationProp<any>}) {
+
+    const scheme = useColorScheme();
+    const theme = themes[scheme ?? "dark"];
+
     const [ loading, setLoading ] = useState<boolean>(true);
 
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>();
 
+    const [contentColor, setContentColor] = useState<ColorValue>(theme.WHITE);
+
+    const [sendError, setSendError] = useState<boolean>();
+
     const [ refreshing, setRefreshing ] = useState<boolean>(false);
 
     const [ recipients, setRecipients ] = useState<Person[]>([]);
+    const [ files, setFiles ] = useState<UploadResult[]>();
     const [ title, setTitle ] = useState<string>();
     const [ content, setContent ] = useState<string>();
 
@@ -54,9 +67,6 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
     const [ rateLimited, setRateLimited ] = useState<boolean>(false);
     const [ messages, setMessages ] = useState<LectioMessage[] | null>([]);
     const [ headers, setHeaders ] = useState<{[id: string]: string}>();
-
-    const scheme = useColorScheme();
-    const theme = themes[scheme ?? "dark"];
 
     /**
      * Used in the message-modal to make the x-icon appear so you can clear 
@@ -562,24 +572,28 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                             }}
                         >
                             
-                            <Text style={{
-                                color: theme.WHITE,
-                                fontSize: 16,
-                                lineHeight: 20,
-                            }}>
-                                Til:
-                            </Text>
+                            <Shake shakeOn={() => recipients.length === 0} deps={[sendError]}>
+                                <Text style={{
+                                    color: theme.WHITE,
+                                    fontSize: 16,
+                                    lineHeight: 20,
+                                }}>
+                                    Til:
+                                </Text>
+                            </Shake>
                             
 
                             {recipients.map((recipient: Person, index: number) => {
                                 return (
-                                    <Pressable key={index} onPress={() => {
+                                    <TouchableOpacity key={index} onPress={() => {
                                         const filtered = recipients.filter((person: Person) => { return person !== recipient });
                                         setRecipients(filtered);
-                                    }}>
+                                    }}> 
                                         <View style={{
                                             padding: 5,
-                                            backgroundColor: theme.DARK,
+                                            backgroundColor: hexToRgb(theme.WHITE.toString(), 0.01),
+                                            borderColor: theme.DARK,
+                                            borderWidth: 1,
 
                                             display: "flex",
                                             flexDirection: "row",
@@ -589,6 +603,8 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
 
                                             borderRadius: 5,
                                         }}>
+                                            <UserIcon size={15} color={hexToRgb(theme.LIGHT.toString(), 1)} />
+
                                             <Text style={{
                                                 color: theme.WHITE,
                                             }}>
@@ -597,7 +613,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
 
                                             <XCircleIcon size={15} color={theme.ACCENT} />
                                         </View>
-                                    </Pressable>
+                                    </TouchableOpacity>
                                 )
                             })}
 
@@ -661,13 +677,15 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                             flexDirection: "row",
                             gap: 5,
                         }}>
-                            <Text style={{
-                                color: theme.WHITE,
-                                fontSize: 16,
-                                lineHeight: 20,
-                            }}>
-                                Emne:
-                            </Text>
+                            <Shake shakeOn={() => (title ?? "").length === 0} deps={[sendError]}>
+                                <Text style={{
+                                    color: theme.WHITE,
+                                    fontSize: 16,
+                                    lineHeight: 20,
+                                }}>
+                                    Emne:
+                                </Text>
+                            </Shake>
                             
                             <BottomSheetTextInput
                                 numberOfLines={1}
@@ -684,35 +702,121 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                 onChangeText={setTitle}
                             />
                         </View>
+
+                        <View
+                            style={{
+                                borderRadius: 2,
+                                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.02),
+
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap",
+
+                                alignItems: "center",
+
+                                gap: 5,
+                                paddingVertical: 8,
+                                paddingHorizontal: 8,
+                            }}
+                        >
+                            
+                            <Text style={{
+                                color: theme.WHITE,
+                                fontSize: 16,
+                                lineHeight: 20,
+                            }}>
+                                Filer:
+                            </Text>
+
+                            {files && files.map((file: UploadResult, index: number) => {
+                                if(!file.ok) return <React.Fragment key={":" + index}></React.Fragment>;
+
+                                return (
+                                    <TouchableOpacity key={":" + index} onPress={() => {
+                                        const filtered = files.filter((fileToCheck: UploadResult) => { return fileToCheck !== file });
+                                        setFiles(filtered);
+                                    }}>
+                                        <View style={{
+                                            padding: 5,
+
+                                            backgroundColor: hexToRgb(theme.WHITE.toString(), 0.01),
+                                            borderColor: theme.DARK,
+                                            borderWidth: 1,
+
+                                            display: "flex",
+                                            flexDirection: "row",
+
+                                            alignItems: "center",
+                                            gap: 5,
+
+                                            borderRadius: 5,
+                                        }}>
+                                            <DocumentIcon size={15} color={hexToRgb(theme.LIGHT.toString(), 1)} />
+
+                                            <Text style={{
+                                                color: theme.WHITE,
+                                            }}>
+                                                {file.fileName}
+                                            </Text>
+
+                                            <XCircleIcon size={15} color={theme.ACCENT} />
+                                        </View>
+                                    </TouchableOpacity>
+                                )
+                            })}
+
+                            <View style={{
+                                flex: 1,
+                            }} />
+
+                            <TouchableOpacity onPress={async () => {
+                                
+                                const file = await upload();
+                                if(!file.ok && file.errorMessage) {
+                                    Alert.alert(
+                                        "Der opstod en fejl",
+                                        file.errorMessage,
+                                    )
+                                }
+
+                                setFiles([
+                                    ...(files ?? []),
+                                    file
+                                ])
+                            }}>
+                                <PaperClipIcon color={(files && !files[files.length-1].ok) ? theme.RED : "rgb(0,122,255)"} />
+                            </TouchableOpacity>
+                        </View>
+
                         <View           
                             style={{
                                 width: "100%",
-
+                                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.02),
                                 maxHeight: "60%",
                             }}
                         >
-                            <BottomSheetTextInput
-                                editable
-                                multiline
-                                textAlignVertical={"top"}
-                                scrollEnabled
+                            <Shake shakeOn={() => (content ?? "").length === 0} deps={[sendError]}>
+                                <BottomSheetTextInput
+                                    editable
+                                    multiline
+                                    textAlignVertical={"top"}
+                                    scrollEnabled
 
-                                placeholder={"Indhold"}
-                                placeholderTextColor={hexToRgb(theme.WHITE.toString(), 0.6)}
-                                style={{
-                                    padding: 8,
+                                    placeholder={"Indhold"}
+                                    placeholderTextColor={hexToRgb(contentColor.toString(), 0.6)}
+                                    style={{
+                                        padding: 8,
 
-                                    fontSize: 16,
-                                    lineHeight: 20,
+                                        fontSize: 16,
+                                        lineHeight: 20,
 
-                                    minHeight: 20 * 5,
-                                    color: theme.WHITE,
-
-                                    borderRadius: 2,
-                                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.02),
-                                }}
-                                onChangeText={setContent}
-                            />
+                                        minHeight: 20 * 5,
+                                        color: theme.WHITE,
+                                        borderRadius: 2,
+                                    }}
+                                    onChangeText={setContent}
+                                />
+                            </Shake>
                         </View>
                     </View>
 
@@ -740,14 +844,14 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                     }} onPress={() => {
                         if (title != null && content != null && recipients.length != 0 && gym != null) {
                             setSendingMessage(true);
-                            sendMessage(title, recipients, content, gym?.gymNummer, (messageId: string | null) => {
+                            sendMessage(title, recipients, content ?? "", gym?.gymNummer, files ?? [], (messageId: string | null) => {
                                 setSendingMessage(false);
                                 handleCloseModalPress();
 
                                 deleteSaved(Key.BESKEDER);
                                 setMessages((prev) => {
                                     return (
-                                        [...(prev == null ? [] : prev),
+                                        [...(prev ?? []),
                                         {
                                             editDate: null,
                                             sender: profile == null ? "Ukendt" : profile.name,
@@ -759,7 +863,14 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     )
                                 })
 
+                                
+                                setFiles([]);
+                                setRecipients([]);
+                                setContent("");
+                                setTitle("");
                             });
+                        } else {
+                            setSendError(!sendError);
                         }
                     }}>
                         {!sendingMessage ? 

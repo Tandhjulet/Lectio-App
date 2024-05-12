@@ -6,6 +6,7 @@ import Mere from './pages/Mere';
 import Header from './components/Header';
 import { HeaderBackButton } from "@react-navigation/elements";
 
+import 'react-native-console-time-polyfill';
 import Login from './pages/login/Login';
 import Schools from './pages/login/Schools';
 import Absence from './pages/mere/Absence';

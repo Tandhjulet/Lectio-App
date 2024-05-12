@@ -232,7 +232,7 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                                             data={filteredNamelist}
                                             renderItem={renderItem}
                                             keyExtractor={(item, index) => item + index}
-                                            contentContainerStyle={{ paddingBottom: 200 }}
+                                            contentContainerStyle={{ paddingBottom: 137 + 70 }}
 
                                             getItemLayout={(data, index) => {
                                                 return {length: 70 + StyleSheet.hairlineWidth, offset: index * (70 + StyleSheet.hairlineWidth), index: index}

@@ -876,7 +876,7 @@ export default function Skema({ navigation }: {
                                 paddingHorizontal: 20,
                                 marginBottom: 10,
                             }}>
-                                {daysOfThreeWeeks[i].map((day,i) => {
+                                {_.map((day,i) => {
                                     const isSelectedDay =   day.date.getMonth() == selectedDay.getMonth() &&
                                                             day.date.getDate() == selectedDay.getDate() &&
                                                             day.date.getFullYear() == selectedDay.getFullYear();
@@ -884,6 +884,9 @@ export default function Skema({ navigation }: {
                                     const isToday = day.date.getMonth() == time.getMonth() &&
                                                     day.date.getDate() == time.getDate() &&
                                                     day.date.getFullYear() == time.getFullYear();
+
+                                    let hasModulesToday = (skema != null && (skema[day.weekDayNumber - 1] == undefined || Object.keys(skema[day.weekDayNumber - 1].moduler).length == 0));
+                                    if(!skema) hasModulesToday = true;
 
                                     return (
                                         <Pressable key={i + "."} onPress={() => {
@@ -898,14 +901,14 @@ export default function Skema({ navigation }: {
                                                 <Text style={{
                                                     textTransform: 'lowercase',
                                                     color: color(isSelectedDay, isToday, false),
-                                                    opacity: day.isWeekday ? 0.6 : 1,
+                                                    opacity: hasModulesToday ? 0.6 : 1,
                                                 }}>{day.dayName.slice(0,3)}.</Text>
 
                                                 <Text style={{
                                                     color: color(isSelectedDay, isToday, true),
                                                     fontWeight: "bold",
                                                     fontSize: 20,
-                                                    opacity: day.isWeekday ? 0.6 : 1,
+                                                    opacity: hasModulesToday ? 0.6 : 1,
                                                 }}>{day.dayNumber.toString()}</Text>
                                             </View>
                                         </Pressable>
