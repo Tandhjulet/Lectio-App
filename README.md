@@ -12,13 +12,12 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - gør så appen kan bruges uden/med manglende internet
 - cache vises først, nyt information fetches, cache opdateres og vises for alle sider
 - https://github.com/stevenselcuk/react-native-ask-for-review
-- registreringer cache gemmer når der er 0 elementer + vis skærm når ingen registreringer findes
-- fraværsårsager lagger af helvedes til
+- widgets
 
 ### __LAV__
 - spørgeskemaer
 - skema rework (skema parsing optimering, kan ikke åbne eksaminer)
-- aflevere/vedhæfte filer
+- aflevere filer
 
 ### __KENDTE FEJL__
 - login med forkerte logindetaljer gr igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)

@@ -1,4 +1,4 @@
-import { ActivityIndicator, Animated, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, useColorScheme } from "react-native";
+import { ActivityIndicator, Animated, Dimensions, Pressable, RefreshControl, ScrollView, SectionListData, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, useColorScheme } from "react-native";
 import NavigationBar from "../../components/Navbar";
 import { ReactElement, RefObject, createRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { getAbsence, getAbsenceRegistration } from "../../modules/api/scraper/Scraper";
@@ -19,6 +19,7 @@ import { SubscriptionContext } from "../../modules/Sub";
 import { FlatList } from "react-native";
 import { SectionList } from "react-native";
 import Shake from "../../components/Shake";
+import Logo from "../../components/Logo";
 
 type ChartedAbsence = {
     almindeligt: {
@@ -131,55 +132,6 @@ const PaginationIndicator = ({
 interface Props extends SvgProps {
     size?: NumberProp;
 }
-
-const RegistrationComponent = ({
-    title,
-    color,
-    Icon,
-    setAbsenceReason,
-}: {
-    title: string,
-    color: string,
-    Icon: ReactElement<Props, any>,
-    setAbsenceReason: React.Dispatch<React.SetStateAction<AbsenceReason | ((absenceReason: AbsenceReason) => string) | null>>,
-}) => (
-        <Pressable style={{
-            width: "40%",
-            height: "25%",
-
-            marginVertical: 5,
-
-            backgroundColor: hexToRgb(color, 0.3),
-            
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-
-            flexDirection: "column",
-
-            borderRadius: 5,
-
-            gap: 5,
-        }} onPress={() => {
-            const str = (title || "andet").toUpperCase().replaceAll(" ", "_");
-
-            const reason = AbsenceReason[str as keyof typeof AbsenceReason];
-            setAbsenceReason(reason);
-        }}>
-            {Icon}
-
-            <Text style={{
-                fontWeight: "600",
-                fontSize: 15,
-                letterSpacing: 0.4,
-
-                color: color,
-            }}>
-                {title}
-            </Text>
-        </Pressable>
-    )
-
 
 const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
 
@@ -384,19 +336,14 @@ export default function Absence({ navigation }: { navigation: any }) {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
     const bottomSheetAbsenceRegistrationRef = useRef<BottomSheetModal>(null);
 
-    useEffect(() => {
-        if(absenceReason == null) return;
-        
-        bottomSheetAbsenceRegistrationRef.current?.dismiss();
-        bottomSheetModalRef.current?.present();
-    }, [absenceReason])
-
     const onRegistrationRefresh = useCallback(() => {
         setRegistrationRefreshing(true);
     }, []);
 
     useEffect(() => {
         if(!registrationRefreshing) return;
+
+        bottomSheetModalRef.current?.dismiss();
 
         (async () => {
             const gymNummer = (await secureGet("gym")).gymNummer;
@@ -439,8 +386,6 @@ export default function Absence({ navigation }: { navigation: any }) {
                 setRemappedRegs(out);
 
                 setSendLoading(false);
-                bottomSheetModalRef.current?.dismiss();
-
                 setRegistrationRefreshing(false);
             })
         })();
@@ -489,6 +434,71 @@ export default function Absence({ navigation }: { navigation: any }) {
         item: Registration,
         index: number,
     }) => <Registration reg={item} theme={theme} i={index} />, []);
+
+    const renderSectionHeader = useCallback((data: {
+        section: SectionListData<Registration, {
+            key: string;
+            data: Registration[];
+        }>;
+    }) => <SectionHeader data={data} theme={theme} insertLine={!(data.section.key === remappedRegs[0].key)} />, [remappedRegs]);
+
+    const SectionHeader = memo(function SectionHeader({
+        data,
+        theme,
+        insertLine,
+    }: {
+        data: {
+            section: SectionListData<Registration, {
+                key: string;
+                data: Registration[];
+            }>;
+        },
+        theme: Theme,
+        insertLine: boolean,
+    }) {
+        return (
+            <View style={{
+                display: "flex",
+                alignItems: "center",
+                width: "100%",
+            }}>
+                {insertLine && (
+                    <View style={{
+                        width: "95%",
+                        height: StyleSheet.hairlineWidth,
+                        backgroundColor: hexToRgb(theme.WHITE.toString(), 0.25),
+                    }} />
+                )}
+
+                <View style={{
+                    marginTop: 12,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    flexDirection: "row",
+                    width: "100%",
+                }}>
+
+                    <Text style={{
+                        color: hexToRgb(theme.ACCENT.toString(), 0.5),
+                        fontWeight: "normal",
+                        fontSize: 15,
+                        marginBottom: 5,
+                    }}>
+                        {["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"][parseDate(data.section.key).getDay()]} d. {data.section.key}
+                    </Text>
+
+                    <Text style={{
+                        color: hexToRgb(theme.WHITE.toString(), 0.4),
+                        fontWeight: "normal",
+                        fontSize: 15,
+                        marginBottom: 5,
+                    }}>
+                        {data.section.data.length} {data.section.data.length == 1 ? "modul" : "moduler"}
+                    </Text>
+                </View>
+            </View>
+        )
+    })
 
     const Registration = memo(function Registration({
         reg,
@@ -628,6 +638,60 @@ export default function Absence({ navigation }: { navigation: any }) {
             </TouchableOpacity>
         )
     })
+
+    const RegistrationComponent = memo(({
+        title,
+        color,
+        Icon,
+        setAbsenceReason,
+    }: {
+        title: string,
+        color: string,
+        Icon: ReactElement<Props, any>,
+        setAbsenceReason: React.Dispatch<React.SetStateAction<AbsenceReason | ((absenceReason: AbsenceReason) => string) | null>>,
+    }) => (
+            <TouchableOpacity style={{
+                width: "40%",
+                height: "25%",
+    
+                marginVertical: 5,
+    
+                backgroundColor: hexToRgb(color, 0.3),
+    
+                borderRadius: 5,
+            }} onPress={() => {
+                const str = (title || "andet").toUpperCase().replaceAll(" ", "_");
+    
+                const reason = AbsenceReason[str as keyof typeof AbsenceReason];
+                setAbsenceReason(reason);
+                
+                bottomSheetAbsenceRegistrationRef.current?.dismiss();
+                bottomSheetModalRef.current?.present();
+            }}>
+                <View style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+    
+                    flexDirection: "column",
+    
+                    flex: 1,
+                    gap: 5,
+                }}>
+                    {Icon}
+    
+                    <Text style={{
+                        fontWeight: "600",
+                        fontSize: 15,
+                        letterSpacing: 0.4,
+    
+                        color: color,
+                    }}>
+                        {title}
+                    </Text>
+                </View>
+            </TouchableOpacity>
+        ), (prev, next) => Object.is(prev.title, next.title));
 
     return (
         <GestureHandlerRootView>
@@ -1046,25 +1110,22 @@ export default function Absence({ navigation }: { navigation: any }) {
                         </View>
                         
                         <View key="1">
-                            {remappedRegs == null && !registrationLoading && (
+                            {remappedRegs.length == 0 && !registrationLoading && (
                                 <View style={{
                                     display: 'flex',
                                     justifyContent: 'center',
                                     alignItems: 'center',
-                
-                                    flexDirection: 'column-reverse',
-                
+                            
                                     minHeight: '40%',
                 
-                                    gap: 20,
+                                    gap: 10,
                                 }}>
+                                    <Logo size={60} />
                                     <Text style={{
-                                        color: theme.RED,
+                                        color: theme.WHITE,
                                         textAlign: 'center'
                                     }}>
-                                        Der opstod en fejl.
-                                        {"\n"}
-                                        Du kan prøve igen ved at genindlæse.
+                                        Du har ingen fraværsregistreringer.
                                     </Text>
                                 </View>
                             )}
@@ -1080,53 +1141,12 @@ export default function Absence({ navigation }: { navigation: any }) {
                                     <ActivityIndicator size={"small"} />
                                 </View>
                             )}
-                            {remappedRegs && (
+                            {!registrationLoading && remappedRegs && (
                                 <SectionList
                                     sections={remappedRegs}
                                     renderItem={renderItemSectionList}
 
-                                    renderSectionHeader={(data) => (
-                                        <View style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            width: "100%",
-                                        }}>
-                                            {!(data.section.key === remappedRegs[0].key) && (
-                                                <View style={{
-                                                    width: "95%",
-                                                    height: StyleSheet.hairlineWidth,
-                                                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.25),
-                                                }} />
-                                            )}
-
-                                            <View style={{
-                                                marginTop: 12,
-                                                display: "flex",
-                                                justifyContent: "space-between",
-                                                flexDirection: "row",
-                                                width: "100%",
-                                            }}>
-
-                                                <Text style={{
-                                                    color: hexToRgb(theme.ACCENT.toString(), 0.5),
-                                                    fontWeight: "normal",
-                                                    fontSize: 15,
-                                                    marginBottom: 5,
-                                                }}>
-                                                    {["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"][parseDate(data.section.key).getDay()]} d. {data.section.key}
-                                                </Text>
-
-                                                <Text style={{
-                                                    color: hexToRgb(theme.WHITE.toString(), 0.4),
-                                                    fontWeight: "normal",
-                                                    fontSize: 15,
-                                                    marginBottom: 5,
-                                                }}>
-                                                    {data.section.data.length} {data.section.data.length == 1 ? "modul" : "moduler"}
-                                                </Text>
-                                            </View>
-                                        </View>
-                                    )}
+                                    renderSectionHeader={renderSectionHeader}
 
                                     stickySectionHeadersEnabled={false}
                                     keyExtractor={(item, index) => index + item.modul + item.registeredTime}
@@ -1165,7 +1185,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                         }}
 
                     >   
-                        {(() => {
+                        {(!registrationLoading && !registrationRefreshing) && (() => {
                             let color;
                             if(absenceReason == null) {
                                 const colorIndex = fraværIndexes.findIndex((v) => v == (!registration?.studentProvidedReason ? "Ikke angivet" : registration?.studentNote?.split("\n")[0])?.toLowerCase())

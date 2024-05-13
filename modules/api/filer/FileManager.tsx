@@ -29,10 +29,11 @@ export async function chooseDocument(): Promise<LocalDocument | null | undefined
         multiple: false,
         copyToCacheDirectory: true,
     })
+
     if(!result.assets)
         return null;
 
-    if(result.assets.length || result.canceled) return undefined;
+    if(result.assets.length == 0 || result.canceled) return undefined;
 
     const { uri, name, size, mimeType } = result.assets[0];
 

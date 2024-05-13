@@ -784,7 +784,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     file
                                 ])
                             }}>
-                                <PaperClipIcon color={(files && !files[files.length-1].ok) ? theme.RED : "rgb(0,122,255)"} />
+                                <PaperClipIcon color={(files && files.length >= 1 && !files[files.length-1].ok) ? theme.RED : "rgb(0,122,255)"} />
                             </TouchableOpacity>
                         </View>
 

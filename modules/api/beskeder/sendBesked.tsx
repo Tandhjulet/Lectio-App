@@ -26,8 +26,14 @@ export async function sendMessage(title: string, sendTo: Person[], content: stri
     }).then(() => {
         new Promise<void>((res, rej) => {
             attachments.forEach(async (file: UploadResult, index: number) => {
-                headers = await addFile(gymNummer, file, headers);
-                if (index === attachments.length -1) res();
+                try {
+                    headers = await addFile(gymNummer, file, headers);
+                    if (index === attachments.length -1) res();
+                } catch {
+                    if (attachments.length >= 1 && index === attachments.length-1) res();
+                    else rej();
+                } // if some error occurs we might be able to send the message anyway
+                  // just without the attachment from which the error originated...
             });
         }).then(async () => {
             const response = await send(title, content, headers, gymNummer);
@@ -178,8 +184,6 @@ async function addFile(gymNummer: string, file: UploadResult, headers: {[id: str
         },
         body: stringifiedData,
     })).text();
-
-    console.log(payload)
 
     const parser = DomSelector(text);
     const ASPHeaders = parser.getElementsByClassName("aspNetHidden");
