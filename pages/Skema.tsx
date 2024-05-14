@@ -346,7 +346,7 @@ export default function Skema({ navigation }: {
         const xmin1 = formatDate(startDate.toString())
         const xmax1 = formatDate(endDate.toString())
 
-        for(let key of Object.keys(dict)) {
+        for(let key in dict) {
             const xmin2 = formatDate(key.split("-")[0]);
             const xmax2 = formatDate(key.split("-")[1]);
 
@@ -355,29 +355,6 @@ export default function Skema({ navigation }: {
             }
         }
         return null;
-    }
-
-    /**
-     * Assigns depth to the given dictionary
-     * @param intersections a dict containing module intersects
-     * @param depth the current depth
-     * @returns a depth assigned dict
-     */
-    function _depth(intersections: {[id: string]: {
-        moduler: Modul[],
-        contains: any,
-
-        depth?: number,
-        maxDepth?: number,
-    }}, depth = 1) {
-        const out = intersections;
-
-        for(let key in intersections) {
-            out[key].depth = depth + (out[key].moduler.length - 1);
-            _depth(out[key].contains, depth + (out[key].moduler.length - 1) + 1)
-        }
-
-        return out;
     }
 
     let MAXDEPTH = 0;
@@ -437,10 +414,7 @@ export default function Skema({ navigation }: {
                 })
             })
 
-            out = [
-                ...out,
-                ...flatten(depthAssigned[key].contains),
-            ]
+            out.push(...flatten(depthAssigned[key].contains))
         }
 
         return out;
@@ -459,14 +433,10 @@ export default function Skema({ navigation }: {
         moduler: Modul[],
         contains: any,
 
-        depth?: number,
+        depth: number,
         maxDepth?: number,
-    }}, calcDepth: boolean = true, maxDepth: number = 0) {
+    }}, maxDepth: number = 0) {
         let out = intersections;
-
-        if(calcDepth) {
-            out = _depth(intersections);
-        }
 
         for(let key in out) {
             MAXDEPTH = 0;
@@ -476,7 +446,7 @@ export default function Skema({ navigation }: {
             }
             out[key].maxDepth = maxDepth
 
-            assignDepth(out[key].contains, false, maxDepth)
+            assignDepth(out[key].contains, maxDepth)
         }
 
         return out;
@@ -490,10 +460,12 @@ export default function Skema({ navigation }: {
      * @returns a dict of all the intersects. The keys are formatted as "{INTERSECT_START_DATE}-{INTERSECT_END_DATE}".
      * Every entry contains any internal children intersections. This makes it easy to render if any modules.
      */
-    function calculateIntersects(modules: Modul[]) {
+    function calculateIntersects(modules: Modul[], depth: number = 1) {
         const out: {[id: string]: {
             moduler: Modul[],
             contains: any,
+
+            depth: number,
         }} = {}
 
         const sortedModules = modules.sort((a,b) => {
@@ -506,12 +478,14 @@ export default function Skema({ navigation }: {
                 out[`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}`] = {
                     contains: {},
                     moduler: [modul],
+
+                    depth: depth,
                 }
             } else {
                 if(`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}` == key) {
                     out[`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}`].moduler.push(modul)
                 } else {
-                    const intersects = calculateIntersects([modul]);
+                    const intersects = calculateIntersects([modul], depth+1);
                     out[key].contains = { 
                         ...out[key].contains,
                         ...intersects,
