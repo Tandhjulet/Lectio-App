@@ -173,11 +173,7 @@ export default function Skema({ navigation }: {
             return;
 
         const out = calculateIntersects(skema[dayNum - 1].moduler)
-        const depthAssigned = assignDepth(out);
-
-        const flattened = flatten(depthAssigned);
-
-        setDay(flattened);
+        setDay(out);
     }
 
     const chooseSchema = useRef((skema: Day[] | null, modulTimings: ModulDate[]) => {
@@ -189,9 +185,10 @@ export default function Skema({ navigation }: {
         
         let extrenumDates;
         try {
-            extrenumDates = findExtremumDates(skema[dayNum - 1].moduler, {
-                min: modulTimings[0],
-                max: modulTimings[modulTimings.length - 1],
+            const moduler = skema[dayNum - 1].moduler;
+            extrenumDates = findExtremumDates(moduler, {
+                min: moduler[0].timeSpan,
+                max: moduler[moduler.length - 1].timeSpan,
             })
         } catch {
             setSelectedDay(new Date());
@@ -199,7 +196,7 @@ export default function Skema({ navigation }: {
             return;
         }
         
-        const hoursBetween = hoursBetweenDates(extrenumDates, 2.5)
+        const hoursBetween = hoursBetweenDates(extrenumDates, 0.75)
         if(time.getHours() < Math.max(...hoursBetween)) {
             setSelectedDay(new Date());
             setDayNum(getDay(new Date()).weekDayNumber)
@@ -342,115 +339,34 @@ export default function Skema({ navigation }: {
      * @param endDate the end date formatted as a number
      * @returns the overlap if any are detected, else null
      */
-    function searchDateDict(dict: {[id: string]: any}, startDate: number, endDate: number): string | null {
-        const xmin1 = formatDate(startDate.toString())
-        const xmax1 = formatDate(endDate.toString())
 
-        for(let key in dict) {
-            const xmin2 = formatDate(key.split("-")[0]);
-            const xmax2 = formatDate(key.split("-")[1]);
+    let searchCache: {[id: number]: number[]} = {};
+    function searchDateDict(dict: Modul[], i: number): number[] {
+        if(searchCache[i]) {
+            return searchCache[i];
+        } else {
+            searchCache[i] = [];
+        }
+
+        const xmin1 = formatDate(dict[i].timeSpan.startNum.toString())
+        const xmax1 = formatDate(dict[i].timeSpan.endNum.toString())
+
+        const overlaps: number[] = [];
+
+        for(let j = 0; j < dict.length; j++) {
+
+            const xmin2 = formatDate(dict[j].timeSpan.startNum.toString());
+            const xmax2 = formatDate(dict[j].timeSpan.endNum.toString());
 
             if(xmax1 >= xmin2 && xmax2 >= xmin1) { // if true timestamps are overlapping
-                return key
+                overlaps.push(j);
             }
         }
-        return null;
+
+        overlaps.splice(overlaps.indexOf(i), 1);
+        searchCache[i].push(...overlaps);
+        return overlaps;
     }
-
-    let MAXDEPTH = 0;
-    /**
-     * Recursively sets the max depth in the given dict.
-     * @param intersections a depth-assigned dict containing module intersects
-     * @returns the max depth encountered in the dict
-     */
-    function _maxDepth(intersections: {[id: string]: {
-        moduler: Modul[],
-        contains: any,
-
-        depth?: number,
-        maxDepth?: number,
-    }}) {
-        const out = intersections;
-
-        for(let key in intersections) {
-            if((out[key].depth ?? 0) > MAXDEPTH) {
-                MAXDEPTH = out[key].depth ?? MAXDEPTH;
-            }
-            _maxDepth(out[key].contains)
-        }
-
-        return MAXDEPTH;
-    }
-
-    /**
-     * 
-     * @param depthAssigned a depth-assigned dict containing module intersects
-     * @returns a flattened dict containing width and left (%) properties used for formatting
-     */
-    function flatten(depthAssigned: {[id: string]: {
-        moduler: Modul[],
-        contains: any,
-
-        depth?: number,
-        maxDepth?: number,
-    }}) {
-        let out: {
-            modul: Modul,
-
-            width: string,
-            left: string,
-        }[] = []
-
-        for(let key in depthAssigned) {
-            const width = Math.floor(1/(depthAssigned[key].maxDepth ?? 1)*100).toString() + "%";
-
-            depthAssigned[key].moduler.forEach((modul: Modul, index: number) => {
-                const left = Math.floor((1-((depthAssigned[key].depth ?? 0)-index)/(depthAssigned[key].maxDepth ?? 1))*100) + "%";
-
-                out.push({
-                    modul: modul,
-                    width: width,
-                    left: left,
-                })
-            })
-
-            out.push(...flatten(depthAssigned[key].contains))
-        }
-
-        return out;
-    }
-
-    /**
-     * 
-     * @param intersections intersections calculated by {@link calculateIntersects}
-     * plus some additional info needed for the function to be able to recurse correctly
-     * @param calcDepth if the depth needs to be calculated again
-     * @param maxDepth the highest depth yet encoutered
-     * @returns a depth-assigned dict containing module intersects
-     * @see {@link calculateIntersects}
-     */
-    function assignDepth(intersections: {[id: string]: {
-        moduler: Modul[],
-        contains: any,
-
-        depth: number,
-        maxDepth?: number,
-    }}, maxDepth: number = 0) {
-        let out = intersections;
-
-        for(let key in out) {
-            MAXDEPTH = 0;
-            maxDepth = _maxDepth(out[key].contains);
-            if(maxDepth == 0) {
-                maxDepth = out[key].depth ?? 0;
-            }
-            out[key].maxDepth = maxDepth
-
-            assignDepth(out[key].contains, maxDepth)
-        }
-
-        return out;
-    }   
 
     /**
      * This function calculates the intersects of the modules and formats them into a dict. An intersection is when two modules have overlapping times.
@@ -461,36 +377,53 @@ export default function Skema({ navigation }: {
      * Every entry contains any internal children intersections. This makes it easy to render if any modules.
      */
     function calculateIntersects(modules: Modul[], depth: number = 1) {
-        const out: {[id: string]: {
-            moduler: Modul[],
-            contains: any,
+        searchCache = {};
 
-            depth: number,
-        }} = {}
+        const out: {
+            modul: Modul,
+    
+            width: string,
+            left: string,
+        }[] = [];
 
         const sortedModules = modules.sort((a,b) => {
             return (a.timeSpan.diff - b.timeSpan.diff)
-        }).reverse();
+        });
 
-        sortedModules.forEach((modul: Modul) => {
-            const key = searchDateDict(out, modul.timeSpan.startNum, modul.timeSpan.endNum)
-            if(key == null) {
-                out[`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}`] = {
-                    contains: {},
-                    moduler: [modul],
+        sortedModules.forEach((modul: Modul, i: number) => {
+            const overlaps = searchDateDict(modules, i); // O(n)
 
-                    depth: depth,
-                }
+            if(overlaps.length == 0) {
+                out.push({
+                    modul: modul,
+
+                    width: "100%",
+                    left: "0%",
+                })
             } else {
-                if(`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}` == key) {
-                    out[`${modul.timeSpan.startNum}-${modul.timeSpan.endNum}`].moduler.push(modul)
+                if(overlaps.length == 1) {
+                    out.push({
+                        modul: modul,
+    
+                        width: "50%",
+                        left: i < overlaps[0] ? "50%" : "0%",
+                    })
                 } else {
-                    const intersects = calculateIntersects([modul], depth+1);
-                    out[key].contains = { 
-                        ...out[key].contains,
-                        ...intersects,
-                    }
+                    let max = 0;
+                    overlaps.forEach((overlap) => { // worst-case: O(n^2), in a case where every module overlaps every other module.
+                                                    // This is pretty unlikely though!
+                        const overlaps = searchDateDict(modules, overlap).length; // O(1) as requested elements will be cached.
+                        if(overlaps > max) max = overlaps;
+                    })
+
+                    out.push({
+                        modul: modul,
+    
+                        width: (1/(max+1)) * 100 + "%",
+                        left: ((1-i)/(max+1)) * 100 + "%",
+                    })
                 }
+
             }
         })
 
@@ -1134,7 +1067,7 @@ export default function Skema({ navigation }: {
                                                                         left: 0,
                                                                     }} />
 
-                                                                    {modul.timeSpan.diff > 30 && (
+                                                                    {modul.timeSpan.diff > 30 && modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim().length > 0 && (
                                                                         <Text style={{
                                                                             color: calcColor(1, modul),
                                                                             fontSize: 12.5,
@@ -1146,7 +1079,8 @@ export default function Skema({ navigation }: {
                                                                     <Text style={{
                                                                         color: calcColor(1, modul),
                                                                         fontWeight: "bold",
-                                                                    }}>
+
+                                                                    }} ellipsizeMode="middle" numberOfLines={Math.max(Math.floor(widthNum/25), 0)}>
                                                                         {modul.teacher.length == 0 ? modul.team : (modul.team + " - " + modul.teacher.join(", "))}
                                                                     </Text>
 

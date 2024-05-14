@@ -16,7 +16,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 
 ### __LAV__
 - spørgeskemaer
-- skema rework (skema parsing optimering, kan ikke åbne eksaminer)
 - aflevere filer
 
 ### __KENDTE FEJL__
