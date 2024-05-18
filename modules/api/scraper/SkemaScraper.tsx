@@ -45,7 +45,9 @@ function differenceBetweenDates(date1: Date, date2: Date) {
 
 
 export type Modul = {
-    team: string,
+    team: string[],
+    title?: string,
+    teamId: string | null,
     teacher: string[],
     lokale: string,
     timeSpan: ModulDate,
@@ -152,7 +154,9 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
         const parsedInfoString: {
             teacher: string[],
             lokale: string,
-            team: string,
+            team: string[],
+            title?: string,
+            teamId: string | null,
             changed: boolean,
             cancelled: boolean,
             modul?: string,
@@ -169,6 +173,9 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
 
             lokale: parsedInfoString.lokale,
             team: parsedInfoString.team,
+            title: parsedInfoString.title,
+            teamId: parsedInfoString.teamId,
+
             teacher: parsedInfoString.teacher,
 
             href: modul.attributes.href.replaceAll("'", "").replaceAll("\"", ""),
@@ -267,7 +274,9 @@ function parseIconString(info: any): {homework: boolean, comment: boolean} {
 export function parseInfoString(info: any): {
     teacher: string[],
     lokale: string,
-    team: string,
+    team: string[],
+    title?: string,
+    teamId: string | null,
     changed: boolean,
     cancelled: boolean,
 } {
@@ -275,13 +284,16 @@ export function parseInfoString(info: any): {
     const out: {
         teacher: string[],
         lokale: string,
-        team: string,
+        title?: string,
+        team: string[],
+        teamId: string | null,
         changed: boolean,
         cancelled: boolean,
     } = {
         teacher: [],
         lokale: "",
-        team: "",
+        team: [],
+        teamId: null,
         changed: false,
         cancelled: false,
     };
@@ -315,13 +327,14 @@ export function parseInfoString(info: any): {
                 out["teacher"].push(replaceHTMLEntities(teacherInitials));
 
             } else if (attr.startsWith("HE")) {
-                out["team"] = replaceHTMLEntities(element.children[0].text);
+                out["team"].push(replaceHTMLEntities(element.children[0].text));
+                out["teamId"] = attr.replace("HE", "");
             }
         }
     });
 
     if(info.firstChild.tagName == "span" && info.firstChild.attributes["data-lectioContextCard"] == undefined) {
-        out["team"] = replaceHTMLEntities(info.firstChild.firstChild.text);
+        out["title"] = replaceHTMLEntities(info.firstChild.firstChild.text);
     }
     if(out["lokale"].startsWith("...")) {
         out["lokale"] = out["lokale"].replace(/\.\.\./, "");

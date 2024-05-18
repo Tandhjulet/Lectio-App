@@ -54,7 +54,10 @@ export async function getIfCachedOrDefault<V>(key: Key, identifier: string = "")
 }
 
 export async function scrapeHold(holdId: string, gymNummer: string, bypassCache: boolean = false) {
-    if(!bypassCache) {
+    const profile = await getProfile();
+    const isOwnHold = !profile.hold.every((hold) => hold.holdId !== holdId);
+
+    if(!bypassCache && isOwnHold) {
         const saved = await getSaved(Key.HOLD_MEMBERS, holdId);
         if(saved.valid && saved.value != null) {
             return saved.value;
@@ -71,7 +74,7 @@ export async function scrapeHold(holdId: string, gymNummer: string, bypassCache:
 
     const parser = await treat(res);
     const hold = await holdScraper(parser);
-    if(hold != null)
+    if(hold != null && isOwnHold)
         await saveFetch(Key.HOLD_MEMBERS, hold, Timespan.DAY, holdId);
 
     return hold;
@@ -329,8 +332,8 @@ export async function getProfile(): Promise<Profile> {
 
 // end of stupidity.
 
-export async function getSkema(gymNummer: string, date: Date): Promise<{ payload: Week | null, rateLimited: boolean }> {
-    const res = await fetch(SCRAPE_URLS(gymNummer).SKEMA + `?week=${getWeekNumber(date).toString().padStart(2, "0")}${date.getFullYear()}`, {
+export async function getSkema(gymNummer: string, date: Date, id?: string): Promise<{ payload: Week | null, rateLimited: boolean }> {
+    const res = await fetch(SCRAPE_URLS(gymNummer).SKEMA + (id !== undefined ? "?elevid="+id+"&" : "?") + `week=${getWeekNumber(date).toString().padStart(2, "0")}${date.getFullYear()}`, {
         method: "GET",
         credentials: 'include',
         headers: {
@@ -339,7 +342,7 @@ export async function getSkema(gymNummer: string, date: Date): Promise<{ payload
             "Accept-Language": "da-DK,da;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6",
             "Cache-Control": "no-cache",
             "Pragma": "no-cache",
-            "Referer": `https://www.lectio.dk/lectio/${gymNummer}/SkemaNy.aspx}`,
+            "Referer": `https://www.lectio.dk/lectio/${gymNummer}/SkemaNy.aspx`,
             "Sec-Ch-Ua": `"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"`,
             "Sec-Ch-Ua-Mobile": "?0",
             "Sec-Ch-Ua-Platform": `"Windows"`,
@@ -357,8 +360,8 @@ export async function getSkema(gymNummer: string, date: Date): Promise<{ payload
 
     const skema: Week | null = scrapeSchema(parser, text);
 
-    if(skema != null)
-        await saveFetch(Key.SKEMA, skema, Timespan.HOUR, getWeekNumber(date).toString());
+    if(skema != null && !id)
+        await saveFetch(Key.SKEMA, skema, Timespan.WEEK, getWeekNumber(date).toString());
 
     return {
         payload: skema,

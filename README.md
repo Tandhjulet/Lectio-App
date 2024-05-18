@@ -6,6 +6,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ## Prioriteringer/mangler ved appen
 
 ### __HØJ__
+- FIX SKEMA!! kig Akaasan Thamilvanan ons. 15.
 
 ### __MELLEM__
 - push notifs
@@ -17,6 +18,9 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ### __LAV__
 - spørgeskemaer
 - aflevere filer
+- åben andres skema
+- lazy loading på profilbilleder
+- custom user cell der bruges globalt på platformen
 
 ### __KENDTE FEJL__
 - login med forkerte logindetaljer gr igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)

@@ -47,25 +47,20 @@ export default function ModulView({ navigation, route }: {
         setLoading(true);
 
         (async () => {
-            const profile = await getProfile();
             const gym: { gymName: string, gymNummer: string } = await secureGet("gym")
             setGym(gym);
 
-            const holdId = profile.hold.find((hold) => hold.holdNavn === modul.team)?.holdId;
-            if(!holdId) {
+            if(modul.teamId) {
+                scrapeHold(modul.teamId, gym.gymNummer, true).then((v) => {
+                    if(v == null)
+                        setMembers({})
+                    else
+                        setMembers(v)
+                    setLoading(false);
+                })
+            } else {
                 setLoading(false);
-                return;
             }
-
-            scrapeHold(holdId, gym.gymNummer, true).then((v) => {
-                if(v == null)
-                    setMembers({})
-                else
-                    setMembers(v)
-                setLoading(false);
-            })
-
-            setLoading(false);
         })();
     }, [])
 
@@ -81,23 +76,18 @@ export default function ModulView({ navigation, route }: {
                 setRefreshing(false);
                 return;
             }
-            
-            const profile = await getProfile();
-            const holdId = profile.hold.find((hold) => hold.holdNavn === modul.team)?.holdId;
-            if(!holdId) {
-                setRefreshing(false);
-                return;
-            }
 
-            scrapeHold(holdId, gym.gymNummer, true).then((v) => {
-                if(v == null)
-                    setMembers({})
-                else
-                    setMembers(v)
+            if(modul.teamId) {
+                scrapeHold(modul.teamId, gym.gymNummer, true).then((v) => {
+                    if(v == null)
+                        setMembers({})
+                    else
+                        setMembers(v)
+                    setRefreshing(false);
+                })
+            } else {
                 setRefreshing(false);
-            })
-        
-            setRefreshing(false);
+            }
         })();
     }, [refreshing])
 
@@ -123,17 +113,39 @@ export default function ModulView({ navigation, route }: {
                     marginHorizontal: 20,
                 }}>
                     <Section header={"INFORMATION"} roundedCorners={true} hideSurroundingSeparators={true}>
-                        <Cell
-                            cellStyle="RightDetail"
-                            title="Hold"
-                            detail={modul.team}
-                        />
+                        {modul.title && (
+                            <Cell
+                                cellStyle="RightDetail"
+                                title="Titel"
+                                detail={modul.title}
+                                
+                                detailTextStyle={{
+                                    maxWidth: "80%",
+                                }}
+                            />
+                        )}
 
                         <Cell
                             cellStyle="RightDetail"
-                            title="Lokale"
-                            detail={modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim()}
+                            title="Hold"
+                            detail={modul.team.join(", ")}
+
+                            detailTextStyle={{
+                                maxWidth: "80%",
+                            }}
                         />
+
+                        {modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim().length > 0 && (
+                            <Cell
+                                cellStyle="RightDetail"
+                                title="Lokale"
+                                detail={modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim()}
+
+                                detailTextStyle={{
+                                    maxWidth: "80%",
+                                }}
+                            />
+                        )}
 
                         <Cell
                             cellStyle="RightDetail"
@@ -151,12 +163,20 @@ export default function ModulView({ navigation, route }: {
                             cellStyle="RightDetail"
                             title="Status"
                             detail={getStatus(modul)}
+
+                            detailTextStyle={{
+                                maxWidth: "80%",
+                            }}
                         />
 
                         <Cell
                             cellStyle="RightDetail"
                             title="Lektier"
                             detail={modul.homework ? "Ja" : "Nej"}
+
+                            detailTextStyle={{
+                                fontWeight: "bold",
+                            }}
                         />
 
                         {modul.note != undefined &&

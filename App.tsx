@@ -375,7 +375,7 @@ export function SkemaNavigator() {
       <SkemaNav.Screen name={"Skema"} component={Skema} options={{
         header: () => <></>
       }} />
-      <SkemaNav.Screen name={"Modul View"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.team })} />
+      <SkemaNav.Screen name={"Modul View"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.title ?? route.params.modul.team.join(", ") })} />
       <Settings.Screen name={"NoAccess"} component={NoAccess} options={{title: "Køb abonnement", headerShown: false}} />
 
       <Settings.Screen name="Tak" component={ThankYou} options={{
@@ -508,6 +508,22 @@ export function MereNavigator() {
         }
       } />
       <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Lærere og elever"}} />
+
+      <SkemaNav.Screen name={"Skemaoversigt"} component={Skema} options={
+          ({ route }) => {
+            const params = route.params ?? {};
+
+            // @ts-ignore
+            const name: string | undefined = "user" in params ? params.user.navn : "Skemaoversigt";
+
+            return {
+              title: name?.trim(),
+              headerBackVisible: true,
+            }
+          }
+      } />
+      <SkemaNav.Screen name={"Modul information"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.title ?? route.params.modul.team.join(", ") })} />
+
       <Settings.Screen name={"Books"} component={Books} options={{title: "Bøger"}} />
 
       <Settings.Screen name={"NoAccess"} component={NoAccess} options={{title: "Køb abonnement", headerShown: false}} />

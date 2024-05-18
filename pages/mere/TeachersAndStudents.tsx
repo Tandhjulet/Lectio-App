@@ -1,4 +1,4 @@
-import { ActivityIndicator, FlatList, Image, ImageBackground, Modal, Pressable, ScrollView, SectionList, SectionListData, StyleSheet, Text, TextInput, TouchableHighlight, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
+import { ActivityIndicator, FlatList, Image, ImageBackground, Modal, Pressable, ScrollView, SectionList, SectionListData, StyleSheet, Text, TextInput, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../../components/Navbar";
 import React, { Suspense, memo, useCallback, useEffect, useState } from "react";
 import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
@@ -10,66 +10,74 @@ import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import ProfilePicture from "../../components/ProfilePicture";
 
 import 'react-native-console-time-polyfill';
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 
-const UserCell = memo(function UserCell({ item, gym, theme }: {
-    item: Person,
-    gym: any,
-    theme: Theme
-}) {
+export default function TeachersAndStudents() {
+    const navigation = useNavigation<StackNavigationProp<any>>();
 
-    return (
-        <>
-            <View style={{
-                paddingHorizontal: 20,
-                paddingVertical: 15,
-                
-                backgroundColor: theme.BLACK,
-
-                display: 'flex',
-                gap: 10,
-                flexDirection: "row",
-
-                alignItems: "center",
-            }}>
-                <ProfilePicture gymNummer={gym?.gymNummer ?? ""} billedeId={item.billedeId ?? ""} size={40} navn={item.navn} />
-
-                <View style={{
-                    display: "flex",
-                    flexDirection: "column",
-
-                    gap: 5,
+    const UserCell = memo(function UserCell({ item, gym, theme, navigation }: {
+        item: Person,
+        gym: any,
+        theme: Theme,
+        navigation: StackNavigationProp<any>,
+    }) {
+        return (
+            <>
+                <TouchableOpacity style={{
+                    paddingHorizontal: 20,
+                    paddingVertical: 15,
+                    
+                    backgroundColor: theme.BLACK,
+    
+                    display: 'flex',
+                    gap: 10,
+                    flexDirection: "row",
+    
+                    alignItems: "center",
+                }} onPress={() => {
+                    navigation.push("Skemaoversigt", {
+                        user: item,
+                    })
                 }}>
-                    <Text style={{
-                        color: theme.WHITE,
-                        fontWeight: "bold",
+                    <ProfilePicture gymNummer={gym?.gymNummer ?? ""} billedeId={item.billedeId ?? ""} size={40} navn={item.navn} />
+    
+                    <View style={{
+                        display: "flex",
+                        flexDirection: "column",
+    
+                        gap: 5,
                     }}>
-                        {item.navn}
-                    </Text>
-
-                    <Text style={{
-                        color: theme.WHITE,
-                    }}>
-                        {item.klasse}
-                    </Text>
-                </View>
-            </View>
-
-            <View style={{
-                marginHorizontal: 15,
-            }}>
+                        <Text style={{
+                            color: theme.WHITE,
+                            fontWeight: "bold",
+                        }}>
+                            {item.navn}
+                        </Text>
+    
+                        <Text style={{
+                            color: theme.WHITE,
+                        }}>
+                            {item.klasse}
+                        </Text>
+                    </View>
+                </TouchableOpacity>
+    
                 <View style={{
-                    backgroundColor: theme.WHITE,
-                    width: "100%",
-                    height: StyleSheet.hairlineWidth,
+                    marginHorizontal: 15,
+                }}>
+                    <View style={{
+                        backgroundColor: theme.WHITE,
+                        width: "100%",
+                        height: StyleSheet.hairlineWidth,
+    
+                        opacity: 0.2,
+                    }} />
+                </View>
+            </>
+        )
+    })
 
-                    opacity: 0.2,
-                }} />
-            </View>
-        </>
-    )
-})
-
-export default function TeachersAndStudents({ navigation }: { navigation: any }) {
     const [loading, setLoading] = useState<boolean>(true);
 
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>({gymName: "", gymNummer: ""});
@@ -150,7 +158,19 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
             }
             setRawPeople(peopleList)
 
-            const namelist = Object.keys(peopleList).sort();
+            const namelist = Object.keys(peopleList).sort((a,b) => {
+                if(a.startsWith("<") && !b.startsWith("<")) {
+                    return 1;
+                } else if(b.startsWith("<") && !a.startsWith("<")) {
+                    return -1;
+                }
+                else {
+                    return a.localeCompare(b, "da-DK", {
+                        ignorePunctuation: true,
+                        collation: "ducet",
+                    })
+                }
+            });
             const nameAndClasslist = namelist.flatMap((v) => v + ":" + peopleList[v].klasse);
 
             setNamelistAndClassList(nameAndClasslist)
@@ -168,13 +188,13 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
     }) => {
         const user = item.split(":")[0];
 
-        return <UserCell item={rawPeople[user]} gym={gym} theme={theme} />
+        return <UserCell item={rawPeople[user]} gym={gym} theme={theme} navigation={navigation} />
     }, [rawPeople]);
 
     const renderItemSectionList = useCallback(({ item, index }: {
         item: Person,
         index: number,
-    }) => <UserCell item={item} gym={gym} theme={theme} />, []);
+    }) => <UserCell item={item} gym={gym} theme={theme} navigation={navigation} />, []);
 
     return (
         <View style={{height: '100%',width:'100%'}}>
@@ -286,6 +306,8 @@ export default function TeachersAndStudents({ navigation }: { navigation: any })
                                             getItemLayout={(data, index) => {
                                                 return {length: 70 + StyleSheet.hairlineWidth, offset: index * (70 + StyleSheet.hairlineWidth), index: index}
                                             }}
+
+                                            contentContainerStyle={{ paddingBottom: 137 + 70 }}
 
                                             stickySectionHeadersEnabled
                                             directionalLockEnabled={true}

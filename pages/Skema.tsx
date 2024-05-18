@@ -9,7 +9,7 @@ import { ArrowLeftIcon, ArrowRightIcon, BackwardIcon, ChatBubbleBottomCenterText
 import getDaysOfCurrentWeek, { WeekDay, getDay, getDaysOfThreeWeeks, getNextWeek, getPrevWeek } from "../modules/Date";
 import GestureRecognizer from 'react-native-swipe-gestures';
 import { getPeople } from "../modules/api/scraper/class/PeopleList";
-import { NavigationProp } from "@react-navigation/native";
+import { NavigationProp, RouteProp } from "@react-navigation/native";
 import RateLimit from "../components/RateLimit";
 import { Key, getSaved } from "../modules/api/storage/Storage";
 import { SCHEMA_SEP_CHAR } from "../modules/Config";
@@ -99,9 +99,14 @@ const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
  * @param param0 Navigation prop
  * @returns JSX for the schema view
  */
-export default function Skema({ navigation }: {
+export default function Skema({ navigation, route }: {
     navigation: NavigationProp<any>,
+    route: RouteProp<any>,
 }) {
+    const isOwnSkema = useMemo(() => {
+        return route?.params?.user == undefined;
+    }, [route]);
+
     const { subscriptionState } = useContext(SubscriptionContext);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -222,7 +227,7 @@ export default function Skema({ navigation }: {
 
             const saved = await getSaved(Key.SKEMA, getWeekNumber(loadDate).toString());
             let hasCache = false;
-            if(saved.valid && saved.value != null) {
+            if(isOwnSkema && saved.valid && saved.value != null) {
                 setSkema(saved.value.days);
                 setModulTimings(saved.value.modul);
                 hasCache = true;
@@ -238,8 +243,7 @@ export default function Skema({ navigation }: {
             setDaysOfThreeWeeks([...getDaysOfThreeWeeks(loadDate)])
 
             setProfile(await getProfile());
-
-            getSkema(gymNummer, loadDate).then(({ payload, rateLimited }) => {
+            getSkema(gymNummer, loadDate, route?.params?.user?.personId).then(({ payload, rateLimited }) => {
                 if(!rateLimited && payload != null) {
                     setSkema([...payload.days]);
                     setModulTimings([...payload.modul]);
@@ -273,7 +277,7 @@ export default function Skema({ navigation }: {
         
         (async () => {
             const gymNummer = (await secureGet("gym")).gymNummer;
-            getSkema(gymNummer, loadDate).then(({ payload, rateLimited }) => {
+            getSkema(gymNummer, loadDate, route?.params?.user?.personId).then(({ payload, rateLimited }) => {
                 if(!rateLimited && payload != null) {
                     setSkema([...payload.days]);
                     setModulTimings([...payload.modul]);
@@ -388,7 +392,7 @@ export default function Skema({ navigation }: {
 
         const sortedModules = modules.sort((a,b) => {
             return (a.timeSpan.diff - b.timeSpan.diff)
-        });
+        }); // sorts from shortest to longest module
 
         sortedModules.forEach((modul: Modul, i: number) => {
             const overlaps = searchDateDict(modules, i); // O(n)
@@ -536,7 +540,8 @@ export default function Skema({ navigation }: {
         const min = Math.min(...hoursToMap);
         const max = Math.max(...hoursToMap);
 
-        const hour = time.getHours() + (time.getMinutes()/60);
+        const hour = time.getHours();
+
         if(!(hour > min-0.5 && hour < max+0.5)) {
             return <></>;
         }
@@ -557,17 +562,15 @@ export default function Skema({ navigation }: {
                     display: "flex",
                     flexDirection: "row",
 
-                    left: 82.5,
-
-                    zIndex: 50,
+                    zIndex: 4,
                 }}
             >
                 <View style={{
                     height: 1,
+                    width: 60,
                     backgroundColor: "#ff5e5e",
-                    flex: 1,
-
-                    position: "relative"
+                    opacity: 0.8,
+                    zIndex: 4,
                 }}>
                     <View style={{
                         height: 10,
@@ -576,12 +579,13 @@ export default function Skema({ navigation }: {
 
                         backgroundColor: "#ff5e5e",
                         position: "absolute",
-                        left: 0,
+                        right: -5,
 
                         top: -5,
-                    }}>
+                        zIndex: 4,
+                    }} />
                 </View>
-                </View>
+
             </View>
         )
     }, [time, hoursToMap, selectedDay]);
@@ -605,7 +609,7 @@ export default function Skema({ navigation }: {
     return (
         <View>
             <View style={{
-                paddingTop: Constants.statusBarHeight,
+                paddingTop: isOwnSkema ? Constants.statusBarHeight : 10,
         
                 backgroundColor: theme.ACCENT_BLACK,
 
@@ -617,10 +621,23 @@ export default function Skema({ navigation }: {
                 <View style={{
                     paddingHorizontal: 20,
                 }}>
-                    <Text style={{
-                        fontSize: 20,
-                        color: theme.LIGHT,
-                    }}>{getTimeOfDayAsString()}, {profile == undefined ? "..." : profile.name.split(' ')[0]}</Text>
+                    {isOwnSkema ? (
+                        <Text style={{
+                            fontSize: 20,
+                            color: theme.LIGHT,
+                        }}>{getTimeOfDayAsString()}, {profile == undefined ? "..." : profile.name.split(' ')[0]}</Text>
+                    ) : (
+                        <Text style={{
+                            textTransform: "uppercase",
+                            color: theme.LIGHT,
+                            fontWeight: "bold",
+                            fontSize: 13,
+                        }}>
+                            {time.toLocaleDateString("da-DK", {
+                                dateStyle:"medium",
+                            })}
+                        </Text>
+                    )}
 
                     <Text style={{
                         fontSize: 30,
@@ -926,6 +943,12 @@ export default function Skema({ navigation }: {
                                 {skema != null && (
                                     <>
                                         {hoursToMap.map((hour: number, index: number) => {
+                                            const hours = time.getHours();
+                                            const isCurrentTimeClose = (hours > hour-0.3 && hours < hour+0.3) && (
+                                                (time.getMonth() == selectedDay.getMonth() &&
+                                                time.getDate() == selectedDay.getDate() &&
+                                                time.getFullYear() == selectedDay.getFullYear())
+                                            )
                                             return (
                                                 <View key={index} style={{
                                                     position: "absolute",
@@ -935,15 +958,15 @@ export default function Skema({ navigation }: {
                                                     flexDirection: "row",
                                                     alignItems: "center",
 
-                                                    left: 40,
-                                                    paddingRight: 41,
-                                                    gap: 7.5,
+                                                    left: 5,
+                                                    gap: 5,
 
                                                     transform: [{
                                                         translateY: -(17 / 2),
                                                     }],
 
                                                     zIndex: 1,
+                                                    opacity: isCurrentTimeClose ? 0.3 : 0.8,
                                                 }}>
                                                     <Text style={{
                                                         color: hexToRgb(theme.WHITE.toString(), 0.8),
@@ -956,8 +979,9 @@ export default function Skema({ navigation }: {
                                                     </Text>
                                                     <View style={{
                                                         height: StyleSheet.hairlineWidth,
-                                                        backgroundColor: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                        backgroundColor: hexToRgb(theme.WHITE.toString(), 0.3),
                                                         flex: 1,
+                                                        zIndex: 1,
                                                     }} />
                                                 </View>
                                             )
@@ -969,20 +993,51 @@ export default function Skema({ navigation }: {
                                             return (
                                                 <View key={index} style={{
                                                     position: "absolute",
-                                                    height: modulTiming.diff,
+
+                                                    transform: [{
+                                                        translateY: modulTiming.diff/2 -30/2,
+                                                    }],
+                                                    height: modulTiming.diff > 60 ? 30 : modulTiming.diff,
                                                     width: 30,
 
-                                                    borderTopRightRadius: 7.5,
-                                                    borderBottomRightRadius: 7.5,
+                                                    left: modulTiming.diff > 60 ? 45 : 48.5,
+                                                    
+                                                    borderBottomLeftRadius: modulTiming.diff > 60 ? 500 : 0,
+                                                    borderTopLeftRadius: modulTiming.diff > 60 ? 500 : 0,
+                                                    borderTopRightRadius: modulTiming.diff > 60 ? 0 : 5,
+                                                    borderBottomRightRadius: modulTiming.diff > 60 ? 0 : 5,
 
                                                     display: "flex",
                                                     justifyContent: "center",
                                                     alignItems: "center",
 
-                                                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.15),
+                                                    backgroundColor: scheme == "dark" ? "#1f1f1f" : "#cecece",
+                                                    zIndex: 5,
 
                                                     top: calculateTop(modulTiming)
                                                 }}>
+                                                    {modulTiming.diff > 60 && (
+                                                        <View style={{
+                                                            position:"absolute",
+
+                                                            right: -4,
+                                                            top: 0,
+
+                                                            height: modulTiming.diff,
+                                                            width: 20,
+
+                                                            //borderCurve: "continuous",
+                                                            borderBottomLeftRadius: 5,
+                                                            borderTopLeftRadius: 5,
+                                                            borderTopRightRadius: 7.5,
+                                                            borderBottomRightRadius: 7.5,
+
+                                                            transform: [{
+                                                                translateY: -modulTiming.diff/2 +30/2
+                                                            }],
+                                                            backgroundColor: scheme == "dark" ? "#1f1f1f" : "#cecece",
+                                                        }}/>
+                                                    )}
                                                     <Text style={{
                                                         color: theme.WHITE,
                                                         fontWeight: "bold",
@@ -1024,9 +1079,15 @@ export default function Skema({ navigation }: {
                                                                 return;
                                                             };
 
-                                                            navigation.navigate("Modul View", {
-                                                                modul: modul,
-                                                            })
+                                                            if(isOwnSkema) {
+                                                                navigation.navigate("Modul View", {
+                                                                    modul: modul,
+                                                                })
+                                                            } else {
+                                                                navigation.navigate("Modul information", {
+                                                                    modul: modul,
+                                                                })
+                                                            }
                                                         }}
                                                     >
                                                         <View style={{
@@ -1076,12 +1137,23 @@ export default function Skema({ navigation }: {
                                                                         </Text>
                                                                     )}
 
+                                                                    {modul.title && (
+                                                                        <Text style={{
+                                                                            color: calcColor(1, modul),
+                                                                            fontWeight: "bold",
+
+                                                                        }} ellipsizeMode="middle" numberOfLines={1}>
+                                                                            {modul.title}
+                                                                        </Text>
+                                                                    )}
+
                                                                     <Text style={{
                                                                         color: calcColor(1, modul),
-                                                                        fontWeight: "bold",
+                                                                        fontWeight: "500",
 
-                                                                    }} ellipsizeMode="middle" numberOfLines={Math.max(Math.floor(widthNum/25), 0)}>
-                                                                        {modul.teacher.length == 0 ? modul.team : (modul.team + " - " + modul.teacher.join(", "))}
+                                                                        overflow: "hidden",
+                                                                    }} ellipsizeMode="middle" numberOfLines={Math.floor(widthNum/25)}>
+                                                                        {modul.team.join(", ")}
                                                                     </Text>
 
                                                                     {modul.timeSpan.diff > 70 && (
@@ -1126,75 +1198,87 @@ export default function Skema({ navigation }: {
                         </ScrollView>
                     }
 
-                    <Animated.View style={{
+                    <View style={{
+                        width: "100%",
+                        height: "100%",
+
                         position: "absolute",
-                        top: "25%",
-                        left: -77,
-
-                        width: 75,
-                        height: 75,
-
-                        transform: [{translateX: pan.x.interpolate({
-                            inputRange: [0, width],
-                            outputRange: [0, 75 * 2],
-                        }) }],
-
-                        backgroundColor: theme.ACCENT_BLACK,
-                        borderRadius: 75,
-
-                        display: "flex",
-                        alignItems: "flex-end",
+                        pointerEvents: "none",
+                        overflow: "hidden",
 
                         zIndex: 50,
                     }}>
-                        <View style={{
-                            width: "50%",
-                            height: "100%",
+                        <Animated.View style={{
+                            position: "absolute",
+                            top: "25%",
+                            left: -77,
 
+                            width: 75,
+                            height: 75,
+
+                            transform: [{translateX: pan.x.interpolate({
+                                inputRange: [0, width],
+                                outputRange: [0, 75 * 2],
+                            }) }],
+
+                            backgroundColor: theme.ACCENT_BLACK,
+                            opacity: 1,
                             borderRadius: 75,
 
                             display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
+                            alignItems: "flex-end",
+
+                            zIndex: 50,
                         }}>
-                            <ArrowLeftIcon size={20} color={theme.WHITE} />
-                        </View>
-                    </Animated.View>
+                            <View style={{
+                                width: "50%",
+                                height: "100%",
 
-                    <Animated.View style={{
-                        position: "absolute",
-                        top: "25%",
-                        right: -77,
+                                borderRadius: 75,
 
-                        width: 75,
-                        height: 75,
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}>
+                                <ArrowLeftIcon size={20} color={theme.WHITE} />
+                            </View>
+                        </Animated.View>
 
-                        transform: [{translateX: pan.x.interpolate({
-                            inputRange: [0, width],
-                            outputRange: [0, 75 * 2],
-                        }) }],
+                        <Animated.View style={{
+                            position: "absolute",
+                            top: "25%",
+                            right: -77,
 
-                        backgroundColor: theme.ACCENT_BLACK,
-                        borderRadius: 75,
+                            width: 75,
+                            height: 75,
 
-                        display: "flex",
-                        alignItems: "flex-start",
+                            transform: [{translateX: pan.x.interpolate({
+                                inputRange: [0, width],
+                                outputRange: [0, 75 * 2],
+                            }) }],
 
-                        zIndex: 50,
-                    }}>
-                        <View style={{
-                            width: "50%",
-                            height: "100%",
-
+                            backgroundColor: theme.ACCENT_BLACK,
                             borderRadius: 75,
 
                             display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
+                            alignItems: "flex-start",
+
+                            zIndex: 50,
                         }}>
-                            <ArrowRightIcon size={20} color={theme.WHITE} />
-                        </View>
-                    </Animated.View>
+                            <View style={{
+                                width: "50%",
+                                height: "100%",
+
+                                borderRadius: 75,
+
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}>
+                                <ArrowRightIcon size={20} color={theme.WHITE} />
+                            </View>
+                        </Animated.View>
+                    </View>
 
                 </View>
             </View>
