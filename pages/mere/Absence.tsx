@@ -907,6 +907,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                                                     width: 10,
                                                                     height: 10,
                                                                     backgroundColor: pieColors[index % pieColors.length],
+                                                                    borderRadius: 2.5
                                                                 }} />
                                                                 <Text ellipsizeMode="tail" numberOfLines={1} style={{
                                                                     color: theme.WHITE,

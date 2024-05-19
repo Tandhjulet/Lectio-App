@@ -184,10 +184,10 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
             comment: parsedIcons.comment,
             
             timeSpan: {
-                start: startNum > endNum ? formatDate(timeSpan[1]) : formatDate(timeSpan[0]),
+                end: startNum > endNum ? formatDate(timeSpan[1]) : formatDate(timeSpan[0]),
                 startNum: startNum > endNum ? endNum : startNum,
     
-                end: startNum > endNum ? formatDate(timeSpan[0]) : formatDate(timeSpan[1]),
+                start: startNum > endNum ? formatDate(timeSpan[0]) : formatDate(timeSpan[1]),
                 endNum: startNum > endNum ? startNum : endNum,
     
                 diff: differenceBetweenDates(timeSpan[1], timeSpan[0]),

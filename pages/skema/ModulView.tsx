@@ -50,7 +50,7 @@ export default function ModulView({ navigation, route }: {
             const gym: { gymName: string, gymNummer: string } = await secureGet("gym")
             setGym(gym);
 
-            if(modul.teamId) {
+            if(modul.teamId && modul.team.length == 1) {
                 scrapeHold(modul.teamId, gym.gymNummer, true).then((v) => {
                     if(v == null)
                         setMembers({})
@@ -76,8 +76,7 @@ export default function ModulView({ navigation, route }: {
                 setRefreshing(false);
                 return;
             }
-
-            if(modul.teamId) {
+            if(modul.teamId && modul.team.length == 1) {
                 scrapeHold(modul.teamId, gym.gymNummer, true).then((v) => {
                     if(v == null)
                         setMembers({})
@@ -150,13 +149,13 @@ export default function ModulView({ navigation, route }: {
                         <Cell
                             cellStyle="RightDetail"
                             title="Start"
-                            detail={modul.timeSpan.end} // idk ??
+                            detail={modul.timeSpan.start}
                         />
 
                         <Cell
                             cellStyle="RightDetail"
                             title="Slut"
-                            detail={modul.timeSpan.start} // idk ??
+                            detail={modul.timeSpan.end} 
                         />
 
                         <Cell

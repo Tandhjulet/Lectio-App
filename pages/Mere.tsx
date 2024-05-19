@@ -3,7 +3,7 @@ import NavigationBar from "../components/Navbar";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { themes } from "../modules/Themes";
 import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { AcademicCapIcon, BellSnoozeIcon, BookOpenIcon, BuildingLibraryIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon, XMarkIcon } from "react-native-heroicons/solid";
+import { AcademicCapIcon, BellSnoozeIcon, BookOpenIcon, BuildingLibraryIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon, XMarkIcon } from "react-native-heroicons/outline";
 import { getUnsecure, removeSecure, removeUnsecure, secureGet, signOutReq } from "../modules/api/Authentication";
 import { Profile, getProfile, saveProfile } from "../modules/api/scraper/Scraper";
 import { AuthContext } from "../modules/Auth";
@@ -20,6 +20,7 @@ import * as MailComposer from 'expo-mail-composer';
 import { hasSubscription } from "../components/LectioPlusAPI";
 import { SubscriptionContext } from "../modules/Sub";
 import { useFocusEffect } from "@react-navigation/native";
+import { IdentificationIcon } from "react-native-heroicons/outline";
 
 export default function Mere({ navigation }: {navigation: any}) {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -251,6 +252,23 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     }
 
                                     navigation.navigate("Books")
+                                }}
+                            />  
+                        </Section>
+
+                        <Section hideSurroundingSeparators roundedCorners>
+                            <Cell
+                                cellStyle="Basic"
+                                title="Studiekort"
+                                titleTextColor={theme.WHITE}
+                                image={
+                                    <IdentificationIcon color={theme.ACCENT} style={{
+                                        opacity: 0.85,
+                                    }}  />
+                                }
+                                accessory="DisclosureIndicator"
+                                onPress={() => {
+                                    navigation.navigate("Studiekort")
                                 }}
                             />  
                         </Section>

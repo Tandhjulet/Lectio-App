@@ -18,7 +18,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 ### __LAV__
 - spørgeskemaer
 - aflevere filer
-- åben andres skema
 - lazy loading på profilbilleder
 - custom user cell der bruges globalt på platformen
 

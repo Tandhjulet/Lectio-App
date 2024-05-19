@@ -224,6 +224,7 @@ export default function Skema({ navigation, route }: {
     useEffect(() => {
         (async () => {
             setBlockScroll(true);
+            const profile = await getProfile();
 
             const saved = await getSaved(Key.SKEMA, getWeekNumber(loadDate).toString());
             let hasCache = false;
@@ -242,7 +243,7 @@ export default function Skema({ navigation, route }: {
             setDayNum(getDay(selectedDay).weekDayNumber)
             setDaysOfThreeWeeks([...getDaysOfThreeWeeks(loadDate)])
 
-            setProfile(await getProfile());
+            setProfile(profile);
             getSkema(gymNummer, loadDate, route?.params?.user?.personId).then(({ payload, rateLimited }) => {
                 if(!rateLimited && payload != null) {
                     setSkema([...payload.days]);
@@ -362,7 +363,7 @@ export default function Skema({ navigation, route }: {
             const xmin2 = formatDate(dict[j].timeSpan.startNum.toString());
             const xmax2 = formatDate(dict[j].timeSpan.endNum.toString());
 
-            if(xmax1 >= xmin2 && xmax2 >= xmin1) { // if true timestamps are overlapping
+            if(xmax1 > xmin2 && xmax2 > xmin1) { // if true timestamps are overlapping
                 overlaps.push(j);
             }
         }
@@ -433,6 +434,7 @@ export default function Skema({ navigation, route }: {
 
         return out
     }
+
 
     /**
      * Returns a different greeting depending on the time
@@ -558,33 +560,21 @@ export default function Skema({ navigation, route }: {
                 style={{
                     position: "absolute",
                     top: (hour - min) * 60,
+                    right: 0,
 
                     display: "flex",
                     flexDirection: "row",
 
-                    zIndex: 4,
+                    zIndex: 1,
                 }}
             >
                 <View style={{
                     height: 1,
-                    width: 60,
+                    width: width - 38 - 2.5,
                     backgroundColor: "#ff5e5e",
                     opacity: 0.8,
-                    zIndex: 4,
-                }}>
-                    <View style={{
-                        height: 10,
-                        aspectRatio: 1,
-                        borderRadius: 5,
-
-                        backgroundColor: "#ff5e5e",
-                        position: "absolute",
-                        right: -5,
-
-                        top: -5,
-                        zIndex: 4,
-                    }} />
-                </View>
+                    zIndex: 1,
+                }} />
 
             </View>
         )
@@ -621,11 +611,11 @@ export default function Skema({ navigation, route }: {
                 <View style={{
                     paddingHorizontal: 20,
                 }}>
-                    {isOwnSkema ? (
+                    {isOwnSkema && !(profile == undefined) ? (
                         <Text style={{
                             fontSize: 20,
                             color: theme.LIGHT,
-                        }}>{getTimeOfDayAsString()}, {profile == undefined ? "..." : profile.name.split(' ')[0]}</Text>
+                        }}>{getTimeOfDayAsString()}, {profile.name.split(' ')[0]}</Text>
                     ) : (
                         <Text style={{
                             textTransform: "uppercase",
@@ -639,6 +629,7 @@ export default function Skema({ navigation, route }: {
                         </Text>
                     )}
 
+                    
                     <Text style={{
                         fontSize: 30,
                         fontWeight: "bold",
@@ -823,17 +814,17 @@ export default function Skema({ navigation, route }: {
                                         ]}>
                                             <View style={{...styles.dayContainer, backgroundColor: isSelectedDay ? theme.LIGHT : hexToRgb(theme.WHITE.toString(), 0.15)}}>
                                                 <Text style={{
-                                                    textTransform: 'lowercase',
-                                                    color: color(isSelectedDay, isToday, false),
-                                                    opacity: hasModulesToday ? 0.6 : 1,
-                                                }}>{day.dayName.slice(0,3)}.</Text>
-
-                                                <Text style={{
                                                     color: color(isSelectedDay, isToday, true),
                                                     fontWeight: "bold",
                                                     fontSize: 20,
                                                     opacity: hasModulesToday ? 0.6 : 1,
                                                 }}>{day.dayNumber.toString()}</Text>
+
+                                                <Text style={{
+                                                    textTransform: 'lowercase',
+                                                    color: color(isSelectedDay, isToday, false),
+                                                    opacity: hasModulesToday ? 0.6 : 1,
+                                                }}>{day.dayName.slice(0,3)}.</Text>
                                             </View>
                                         </Pressable>
                                     )
@@ -953,19 +944,18 @@ export default function Skema({ navigation, route }: {
                                                 <View key={index} style={{
                                                     position: "absolute",
                                                     top: (hour - Math.min(...hoursToMap)) * 60,
+                                                    zIndex: 2,
 
                                                     display: "flex",
-                                                    flexDirection: "row",
+                                                    flexDirection: "row-reverse",
                                                     alignItems: "center",
 
-                                                    left: 5,
+                                                    right: 7.5,
                                                     gap: 5,
 
                                                     transform: [{
                                                         translateY: -(17 / 2),
                                                     }],
-
-                                                    zIndex: 1,
                                                     opacity: isCurrentTimeClose ? 0.3 : 0.8,
                                                 }}>
                                                     <Text style={{
@@ -998,9 +988,9 @@ export default function Skema({ navigation, route }: {
                                                         translateY: modulTiming.diff/2 -30/2,
                                                     }],
                                                     height: modulTiming.diff > 60 ? 30 : modulTiming.diff,
-                                                    width: 30,
+                                                    width: modulTiming.diff > 60 ? 30 : 33.5,
 
-                                                    left: modulTiming.diff > 60 ? 45 : 48.5,
+                                                    left: 0,
                                                     
                                                     borderBottomLeftRadius: modulTiming.diff > 60 ? 500 : 0,
                                                     borderTopLeftRadius: modulTiming.diff > 60 ? 500 : 0,
@@ -1051,7 +1041,8 @@ export default function Skema({ navigation, route }: {
 
                                         <View style={{
                                             position: "relative",
-                                            marginLeft: 40 + 7.5 + 38,
+                                            marginLeft: 38 + 2.5,
+                                            marginRight: 40 + 7.5 + 2.5,
 
                                             zIndex: 5,
                                         }}>
@@ -1116,17 +1107,17 @@ export default function Skema({ navigation, route }: {
                                                                     paddingHorizontal: 10,
                                                                     paddingVertical: modul.timeSpan.diff > 25 ? 5 : 2.5,
                                                                 }}>
-                                                                    <View style={{
-                                                                        position: 'absolute',
-                                                                        backgroundColor: calcColor(1, modul),
+                                                                    <View
+                                                                        style={{
+                                                                            position: 'absolute',
+                                                                            backgroundColor: calcColor(1, modul),
 
-                                                                        borderRadius: 100,
+                                                                            minHeight: modul.timeSpan.diff,
+                                                                            width: 4,
 
-                                                                        minHeight: modul.timeSpan.diff,
-                                                                        width: 4,
-
-                                                                        left: 0,
-                                                                    }} />
+                                                                            left: 0,
+                                                                        }}
+                                                                    />
 
                                                                     {modul.timeSpan.diff > 30 && modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim().length > 0 && (
                                                                         <Text style={{
@@ -1299,7 +1290,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 5,
 
-        paddingBottom: 10,
+        paddingBottom: 5,
         paddingTop: 5,
     },
 })
