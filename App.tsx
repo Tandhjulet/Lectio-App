@@ -526,7 +526,7 @@ export function MereNavigator() {
       <SkemaNav.Screen name={"Modul information"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.title ?? route.params.modul.team.join(", ") })} />
 
       <Settings.Screen name={"Books"} component={Books} options={{title: "Bøger"}} />
-      <Settings.Screen name={"Studiekort"} component={Studiekort} options={{title: "Studiekort"}} />
+      <Settings.Screen name={"Studiekort"} component={Studiekort} options={{title: "Studiekort", header: () => <></>}} />
 
       <Settings.Screen name={"NoAccess"} component={NoAccess} options={{title: "Køb abonnement", headerShown: false}} />
       <Settings.Screen name="Tak" component={ThankYou} options={{

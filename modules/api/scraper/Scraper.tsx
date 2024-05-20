@@ -136,6 +136,56 @@ export async function scrapeGrades(gymNummer: string, elevId: string, bypassCach
     return grades;
 }
 
+export interface Studiekort {
+    name: string,
+    birthdate: string,
+    school: string,
+
+    pictureurl: string,
+    qrcodeurl: string,
+}
+
+export async function scrapeStudiekort(gymNummer: string): Promise<Studiekort> {
+    const res = await fetch(SCRAPE_URLS(gymNummer).STUDIEKORT, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            "Accept": "*/*",
+            "Accept-Encoding": "gzip, defalte, br, zstd",
+            "Accept-Language": "da-DK,da;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Pragma": "no-cache",
+            "Priority": "u=0,i",
+            "Sec-Ch-Ua": `"Google Chrome";v="125", "Chromium";v="125", "Not.A/Brand";v="24"`,
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": "Windows",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+            "Upgrade-Insecure-Requests": "1",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+        }
+    });
+
+
+    const parser = await treat(res);
+
+    const birthdate = parser.getElementById("s_m_Content_Content_StudentBirthday").firstChild.text.replace("Fødselsdag: ", "").replace(/ \(.*$/, "");
+    const pictureurl = parser.getElementById("s_m_Content_Content_StudPic").attributes.src;
+    const name = parser.getElementById("s_m_Content_Content_StudentName").firstChild.text;
+    const school = parser.getElementById("s_m_Content_Content_SchoolName").firstChild.text;
+
+    return {
+        name,
+        school,
+        birthdate,
+        pictureurl,
+        qrcodeurl: SCRAPE_URLS(gymNummer, profile.elevId).QR_CODE_URL,
+    };
+}
+
 export async function scrapeModulRegnskab(gymNummer: string, holdId: string, bypassCache: boolean = false): Promise<Modulregnskab | null> {
     if(!bypassCache) {
         const saved = await getSaved(Key.MODULREGNSKAB, holdId);

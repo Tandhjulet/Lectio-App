@@ -1,24 +1,199 @@
-import { Image, View } from "react-native";
+import { Image, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import { secureGet } from "../../modules/api/Authentication";
-import { useEffect, useMemo } from "react";
-import { getProfile } from "../../modules/api/scraper/Scraper";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getProfile, Profile, scrapeStudiekort, Studiekort as StudieKort } from "../../modules/api/scraper/Scraper";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
+import { hexToRgb, themes } from "../../modules/Themes";
+import Constants from 'expo-constants';
+import { QrCodeIcon, XMarkIcon } from "react-native-heroicons/outline";
+import StudiekortSVG from "../../components/StudiekortSVG";
+import Animated, { BounceIn, BounceOut, withTiming, ZoomIn, ZoomOut } from "react-native-reanimated";
 
 export default function Studiekort() {
 
+    const dataFetched = useRef(new Date()).current;
+
+    const [showQR, setShowQR] = useState<boolean>(false);
+
+    const [studiekort, setStudiekort] = useState<StudieKort>();
+    const [gymNummer, setGymNummer] = useState<string>();
+    const [profile, setProfile] = useState<Profile>();
+
+    const parseDate = useCallback((date: string) => {
+        const parts = date.replace("/", "-").split("-");
+        return new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]))
+    }, [])
+
+    const calculateAge = useCallback(() => {
+        if(!studiekort?.birthdate)
+            return "";
+
+        const diffMs = Date.now() - parseDate(studiekort?.birthdate).getTime();
+        const ageDT = new Date(diffMs);
+
+        return Math.abs(ageDT.getUTCFullYear() - 1970).toString();
+    }, [studiekort])
+
     useEffect(() => {
         (async () => {
-            const gym = await secureGet("gym");
+            const gym = (await secureGet("gym")).gymNummer;
+
+            setProfile(await getProfile());
+            setGymNummer(gym);
+            setStudiekort(await scrapeStudiekort(gym));
         })();
-    });
+    }, []);
+
+    const scheme = useColorScheme();
+    const theme = themes[scheme ?? "dark"];
 
     return (
         <View style={{
-            height: "100%",
+            minHeight: "100%",
             width: "100%",
-        }}>
 
+            display: "flex",
+            alignItems: "center",
+            flexDirection: "column",
+            overflow: "scroll",
+
+            marginTop: Constants.statusBarHeight + 85,
+
+            paddingHorizontal: 20,
+
+            gap: 20,
+        }}>
+            <Text style={{
+                color: theme.WHITE,
+                fontWeight: "700",
+                fontSize: 25,
+                marginBottom: 2.5,
+            }}>
+                {studiekort?.school ?? "Indlæser..."}
+            </Text>
+
+
+            {!showQR ? (
+                <Image
+                    style={{
+                        borderRadius: 999,
+                        width: 140,
+                        height: 140,
+                    }}
+                    source={{
+                        uri: SCRAPE_URLS().BASE_URL + studiekort?.pictureurl,
+                        headers: {
+                            "User-Agent": "Mozilla/5.0",
+                            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                        },
+                        cache: "force-cache"
+                    }}
+                    crossOrigin="use-credentials"
+                />
+            ) : (
+                <Image
+                    style={{
+                        width: 140,
+                        height: 140,
+                    }}
+                    source={{
+                        uri: studiekort?.qrcodeurl,
+                        headers: {
+                            "User-Agent": "Mozilla/5.0",
+                            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                        },
+                        cache: "force-cache"
+                    }}
+                    crossOrigin="use-credentials"
+                />
+            )}
+
+            <Text style={{
+                color: theme.WHITE,
+                marginTop: -5,
+                fontWeight: "900",
+                letterSpacing: 0.6,
+                fontSize: 22.5,
+            }}>
+                {studiekort?.name ?? "Indlæser..."}
+            </Text>
+
+            <Text style={{
+                color: theme.WHITE,
+                fontWeight: "500",
+                marginTop: -7.5,
+                fontSize: 16,
+            }}>
+                {studiekort?.birthdate ? parseDate(studiekort?.birthdate).toLocaleDateString("da-DK", {
+                    dateStyle: "long"
+                }) : "Indlæser..."} ({studiekort?.birthdate ? calculateAge() : -1} år)
+            </Text>
+
+            <TouchableOpacity style={{
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+
+                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
+                borderRadius: 10,
+
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
+            }} onPress={() => setShowQR((prev) => !prev)}>
+                <QrCodeIcon color={theme.WHITE} />
+                <Text style={{
+                    color: theme.WHITE,
+                }}>
+                    Vis QR kode
+                </Text>
+            </TouchableOpacity>
+            
+            <StudiekortSVG style={{
+                position: "absolute",
+                top: -30,
+                left: 0,
+            }} color={hexToRgb(theme.WHITE.toString(), 0.1)} /> 
+
+            <View style={{
+                marginTop: 90,
+                paddingVertical: 20,
+
+                width: "100%",
+                gap: 10,
+            }}>
+                <Text style={{
+                    color: theme.WHITE,
+                    fontSize: 15,
+                    letterSpacing: 0.2,
+                }}>Studie-ID</Text>
+
+                <Text style={{
+                    color: theme.WHITE,
+                    fontWeight: "800",
+                    fontSize: 15,
+                    letterSpacing: 0.4,
+                }}>{profile?.elevId}</Text>
+
+                <Text style={{
+                    color: theme.WHITE,
+                    fontSize: 15,
+                    letterSpacing: 0.2,
+                    marginTop: 10,
+                }}>Information hentet fra lectio</Text>
+
+                <Text style={{
+                    color: theme.WHITE,
+                    fontWeight: "800",
+                    fontSize: 15,
+                    letterSpacing: 0.4,
+                }}>{dataFetched.toLocaleString("da-DK", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                })}</Text>
+
+            </View>
         </View>
     )
 }
