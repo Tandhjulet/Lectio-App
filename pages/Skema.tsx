@@ -950,7 +950,7 @@ export default function Skema({ navigation, route }: {
                                                     flexDirection: "row-reverse",
                                                     alignItems: "center",
 
-                                                    right: 7.5,
+                                                    right: 10,
                                                     gap: 5,
 
                                                     transform: [{
@@ -988,9 +988,9 @@ export default function Skema({ navigation, route }: {
                                                         translateY: modulTiming.diff/2 -30/2,
                                                     }],
                                                     height: modulTiming.diff > 60 ? 30 : modulTiming.diff,
-                                                    width: modulTiming.diff > 60 ? 30 : 33.5,
+                                                    width: modulTiming.diff > 60 ? 30 : 33.5+5,
 
-                                                    left: 0,
+                                                    left: modulTiming.diff > 60 ? 5 : 0,
                                                     
                                                     borderBottomLeftRadius: modulTiming.diff > 60 ? 500 : 0,
                                                     borderTopLeftRadius: modulTiming.diff > 60 ? 500 : 0,
@@ -1041,8 +1041,8 @@ export default function Skema({ navigation, route }: {
 
                                         <View style={{
                                             position: "relative",
-                                            marginLeft: 38 + 2.5,
-                                            marginRight: 40 + 7.5 + 2.5,
+                                            marginLeft: 38 + 7.5,
+                                            marginRight: 40 + 7.5 * 2,
 
                                             zIndex: 5,
                                         }}>

@@ -19,9 +19,12 @@ import { IdentificationIcon } from "react-native-heroicons/outline";
 import * as Device from 'expo-device';
 import * as MailComposer from 'expo-mail-composer';
 import { EnvelopeIcon, WrenchScrewdriverIcon } from "react-native-heroicons/solid";
+import * as WebBrowser from 'expo-web-browser';
+import Subscription from "../components/Subscription";
 
 export default function Mere({ navigation }: {navigation: any}) {
     const { subscriptionState, dispatchSubscription } = useContext(SubscriptionContext);
+    const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
     const [profile, setProfile] = useState<Profile>();
     const [gym, setGym] = useState<{
@@ -29,14 +32,16 @@ export default function Mere({ navigation }: {navigation: any}) {
         gymName: string,
     }>()
 
-    //const [development, setDevelopment] = useState<boolean>(false);
+    const [endDate, setEndDate] = useState<Date | undefined>()
+    const [loadingSubscription, setLoadingSubscription] = useState<boolean>(false);
 
     useEffect(() => {
+
         (async () => {
             const prof = await getProfile()
             setProfile(prof);
             
-            const { valid, freeTrial } = await hasSubscription(true);
+            const { valid, endDate, freeTrial } = await hasSubscription(true);
             setGym((await secureGet("gym")))
 
             if(freeTrial && valid) {
@@ -46,8 +51,54 @@ export default function Mere({ navigation }: {navigation: any}) {
             } else {
                 dispatchSubscription({ type: valid ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
             }
+
+            setEndDate(endDate);
         })();
     }, [])
+
+    useEffect(() => {
+        if(!loadingSubscription) return;
+
+        (async () => {
+            const { valid, endDate, freeTrial } = await hasSubscription();
+
+            if(freeTrial && valid) {
+                dispatchSubscription({ type: "FREE_TRIAL"})
+            } else if(valid === null) {
+                dispatchSubscription({ type: "SERVER_DOWN"})
+            } else {
+                dispatchSubscription({ type: valid ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
+            }
+
+            setEndDate(endDate ?? new Date())
+            setLoadingSubscription(false);
+        })();
+    }, [loadingSubscription])
+
+    
+    const subscriptionTitle: () => string = () => {
+        // @ts-ignore
+        if(subscriptionState?.serverDown)
+            return "Lectio Plus' server er nede"
+
+        if(subscriptionState?.freeTrial)
+            return "Din prøveperiode er aktiv"
+
+        // @ts-ignore
+        return subscriptionState?.hasSubscription ? "Dit abonnement er aktivt" : "Du har ikke et gyldigt abonnement"
+    }
+
+    const subscriptionSubtitle: () => string = () => {
+        // @ts-ignore
+        if(subscriptionState?.serverDown)
+            return "Dette abonnement er midlertidigt"
+
+        if(subscriptionState?.freeTrial)
+            return "Udløber d. " + (endDate?.toLocaleDateString() ?? "ukendt dato")
+
+        // @ts-ignore
+        return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate?.toLocaleDateString() ?? "ukendt dato") : "Et abonnement giver ubegrænset adgang til Lectio Plus";
+    }
 
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
@@ -219,6 +270,83 @@ export default function Mere({ navigation }: {navigation: any}) {
                             />  
                         </Section>
 
+                        <Section header={"ABONNEMENT"} roundedCorners={true} hideSurroundingSeparators={true} >
+                            <Cell
+                                cellStyle={"Subtitle"}
+
+                                // @ts-ignore
+                                title={subscriptionTitle()}
+                                titleTextColor={scheme == "dark" ? "#FFF" : "#000"}
+
+                                // @ts-ignore
+                                detail={subscriptionSubtitle()}
+
+                                disableImageResize
+                                image={loadingSubscription ? (
+                                    <View style={{
+                                        width: 25,
+                                    }}>
+                                        <ActivityIndicator size={"small"}/>
+                                    </View>
+                                ) : (!subscriptionState?.hasSubscription ? (
+                                    <View style={{
+                                        width: 25,
+                                    }}>
+                                        <XMarkIcon color={theme.RED} />
+                                    </View>
+                                ): (
+                                    <View style={{
+                                        width: 25,
+                                    }}>
+                                        <CheckCircleIcon color={theme.ACCENT} />
+                                    </View>
+                                ))}
+                            />
+                            
+                            <Cell 
+                                cellStyle="Basic"
+                                // @ts-ignore
+                                title={((!subscriptionState?.hasSubscription && !subscriptionState?.serverDown) || subscriptionState?.freeTrial) ? "Køb abonnement" : "Administrer abonnement"}
+                                titleTextColor={theme.ACCENT}
+
+                                image={
+                                    <AdjustmentsVerticalIcon color={theme.ACCENT} style={{
+                                        opacity: 0.85,
+                                    }}  />
+                                }
+
+                                onPress={() => {
+                                    // @ts-ignore
+                                    if((!subscriptionState?.hasSubscription && !subscriptionState?.serverDown) || subscriptionState?.freeTrial) {
+                                        bottomSheetModalRef.current?.present();
+                                    } else {
+                                        WebBrowser.openBrowserAsync("https://apps.apple.com/account/subscriptions", {
+                                            controlsColor: theme.ACCENT.toString(),
+                                            dismissButtonStyle: "close",
+                                            presentationStyle: WebBrowser.WebBrowserPresentationStyle.POPOVER,
+
+                                            toolbarColor: theme.ACCENT_BLACK.toString(),
+                                        })
+                                    }
+                                }}
+                            />
+
+                            <Cell 
+                                cellStyle="Basic"
+                                title="Genindlæs adgang"
+                                titleTextColor={theme.ACCENT}
+                                
+                                image={
+                                    <ArrowPathIcon color={theme.ACCENT} style={{
+                                        opacity: 0.85,
+                                    }}  />
+                                }
+                                onPress={() => {
+                                    setLoadingSubscription(true);
+                                }}
+                            />
+                        </Section>
+
                         <Section header={"KONTROLPANEL"} roundedCorners={true} hideSurroundingSeparators={true}>
                             <Cell
                                 cellStyle="Basic"
@@ -283,6 +411,7 @@ For at kunne hjælpe dig har vi brug for lidt information:
                     </TableView>
                 </ScrollView>
                 
+                <Subscription bottomSheetModalRef={bottomSheetModalRef} />
             </View>
         </BottomSheetModalProvider>
     </GestureHandlerRootView>

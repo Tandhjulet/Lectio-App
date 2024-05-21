@@ -110,7 +110,7 @@ export default function Documents({ route }: {
                                 cellStyle="Basic"
                                 accessory="DisclosureIndicator"
                                 cellImageView={
-                                    <FolderOpenIcon />
+                                    <FolderOpenIcon color={theme.LIGHT} />
                                 }
                                 title={folder.name}
                                 titleTextStyle={{

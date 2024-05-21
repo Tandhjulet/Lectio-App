@@ -11,12 +11,16 @@ import StudiekortSVG from "../../components/StudiekortSVG";
 import Animated, { BounceIn, BounceOut, withTiming, ZoomIn, ZoomOut } from "react-native-reanimated";
 import RNFetchBlob from "rn-fetch-blob";
 import { NavigationProp } from "@react-navigation/native";
+import BloomingSVG from "../../components/BloomingSVG";
+import { UserIcon } from "react-native-heroicons/outline";
 
 export default function Studiekort({ navigation }: {
     navigation: NavigationProp<any>;
 }) {
 
     const dataFetched = useRef(new Date()).current;
+    const timeout = useRef<number[]>([]).current;
+    const [qrcodeFetched, setqrcodeFetched] = useState<Date>();
 
     const [showQR, setShowQR] = useState<boolean>(false);
     const [QRCode, setQRCode] = useState<string>();
@@ -49,6 +53,13 @@ export default function Studiekort({ navigation }: {
     }, []);
 
     useEffect(() => {
+        if(showQR) {
+            timeout.push(setTimeout(() => {
+                setShowQR(false)
+            }, 5 * 1000))
+            return;
+        };
+
         if(studiekort?.qrcodeurl) {
             RNFetchBlob.config({
                     fileCache: true,
@@ -57,10 +68,11 @@ export default function Studiekort({ navigation }: {
                 .fetch("GET", studiekort?.qrcodeurl)
                 .then((res) => {
                     const path = res.path();
+                    setqrcodeFetched(new Date());
                     setQRCode(Platform.OS === "android" ? "file://" + path : "" + path);
                 })
         }
-    }, [studiekort, navigation])
+    }, [studiekort, showQR])
 
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
@@ -191,12 +203,19 @@ export default function Studiekort({ navigation }: {
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 5,
-            }} onPress={() => setShowQR((prev) => !prev)}>
-                <QrCodeIcon color={theme.WHITE} />
+            }} onPress={() => {
+                timeout.forEach((id) => clearTimeout(id));
+                setShowQR((prev) => !prev)
+            }}>
+                {!showQR ? (
+                    <QrCodeIcon color={theme.WHITE} />
+                ) : (
+                    <UserIcon color={theme.WHITE} />
+                )}
                 <Text style={{
                     color: theme.WHITE,
                 }}>
-                    Vis QR kode
+                    {showQR ? "Vis billede" : "Vis QR kode"}
                 </Text>
             </TouchableOpacity>
             
@@ -207,7 +226,7 @@ export default function Studiekort({ navigation }: {
             }} color={hexToRgb(theme.WHITE.toString(), 0.1)} /> 
 
             <View style={{
-                marginTop: 80,
+                marginTop: 50,
                 paddingVertical: 20,
 
                 width: "100%",
@@ -231,7 +250,7 @@ export default function Studiekort({ navigation }: {
                     fontSize: 15,
                     letterSpacing: 0.2,
                     marginTop: 10,
-                }}>Siden blev indlæst</Text>
+                }}>Information indlæst</Text>
 
                 <Text style={{
                     color: theme.WHITE,
@@ -243,7 +262,33 @@ export default function Studiekort({ navigation }: {
                     timeStyle: "short",
                 })}</Text>
 
+                <Text style={{
+                    color: theme.WHITE,
+                    fontSize: 15,
+                    letterSpacing: 0.2,
+                    marginTop: 10,
+                }}>QR-kode hentet</Text>
+
+                <Text style={{
+                    color: theme.WHITE,
+                    fontWeight: "800",
+                    fontSize: 15,
+                    letterSpacing: 0.4,
+                }}>{qrcodeFetched ? qrcodeFetched.toLocaleString("da-DK", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                }) : "Ikke indlæst"}</Text>
+
             </View>
+
+            <BloomingSVG style={{
+                position: "absolute",
+                bottom: 89,
+                right: 0,
+
+                maxWidth: 150,
+                maxHeight: 100,
+            }} />
 
             <View style={{
                 paddingVertical: 100,
