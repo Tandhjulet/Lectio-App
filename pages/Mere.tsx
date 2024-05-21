@@ -1,33 +1,26 @@
 import { ActivityIndicator, Alert, Linking, NativeModules, ScrollView, StyleSheet, Switch, Text, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import { themes } from "../modules/Themes";
+import { hexToRgb, themes } from "../modules/Themes";
 import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { AcademicCapIcon, BellSnoozeIcon, BookOpenIcon, BuildingLibraryIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon, XMarkIcon } from "react-native-heroicons/outline";
+import { AcademicCapIcon, AdjustmentsVerticalIcon, ArrowPathIcon, BellSnoozeIcon, BookOpenIcon, BuildingLibraryIcon, CheckCircleIcon, CheckIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon, XMarkIcon } from "react-native-heroicons/outline";
 import { getUnsecure, removeSecure, removeUnsecure, secureGet, signOutReq } from "../modules/api/Authentication";
 import { Profile, getProfile, saveProfile } from "../modules/api/scraper/Scraper";
 import { AuthContext } from "../modules/Auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { abort } from "../modules/api/scraper/class/PeopleList";
-import * as SecureStore from 'expo-secure-store';
-import Subscription from "../components/Subscription";
 import { BottomSheetModal, BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import * as WebBrowser from 'expo-web-browser';
-import { WebBrowserPresentationStyle } from "expo-web-browser";
-import * as Device from 'expo-device';
-import * as MailComposer from 'expo-mail-composer';
+
 import { hasSubscription } from "../components/LectioPlusAPI";
 import { SubscriptionContext } from "../modules/Sub";
 import { useFocusEffect } from "@react-navigation/native";
 import { IdentificationIcon } from "react-native-heroicons/outline";
+import * as Device from 'expo-device';
+import * as MailComposer from 'expo-mail-composer';
+import { EnvelopeIcon, WrenchScrewdriverIcon } from "react-native-heroicons/solid";
 
 export default function Mere({ navigation }: {navigation: any}) {
-    const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-
-    const [loadingSubscription, setLoadingSubscription] = useState<boolean>(false);
-
-    const { signOut } = useContext(AuthContext);
     const { subscriptionState, dispatchSubscription } = useContext(SubscriptionContext);
 
     const [profile, setProfile] = useState<Profile>();
@@ -35,7 +28,6 @@ export default function Mere({ navigation }: {navigation: any}) {
         gymNummer: string,
         gymName: string,
     }>()
-    const [endDate, setEndDate] = useState<Date>();
 
     //const [development, setDevelopment] = useState<boolean>(false);
 
@@ -44,7 +36,7 @@ export default function Mere({ navigation }: {navigation: any}) {
             const prof = await getProfile()
             setProfile(prof);
             
-            const { valid, endDate, freeTrial } = await hasSubscription(true);
+            const { valid, freeTrial } = await hasSubscription(true);
             setGym((await secureGet("gym")))
 
             if(freeTrial && valid) {
@@ -54,57 +46,11 @@ export default function Mere({ navigation }: {navigation: any}) {
             } else {
                 dispatchSubscription({ type: valid ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
             }
-            setEndDate(endDate ?? new Date())
-            setLoadingSubscription(false);
         })();
     }, [])
 
-    useEffect(() => {
-        if(!loadingSubscription) return;
-
-        (async () => {
-            const { valid, endDate, freeTrial } = await hasSubscription();
-
-            if(freeTrial && valid) {
-                dispatchSubscription({ type: "FREE_TRIAL"})
-            } else if(valid === null) {
-                dispatchSubscription({ type: "SERVER_DOWN"})
-            } else {
-                dispatchSubscription({ type: valid ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
-            }
-
-            setLoadingSubscription(false);
-
-            setEndDate(endDate ?? new Date())
-        })();
-    }, [loadingSubscription])
-
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
-
-    const subscriptionTitle: () => string = () => {
-        // @ts-ignore
-        if(subscriptionState?.serverDown)
-            return "Lectio Plus' server er nede"
-
-        if(subscriptionState?.freeTrial)
-            return "Din prøveperiode er aktiv"
-
-        // @ts-ignore
-        return subscriptionState?.hasSubscription ? "Dit abonnement er aktivt" : "Du har ikke et gyldigt abonnement"
-    }
-
-    const subscriptionSubtitle: () => string = () => {
-        // @ts-ignore
-        if(subscriptionState?.serverDown)
-            return "Dette abonnement er midlertidigt"
-
-        if(subscriptionState?.freeTrial)
-            return "Udløber d. " + (endDate?.toLocaleDateString() ?? "ukendt dato")
-
-        // @ts-ignore
-        return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate?.toLocaleDateString() ?? "ukendt dato") : "Et abonnement giver ubegrænset adgang til Lectio Plus";
-    }
 
     return (
     <GestureHandlerRootView>
@@ -273,96 +219,23 @@ export default function Mere({ navigation }: {navigation: any}) {
                             />  
                         </Section>
 
-                        <Section header={"ABONNEMENT"} roundedCorners={true} hideSurroundingSeparators={true} >
-                            <Cell
-                                cellStyle={"Subtitle"}
-
-                                // @ts-ignore
-                                title={subscriptionTitle()}
-                                titleTextColor={scheme == "dark" ? "#FFF" : "#000"}
-
-                                // @ts-ignore
-                                detail={subscriptionSubtitle()}
-                                
-                                // @ts-ignore
-                                accessory={!loadingSubscription && subscriptionState?.hasSubscription && "Checkmark"}
-                                accessoryColor={theme.ACCENT}
-
-                                cellAccessoryView={loadingSubscription ? (
-                                    <ActivityIndicator size={"small"} />
-                                // @ts-ignore
-                                ) : !subscriptionState?.hasSubscription && (
-                                    <XMarkIcon color={theme.RED} />
-                                )}
-                            />
-                            
-                            <Cell 
-                                cellStyle="Basic"
-                                // @ts-ignore
-                                title={((!subscriptionState?.hasSubscription && !subscriptionState?.serverDown) || subscriptionState?.freeTrial) ? "Køb abonnement" : "Administrer abonnement"}
-                                titleTextColor={theme.ACCENT}
-
-                                onPress={() => {
-                                    // @ts-ignore
-                                    if((!subscriptionState?.hasSubscription && !subscriptionState?.serverDown) || subscriptionState?.freeTrial) {
-                                        bottomSheetModalRef.current?.present();
-                                    } else {
-                                        WebBrowser.openBrowserAsync("https://apps.apple.com/account/subscriptions", {
-                                            controlsColor: theme.ACCENT.toString(),
-                                            dismissButtonStyle: "close",
-                                            presentationStyle: WebBrowserPresentationStyle.POPOVER,
-
-                                            toolbarColor: theme.ACCENT_BLACK.toString(),
-                                        })
-                                    }
-                                }}
-                            />
-
-                            <Cell 
-                                cellStyle="Basic"
-                                title="Genindlæs adgang"
-                                titleTextColor={theme.ACCENT}
-
-                                onPress={() => {
-                                    setLoadingSubscription(true);
-                                }}
-                            />
-                        </Section>
-
-                        <Section roundedCorners={true} hideSurroundingSeparators={true}>
+                        <Section header={"KONTROLPANEL"} roundedCorners={true} hideSurroundingSeparators={true}>
                             <Cell
                                 cellStyle="Basic"
-                                title={"Privatlivspolitik"}
+                                title={"Profil"}
 
                                 titleTextColor={theme.WHITE}
-                                accessory="Detail"
-
-                                onPress={() => {
-                                    WebBrowser.openBrowserAsync("https://lectioplus.com/privatliv", {
-                                        controlsColor: theme.ACCENT.toString(),
-                                        dismissButtonStyle: "close",
-                                        presentationStyle: WebBrowserPresentationStyle.POPOVER,
-
-                                        toolbarColor: theme.ACCENT_BLACK.toString(),
-                                    })
+                                titleTextStyle={{
+                                    fontWeight: "500",
                                 }}
-                            />
+                                accessory="DisclosureIndicator"
 
-                            <Cell
-                                cellStyle="Basic"
-                                title={"Slutbrugerlicensaftale"}
-
-                                titleTextColor={theme.WHITE}
-                                accessory="Detail"
+                                image={
+                                    <WrenchScrewdriverIcon color={hexToRgb(theme.WHITE.toString(), 0.3)} />
+                                }
 
                                 onPress={() => {
-                                    WebBrowser.openBrowserAsync("https://lectioplus.com/eula", {
-                                        controlsColor: theme.ACCENT.toString(),
-                                        dismissButtonStyle: "close",
-                                        presentationStyle: WebBrowserPresentationStyle.POPOVER,
-
-                                        toolbarColor: theme.ACCENT_BLACK.toString(),
-                                    })
+                                    navigation.navigate("UserSettings")
                                 }}
                             />
 
@@ -370,8 +243,15 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 cellStyle="Basic"
                                 title={"Kontakt Lectio Plus"}
 
-                                titleTextColor={theme.ACCENT}
+                                titleTextColor={theme.WHITE}
+                                titleTextStyle={{
+                                    fontWeight: "500",
+                                }}
                                 accessory="DisclosureIndicator"
+
+                                image={
+                                    <EnvelopeIcon color={hexToRgb(theme.WHITE.toString(), 0.3)} />
+                                }
 
                                 onPress={() => {
                                     if(!MailComposer.isAvailableAsync())
@@ -397,53 +277,12 @@ For at kunne hjælpe dig har vi brug for lidt information:
                             />
                         </Section>
 
-                        <Section header={"KONTROLPANEL"} roundedCorners={true} hideSurroundingSeparators={true}>
-                            <Cell
-                                cellStyle="Subtitle"
-                                title={profile?.name}
-                                detail={gym?.gymName}
-
-                                titleTextColor={theme.WHITE}
-                                accessory="DisclosureIndicator"
-
-                                onPress={() => {
-                                    navigation.navigate("UserSettings")
-                                }}
-                            />
-
-                            <Cell
-                                cellStyle="Basic"
-                                title="Log ud"
-
-                                titleTextStyle={{
-                                    fontWeight: "bold"
-                                }}
-                                titleTextColor={theme.RED}
-                                accessory="DisclosureIndicator"
-
-                                onPress={() => {
-                                    (async () => {
-                                        await removeSecure("password");
-                                        await removeSecure("username");
-                                        await removeSecure("gym");
-
-                                        await signOutReq();
-                                        await abort();
-
-                                        await signOut();
-                                    })();
-                                }}
-                            />
-                        </Section>
-
                         <View style={{
-                            paddingVertical: 42,
+                            paddingBottom: 89,
                         }} />
                     </TableView>
                 </ScrollView>
                 
-
-                <Subscription bottomSheetModalRef={bottomSheetModalRef} />
             </View>
         </BottomSheetModalProvider>
     </GestureHandlerRootView>

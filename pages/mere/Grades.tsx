@@ -74,7 +74,7 @@ const Cell = memo(function Cell({ grade, theme }: {
                 borderBottomWidth: StyleSheet.hairlineWidth,
             }}>
                 {Object.keys(grade.karakterer).map((title, index) => { 
-                    const width = (1-(Object.keys(grade.karakterer).length/4))*100;
+                    const width = (1/Object.keys(grade.karakterer).length)*100;
 
                     return (
                         <View key={title + index} style={{
@@ -235,7 +235,7 @@ export default function Grades() {
                                 backgroundColor: theme.ACCENT_BLACK,
                             }}>
                                 {grades && Object.keys(grades[0].karakterer).map((title, index) => { 
-                                    const width = (1-(Object.keys(grades[0].karakterer).length/4))*100;
+                                    const width = (1/Object.keys(grades[0].karakterer).length)*100;
 
                                     return (
                                         <View key={title + index + "header"} style={{
@@ -250,11 +250,12 @@ export default function Grades() {
                                                 borderRightWidth: Object.keys(grades[0].karakterer).length-1 !== index ? 1 : 0,
                                                 width: "100%",
                                                 paddingVertical: 5,
+                                                paddingHorizontal: 5,
                                             }}>
                                                 <Text style={{
                                                     color: theme.WHITE,
                                                     textAlign: "center",
-                                                }}>
+                                                }} numberOfLines={title.split(" ").length} adjustsFontSizeToFit minimumFontScale={0.6}>
                                                     {title}
                                                 </Text>
                                             </View>
@@ -306,6 +307,14 @@ export default function Grades() {
                                     }}>
                                         Vægtet gennemsnit
                                     </Text>
+
+                                    <Text style={{
+                                        color: hexToRgb(theme.WHITE.toString(), 0.8),
+                                        fontSize: 14,
+                                        textAlign: "center",
+                                    }}>
+                                        (uvægtet)
+                                    </Text>
                                 </View>
                             </View>
 
@@ -315,7 +324,7 @@ export default function Grades() {
                                 width: "65%",
                             }}>
                                 {grades && Object.keys(grades[0].karakterer).map((title, index) => {
-                                    const width = (1-(Object.keys(grades[0].karakterer).length/4))*100;
+                                    const width = (1/Object.keys(grades[0].karakterer).length)*100;
 
                                     return (
                                         <View key={title + index + "footer"} style={{

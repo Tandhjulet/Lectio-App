@@ -23,7 +23,7 @@ export function parseGrades(parser: any): Grade[] {
             child.children.forEach((col: any, i: number) => {
                 if(i < 2) return;
 
-                cols.push(col.firstChild.text);
+                cols.push(col.firstChild.text === "Afsluttende års-/" ? "Afsluttende" : col.firstChild.text.replace(".", ". "));
             })
             
             return;

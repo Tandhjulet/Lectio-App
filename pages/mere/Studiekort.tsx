@@ -1,4 +1,4 @@
-import { Image, Text, TouchableOpacity, useColorScheme, View } from "react-native";
+import { Image, Platform, ScrollView, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import { secureGet } from "../../modules/api/Authentication";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -9,15 +9,19 @@ import Constants from 'expo-constants';
 import { QrCodeIcon, XMarkIcon } from "react-native-heroicons/outline";
 import StudiekortSVG from "../../components/StudiekortSVG";
 import Animated, { BounceIn, BounceOut, withTiming, ZoomIn, ZoomOut } from "react-native-reanimated";
+import RNFetchBlob from "rn-fetch-blob";
+import { NavigationProp } from "@react-navigation/native";
 
-export default function Studiekort() {
+export default function Studiekort({ navigation }: {
+    navigation: NavigationProp<any>;
+}) {
 
     const dataFetched = useRef(new Date()).current;
 
     const [showQR, setShowQR] = useState<boolean>(false);
+    const [QRCode, setQRCode] = useState<string>();
 
     const [studiekort, setStudiekort] = useState<StudieKort>();
-    const [gymNummer, setGymNummer] = useState<string>();
     const [profile, setProfile] = useState<Profile>();
 
     const parseDate = useCallback((date: string) => {
@@ -40,10 +44,23 @@ export default function Studiekort() {
             const gym = (await secureGet("gym")).gymNummer;
 
             setProfile(await getProfile());
-            setGymNummer(gym);
             setStudiekort(await scrapeStudiekort(gym));
         })();
     }, []);
+
+    useEffect(() => {
+        if(studiekort?.qrcodeurl) {
+            RNFetchBlob.config({
+                    fileCache: true,
+                    appendExt: "jpg",
+                })
+                .fetch("GET", studiekort?.qrcodeurl)
+                .then((res) => {
+                    const path = res.path();
+                    setQRCode(Platform.OS === "android" ? "file://" + path : "" + path);
+                })
+        }
+    }, [studiekort, navigation])
 
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
@@ -58,56 +75,89 @@ export default function Studiekort() {
             flexDirection: "column",
             overflow: "scroll",
 
-            marginTop: Constants.statusBarHeight + 85,
+            paddingTop: Constants.statusBarHeight,
 
             paddingHorizontal: 20,
 
             gap: 20,
         }}>
+            <View style={{
+                width: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+
+                height: 60,
+            }}>
+                <Text style={{
+                    fontSize: 25,
+                    fontWeight: "900",
+                    color: theme.WHITE,
+                }}>
+                     Studiekort
+                </Text>
+
+                <TouchableOpacity style={{
+                    width: 60,
+                    height: 60,
+
+                    position: "absolute",
+                    right: 0,
+
+                    borderRadius: 32,
+                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.15),
+
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                }} onPress={() => {
+                    navigation.goBack();
+                }}>
+                    <XMarkIcon color={hexToRgb(theme.WHITE.toString(), 0.7)} size={25} />
+                </TouchableOpacity>
+            </View>
+
+
+            <View style={{
+                width: 140,
+                height: 140,
+                marginTop: 20,
+            }}>
+                {!showQR ? (
+                    <Image
+                        style={{
+                            borderRadius: 999,
+                            width: 140,
+                            height: 140,
+                        }}
+                        source={{
+                            uri: SCRAPE_URLS().BASE_URL + studiekort?.pictureurl,
+                            headers: {
+                                "User-Agent": "Mozilla/5.0",
+                                "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                            },
+                            cache: "force-cache"
+                        }}
+                        crossOrigin="use-credentials"
+                    />
+                ) : (
+                    <Image
+                        style={{
+                            width: 140,
+                            height: 140,
+                        }}
+                        source={{uri: QRCode}}
+                    />
+                )}
+            </View>
             <Text style={{
                 color: theme.WHITE,
-                fontWeight: "700",
-                fontSize: 25,
-                marginBottom: 2.5,
+                fontWeight: "400",
+                fontSize: 20,
+                marginBottom: -5,
+                marginTop: -5,
             }}>
                 {studiekort?.school ?? "Indlæser..."}
             </Text>
-
-
-            {!showQR ? (
-                <Image
-                    style={{
-                        borderRadius: 999,
-                        width: 140,
-                        height: 140,
-                    }}
-                    source={{
-                        uri: SCRAPE_URLS().BASE_URL + studiekort?.pictureurl,
-                        headers: {
-                            "User-Agent": "Mozilla/5.0",
-                            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-                        },
-                        cache: "force-cache"
-                    }}
-                    crossOrigin="use-credentials"
-                />
-            ) : (
-                <Image
-                    style={{
-                        width: 140,
-                        height: 140,
-                    }}
-                    source={{
-                        uri: studiekort?.qrcodeurl,
-                        headers: {
-                            "User-Agent": "Mozilla/5.0",
-                            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-                        },
-                        cache: "force-cache"
-                    }}
-                    crossOrigin="use-credentials"
-                />
-            )}
 
             <Text style={{
                 color: theme.WHITE,
@@ -152,12 +202,12 @@ export default function Studiekort() {
             
             <StudiekortSVG style={{
                 position: "absolute",
-                top: -30,
+                bottom: "-20%",
                 left: 0,
             }} color={hexToRgb(theme.WHITE.toString(), 0.1)} /> 
 
             <View style={{
-                marginTop: 90,
+                marginTop: 80,
                 paddingVertical: 20,
 
                 width: "100%",
@@ -181,7 +231,7 @@ export default function Studiekort() {
                     fontSize: 15,
                     letterSpacing: 0.2,
                     marginTop: 10,
-                }}>Information hentet fra lectio</Text>
+                }}>Siden blev indlæst</Text>
 
                 <Text style={{
                     color: theme.WHITE,
@@ -194,6 +244,10 @@ export default function Studiekort() {
                 })}</Text>
 
             </View>
+
+            <View style={{
+                paddingVertical: 100,
+            }} />
         </View>
     )
 }
