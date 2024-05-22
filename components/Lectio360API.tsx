@@ -21,7 +21,7 @@ export default async function receiptValid(receipt: string): Promise<boolean> {
         "id": profile.elevId,
     }).trim();
 
-    const res: Response = await fetch(SCRAPE_URLS().LECTIOPLUS_SAVE_RECEIPT, {
+    const res: Response = await fetch(SCRAPE_URLS().LECTIO360_SAVE_RECEIPT, {
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
@@ -43,32 +43,38 @@ export default async function receiptValid(receipt: string): Promise<boolean> {
 }
 
 export async function hasSubscription(save: boolean = true): Promise<ValidationResponse> {
-    const profile = await getProfile();
-    const { gymNummer } = await secureGet("gym")
-
-    const body = JSON.stringify({
-        "name": profile.name,
-        "gym": gymNummer,
-        "id": profile.elevId,
-    }).trim();
-    
-    const res: Response = await fetch(SCRAPE_URLS().LECTIOPLUS_GET, {
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: body,
-    })
-
-    if(res.status != 200) return {
-        valid: null,
+    return {
+        valid: true,
+        freeTrial: true,
+        endDate: new Date(),
     };
 
-    const json: ValidationResponse = await res.json();
-    if(save)
-        await saveUnsecure("subscriptionEndDate", {date: json.endDate})
+    // const profile = await getProfile();
+    // const { gymNummer } = await secureGet("gym")
 
-    json.endDate && (json.endDate = new Date(json.endDate))
+    // const body = JSON.stringify({
+    //     "name": profile.name,
+    //     "gym": gymNummer,
+    //     "id": profile.elevId,
+    // }).trim();
+    
+    // const res: Response = await fetch(SCRAPE_URLS().LECTIO360_GET, {
+    //     method: "POST",
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     },
+    //     body: body,
+    // })
 
-    return json;
+    // if(res.status != 200) return {
+    //     valid: null,
+    // };
+
+    // const json: ValidationResponse = await res.json();
+    // if(save)
+    //     await saveUnsecure("subscriptionEndDate", {date: json.endDate})
+
+    // json.endDate && (json.endDate = new Date(json.endDate))
+
+    // return json;
 }

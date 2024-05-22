@@ -72,7 +72,7 @@ export default function UserSettings() {
                                     accessory="Detail"
 
                                     onPress={() => {
-                                        WebBrowser.openBrowserAsync("https://lectioplus.com/privatliv", {
+                                        WebBrowser.openBrowserAsync("https://lectio360.com/privatliv", {
                                             controlsColor: theme.ACCENT.toString(),
                                             dismissButtonStyle: "close",
                                             presentationStyle: WebBrowserPresentationStyle.POPOVER,
@@ -90,7 +90,7 @@ export default function UserSettings() {
                                     accessory="Detail"
 
                                     onPress={() => {
-                                        WebBrowser.openBrowserAsync("https://lectioplus.com/eula", {
+                                        WebBrowser.openBrowserAsync("https://lectio360.com/eula", {
                                             controlsColor: theme.ACCENT.toString(),
                                             dismissButtonStyle: "close",
                                             presentationStyle: WebBrowserPresentationStyle.POPOVER,

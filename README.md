@@ -1,12 +1,24 @@
-# Lectio Plus
-Lectio Plus startede som et hobby projekt. Jeg kunne ikke rigtigt forstå hvordan der på daværende tidspunkt, kun var èn app til Lectio, så jeg besluttede mig for at starte på min egen. Lectio Plus bliver måske open source i fremtiden, men vil formentligt altid have et på betalt plan, der åbner op for hele appen. 
+# Lectio 360
+Lectio 360 startede som et hobby projekt. Jeg kunne ikke rigtigt forstå hvordan der på daværende tidspunkt, kun var èn app til Lectio, så jeg besluttede mig for at starte på min egen. Lectio 360 bliver måske open source i fremtiden, men vil formentligt altid have et på betalt plan, der åbner op for hele appen. 
 
-På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg har lagt mærke til, at jeg ikke rigtigt længere har tid til både at lave fremskridt på appen, mens jeg samtidig holder mig up-to-date med Lectios konstante opdateringer. Hvis du synes det lyder som noget for dig, så skriv en besked til mig over discord (`tandhjul`). Tak på forhånd :-)
+På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg har lagt mærke til, at jeg ikke rigtigt længere har tid til både at lave fremskridt på appen, mens jeg samtidig holder mig up-to-date med Lectios konstante opdateringer. Hvis du synes det lyder som noget for dig, så skriv en besked til mig over discord (`tandhjul`). Tak på forhånd :-)
 
 ## Prioriteringer/mangler ved appen
 
+## NEEDED FOR RELAUNCH
+- skemaswiper +skema(?) + ingen aktiviter
+- aktivitet info
+- fraværsoversigt
+- fraværsregistreringer (layout)
+- fraværsregistreringer (årsagsvælger) 
+- dokumenter (ikoner/layout/tidspunkter i anden format)
+- beskeder (layout, skift navn til indbakke)
+- ny besked (skift navn på "til", "emne", "filer")
+- ny slutbrugerlicensaftale
+- ny privatlivspolitik
+
 ### __HØJ__
-- FIX SKEMA!! kig Akaasan Thamilvanan ons. 15.
+- fix skema ift. eksaminer: skift til lectios skemasystem
 
 ### __MELLEM__
 - push notifs
@@ -21,9 +33,10 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio Plus. Jeg 
 - lazy loading på profilbilleder
 - custom user cell der bruges globalt på platformen
 
+
 ### __KENDTE FEJL__
 - login med forkerte logindetaljer gr igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)
 
+husk at opdatere landing pagens slutbrugerlicens og privatlivspolitik, så de linker til hjemmesiden!
 
-
-https://www.npmjs.com/package/didyoumean2
+https://www.npmjs.com/package/didyoumean2 

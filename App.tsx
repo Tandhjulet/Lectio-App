@@ -62,7 +62,7 @@ import Constants from 'expo-constants';
 import LandingPage from './pages/login/LandingPage';
 import { themes } from './modules/Themes';
 import UserSettings from './pages/mere/UserSettings';
-import receiptValid, { hasSubscription } from './components/LectioPlusAPI';
+import receiptValid, { hasSubscription } from './components/Lectio360API';
 import { SubState, SubscriptionContext } from './modules/Sub';
 import ThankYou from './pages/ThankYou';
 import Grades from './pages/mere/Grades';

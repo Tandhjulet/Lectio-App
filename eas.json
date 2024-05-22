@@ -29,7 +29,7 @@
   "submit": {
     "production": {
       "ios": {
-        "appName": "Lectio Plus"
+        "appName": "Lectio 360"
       }
     }
   }
