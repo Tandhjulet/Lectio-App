@@ -1,5 +1,5 @@
 import { NavigationProp } from "@react-navigation/native";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, ColorSchemeName, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import { secureGet, getUnsecure } from "../modules/api/Authentication";
 import { getAfleveringer } from "../modules/api/scraper/Scraper";
@@ -13,6 +13,8 @@ import Logo from "../components/Logo";
 import { SubscriptionContext } from "../modules/Sub";
 import Popover from "react-native-popover-view";
 import { Placement } from "react-native-popover-view/dist/Types";
+import { BellAlertIcon, CheckBadgeIcon, ClockIcon, ExclamationCircleIcon, ShieldExclamationIcon } from "react-native-heroicons/outline";
+import { LinearGradient } from "expo-linear-gradient";
 
 /**
  * Formats the dates weekday as text.
@@ -157,6 +159,28 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
     const [refreshing, setRefreshing] = useState<boolean>(false);
 
+    const colorFromStatus = useCallback((opgave: Opgave) => {
+        switch(opgave.status) {
+            case Status.AFLEVERET:
+                return "#00c972";
+            case Status.MANGLER:
+                return "#fc5353";
+            case Status.VENTER:
+                return "#fcca53";
+        }
+    }, [])
+
+    const iconFromStatus = useCallback((opgave: Opgave) => {
+        switch(opgave.status) {
+            case Status.AFLEVERET:
+                return <CheckBadgeIcon color={colorFromStatus(opgave)} />;
+            case Status.MANGLER:
+                return <ShieldExclamationIcon color={colorFromStatus(opgave)} />;
+            case Status.VENTER:
+                return <ExclamationCircleIcon color={calculateColor(new Date(opgave.date), scheme, opgave.status)} />;
+        }
+    }, [])
+    
     /**
      * Calculates color from a linear gradient ([255,0,0] to [255,252,0]) 
      * depending on how soon the assignment is due. If the assignment is due in more than 14 days it will
@@ -165,20 +189,20 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
      * @returns a color
      */
     const calculateColor = useCallback((date: Date, theme: ColorSchemeName, opgaveStatus: Status) => {
-        const COLOR1 = [255, 0, 0]
-        const COLOR2 = [255, 252, 0]
+        const COLOR2 = [252, 200, 83]
+        const COLOR1 = [252, 83, 83]
 
         const diff = date.valueOf() - new Date().valueOf();
         const hours = Math.floor(diff / (1000*60*60));
-        if(hours > 24*14 || hours < 0) {
+        if(hours > 24*14 || opgaveStatus != Status.VENTER) {
             if(theme == "dark")
                 switch(opgaveStatus) {
-                    case Status.MANGLER:
-                        return themes.dark.RED;
                     case Status.AFLEVERET:
-                        return themes.dark.LIGHT;
+                        return "#00c972";
+                    case Status.MANGLER:
+                        return "#fc5353";
                     case Status.VENTER:
-                        return themes.dark.WHITE;
+                        return "#fcca53";
                 }
             switch(opgaveStatus) {
                 case Status.MANGLER:
@@ -495,6 +519,14 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
         </View>
     ), [showPopover])
 
+    const parseElevtimer = useCallback((time: string, numDecimals?: number) => {
+        if(!numDecimals)
+            numDecimals = time.split(",")[1] != "00" ? 2 : 0
+
+        const num = parseFloat(time.replace(",", "."));
+        return num.toFixed(numDecimals).replace(".", ",");
+    }, [])
+
     return (
         <View style={{
             minHeight: "100%",
@@ -561,65 +593,68 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
                                                 width: "100%",
                                             }}>
-                                                <View style={{
-                                                    position: "absolute",
-                                                    left: -15,
-
-                                                    height: "100%",
-                                                    width: 7.5,
-
-                                                    paddingVertical: 5,
-                                                }}>
-                                                    <View style={{
-                                                        backgroundColor: calculateColor(new Date(opgave.date), scheme, opgave.status),
-                                                        height: "100%",
-                                                        width: 7.5,
-
-                                                        marginLeft: -2,
-
-                                                        borderTopRightRadius: 50,
-                                                        borderBottomRightRadius: 50,
-                                                    }}>
-
-                                                    </View>
-                                                </View>
-
-                                                <View style={{
-                                                    display: "flex",
-                                                    flexDirection: "row",
-
-                                                    width: "100%",
-                                                    justifyContent: "space-between"
-                                                }}>
-                                                    <View style={{
+                                                <View
+                                                    style={{
                                                         display: "flex",
-                                                        flexDirection: "column",
+                                                        flexDirection: "row",
 
-                                                        gap: 4,
-                                                        marginVertical: 7.5,
-                                                        maxWidth: "90%",
-                                                    }}>
-                                                        <Text 
-                                                            numberOfLines={1}
-                                                            ellipsizeMode="tail"
-                                                            style={{
-                                                                color: theme.WHITE,
-                                                                fontSize: 15,
-                                                                fontWeight: "bold",
+                                                        width: "100%",
+                                                        justifyContent: "space-between",
+                                                        zIndex: 2,
+                                                    }}
+                                                >
+                                                    <View
+                                                        style={{
+                                                            display: "flex",
+                                                            flexDirection: "row"
+                                                        }}
+                                                    >
+                                                        <View style={{
+                                                            paddingRight: 15,
+
+                                                            justifyContent: "center",
+                                                            alignItems: "center",
+                                                        }}>
+                                                            <View style={{
+                                                                padding: 4,
+                                                                backgroundColor: hexToRgb(colorFromStatus(opgave), 0.1),
+                                                                borderRadius: 500,
                                                             }}>
-                                                            {opgave.title}
-                                                        </Text>
-                                                        <Text style={{
-                                                            color: theme.ACCENT,
-                                                        }}>
-                                                            {opgave.team}
-                                                        </Text>
+                                                                {iconFromStatus(opgave)}
+                                                            </View>
+                                                        </View>
 
-                                                        <Text style={{
-                                                            color: theme.WHITE,
+
+                                                        <View style={{
+                                                            display: "flex",
+                                                            flexDirection: "column",
+
+                                                            gap: 4,
+                                                            marginVertical: 7.5,
+                                                            maxWidth: "80%",
                                                         }}>
-                                                            {countdown(new Date(opgave.date))}
-                                                        </Text>
+                                                            <Text 
+                                                                numberOfLines={1}
+                                                                ellipsizeMode="tail"
+                                                                style={{
+                                                                    color: theme.WHITE,
+                                                                    fontSize: 15,
+                                                                    fontWeight: "bold",
+                                                                }} adjustsFontSizeToFit minimumFontScale={0.8}>
+                                                                {opgave.title}
+                                                            </Text>
+                                                            <Text style={{
+                                                                color: theme.ACCENT,
+                                                            }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+                                                                {opgave.team} - {parseElevtimer(opgave.time)} elevtim{parseElevtimer(opgave.time, 2) == "1,00" ? "e" : "er"}
+                                                            </Text>
+
+                                                            <Text style={{
+                                                                color: theme.WHITE,
+                                                            }}>
+                                                                {countdown(new Date(opgave.date))}
+                                                            </Text>
+                                                        </View>
                                                     </View>
 
                                                     <View style={{
@@ -627,10 +662,30 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                                         alignItems: "center",
                                                     }}>
                                                         <ChevronRightIcon
-                                                            color={theme.ACCENT}
+                                                            color={theme.WHITE}
                                                         />
                                                     </View>
                                                 </View>
+
+                                                <LinearGradient
+                                                    start={[0, 0]}
+                                                    end={[1, 0]}
+                                                    colors={[calculateColor(new Date(opgave.date), scheme, opgave.status).toString(), "transparent"]}
+
+                                                    style={{
+                                                        position: "absolute",
+                                                        right: -20, // horizontalPadding is 15px by default
+
+                                                        width: "100%",
+                                                        height: "100%",
+
+                                                        transform: [{
+                                                            rotate: "180deg",
+                                                        }],
+                                                        zIndex: 1,
+                                                        opacity: 0.2,
+                                                    }}
+                                                />
                                             </View>
                                         }
 

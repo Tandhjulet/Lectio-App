@@ -293,7 +293,7 @@ export default function LandingPage({
                         }}>
                             Videre
                         </Text>
-                        <ChevronRightIcon size={25} />
+                        <ChevronRightIcon size={25} color={theme.ACCENT} />
                     </View>
                 </TouchableOpacity>
             </View>
@@ -309,7 +309,7 @@ export default function LandingPage({
                     textAlign: "center",
                     textAlignVertical: "center",
                 }}>
-                    Ved at bruge Lectio accepterer du vores slutbrugerlicensaftale og privatlivspolitik!
+                    Ved at bruge Lectio 360 accepterer du vores slutbrugerlicensaftale og privatlivspolitik!
                 </Text>
             </View>
         </View>

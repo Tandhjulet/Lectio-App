@@ -10,7 +10,7 @@ export enum Status {
 
 export type Opgave = {
     date: string,
-    time: number,
+    time: string,
     title: string,
     status: Status, 
     team: string,

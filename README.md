@@ -6,16 +6,18 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 ## Prioriteringer/mangler ved appen
 
 ## NEEDED FOR RELAUNCH
-- skemaswiper +skema(?) + ingen aktiviter
+- skemaswiper(lang bar) +skema(?) + ingen aktiviter
 - aktivitet info
 - fraværsoversigt
-- fraværsregistreringer (layout)
+- fraværsregistreringer (layout - brug gradient)
 - fraværsregistreringer (årsagsvælger) 
 - dokumenter (ikoner/layout/tidspunkter i anden format)
 - beskeder (layout, skift navn til indbakke)
 - ny besked (skift navn på "til", "emne", "filer")
 - ny slutbrugerlicensaftale
 - ny privatlivspolitik
+- ny hjemmeside
+- gør opgaver sortering hurtigere
 
 ### __HØJ__
 - fix skema ift. eksaminer: skift til lectios skemasystem

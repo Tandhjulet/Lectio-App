@@ -56,7 +56,8 @@
     "react-native-swipe-gestures": "github:MerijnCanvas/react-native-swipe-gestures",
     "react-native-tableview-simple": "^4.4.0",
     "rn-fetch-blob": "^0.12.0",
-    "victory-native": "^36.8.2"
+    "victory-native": "^36.8.2",
+    "expo-linear-gradient": "~12.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

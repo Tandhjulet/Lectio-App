@@ -18,7 +18,7 @@ export default function SplashScreen({ navigation }: { navigation: any }) {
         justifyContent: "center",
         alignItems: "center",
     }}>
-        <Logo size={60} />
+        <Logo size={128} />
     </View>
     )
 }

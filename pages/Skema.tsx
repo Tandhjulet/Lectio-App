@@ -542,7 +542,7 @@ export default function Skema({ navigation, route }: {
         const min = Math.min(...hoursToMap);
         const max = Math.max(...hoursToMap);
 
-        const hour = time.getHours();
+        const hour = time.getHours() + time.getMinutes()/60;
 
         if(!(hour > min-0.5 && hour < max+0.5)) {
             return <></>;
@@ -560,7 +560,7 @@ export default function Skema({ navigation, route }: {
                 style={{
                     position: "absolute",
                     top: (hour - min) * 60,
-                    right: 0,
+                    left: 0,
 
                     display: "flex",
                     flexDirection: "row",
@@ -570,11 +570,12 @@ export default function Skema({ navigation, route }: {
             >
                 <View style={{
                     height: 1,
-                    width: width - 38 - 2.5,
+                    width: width - 30 - 10 - 15,
                     backgroundColor: "#ff5e5e",
                     opacity: 0.8,
                     zIndex: 1,
                 }} />
+                
 
             </View>
         )
@@ -934,7 +935,7 @@ export default function Skema({ navigation, route }: {
                                 {skema != null && (
                                     <>
                                         {hoursToMap.map((hour: number, index: number) => {
-                                            const hours = time.getHours();
+                                            const hours = time.getHours() + time.getMinutes()/60;
                                             const isCurrentTimeClose = (hours > hour-0.3 && hours < hour+0.3) && (
                                                 (time.getMonth() == selectedDay.getMonth() &&
                                                 time.getDate() == selectedDay.getDate() &&
