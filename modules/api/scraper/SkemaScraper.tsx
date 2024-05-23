@@ -68,7 +68,7 @@ export type Modul = {
 
 export type Day = {
     moduler: Modul[]
-    skemaNoter: String,
+    skemaNoter: string[] | string,
 }
 
 export type ModulDate = {
@@ -214,18 +214,27 @@ function parseDate(dateString: string): Date {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(hours), parseInt(minutes));
 }
 
-function getSkemaNote(table: any, dayNum: number): String {
+function getSkemaNote(table: any, dayNum: number): string[] {
     const skemaNote = table.getElementsByClassName("s2infoHeader")[dayNum + 1];
 
     if(skemaNote != undefined) {
-        let note = skemaNote.getElementsByTagName("span")[1];
-        if(note == undefined)
-            return "";
+        const out: string[] = [];
 
-        return note.firstChild.text;
+        let note = skemaNote.getElementsByTagName("a");
+        note.forEach((n: any) => {
+            let text: string;
+            try {
+                text = n.firstChild.firstChild.lastChild.firstChild.text;
+            } catch {
+                text = "";
+            }
+            out.push(text.replace("&nbsp;", " "));
+        })
+
+        return out;
     }
 
-    return "";
+    return [];
 }
 
 function getModuleDate(parser: any): {[id: number]: [Date, Date]}  {

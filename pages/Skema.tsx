@@ -19,6 +19,7 @@ import { SubscriptionContext } from "../modules/Sub";
 import Popover from "react-native-popover-view";
 import { Mode, Placement } from "react-native-popover-view/dist/Types";
 import Constants from 'expo-constants';
+import React from "react";
 
 /**
  * 
@@ -582,20 +583,28 @@ export default function Skema({ navigation, route }: {
     }, [time, hoursToMap, selectedDay]);
 
     const color = ((isSelectedDay: boolean, isToday: boolean, title: boolean) => {
-        if(isToday && isSelectedDay) {
-            return theme.WHITE;
+        if(isSelectedDay) {
+            return "#00c972";
         }
 
-        if(isToday) {
+        if(isToday && title) {
+            return theme.LIGHT;
+        } else if(isToday && !title) {
             return theme.LIGHT;
         }
 
-        if(isSelectedDay) {
-            return theme.WHITE;
-        }
-
-        return title ? theme.WHITE : hexToRgb(scheme == "dark" ? "#FFFFFF" : "#000000", 0.5);
+        return theme.WHITE;
     });
+
+    const renderSkemaNoter = useCallback((skemaNoter: string | string[] | undefined) => {
+
+        if(!skemaNoter || skemaNoter.length == 0) {
+            return "Ingen skemanoter"
+        }
+        if(typeof skemaNoter === "string") skemaNoter = [skemaNoter];
+
+        return "• " + skemaNoter.join("\n• ")
+    }, [skema])
 
     return (
         <View>
@@ -685,41 +694,29 @@ export default function Skema({ navigation, route }: {
                                 borderRadius: 12.5,
                                 marginLeft: 20,
     
-                                opacity: (skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter == "")) ? 0.5 : 1,
+                                opacity: (skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter.length == 0)) ? 0.5 : 1,
                             }}>
                                 <ClipboardDocumentListIcon color={theme.DARK} />
                             </TouchableOpacity>
                         )}
                     >
-                        <View>
-                            <View style={{
-                                width: width,
-                                paddingVertical: 12.5,
+                        <View style={{
+                            padding: 17.5,
 
-                                backgroundColor: hexToRgb(scheme === "dark" ? "#FFFFFF" : "#000000", 0.1),
+                            gap: 5,
+                        }}>
+                            <Text style={{
+                                color: hexToRgb(theme.WHITE.toString(), 0.5),
                             }}>
-                                <Text style={{
-                                    color: scheme === "dark" ? "#FFF" : "#000",
+                                Skemanoter
+                            </Text>
 
-                                    fontWeight: "bold",
-                                    fontSize: 15,
-
-                                    textAlign: "center",
-                                }}>
-                                    Skema noter
-                                </Text>
-                            </View>
-
-                            <View style={{
-                                padding: 17.5,
-                                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.05),
+                            <Text style={{
+                                color: theme.WHITE,
+                                lineHeight: 20,
                             }}>
-                                <Text style={{
-                                    color: theme.WHITE,
-                                }}>
-                                    {skema != null && skema[dayNum - 2] != undefined && skema[dayNum - 2].skemaNoter}
-                                </Text>
-                            </View>
+                                {skema ? renderSkemaNoter(skema[dayNum-2]?.skemaNoter) : "Ingen skemanoter"}
+                            </Text>
                         </View>
                     </Popover>
                 </View>
@@ -777,14 +774,7 @@ export default function Skema({ navigation, route }: {
                     {daysOfThreeWeeks.map((_, i) => {
                         return (
                             <View key={i} style={{
-                                display: 'flex',
-
-                                justifyContent:'space-between',
-
                                 paddingTop: 15,
-                                flexDirection: 'row',
-
-                                flexWrap: "nowrap",
 
                                 width: width,
                                 height: 56 + 15 + 10,
@@ -792,44 +782,76 @@ export default function Skema({ navigation, route }: {
                                 paddingHorizontal: 20,
                                 marginBottom: 10,
                             }}>
-                                {_.map((day,i) => {
-                                    const isSelectedDay =   day.date.getMonth() == selectedDay.getMonth() &&
-                                                            day.date.getDate() == selectedDay.getDate() &&
-                                                            day.date.getFullYear() == selectedDay.getFullYear();
-                                    
-                                    const isToday = day.date.getMonth() == time.getMonth() &&
-                                                    day.date.getDate() == time.getDate() &&
-                                                    day.date.getFullYear() == time.getFullYear();
+                                <View style={{
+                                    width: width - 20*2,
+                                    display: 'flex',
+                                    flexDirection: 'row',
 
-                                    let hasModulesToday = (skema != null && (skema[day.weekDayNumber - 1] == undefined || Object.keys(skema[day.weekDayNumber - 1].moduler).length == 0));
-                                    if(!skema) hasModulesToday = true;
+                                    paddingHorizontal: 5,
 
-                                    return (
-                                        <Pressable key={i + "."} onPress={() => {
-                                            setDayNum(day.weekDayNumber);
-                                            setSelectedDay(day.date);
-                                        }} style={({pressed}) => [
-                                            {
-                                                opacity: pressed ? 0.6 : 1,
-                                            }
-                                        ]}>
-                                            <View style={{...styles.dayContainer, backgroundColor: isSelectedDay ? theme.LIGHT : hexToRgb(theme.WHITE.toString(), 0.15)}}>
-                                                <Text style={{
-                                                    color: color(isSelectedDay, isToday, true),
-                                                    fontWeight: "bold",
-                                                    fontSize: 20,
-                                                    opacity: hasModulesToday ? 0.6 : 1,
-                                                }}>{day.dayNumber.toString()}</Text>
+                                    justifyContent:'space-between',
+                                    flexWrap: "nowrap",
 
-                                                <Text style={{
-                                                    textTransform: 'lowercase',
-                                                    color: color(isSelectedDay, isToday, false),
-                                                    opacity: hasModulesToday ? 0.6 : 1,
-                                                }}>{day.dayName.slice(0,3)}.</Text>
-                                            </View>
-                                        </Pressable>
-                                    )
-                                })}
+                                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.15),
+                                    borderRadius: 5,
+                                }}>
+                                    {_.map((day,i) => {
+                                        const isSelectedDay =   day.date.getMonth() == selectedDay.getMonth() &&
+                                                                day.date.getDate() == selectedDay.getDate() &&
+                                                                day.date.getFullYear() == selectedDay.getFullYear();
+
+                                        const dateCopy = new Date(day.date);
+                                        dateCopy.setDate(dateCopy.getDate()+1);
+
+                                        const isDayBeforeSelectedDay =  dateCopy.getMonth() == selectedDay.getMonth() &&
+                                                                        dateCopy.getDate() == selectedDay.getDate() &&
+                                                                        dateCopy.getFullYear() == selectedDay.getFullYear();
+                                                                        
+                                        const isToday = day.date.getMonth() == time.getMonth() &&
+                                                        day.date.getDate() == time.getDate() &&
+                                                        day.date.getFullYear() == time.getFullYear();
+
+                                        let hasModulesToday = (skema != null && (skema[day.weekDayNumber - 1] == undefined || Object.keys(skema[day.weekDayNumber - 1].moduler).length == 0));
+                                        if(!skema) hasModulesToday = true;
+
+                                        return (
+                                            <React.Fragment key={i + "."}>
+                                                <Pressable onPress={() => {
+                                                    setDayNum(day.weekDayNumber);
+                                                    setSelectedDay(day.date);
+                                                }} style={({pressed}) => [
+                                                    {
+                                                        opacity: pressed ? 0.6 : 1,
+                                                    }
+                                                ]}>
+                                                    <View style={{...styles.dayContainer}}>
+                                                        <Text style={{
+                                                            color: color(isSelectedDay, isToday, true),
+                                                            fontWeight: "bold",
+                                                            fontSize: 20,
+                                                            opacity: hasModulesToday && !isSelectedDay ? 0.9 : 1,
+                                                        }}>{day.dayNumber.toString()}</Text>
+
+                                                        <Text style={{
+                                                            textTransform: 'lowercase',
+                                                            color: color(isSelectedDay, isToday, false),
+                                                            opacity: hasModulesToday && !isSelectedDay ? 0.4 : 1,
+                                                        }}>{day.dayName.slice(0,3)}.</Text>
+                                                    </View>
+                                                </Pressable>
+                                                {i+1 !== _.length && (
+                                                    <View style={{
+                                                        height: 41,
+                                                        width: StyleSheet.hairlineWidth,
+                                                        marginVertical: 5,
+
+                                                        backgroundColor: isDayBeforeSelectedDay || isSelectedDay ? "#00c972" : hexToRgb(theme.WHITE.toString(), 0.5),
+                                                    }} />
+                                                )}
+                                            </React.Fragment>
+                                        )
+                                    })}
+                                </View>
                             </View>
                         )
                     })}
@@ -1289,7 +1311,6 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 5,
 
         paddingBottom: 5,
         paddingTop: 5,
