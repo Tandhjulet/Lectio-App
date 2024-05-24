@@ -941,7 +941,7 @@ export default function Skema({ navigation, route }: {
 
                                     gap: 5,
                                 }}>
-                                    <Logo size={60} color={hexToRgb(theme.ACCENT.toString(), 0.5)} />
+                                    <Logo size={60} color={hexToRgb(theme.ACCENT.toString(), 0.8)} minOpacity={0.8} />
                                     <Text style={{
                                         fontSize: 20,
                                         color: hexToRgb(theme.LIGHT.toString(), 1),

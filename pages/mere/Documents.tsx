@@ -137,7 +137,15 @@ export default function Documents({ route }: {
                         const extensionKnown = !(findIcon(getUrlExtension(document.fileName)).props.color == hexToRgb(theme.WHITE.toString(), 0.8));
                         
                         const name = extensionKnown ? document.fileName.replace(new RegExp("\\." + getUrlExtension(document.fileName) + "$"), "") : document.fileName;
-
+                        const dateComps = document.date.split(" ")[1].split("/");
+                        const month = ["januar", "februar", "marts", "april", "maj", "juni", "juli", "august", "september", "oktober", "november", "december"][parseInt(dateComps[1])-1]
+                        const day =  document.date.split(" ")[0].replace("ma", "mandag")
+                                                                .replace("ti", "tirsdag")
+                                                                .replace("on", "onsdag")
+                                                                .replace("to", "torsdag")
+                                                                .replace("fr", "fredag")
+                                                                .replace("lø", "lørdag")
+                                                                .replace("sø", "søndag");
 
                         return (
                             <Cell
@@ -152,7 +160,7 @@ export default function Documents({ route }: {
                                             alignItems: "center",
 
                                             width: "95%",
-                                            height: 60,
+                                            height: 65,
                                             gap: 10,
                                         }} onPress={() => openFile(document)}>
                                             {findIcon(getUrlExtension(document.fileName))}
@@ -161,7 +169,7 @@ export default function Documents({ route }: {
                                                 display: "flex",
                                                 flexDirection: "column",
                                                 width: "100%",
-                                                gap: 2,
+                                                gap: 3,
                                             }}>
                                                 <Text style={{
                                                     color: theme.WHITE,
@@ -184,7 +192,7 @@ export default function Documents({ route }: {
                                                         fontSize: 15,
                                                         letterSpacing: -0.32,
                                                     }} ellipsizeMode="middle" numberOfLines={1}>
-                                                        {" "}{document.date}
+                                                        {" "}{day} d. {dateComps[0]}. {month}
                                                     </Text>
 
                                                     <Text style={{

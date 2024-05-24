@@ -46,7 +46,7 @@ export default function File() {
             case "rtf":
             case "odt":
             case "docx":
-                return <DocumentTextIcon size={size} />
+                return <DocumentTextIcon size={size} color={theme.ACCENT} />
             case "pdf":
                 return <ClipboardDocumentIcon size={size} color={hexToRgb(theme.RED.toString(), 0.8)} />
             case "mp4":
@@ -61,7 +61,7 @@ export default function File() {
             case "mpg":
             case "mpeg":
             case "mov":
-                return <VideoCameraIcon size={size} color={theme.ACCENT} />
+                return <VideoCameraIcon size={size} color={theme.LIGHT} />
             default:
                 return <DocumentIcon size={size} color={hexToRgb(theme.WHITE.toString(), 0.8)} />
         }
