@@ -10,6 +10,7 @@ export enum Status {
 
 export type Opgave = {
     date: string,
+    dateObject: number,
     time: string,
     title: string,
     status: Status, 
@@ -214,10 +215,14 @@ export function scrapeOpgaver(parser: any): Opgave[] | null {
             absence = "0%";
 
         const elevNote = child.children[10].firstChild === undefined ? "" : scrapeText(child.children[10].children);
+        const dateObj = parseDate(date);
         
         out.push({
             absence: absence,
-            date: parseDate(date).toString(),
+            date: dateObj.toLocaleDateString("da-DK", {
+                dateStyle: "medium",
+            }),
+            dateObject: dateObj.valueOf(),
             status: Status[status as keyof typeof Status],
             team: team,
             time: time,

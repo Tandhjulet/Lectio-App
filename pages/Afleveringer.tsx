@@ -1,6 +1,6 @@
 import { NavigationProp } from "@react-navigation/native";
-import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, ColorSchemeName, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
+import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { ActivityIndicator, ColorSchemeName, Modal, Pressable, RefreshControl, ScrollView, SectionList, SectionListData, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, VirtualizedList, useColorScheme } from "react-native";
 import { secureGet, getUnsecure } from "../modules/api/Authentication";
 import { getAfleveringer } from "../modules/api/scraper/Scraper";
 import { Opgave, Status } from "../modules/api/scraper/OpgaveScraper";
@@ -27,48 +27,6 @@ export const formatDate = (date: Date) => {
     const dateName = weekday[date.getDay()];
 
     return dateName + " d. " + date.getDate() + "/" + (date.getMonth()+1);
-}
-
-/**
- * Formats assignments to a dict by their date.
- * @param data data to format
- * @returns formatted data
- */
-const formatData = (data: Opgave[] | null) => {
-    const out: {[id:string]: Opgave[]} = {}
-
-    data?.forEach((opgave) => {
-        if(!(formatDate(new Date(opgave.date)) in out)) {
-            out[formatDate(new Date(opgave.date))] = [];
-        }
-
-        out[formatDate(new Date(opgave.date))].push(opgave)
-    })
-
-    return out;
-}
-
-/**
- * 
- * @param date a date of an assignment
- * @returns a text depending on how long there is until the assignment is due
- */
-const countdown = (date: Date): string => {
-    const diff = date.valueOf() - new Date().valueOf();
-    const days = Math.floor(diff / (1000*60*60*24));
-    if(diff <= 0 || days > 10)
-        return formatDate(date) + " kl. " + date.getHours().toString().padStart(2, "0") + ":" + date.getMinutes().toString().padStart(2, "0");
-
-    const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
-
-    const out: string[] = [];
-    if(days > 0)
-        out.push(days == 1 ? days + " dag" : days + " dage")
-
-    if(hours > 0)
-        out.push(hours == 1 ? hours + " time" : hours + " timer")
-
-    return out.join(" og ")
 }
 
 /**
@@ -115,36 +73,96 @@ const countOpgaver = (data: Opgave[] | null) => {
  * @param filter what to filter for
  * @returns filtered data
  */
-const filterData = (data: {
-    [id: string]: Opgave[];
-}, filter: Status | "ALL") => {
-    const out: {
-        [id: string]: Opgave[];
-    } = {};
+const filterData = (data: Opgave[] | null) => {
+    const out: {[id: string]: {
+        data: Opgave[],
+        key: string,
+    }[]} = {
+        "Afleveret": [],
+        "Venter": [],
+        "Mangler": [],
+        "Alle": [],
+    };
 
-    Object.keys(data).forEach((dato: string) => {
-        data[dato].forEach((opgave) => {
-            if(opgave.status == filter || filter == "ALL") {
-                if(out[dato] == null)
-                    out[dato] = []
+    if(!data) {
+        return null;
+    }
 
-                out[dato].push(opgave)
-            }
-        })
+    let currDate = "";
+    let currStatus = "";
+
+    data.forEach((opgave: Opgave) => {
+        let status: string;
+        switch(opgave.status) {
+            case Status.AFLEVERET:
+                status = "Afleveret";
+                break;
+            case Status.MANGLER:
+                status = "Mangler";
+                break;
+            case Status.VENTER:
+                status = "Venter";
+                break;
+        }
+
+        if(currDate != opgave.date) {
+            out["Alle"].push({
+                key: opgave.date,
+                data: [opgave],
+            })
+        }
+
+        if(currDate != opgave.date || currStatus != status) {
+            out[status].push({
+                key: opgave.date,
+                data: [opgave],
+            });
+
+            currDate = opgave.date;
+            currStatus = status;
+        } else {
+            out[status][out[status].length-1].data.push(opgave);
+            out["Alle"][out["Alle"].length-1].data.push(opgave);
+        }
     })
 
     return out;
 }
 
+
 export default function Afleveringer({ navigation }: {navigation: NavigationProp<any>}) {
     const { subscriptionState } = useContext(SubscriptionContext);
 
-    const [afleveringer, setAfleveringer] = useState<{
-        [id: string]: Opgave[];
-    }>({})
-    const [rawAfleveringer, setRawAfleveringer] = useState<{
-        [id: string]: Opgave[];
-    }>({})
+    const currTime = useRef(new Date().valueOf()).current;
+
+    /**
+     * 
+     * @param date a date of an assignment
+     * @returns a text depending on how long there is until the assignment is due
+     */
+    const countdown = useCallback((dateString: string, date: number) => {
+
+        const diff = date - currTime;
+        const days = Math.floor(diff / (1000*60*60*24));
+        if(diff <= 0 || days > 10)
+            return dateString
+
+        const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+
+        const out: string[] = [];
+        if(days > 0)
+            out.push(days == 1 ? days + " dag" : days + " dage")
+
+        if(hours > 0)
+            out.push(hours == 1 ? hours + " time" : hours + " timer")
+
+        return out.join(" og ")
+    }, [])
+
+    const [afleveringer, setAfleveringer] = useState<{[id: string]: {
+        data: Opgave[],
+        key: string,
+    }[]} | null>({})
 
     const [ opgaveCount, setOpgaveCount ] = useState<{
         alle: number,
@@ -177,7 +195,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
             case Status.MANGLER:
                 return <ShieldExclamationIcon color={colorFromStatus(opgave)} />;
             case Status.VENTER:
-                return <ExclamationCircleIcon color={calculateColor(new Date(opgave.date), scheme, opgave.status)} />;
+                return <ExclamationCircleIcon color={calculateColor(opgave.dateObject, scheme, opgave.status)} />;
         }
     }, [])
     
@@ -188,11 +206,11 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
      * @param date date to calculate color from
      * @returns a color
      */
-    const calculateColor = useCallback((date: Date, theme: ColorSchemeName, opgaveStatus: Status) => {
+    const calculateColor = useCallback((date: number, theme: ColorSchemeName, opgaveStatus: Status) => {
         const COLOR2 = [252, 200, 83]
         const COLOR1 = [252, 83, 83]
 
-        const diff = date.valueOf() - new Date().valueOf();
+        const diff = date.valueOf() - currTime;
         const hours = Math.floor(diff / (1000*60*60));
         if(hours > 24*14 || opgaveStatus != Status.VENTER) {
             if(theme == "dark")
@@ -234,7 +252,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
         navigation.setOptions({
             headerRight: () => selectorButton,
         })
-    }, [navigation, showPopover])
+    }, [navigation, showPopover, countOpgaver])
 
     /**
      * Fetches the assignments on page load
@@ -248,22 +266,18 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
             getAfleveringer(gymNummer).then(({payload, rateLimited}): any => {
                 setOpgaveCount(countOpgaver(payload));
 
-                const formattedData = formatData(payload);
-
-                setRawAfleveringer(formattedData)
-                setAfleveringer(filterData(formattedData, Status.VENTER))
+                setAfleveringer(filterData(payload))
                 setRateLimited(rateLimited)
                 setLoading(false);
             })
         })();
     }, [])
-    
+
     /**
-     * Drag-to-refresh functionality
+     * Scroll-to-refresh
      */
     useEffect(() => {
         if(!refreshing)
-            return;
 
         (async () => {
             const gymNummer = (await secureGet("gym")).gymNummer;
@@ -271,29 +285,8 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
             getAfleveringer(gymNummer, true).then(({payload, rateLimited}): any => {
                 setOpgaveCount(countOpgaver(payload));
 
-                const formattedData = formatData(payload);
-
-                setRawAfleveringer(formattedData)
-
-                let sortBy: Status | "ALL";
-                switch(sortedBy) {
-                    case "Afleveret":
-                        sortBy = Status.AFLEVERET;
-                        break;
-                    case "Alle":
-                        sortBy = "ALL";
-                        break;
-                    case "Mangler":
-                        sortBy = Status.MANGLER;
-                        break;
-                    case "Venter":
-                        sortBy = Status.VENTER;
-                        break;
-                }
-
-                setAfleveringer(filterData(formattedData, sortBy))
+                setAfleveringer(filterData(payload))
                 setRateLimited(rateLimited)
-                
                 setRefreshing(false);
             })
         })();
@@ -323,7 +316,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                 offset={5}
 
                 from={(
-                    <TouchableOpacity style={{
+                    <TouchableOpacity delayPressIn={0} style={{
                         display: "flex",
                         flexDirection: "row",
                         alignItems: "center",
@@ -355,9 +348,8 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
                     paddingVertical: 10,
                 }}>
-                    <TouchableOpacity onPress={() => {
+                    <TouchableOpacity delayPressIn={0} onPress={() => {
                         setShowPopover(false);
-                        setAfleveringer(filterData(rawAfleveringer, "ALL"))
                         setSortedBy("Alle")
                     }}>
                         <View style={{
@@ -397,9 +389,8 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                         marginVertical: 5,
                     }} />
 
-                    <TouchableOpacity onPress={() => {
+                    <TouchableOpacity delayPressIn={0} onPress={() => {
                         setShowPopover(false);
-                        setAfleveringer(filterData(rawAfleveringer, Status.VENTER))
                         setSortedBy("Venter")
                     }}>
                         <View style={{
@@ -439,9 +430,8 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                         marginVertical: 5,
                     }} />
 
-                    <TouchableOpacity onPress={() => {
+                    <TouchableOpacity delayPressIn={0} onPress={() => {
                         setShowPopover(false);
-                        setAfleveringer(filterData(rawAfleveringer, Status.AFLEVERET))
                         setSortedBy("Afleveret")
                     }}>
                         <View style={{
@@ -481,9 +471,8 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                         marginVertical: 5,
                     }} />
 
-                    <TouchableOpacity onPress={() => {
+                    <TouchableOpacity delayPressIn={0} onPress={() => {
                         setShowPopover(false);
-                        setAfleveringer(filterData(rawAfleveringer, Status.MANGLER))
                         setSortedBy("Mangler")
                     }}>
                         <View style={{
@@ -527,6 +516,170 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
         return num.toFixed(numDecimals).replace(".", ",");
     }, [])
 
+    const AfleveringCell = memo(function AfleveringCell({
+        opgave,
+    }: {
+        opgave: Opgave,
+    }) {
+        return (
+            <TouchableOpacity
+                onPress={() => {
+                    // @ts-ignore
+                    if(!subscriptionState?.hasSubscription) {
+                        navigation.navigate("NoAccess")
+                        return;
+                    }
+        
+                    navigation.navigate("AfleveringView", {
+                        opgave: opgave,
+                    })
+                }}
+            >
+                <View style={{
+                    position: "relative",
+
+                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.05),
+                    paddingHorizontal: 15,
+                    height: 70,
+    
+                    width: "100%",
+                }}>
+                    <View
+                        style={{
+                            display: "flex",
+                            flexDirection: "row",
+    
+                            width: "100%",
+                            justifyContent: "space-between",
+                            zIndex: 2,
+                        }}
+                    >
+                        <View
+                            style={{
+                                display: "flex",
+                                flexDirection: "row"
+                            }}
+                        >
+                            <View style={{
+                                paddingRight: 15,
+    
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}>
+                                <View style={{
+                                    padding: 4,
+                                    backgroundColor: hexToRgb(colorFromStatus(opgave), 0.1),
+                                    borderRadius: 500,
+                                }}>
+                                    {iconFromStatus(opgave)}
+                                </View>
+                            </View>
+    
+    
+                            <View style={{
+                                display: "flex",
+                                flexDirection: "column",
+    
+                                gap: 4,
+                                marginVertical: 5,
+                                maxWidth: "80%",
+                            }}>
+                                <Text 
+                                    numberOfLines={1}
+                                    ellipsizeMode="tail"
+                                    style={{
+                                        color: theme.WHITE,
+                                        fontSize: 15,
+                                        fontWeight: "bold",
+                                    }} adjustsFontSizeToFit minimumFontScale={0.8}>
+                                    {opgave.title}
+                                </Text>
+                                <Text style={{
+                                    color: calculateColor(opgave.dateObject, scheme, opgave.status),
+                                }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+                                    {opgave.team} - {parseElevtimer(opgave.time)} elevtim{parseElevtimer(opgave.time, 2) == "1,00" ? "e" : "er"}
+                                </Text>
+    
+                                <Text style={{
+                                    color: theme.WHITE,
+                                }}>
+                                    {countdown(opgave.date, opgave.dateObject)}
+                                </Text>
+                            </View>
+                        </View>
+    
+                        <View style={{
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}>
+                            <ChevronRightIcon
+                                color={theme.WHITE}
+                            />
+                        </View>
+                    </View>
+    
+                    <LinearGradient
+                        start={[0, 0]}
+                        end={[1, 0]}
+                        colors={[calculateColor(opgave.dateObject, scheme, opgave.status).toString(), "transparent"]}
+    
+                        style={{
+                            position: "absolute",
+                            right: -20, // horizontalPadding is 15px by default
+    
+                            width: "100%",
+                            height: "100%",
+    
+                            transform: [{
+                                rotate: "180deg",
+                            }],
+                            zIndex: 1,
+                            opacity: 0.2,
+                        }}
+                    />
+                </View>
+            </TouchableOpacity>
+        )
+    }, (prev, next) => prev.opgave.id === next.opgave.id)
+
+    const SectionHeader = memo(function SectionHeader({
+        data,
+        theme
+    }: {
+        data: string,
+        theme: Theme,
+    }) {
+        return (
+            <View style={{
+                display: "flex",
+                alignItems: "center",
+                flexDirection: "row",
+                paddingHorizontal: 15,
+                width: "100%",
+                marginTop: 8,
+                marginBottom: 5,
+            }}>
+                <Text style={{
+                    color: hexToRgb(theme.WHITE.toString(), 0.5)
+                }}>
+                    {data}
+                </Text>
+            </View>
+        )
+    }, (prev, next) => prev.data == next.data)
+
+    const renderItemSectionList = useCallback(({ item, index }: {
+        item: Opgave,
+        index: number,
+    }) => <AfleveringCell opgave={item} />, []);
+
+    const renderSectionHeader = useCallback((data: {
+        section: SectionListData<Opgave, {
+            key: string;
+            data: Opgave[];
+        }>;
+    }) => <SectionHeader data={data.section.key} theme={theme} />, [theme]);
+
     return (
         <View style={{
             minHeight: "100%",
@@ -546,172 +699,62 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                     <ActivityIndicator size={"small"} color={theme.ACCENT} />
                 </View>
             :
-                <ScrollView refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }>
-                    <TableView>
-                        {Object.keys(afleveringer).length == 0 && (
-                            <View style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
+                <View>
+                    {(!afleveringer || !afleveringer[sortedBy] || Object.keys(afleveringer[sortedBy]).length == 0) && (
+                        <View style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
 
-                                flexDirection: 'column-reverse',
+                            flexDirection: 'column-reverse',
 
-                                minHeight: '80%',
+                            minHeight: '80%',
 
-                                gap: 5,
+                            gap: 5,
+                        }}>
+                            <Text style={{
+                                color: theme.WHITE,
+                                textAlign: 'center'
                             }}>
-                                <Text style={{
-                                    color: theme.WHITE,
-                                    textAlign: 'center'
-                                }}>
-                                    {sortedBy == "Alle" ?
-                                        "Du har ingen opgaver"
-                                    :
-                                        `Du har ingen opgaver der ${sortedBy == "Afleveret" ? "er " : ""}${sortedBy.toLowerCase()}.`
-                                    }
-                                </Text>
-                                <Logo size={40} />
-                            </View>
-                        )}
+                                {sortedBy == "Alle" ?
+                                    "Du har ingen opgaver"
+                                :
+                                    `Du har ingen opgaver der ${sortedBy == "Afleveret" ? "er " : ""}${sortedBy.toLowerCase()}.`
+                                }
+                            </Text>
+                            <Logo size={40} />
+                        </View>
+                    )}
 
-                        {Object.keys(afleveringer).map((dato) => (
-                            <Section
-                                key={dato}
-                                header={dato}
+                    {afleveringer && afleveringer[sortedBy] && (
+                        <SectionList
+                            sections={afleveringer[sortedBy]}
+                            renderItem={renderItemSectionList}
+                            renderSectionHeader={renderSectionHeader}
 
-                                hideSurroundingSeparators={true}
-                            >
-                                {afleveringer[dato].map((opgave, index) => (
-                                    <Cell
-                                        key={index}
+                            keyExtractor={(data, i) => i + ":" + data.id}
+                            getItemLayout={(data, i) => ({
+                                index: i,
+                                length: 70,
+                                offset: 70 * i,
+                            })}
 
-                                        cellContentView={
-                                            <View style={{
-                                                position: "relative",
+                            stickySectionHeadersEnabled={false}
 
-                                                width: "100%",
-                                            }}>
-                                                <View
-                                                    style={{
-                                                        display: "flex",
-                                                        flexDirection: "row",
+                            initialNumToRender={25}
 
-                                                        width: "100%",
-                                                        justifyContent: "space-between",
-                                                        zIndex: 2,
-                                                    }}
-                                                >
-                                                    <View
-                                                        style={{
-                                                            display: "flex",
-                                                            flexDirection: "row"
-                                                        }}
-                                                    >
-                                                        <View style={{
-                                                            paddingRight: 15,
+                            refreshControl={
+                                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                            }
 
-                                                            justifyContent: "center",
-                                                            alignItems: "center",
-                                                        }}>
-                                                            <View style={{
-                                                                padding: 4,
-                                                                backgroundColor: hexToRgb(colorFromStatus(opgave), 0.1),
-                                                                borderRadius: 500,
-                                                            }}>
-                                                                {iconFromStatus(opgave)}
-                                                            </View>
-                                                        </View>
-
-
-                                                        <View style={{
-                                                            display: "flex",
-                                                            flexDirection: "column",
-
-                                                            gap: 4,
-                                                            marginVertical: 7.5,
-                                                            maxWidth: "80%",
-                                                        }}>
-                                                            <Text 
-                                                                numberOfLines={1}
-                                                                ellipsizeMode="tail"
-                                                                style={{
-                                                                    color: theme.WHITE,
-                                                                    fontSize: 15,
-                                                                    fontWeight: "bold",
-                                                                }} adjustsFontSizeToFit minimumFontScale={0.8}>
-                                                                {opgave.title}
-                                                            </Text>
-                                                            <Text style={{
-                                                                color: theme.ACCENT,
-                                                            }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
-                                                                {opgave.team} - {parseElevtimer(opgave.time)} elevtim{parseElevtimer(opgave.time, 2) == "1,00" ? "e" : "er"}
-                                                            </Text>
-
-                                                            <Text style={{
-                                                                color: theme.WHITE,
-                                                            }}>
-                                                                {countdown(new Date(opgave.date))}
-                                                            </Text>
-                                                        </View>
-                                                    </View>
-
-                                                    <View style={{
-                                                        justifyContent: "center",
-                                                        alignItems: "center",
-                                                    }}>
-                                                        <ChevronRightIcon
-                                                            color={theme.WHITE}
-                                                        />
-                                                    </View>
-                                                </View>
-
-                                                <LinearGradient
-                                                    start={[0, 0]}
-                                                    end={[1, 0]}
-                                                    colors={[calculateColor(new Date(opgave.date), scheme, opgave.status).toString(), "transparent"]}
-
-                                                    style={{
-                                                        position: "absolute",
-                                                        right: -20, // horizontalPadding is 15px by default
-
-                                                        width: "100%",
-                                                        height: "100%",
-
-                                                        transform: [{
-                                                            rotate: "180deg",
-                                                        }],
-                                                        zIndex: 1,
-                                                        opacity: 0.2,
-                                                    }}
-                                                />
-                                            </View>
-                                        }
-
-                                        onPress={() => {
-                                            // @ts-ignore
-                                            if(!subscriptionState?.hasSubscription) {
-                                                navigation.navigate("NoAccess")
-                                                return;
-                                            }
-
-                                            navigation.navigate("AfleveringView", {
-                                                opgave: opgave,
-                                            })
-                                        }}
-                                    />
-                                ))}
-                            </Section>
-                        ))}
-
-                        <View 
-                            style={{
-                                paddingTop: 89,
+                            contentContainerStyle={{
+                                minHeight: "100%",
+                                paddingBottom: 150,
+                                paddingTop: 2.5,
                             }}
                         />
-                    </TableView>
-                </ScrollView>
+                    )}
+                </View>
             }
 
             {rateLimited && <RateLimit />}

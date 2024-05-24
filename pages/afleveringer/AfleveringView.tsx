@@ -177,7 +177,10 @@ export default function AfleveringView({ navigation, route }: {
                         <Cell
                             cellStyle="RightDetail"
                             title="Frist"
-                            detail={formatDate(new Date(aflevering.date)) + " kl. " + new Date(aflevering.date).getHours().toString().padStart(2, "0") + ":" + new Date(aflevering.date).getMinutes().toString().padStart(2, "0")}
+                            detail={new Date(aflevering.dateObject).toLocaleString("da-DK", {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                            })}
 
                             detailTextStyle={{
                                 maxWidth: "70%",

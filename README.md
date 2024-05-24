@@ -16,7 +16,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 - ny slutbrugerlicensaftale
 - ny privatlivspolitik
 - ny hjemmeside
-- gør opgaver sortering hurtigere
 
 ### __HØJ__
 - fix skema ift. eksaminer: skift til lectios skemasystem
