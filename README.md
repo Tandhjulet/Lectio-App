@@ -11,8 +11,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 - fraværsoversigt
 - fraværsregistreringer (årsagsvælger) 
 - dokumenter (ikoner/layout/tidspunkter i anden format)
-- beskeder (layout, skift navn til indbakke)
-- ny besked (skift navn på "til", "emne", "filer")
+- "NoAccess"-side
 - ny slutbrugerlicensaftale
 - ny privatlivspolitik
 - ny hjemmeside

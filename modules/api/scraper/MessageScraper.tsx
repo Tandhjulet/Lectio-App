@@ -5,7 +5,7 @@ import { replaceHTMLEntities } from "./SkemaScraper";
 export type LectioMessage = {
     title: string,
     sender: string,
-    editDate: Date | null,
+    editDate: string,
 
     unread: boolean,
 
@@ -138,7 +138,7 @@ export async function scrapeMessages(parser: any): Promise<LectioMessage[] | nul
         const scaffOld: LectioMessage = {
             title: "",
             sender: "",
-            editDate: new Date(),
+            editDate: "",
 
             unread: false,
             messageId: "",
@@ -156,15 +156,20 @@ export async function scrapeMessages(parser: any): Promise<LectioMessage[] | nul
 
         const title: string = message.children[3].firstChild.firstChild.firstChild.text;
         const sender: string = message.children[5].firstChild.attributes.title;
-        let editDate: Date | null = null;
 
-        const regExpTimespan = message.children[7].firstChild.text.match(new RegExp('\\d{2}:\\d{2}', "gm"));
-        if(regExpTimespan != null && regExpTimespan.length >= 2) {
-            const start = new Date();
-            start.setHours(parseInt(regExpTimespan[0].split(":")[0]))
-            start.setMinutes(parseInt(regExpTimespan[0].split(":")[1]))
-            editDate = start;
-        }
+
+        let editDate: string = message.children[7].firstChild.text;
+        if(editDate.includes(":"))
+            editDate =  editDate.replace("ma", "i mandags,")
+                                .replace("ti", "i tirsdags,")
+                                .replace("on", "i onsdags,")
+                                .replace("to", "i torsdags,")
+                                .replace("fr", "i fredags,")
+                                .replace("lø", "i lørdags,")
+                                .replace("sø", "i søndags,")
+
+        if(!editDate.startsWith("i ") && editDate.includes(":")) editDate = "i dag, " + editDate;
+        
 
         scaffOld.title = title;
         scaffOld.sender = sender;

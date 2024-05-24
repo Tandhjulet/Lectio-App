@@ -50,7 +50,7 @@ const navTabs: NavbarTab[] = [{
   "slug": "Skema",
 }, {
   "icon": EnvelopeIcon,
-  "slug": "Beskeder",
+  "slug": "Indbakke",
 }, {
   "icon": EllipsisHorizontalIcon,
   "slug": "Mere",

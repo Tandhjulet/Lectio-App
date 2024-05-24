@@ -116,7 +116,7 @@ export default function LandingPage({
         <BannerItem theme={theme} title="Karakterer" description="Lectio 360 udregner automatisk dit vægtede gennemsnit!" />,
         <BannerItem theme={theme} title="Skemaoversigt" description="Se en detaljeret oversigt over dit skema, for et effektivt overblik af din hverdag!" />,
         <BannerItem theme={theme} title="Fravær" description="Skab overblik over dit fravær, med en detaljeret rapport!" />,
-        <BannerItem theme={theme} title="Beskeder" description="Send og modtag beskeder, så du kan holde dig ajour!" />,
+        <BannerItem theme={theme} title="Indbakke" description="Send og modtag beskeder, så du kan holde dig ajour!" />,
         <BannerItem theme={theme} title="Studiekort" description="Tag dit studiekort med dig på farten, så du aldrig glemmer det!" />,
     ]).current;
     

@@ -339,7 +339,7 @@ const App = () => {
                     header: () => <></>
                   }} />
         
-                  <Tab.Screen name="Beskeder" component={BeskedNavigator} options={{
+                  <Tab.Screen name="Indbakke" component={BeskedNavigator} options={{
                     header: () => <></>
                   }} />
         
@@ -407,7 +407,7 @@ export function BeskedNavigator() {
 
     }}>
       <Messages.Screen name={"BeskedList"} component={Beskeder} options={{
-        title: "Beskeder",
+        title: "Indbakke",
         headerLeft: () => (
           <View style={{
             marginLeft: 15,
@@ -451,7 +451,7 @@ export function MereNavigator() {
       headerBackTitleVisible: false,
       contentStyle: {backgroundColor: theme.BLACK}
     }}>
-      <Settings.Screen name={"Settings"} component={Mere} options={{title: "Mere"}} />
+      <Settings.Screen name={"Settings"} component={Mere} options={{title: "Yderligere", headerShown: false}} />
       <Settings.Screen name={"UserSettings"} component={UserSettings} options={{title: "Brugerindstillinger"}} />
 
       <Settings.Screen name={"Absence"} component={Absence} options={{title: "Fravær"}} />

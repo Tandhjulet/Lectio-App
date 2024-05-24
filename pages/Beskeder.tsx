@@ -26,7 +26,7 @@ import ProfilePicture from "../components/ProfilePicture";
 import File from "../modules/File";
 import Popover from "react-native-popover-view/dist/Popover";
 import { Placement } from "react-native-popover-view/dist/Types";
-import { PaperClipIcon } from "react-native-heroicons/outline";
+import { LinkIcon, PaperClipIcon } from "react-native-heroicons/outline";
 import { upload, UploadResult } from "../modules/api/filer/FileManager";
 import React from "react";
 import Shake from "../components/Shake";
@@ -455,46 +455,67 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                         return (
                                             <Cell 
                                                 key={index}
-                                                accessory="DisclosureIndicator"
-                                                cellStyle="Subtitle"
-                                                title={message.sender.split(" (")[0]}
-                                                titleTextStyle={{
-                                                    fontWeight: message.unread ? "bold" : "normal",
-                                                    maxWidth: "80%",
-                                                    overflow: "hidden",
-                                                }}
-                                                detail={message.title}
-                                                contentContainerStyle={{
-                                                    marginVertical: 5,
-                                                }}
-                                                cellAccessoryView={
+                                                cellContentView={
                                                     <View style={{
-                                                        position: 'absolute',
-                                                        height: "100%",
-                                                        right: 0,
+                                                        paddingVertical: 10,
+                                                        width: "100%",
 
-                                                        display: 'flex',
-                                                        justifyContent: 'center',
-                                                        alignItems: 'center',
-
-                                                        flexDirection: 'row',
-
-                                                        marginHorizontal: 20,
-                                                        gap: 5,
+                                                        display: "flex",
+                                                        flexDirection: "row",
+                                                        justifyContent: "space-between",
+                                                        alignItems: "center",
                                                     }}>
-                                                        {message.unread &&
-                                                            <View style={{
-                                                                backgroundColor: theme.ACCENT,
+                                                        <View style={{
+                                                            display: "flex",
+                                                            flexDirection: "column",
+                                                        }}>
+                                                            <Text style={{
+                                                                color: theme.WHITE,
+                                                            }}>
+                                                                {message.sender.split(" (")[0]}
+                                                            </Text>
 
-                                                                height: 10,
-                                                                width: 10,
-                                                                borderRadius: 10,
-                                                            }} />
-                                                        }
+                                                            <Text style={{
+                                                                color: theme.WHITE,
+                                                                fontSize: 15,
+                                                                fontWeight: "bold",
+                                                            }}>
+                                                                {message.title}
+                                                            </Text>
 
-                                                        <ChevronRightIcon
-                                                            color={theme.ACCENT}
-                                                        />
+                                                            <Text style={{
+                                                                color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                            }}>
+                                                                {"\n"}{message.editDate}
+                                                            </Text>
+                                                        </View>
+
+                                                        <View style={{
+                                                            position: 'absolute',
+                                                            height: "100%",
+                                                            right: 0,
+
+                                                            justifyContent: 'center',
+                                                            alignItems: 'center',
+
+                                                            flexDirection: 'row',
+
+                                                            gap: 5,
+                                                        }}>
+                                                            {message.unread &&
+                                                                <View style={{
+                                                                    backgroundColor: theme.ACCENT,
+
+                                                                    height: 10,
+                                                                    width: 10,
+                                                                    borderRadius: 10,
+                                                                }} />
+                                                            }
+
+                                                            <ChevronRightIcon
+                                                                color={theme.ACCENT}
+                                                            />
+                                                        </View>
                                                     </View>
                                                 }
                                                 
@@ -537,7 +558,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                 }}
             >
                 <View onLayout={(event) => {
-                    const {x, y, width, height} = event.nativeEvent.layout;
+                    const {height} = event.nativeEvent.layout;
                     setSheetHeight(height);
                 }} style={{
                     minHeight: "100%",
@@ -578,7 +599,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     fontSize: 16,
                                     lineHeight: 20,
                                 }}>
-                                    Til:
+                                    Modtager(e):
                                 </Text>
                             </Shake>
                             
@@ -611,7 +632,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                                 {recipient.navn}
                                             </Text>
 
-                                            <XCircleIcon size={15} color={theme.ACCENT} />
+                                            <XCircleIcon size={15} color={hexToRgb(theme.ACCENT.toString(), 0.6)} />
                                         </View>
                                     </TouchableOpacity>
                                 )
@@ -683,7 +704,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     fontSize: 16,
                                     lineHeight: 20,
                                 }}>
-                                    Emne:
+                                    Titel:
                                 </Text>
                             </Shake>
                             
@@ -725,7 +746,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                 fontSize: 16,
                                 lineHeight: 20,
                             }}>
-                                Filer:
+                                Vedhæft fil:
                             </Text>
 
                             {files && files.map((file: UploadResult, index: number) => {
@@ -759,18 +780,13 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                                 {file.fileName}
                                             </Text>
 
-                                            <XCircleIcon size={15} color={theme.ACCENT} />
+                                            <XCircleIcon size={15} color={hexToRgb(theme.ACCENT.toString(), 0.6)} />
                                         </View>
                                     </TouchableOpacity>
                                 )
                             })}
 
-                            <View style={{
-                                flex: 1,
-                            }} />
-
                             <TouchableOpacity onPress={async () => {
-                                
                                 const file = await upload();
                                 if(!file.ok && file.errorMessage) {
                                     Alert.alert(
@@ -779,12 +795,32 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     )
                                 }
 
+                                const filesCopy = files;
+                                if(filesCopy && !filesCopy[filesCopy.length - 1]?.ok) {
+                                    filesCopy.pop();
+                                }
+
+                                if(!file.ok && !file.errorMessage) {
+                                    return;
+                                }
+
                                 setFiles([
-                                    ...(files ?? []),
+                                    ...(filesCopy ?? []),
                                     file
                                 ])
+                            }} style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: 5,
+
+                                padding: 3.2,
+                                borderRadius: 5,
+
+                                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.01),
+                                borderColor: (files && files.length >= 1 && !files[files.length-1].ok) ? theme.RED : theme.DARK,
+                                borderWidth: 1,
                             }}>
-                                <PaperClipIcon color={(files && files.length >= 1 && !files[files.length-1].ok) ? theme.RED : "rgb(0,122,255)"} />
+                                <LinkIcon size={20} color={(files && files.length >= 1 && !files[files.length-1].ok) ? theme.RED : theme.LIGHT} />
                             </TouchableOpacity>
                         </View>
 
@@ -845,6 +881,8 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                         if (title != null && content != null && recipients.length != 0 && gym != null) {
                             setSendingMessage(true);
                             sendMessage(title, recipients, content ?? "", gym?.gymNummer, files ?? [], (messageId: string | null) => {
+                                const now = new Date();
+
                                 setSendingMessage(false);
                                 handleCloseModalPress();
 
@@ -853,7 +891,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     return (
                                         [...(prev ?? []),
                                         {
-                                            editDate: null,
+                                            editDate: "i dag, " + now.getHours() + ":" + now.getMinutes(),
                                             sender: profile == null ? "Ukendt" : profile.name,
                                             title: title,
                                             unread: false,
@@ -898,8 +936,6 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                             keyboardDismissMode={"none"}
                         >
                             {filteredPeople.map((person: Person, i: number) => {
-                                const uri = SCRAPE_URLS(gym?.gymNummer, person.billedeId).PICTURE_HIGHQUALITY;
-
                                 return (
                                     <TouchableWithoutFeedback
                                         onPress={() => {

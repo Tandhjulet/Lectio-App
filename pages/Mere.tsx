@@ -21,6 +21,7 @@ import * as MailComposer from 'expo-mail-composer';
 import { EnvelopeIcon, WrenchScrewdriverIcon } from "react-native-heroicons/solid";
 import * as WebBrowser from 'expo-web-browser';
 import Subscription from "../components/Subscription";
+import Constants from "expo-constants";
 
 export default function Mere({ navigation }: {navigation: any}) {
     const { subscriptionState, dispatchSubscription } = useContext(SubscriptionContext);
@@ -106,60 +107,32 @@ export default function Mere({ navigation }: {navigation: any}) {
     return (
     <GestureHandlerRootView>
         <BottomSheetModalProvider>
-            <View style={{minHeight: '100%',minWidth:'100%'}}>
+            <View style={{
+                minHeight: '100%',
+                minWidth:'100%',
 
+                marginTop: Constants.statusBarHeight + 10,
+            }}>
                 <ScrollView contentContainerStyle={{
                     backgroundColor: theme.BLACK,
                     paddingBottom: 20,
                 }}>
+
+                    <Text style={{
+                        textAlign: "center",
+                        color: theme.WHITE,
+
+                        fontSize: 17.5,
+                        letterSpacing: 0.7,
+                        fontWeight: "500",
+                    }}>
+                        Yderligere indstillinger
+                    </Text>
+
                     <TableView style={{
                         paddingHorizontal: 20,
                     }}>
-                        <Section header={"INFORMATION"} roundedCorners={true} hideSurroundingSeparators={true} >
-                            <Cell
-                                cellStyle="Basic"
-                                title="Fravær"
-                                titleTextColor={theme.WHITE}
-                                image={
-                                    <BellSnoozeIcon color={theme.ACCENT} style={{
-                                        opacity: 0.85,
-                                    }}  />
-                                }
-                                accessory="DisclosureIndicator"
-                                onPress={() => {
-                                    navigation.navigate("Absence")
-                                }}
-                            />
-
-                            <Cell
-                                cellStyle="Basic"
-                                title="Afleveringer"
-                                titleTextColor={theme.WHITE}
-                                image={
-                                    <ClockIcon color={theme.ACCENT} style={{
-                                        opacity: 0.85,
-                                    }}  />
-                                }
-                                accessory="DisclosureIndicator"
-                                onPress={() => {
-                                    navigation.navigate("Afleveringer")
-                                }}
-                            />
-
-                            <Cell
-                                cellStyle="Basic"
-                                title="Lærere og elever"
-                                titleTextColor={theme.WHITE}
-                                image={
-                                    <UsersIcon color={theme.ACCENT} style={{
-                                        opacity: 0.85,
-                                    }}  />
-                                }
-                                accessory="DisclosureIndicator"
-                                onPress={() => {
-                                    navigation.navigate("TeachersAndStudents")
-                                }}
-                            />
+                        <Section header="INFORMATION" roundedCorners={true} hideSurroundingSeparators={true} hideSeparator>
 
                             <Cell
                                 cellStyle="Basic"
@@ -171,8 +144,13 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     }}  />
                                 }
                                 accessory="DisclosureIndicator"
+                                accessoryColorDisclosureIndicator={theme.WHITE}
                                 onPress={() => {
                                     navigation.navigate("ModulRegnskab")
+                                }}
+
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
                                 }}
                             />
 
@@ -186,6 +164,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     }} />
                                 }
                                 accessory="DisclosureIndicator"
+                                accessoryColorDisclosureIndicator={theme.WHITE}
                                 onPress={() => {
                                     // @ts-ignore
                                     if(!subscriptionState?.hasSubscription) {
@@ -194,6 +173,10 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     }
 
                                     navigation.navigate("Grades")
+                                }}
+
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
                                 }}
                             />
                             
@@ -207,6 +190,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     }}  />
                                 }
                                 accessory="DisclosureIndicator"
+                                accessoryColorDisclosureIndicator={theme.WHITE}
                                 onPress={() => {
                                     // @ts-ignore
                                     if(!subscriptionState?.hasSubscription) {
@@ -215,6 +199,10 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     }
 
                                     navigation.navigate("Dokumenter")
+                                }}
+
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
                                 }}
                             />
 
@@ -228,6 +216,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     }}  />
                                 }
                                 accessory="DisclosureIndicator"
+                                accessoryColorDisclosureIndicator={theme.WHITE}
                                 isDisabled
                             /> */}
 
@@ -241,6 +230,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     }}  />
                                 }
                                 accessory="DisclosureIndicator"
+                                accessoryColorDisclosureIndicator={theme.WHITE}
                                 onPress={() => {
                                     // @ts-ignore
                                     if(!subscriptionState?.hasSubscription) {
@@ -250,10 +240,75 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                                     navigation.navigate("Books")
                                 }}
-                            />  
+                                
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
+                                }}
+                            />
+
+                            <Cell
+                                cellStyle="Basic"
+                                title="Fravær"
+                                
+                                titleTextColor={theme.WHITE}
+                                image={
+                                    <BellSnoozeIcon color={theme.ACCENT} style={{
+                                        opacity: 0.85,
+                                    }}  />
+                                }
+                                accessory="DisclosureIndicator"
+                                accessoryColorDisclosureIndicator={theme.WHITE}
+                                onPress={() => {
+                                    navigation.navigate("Absence")
+                                }}
+
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
+                                }}
+                            />
+
+                            <Cell
+                                cellStyle="Basic"
+                                title="Afleveringer"
+                                titleTextColor={theme.WHITE}
+                                image={
+                                    <ClockIcon color={theme.ACCENT} style={{
+                                        opacity: 0.85,
+                                    }}  />
+                                }
+                                accessory="DisclosureIndicator"
+                                accessoryColorDisclosureIndicator={theme.WHITE}
+                                onPress={() => {
+                                    navigation.navigate("Afleveringer")
+                                }}
+
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
+                                }}
+                            />
+
+                            <Cell
+                                cellStyle="Basic"
+                                title="Lærere og elever"
+                                titleTextColor={theme.WHITE}
+                                image={
+                                    <UsersIcon color={theme.ACCENT} style={{
+                                        opacity: 0.85,
+                                    }}  />
+                                }
+                                accessory="DisclosureIndicator"
+                                accessoryColorDisclosureIndicator={theme.WHITE}
+                                onPress={() => {
+                                    navigation.navigate("TeachersAndStudents")
+                                }}
+
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
+                                }}
+                            />
                         </Section>
 
-                        <Section hideSurroundingSeparators roundedCorners>
+                        <Section header="IDENTIFIKATION" hideSurroundingSeparators roundedCorners>
                             <Cell
                                 cellStyle="Basic"
                                 title="Studiekort"
@@ -264,13 +319,18 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     }}  />
                                 }
                                 accessory="DisclosureIndicator"
+                                accessoryColorDisclosureIndicator={theme.WHITE}
                                 onPress={() => {
                                     navigation.navigate("Studiekort")
+                                }}
+
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
                                 }}
                             />  
                         </Section>
 
-                        <Section header={"ABONNEMENT"} roundedCorners={true} hideSurroundingSeparators={true} >
+                        <Section header={"ADGANG"} roundedCorners={true} hideSurroundingSeparators={true} hideSeparator>
                             <Cell
                                 cellStyle={"Subtitle"}
 
@@ -301,6 +361,10 @@ export default function Mere({ navigation }: {navigation: any}) {
                                         <CheckCircleIcon color={theme.ACCENT} />
                                     </View>
                                 ))}
+
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
+                                }}
                             />
                             
                             <Cell 
@@ -329,6 +393,10 @@ export default function Mere({ navigation }: {navigation: any}) {
                                         })
                                     }
                                 }}
+
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
+                                }}
                             />
 
                             <Cell 
@@ -344,10 +412,14 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 onPress={() => {
                                     setLoadingSubscription(true);
                                 }}
+
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
+                                }}
                             />
                         </Section>
 
-                        <Section header={"KONTROLPANEL"} roundedCorners={true} hideSurroundingSeparators={true}>
+                        <Section header={"KONTROLPANEL"} roundedCorners={true} hideSurroundingSeparators={true} hideSeparator>
                             <Cell
                                 cellStyle="Basic"
                                 title={"Profil"}
@@ -357,6 +429,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     fontWeight: "500",
                                 }}
                                 accessory="DisclosureIndicator"
+                                accessoryColorDisclosureIndicator={theme.WHITE}
 
                                 image={
                                     <WrenchScrewdriverIcon color={hexToRgb(theme.WHITE.toString(), 0.3)} />
@@ -364,6 +437,11 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                                 onPress={() => {
                                     navigation.navigate("UserSettings")
+                                }}
+
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
+                                    zIndex: 5,
                                 }}
                             />
 
@@ -376,6 +454,12 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     fontWeight: "500",
                                 }}
                                 accessory="DisclosureIndicator"
+                                accessoryColorDisclosureIndicator={theme.WHITE}
+
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
+                                    zIndex: 5,
+                                }}
 
                                 image={
                                     <EnvelopeIcon color={hexToRgb(theme.WHITE.toString(), 0.3)} />
@@ -405,7 +489,8 @@ For at kunne hjælpe dig har vi brug for lidt information:
                         </Section>
 
                         <View style={{
-                            paddingBottom: 89,
+                            height: 150 + Constants.statusBarHeight,
+                            width: "100%",
                         }} />
                     </TableView>
                 </ScrollView>
