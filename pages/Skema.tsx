@@ -845,7 +845,7 @@ export default function Skema({ navigation, route }: {
                                                         width: StyleSheet.hairlineWidth,
                                                         marginVertical: 5,
 
-                                                        backgroundColor: isDayBeforeSelectedDay || isSelectedDay ? "#00c972" : hexToRgb(theme.WHITE.toString(), 0.5),
+                                                        backgroundColor: isDayBeforeSelectedDay || isSelectedDay ? hexToRgb("#00c972", 0.6) : hexToRgb(theme.WHITE.toString(), 0.5),
                                                     }} />
                                                 )}
                                             </React.Fragment>
@@ -941,14 +941,18 @@ export default function Skema({ navigation, route }: {
 
                                     gap: 5,
                                 }}>
-                                    <Logo size={60} />
+                                    <Logo size={60} color={hexToRgb(theme.ACCENT.toString(), 0.5)} />
+                                    <Text style={{
+                                        fontSize: 20,
+                                        color: hexToRgb(theme.LIGHT.toString(), 1),
+                                    }}>
+                                        Du har ingen moduler!
+                                    </Text>
                                     <Text style={{
                                         color: theme.WHITE,
                                         textAlign: 'center'
                                     }}>
-                                        Du har ingen moduler.
-                                        {"\n"}
-                                        Nyd din dag!
+                                        Ha' en god dag!
                                     </Text>
                                 </View>
                             )

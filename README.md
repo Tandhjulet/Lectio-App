@@ -12,6 +12,9 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 - fraværsregistreringer (årsagsvælger) 
 - dokumenter (ikoner/layout/tidspunkter i anden format)
 - "NoAccess"-side
+- message thread
+- bøger
+- karakterer
 - ny slutbrugerlicensaftale
 - ny privatlivspolitik
 - ny hjemmeside

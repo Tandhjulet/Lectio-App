@@ -163,7 +163,7 @@ export default function Subscription({
             ref={bottomSheetModalRef}
             index={0}
 
-            bottomInset={89}
+            bottomInset={146}
             enableOverDrag
 
             backgroundStyle={{
@@ -228,7 +228,7 @@ export default function Subscription({
                             fontWeight: "bold",
                         }}>
                             ubegrænset adgang
-                        </Text>*
+                        </Text>
                         {" "}til Lectio 360!
                     </Text>
 
@@ -307,16 +307,10 @@ export default function Subscription({
                         />
                     </View>
                 </View>
-                <Text style={{
-                    marginVertical: 10,
-
-                    fontSize: 10,
-
-                    color: hexToRgb(theme.WHITE.toString(), 0.7),
-                    textAlign: "center",
-                }}>
-                    * På nuværende tidspunkt har du {"\n"} allerede ubegrænset adgang til appen.
-                </Text>
+                
+                <View style={{
+                    margin: 10,
+                }} />
             </BottomSheetScrollView>
         </BottomSheetModal>
     )

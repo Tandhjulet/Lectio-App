@@ -118,17 +118,6 @@ export default function Mere({ navigation }: {navigation: any}) {
                     paddingBottom: 20,
                 }}>
 
-                    <Text style={{
-                        textAlign: "center",
-                        color: theme.WHITE,
-
-                        fontSize: 17.5,
-                        letterSpacing: 0.7,
-                        fontWeight: "500",
-                    }}>
-                        Yderligere indstillinger
-                    </Text>
-
                     <TableView style={{
                         paddingHorizontal: 20,
                     }}>
@@ -366,7 +355,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                     paddingVertical: 5,
                                 }}
                             />
-                            
+
                             <Cell 
                                 cellStyle="Basic"
                                 // @ts-ignore
@@ -374,7 +363,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 titleTextColor={theme.ACCENT}
 
                                 image={
-                                    <AdjustmentsVerticalIcon color={theme.ACCENT} style={{
+                                    <AdjustmentsVerticalIcon color={hexToRgb(theme.ACCENT.toString(), 1)} style={{
                                         opacity: 0.85,
                                     }}  />
                                 }
@@ -402,10 +391,10 @@ export default function Mere({ navigation }: {navigation: any}) {
                             <Cell 
                                 cellStyle="Basic"
                                 title="Genindlæs adgang"
-                                titleTextColor={theme.ACCENT}
+                                titleTextColor={theme.WHITE}
                                 
                                 image={
-                                    <ArrowPathIcon color={theme.ACCENT} style={{
+                                    <ArrowPathIcon color={hexToRgb(theme.WHITE.toString(), 0.3)} style={{
                                         opacity: 0.85,
                                     }}  />
                                 }
