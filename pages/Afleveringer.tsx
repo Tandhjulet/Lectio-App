@@ -540,7 +540,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
                     backgroundColor: hexToRgb(theme.WHITE.toString(), 0.05),
                     paddingHorizontal: 15,
-                    height: 70,
+                    height: 75,
     
                     width: "100%",
                 }}>
@@ -556,8 +556,9 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                     >
                         <View
                             style={{
+                                height: "100%",
                                 display: "flex",
-                                flexDirection: "row"
+                                flexDirection: "row",
                             }}
                         >
                             <View style={{
@@ -581,7 +582,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                 flexDirection: "column",
     
                                 gap: 4,
-                                marginVertical: 5,
+                                marginVertical: 8,
                                 maxWidth: "80%",
                             }}>
                                 <Text 
