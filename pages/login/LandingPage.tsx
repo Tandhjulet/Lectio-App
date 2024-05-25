@@ -7,7 +7,7 @@ import BackgroundSVG from "../../components/BackgroundSVG";
 import Constants from 'expo-constants';
 import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 
-const BannerItem = memo(function({
+export const BannerItem = memo(function({
     title,
     description,
     theme,

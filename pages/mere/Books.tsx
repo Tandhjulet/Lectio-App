@@ -5,7 +5,7 @@ import { secureGet } from "../../modules/api/Authentication";
 import { Book } from "../../modules/api/scraper/BookScraper";
 import { hexToRgb, themes } from "../../modules/Themes";
 import * as Progress from 'react-native-progress';
-import { ShieldExclamationIcon, SwatchIcon } from "react-native-heroicons/outline";
+import { ExclamationTriangleIcon, ShieldExclamationIcon, SwatchIcon } from "react-native-heroicons/outline";
 
 export default function Books() {
     const [books, setBooks] = useState<Book[]>();
@@ -105,7 +105,7 @@ export default function Books() {
                     if(diff < 0.66) {
                         Icon = SwatchIcon
                     } else {
-                        Icon = ShieldExclamationIcon
+                        Icon = ExclamationTriangleIcon
                     }
 
                     return (
@@ -195,13 +195,13 @@ export default function Books() {
                                         </Text>
 
                                         <Text style={{
-                                            color: hexToRgb(theme.WHITE.toString(), 0.3),
+                                            color: hexToRgb(theme.WHITE.toString(), 0.6),
                                             fontWeight: "400",
                                             marginTop: 3,
                                         }}>
                                             Udlånt: <Text style={{
                                                 fontWeight: "500",
-                                                color: hexToRgb(theme.WHITE.toString(), 0.4),
+                                                color: hexToRgb(theme.WHITE.toString(), 0.8),
                                             }}>{book.udlånt}</Text>
                                         </Text>
                                     </View>

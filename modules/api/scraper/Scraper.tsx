@@ -145,6 +145,14 @@ export interface Studiekort {
     qrcodeurl: string,
 }
 
+function tryScrape(pred: () => string) {
+    try {
+        return pred();
+    } catch {
+        return "?";
+    }
+}
+
 export async function scrapeStudiekort(gymNummer: string): Promise<Studiekort> {
     const res = await fetch(SCRAPE_URLS(gymNummer).STUDIEKORT, {
         method: "GET",
@@ -172,10 +180,10 @@ export async function scrapeStudiekort(gymNummer: string): Promise<Studiekort> {
 
     const parser = await treat(res);
 
-    const birthdate = parser.getElementById("s_m_Content_Content_StudentBirthday").firstChild.text.replace("Fødselsdag: ", "").replace(/ \(.*$/, "");
-    const pictureurl = parser.getElementById("s_m_Content_Content_StudPic").attributes.src;
-    const name = parser.getElementById("s_m_Content_Content_StudentName").firstChild.text;
-    const school = parser.getElementById("s_m_Content_Content_SchoolName").firstChild.text;
+    const birthdate = tryScrape(() => parser.getElementById("s_m_Content_Content_StudentBirthday").firstChild.text.replace("Fødselsdag: ", "").replace(/ \(.*$/, ""));
+    const pictureurl = tryScrape(() => parser.getElementById("s_m_Content_Content_StudPic").attributes.src);
+    const name = tryScrape(() => parser.getElementById("s_m_Content_Content_StudentName").firstChild.text);
+    const school = tryScrape(() => parser.getElementById("s_m_Content_Content_SchoolName").firstChild.text);
 
     return {
         name,
