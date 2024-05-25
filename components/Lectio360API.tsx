@@ -44,7 +44,9 @@ export default async function receiptValid(receipt: string): Promise<boolean> {
 
 export async function hasSubscription(save: boolean = true): Promise<ValidationResponse> {
     return {
-        valid: false,
+        valid: true,
+        endDate: new Date(),
+        freeTrial: true,
     };
 
     // const profile = await getProfile();
