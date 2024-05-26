@@ -5,7 +5,7 @@ import { secureGet } from "../../modules/api/Authentication";
 import { Book } from "../../modules/api/scraper/BookScraper";
 import { hexToRgb, themes } from "../../modules/Themes";
 import * as Progress from 'react-native-progress';
-import { ExclamationTriangleIcon, ShieldExclamationIcon, SwatchIcon } from "react-native-heroicons/outline";
+import { BookmarkIcon, BookOpenIcon, ExclamationTriangleIcon, SwatchIcon } from "react-native-heroicons/outline";
 
 export default function Books() {
     const [books, setBooks] = useState<Book[]>();
@@ -103,7 +103,7 @@ export default function Books() {
 
                     let Icon;
                     if(diff < 0.66) {
-                        Icon = SwatchIcon
+                        Icon = BookOpenIcon
                     } else {
                         Icon = ExclamationTriangleIcon
                     }

@@ -84,13 +84,15 @@ export async function extractDataFromTable(table: any, className: string): Promi
         const navn = fornavn + " " + efternavn;
         const fullID = replaceHTMLEntities(navn + " (" + trElement.children[2].firstChild.firstChild.text + ")");
 
+        const initials = type === "LÆRER" ? replaceHTMLEntities(trElement.children[2].firstChild.firstChild.text) : className
+
         out[navn] = {
             billedeId: id,
             navn: navn,
             rawName: fullID,
             type: type,
             personId: personId,
-            klasse: className,
+            klasse: initials,
         };
     })
 

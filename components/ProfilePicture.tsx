@@ -11,20 +11,24 @@ export default function ProfilePicture({
     size,
     navn,
     noContextMenu = false,
+    borderRadius = true,
+    big = false,
 }: {
     gymNummer: string,
     billedeId: string,
     size: number,
     navn: string,
     noContextMenu?: boolean,
+    borderRadius?: boolean,
+    big?: boolean,
 }) {
     if(noContextMenu || isExpoGo) {
         return  (
             <Image
                 style={{
-                    borderRadius: size * 2,
-                    width: size,
-                    height: size,
+                    borderRadius: borderRadius ? 999 : 0,
+                    width: big ? 3/4 * (size * 6) : size,
+                    height: big ? size * 6 : size,
                 }}
                 source={{
                     uri: SCRAPE_URLS(gymNummer, billedeId).PICTURE_HIGHQUALITY,

@@ -12,71 +12,12 @@ import ProfilePicture from "../../components/ProfilePicture";
 import 'react-native-console-time-polyfill';
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import UserCell from "../../components/UserCell";
 
 export default function TeachersAndStudents() {
     const navigation = useNavigation<StackNavigationProp<any>>();
 
-    const UserCell = memo(function UserCell({ item, gym, theme, navigation }: {
-        item: Person,
-        gym: any,
-        theme: Theme,
-        navigation: StackNavigationProp<any>,
-    }) {
-        return (
-            <>
-                <TouchableOpacity style={{
-                    paddingHorizontal: 20,
-                    paddingVertical: 15,
-                    
-                    backgroundColor: theme.BLACK,
-    
-                    display: 'flex',
-                    gap: 10,
-                    flexDirection: "row",
-    
-                    alignItems: "center",
-                }} onPress={() => {
-                    navigation.push("Skemaoversigt", {
-                        user: item,
-                    })
-                }}>
-                    <ProfilePicture gymNummer={gym?.gymNummer ?? ""} billedeId={item.billedeId ?? ""} size={40} navn={item.navn} />
-    
-                    <View style={{
-                        display: "flex",
-                        flexDirection: "column",
-    
-                        gap: 5,
-                    }}>
-                        <Text style={{
-                            color: theme.WHITE,
-                            fontWeight: "bold",
-                        }}>
-                            {item.navn}
-                        </Text>
-    
-                        <Text style={{
-                            color: theme.WHITE,
-                        }}>
-                            {item.klasse}
-                        </Text>
-                    </View>
-                </TouchableOpacity>
-    
-                <View style={{
-                    marginHorizontal: 15,
-                }}>
-                    <View style={{
-                        backgroundColor: theme.WHITE,
-                        width: "100%",
-                        height: StyleSheet.hairlineWidth,
-    
-                        opacity: 0.2,
-                    }} />
-                </View>
-            </>
-        )
-    })
+    const { Cell } = UserCell();
 
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -188,13 +129,13 @@ export default function TeachersAndStudents() {
     }) => {
         const user = item.split(":")[0];
 
-        return <UserCell item={rawPeople[user]} gym={gym} theme={theme} navigation={navigation} />
+        return <Cell item={rawPeople[user]} gym={gym} theme={theme} navigation={navigation} />
     }, [rawPeople]);
 
     const renderItemSectionList = useCallback(({ item, index }: {
         item: Person,
         index: number,
-    }) => <UserCell item={item} gym={gym} theme={theme} navigation={navigation} />, []);
+    }) => <Cell item={item} gym={gym} theme={theme} navigation={navigation} />, []);
 
     return (
         <View style={{height: '100%',width:'100%'}}>
