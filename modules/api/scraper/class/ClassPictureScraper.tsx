@@ -52,7 +52,7 @@ export async function scrapeStudentPictures(classId: string, className: string, 
     return out;
 }
 
-export async function extractDataFromTable(table: any, className: string): Promise<{ [id: string]: Person }> {
+export async function extractDataFromTable(table: any, className?: string): Promise<{ [id: string]: Person }> {
     const out: { [id: string]: Person } = {};
 
     table.children.forEach((trElement: any, index: number) => {
@@ -84,7 +84,9 @@ export async function extractDataFromTable(table: any, className: string): Promi
         const navn = fornavn + " " + efternavn;
         const fullID = replaceHTMLEntities(navn + " (" + trElement.children[2].firstChild.firstChild.text + ")");
 
-        const initials = type === "LÆRER" ? replaceHTMLEntities(trElement.children[2].firstChild.firstChild.text) : className
+        let elevInitials: string[] = replaceHTMLEntities(trElement.children[2].firstChild.firstChild.text).split(" ")
+        elevInitials.pop();
+        const initials = type === "LÆRER" ? replaceHTMLEntities(trElement.children[2].firstChild.firstChild.text) : (className ?? elevInitials.join(" "))
 
         out[navn] = {
             billedeId: id,

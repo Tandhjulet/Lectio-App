@@ -10,7 +10,7 @@ export async function holdScraper(parser: any) {
     if(table == null)
         return null;
     
-    const out = await extractDataFromTable(table, "");
+    const out = await extractDataFromTable(table);
     return out;
 }
 

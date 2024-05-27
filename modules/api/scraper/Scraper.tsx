@@ -390,8 +390,11 @@ export async function getProfile(): Promise<Profile> {
 
 // end of stupidity.
 
-export async function getSkema(gymNummer: string, date: Date, id?: string): Promise<{ payload: Week | null, rateLimited: boolean }> {
-    const res = await fetch(SCRAPE_URLS(gymNummer).SKEMA + (id !== undefined ? "?elevid="+id+"&" : "?") + `week=${getWeekNumber(date).toString().padStart(2, "0")}${date.getFullYear()}`, {
+export async function getSkema(gymNummer: string, date: Date, person?: Person): Promise<{ payload: Week | null, rateLimited: boolean }> {
+    const id = person?.personId;
+    const url = SCRAPE_URLS(gymNummer).SKEMA + (id !== undefined ? `?${person?.type === "ELEV" ? "elevid" : "laererid"}=`+id+"&" : "?") + `week=${getWeekNumber(date).toString().padStart(2, "0")}${date.getFullYear()}`;
+
+    const res = await fetch(url, {
         method: "GET",
         credentials: 'include',
         headers: {

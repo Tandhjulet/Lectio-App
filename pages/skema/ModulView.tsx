@@ -13,7 +13,8 @@ import { CLEAN_NAME } from "../beskeder/BeskedView";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { UserIcon } from "react-native-heroicons/solid";
 import { SCHEMA_SEP_CHAR } from "../../modules/Config";
-import ProfilePicture from "../../components/ProfilePicture";
+import UserCell from "../../components/UserCell";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 /**
  * 
@@ -29,7 +30,7 @@ const getStatus = (modul: Modul) => {
 }
 
 export default function ModulView({ navigation, route }: {
-    navigation: NavigationProp<any>,
+    navigation: StackNavigationProp<any>,
     route: RouteProp<any>
 }) {
     const modul: Modul = route.params?.modul;
@@ -39,6 +40,8 @@ export default function ModulView({ navigation, route }: {
 
     const [loading, setLoading] = useState<boolean>(true)
     const [refreshing, setRefreshing] = useState<boolean>(false);
+
+    const UCell = UserCell().Cell;
 
     /**
      * Fetches the teacher and the students of the module on page load
@@ -253,33 +256,21 @@ export default function ModulView({ navigation, route }: {
                     )}
 
                     {loading ?
-                        <ActivityIndicator size={"small"} color={theme.WHITE} />
+                        <ActivityIndicator size={"small"} color={theme.WHITE} style={{
+                            paddingTop: 20,
+                        }} />
                     :
                         <>
                             {Object.keys(members).length > 0 &&
                                 <Section header="MEDLEMMER" roundedCorners={true} hideSurroundingSeparators={true}>
-                                    {Object.keys(members).map((navn: string, index: number) => {
-                                        return (
-                                            <Cell 
-                                                key={index}
-                                                cellStyle="Subtitle"
-
-                                                title={navn}
-                                                detail={members[navn] == null ? "?" : members[navn].type}
-
-                                                subtitleTextStyle={{
-                                                    textTransform: "capitalize"
-                                                }}
-
-                                                cellImageView={
-                                                    <View style={{
-                                                        marginRight: 10,
-                                                    }}>
-                                                        <ProfilePicture gymNummer={gym?.gymNummer ?? ""} billedeId={members[navn].billedeId ?? ""} size={35} navn={navn} />
-                                                    </View>
-                                                }
-                                            />)
-                                    })}
+                                    {Object.values(members).map((person: Person, index: number) => (
+                                        <Cell
+                                            key={index}
+                                            cellContentView={(
+                                                <UCell item={person} gym={gym} navigation={navigation} theme={theme} />
+                                            )}
+                                        />
+                                    ))}
                                 </Section>
                             }
                         </>

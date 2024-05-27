@@ -245,7 +245,7 @@ export default function Skema({ navigation, route }: {
             setDaysOfThreeWeeks([...getDaysOfThreeWeeks(loadDate)])
 
             setProfile(profile);
-            getSkema(gymNummer, loadDate, route?.params?.user?.personId).then(({ payload, rateLimited }) => {
+            getSkema(gymNummer, loadDate, route?.params?.user).then(({ payload, rateLimited }) => {
                 if(!rateLimited && payload != null) {
                     setSkema([...payload.days]);
                     setModulTimings([...payload.modul]);
@@ -279,7 +279,7 @@ export default function Skema({ navigation, route }: {
         
         (async () => {
             const gymNummer = (await secureGet("gym")).gymNummer;
-            getSkema(gymNummer, loadDate, route?.params?.user?.personId).then(({ payload, rateLimited }) => {
+            getSkema(gymNummer, loadDate, route?.params?.user).then(({ payload, rateLimited }) => {
                 if(!rateLimited && payload != null) {
                     setSkema([...payload.days]);
                     setModulTimings([...payload.modul]);
@@ -566,15 +566,15 @@ export default function Skema({ navigation, route }: {
                     display: "flex",
                     flexDirection: "row",
 
-                    zIndex: 1,
+                    zIndex: 10,
                 }}
             >
                 <View style={{
-                    height: 1,
+                    height: StyleSheet.hairlineWidth,
                     width: width - 30 - 10 - 15,
                     backgroundColor: "#ff5e5e",
                     opacity: 0.8,
-                    zIndex: 1,
+                    zIndex: 10,
                 }} />
                 
 

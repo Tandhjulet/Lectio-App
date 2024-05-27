@@ -135,7 +135,9 @@ export default function TeachersAndStudents() {
     const renderItemSectionList = useCallback(({ item, index }: {
         item: Person,
         index: number,
-    }) => <Cell item={item} gym={gym} theme={theme} navigation={navigation} />, []);
+    }) => <Cell item={item} gym={gym} theme={theme} navigation={navigation} style={{
+        paddingLeft: 15,
+    }} />, []);
 
     return (
         <View style={{height: '100%',width:'100%'}}>
@@ -159,7 +161,7 @@ export default function TeachersAndStudents() {
                     }} />
 
                     <TableView style={{
-                        paddingHorizontal: 5,
+                        paddingLeft: 5,
                     }}>   
                         {people == null ? 
 
@@ -193,7 +195,11 @@ export default function TeachersAndStudents() {
                                             data={filteredNamelist}
                                             renderItem={renderItem}
                                             keyExtractor={(item, index) => item + index}
-                                            contentContainerStyle={{ paddingBottom: 137 + 70 }}
+                                            contentContainerStyle={{
+                                                paddingBottom: 137 + 70,
+                                                paddingRight: 5,
+                                                paddingLeft: 5,
+                                            }}
 
                                             getItemLayout={(data, index) => {
                                                 return {length: 70 + StyleSheet.hairlineWidth, offset: index * (70 + StyleSheet.hairlineWidth), index: index}
@@ -248,7 +254,11 @@ export default function TeachersAndStudents() {
                                                 return {length: 70 + StyleSheet.hairlineWidth, offset: index * (70 + StyleSheet.hairlineWidth), index: index}
                                             }}
 
-                                            contentContainerStyle={{ paddingBottom: 137 + 70 }}
+                                            contentContainerStyle={{
+                                                paddingBottom: 137 + 70,
+                                                paddingRight: 5,
+                                                paddingLeft: 5,
+                                            }}
 
                                             stickySectionHeadersEnabled
                                             directionalLockEnabled={true}

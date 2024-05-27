@@ -32,8 +32,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 - spørgeskemaer
 - aflevere filer
 - lazy loading på profilbilleder
-- custom user cell der bruges globalt på platformen
-
 
 ### __KENDTE FEJL__
 - login med forkerte logindetaljer gr igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)
