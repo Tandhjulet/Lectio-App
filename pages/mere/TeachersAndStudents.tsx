@@ -263,8 +263,8 @@ export default function TeachersAndStudents() {
                                             stickySectionHeadersEnabled
                                             directionalLockEnabled={true}
 
-                                            maxToRenderPerBatch={1}
-                                            initialNumToRender={8}
+                                            maxToRenderPerBatch={5}
+                                            initialNumToRender={20}
 
                                             keyboardDismissMode="on-drag"
                                             keyboardShouldPersistTaps="always"

@@ -8,7 +8,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 ## NEEDED FOR RELAUNCH
 - aktivitet info
 - opgavebeskrivelse
-- fraværsoversigt
 - fraværsregistreringer (årsagsvælger) 
 - karakterer
 

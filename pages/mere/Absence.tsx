@@ -38,7 +38,7 @@ type ChartedAbsence = {
     },
 }
 
-const pieColors = ["#fc5353", "#fc8653", "#fcca53", "#57cf4c", "#00c972", "#78d6ff", "#009ac9", "#9578ff", "#ff78fd"];
+const pieColors = ["#57cf4c", "#00c972", "#78d6ff", "#009ac9", "#9578ff", "#ff78fd", "#fc5353", "#fc8653", "#fcca53"];
 
 const fraværColors = ["#fc5353", "#9578ff", "#fcca53", "#00c972", "#78d6ff", "#ff78fd"];
 const fraværIndexes = ["ikke angivet", "andet", "kom for sent", "skolerelaterede aktiviteter", "private forhold", "sygdom"];
@@ -317,8 +317,6 @@ export default function Absence({ navigation }: { navigation: any }) {
         })();
     }, [refreshing]);
 
-    const radius = useRef(110).current;
-
     const onRefresh = useCallback(() => {
         setRefreshing(true);
     }, []);
@@ -396,13 +394,13 @@ export default function Absence({ navigation }: { navigation: any }) {
 
     const { subscriptionState } = useContext(SubscriptionContext);
 
-    const treatNumber = useCallback((num: number | undefined) => {
+    const treatNumber = useCallback((num: number | undefined, dec?: number) => {
         if(num === undefined)
             return 0;
 
         return num.toLocaleString("da-DK", {
             style: "decimal",
-            maximumFractionDigits: 2,
+            maximumFractionDigits: dec ?? 2,
         })
     }, []);
 
@@ -752,360 +750,344 @@ export default function Absence({ navigation }: { navigation: any }) {
                                         paddingTop: 15,
                                     }}>
                                         <View style={{
-                                            display: 'flex',
+                                            flexDirection: "column",
                                         }}>
                                             <View style={{
-                                                display: "flex",
-                                                gap: 5,
+                                                borderBottomColor: hexToRgb(theme.WHITE.toString(), 0.3),
+                                                borderBottomWidth: StyleSheet.hairlineWidth,
+                                                marginBottom: 12.5,
+                                                paddingBottom: 5,
                                             }}>
                                                 <Text style={{
-                                                    color: theme.WHITE,
-                                                    fontSize: 20,
-                                                    fontWeight: "bold",
+                                                    fontSize: 12.5,
+                                                    letterSpacing: 0.7,
+                                                    fontWeight: "900",
+
+                                                    color: hexToRgb(theme.WHITE.toString(), 0.7),
                                                 }}>
-                                                    Almindeligt fravær
+                                                    Normalt fravær
                                                 </Text>
+                                            </View>
 
+                                            {chartedAbsence?.almindeligt?.absent && chartedAbsence?.almindeligt?.absent > 0 && (
                                                 <View style={{
-                                                    width: "100%",
-                                                    
-                                                    borderBottomColor: theme.WHITE,
-                                                    borderBottomWidth: 1,
-                                                }} />
-
-                                                <View style={{
-                                                    display: 'flex',
-                                                    justifyContent: 'center',
-                                                    alignItems: 'center',
-
-                                                    gap: 50,
-                                                    flexDirection: "row",
-
-                                                    marginVertical: 10,
+                                                    flexDirection: "column"
                                                 }}>
                                                     <View style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
+                                                        flexDirection: "row",
                                                     }}>
-                                                        <Text style={{
-                                                            color: theme.WHITE,
-                                                        }}>
-                                                            Opgjort
-                                                        </Text>
+                                                        <View style={{
+                                                            borderRadius: 10,
+                                                            width: "60%",
+                                                            overflow: "hidden",
 
-                                                        <Text style={{
-                                                            color: theme.WHITE,
-                                                            fontWeight: "bold",
-                                                            fontSize: 35,
-                                                        }}>
-                                                            {(chartedAbsence?.almindeligt.absent != undefined && chartedAbsence?.almindeligt.settled > 0) ?
-                                                                ((chartedAbsence?.almindeligt.absent / chartedAbsence?.almindeligt.settled)*100).toFixed(2).toString().replace(".", ",")
-                                                                :
-                                                                "0,00"
-                                                                }%
-                                                        </Text>
+                                                            height: 300,
 
-                                                        <Text style={{
-                                                            color: theme.WHITE,
-                                                            opacity: 0.8,
+                                                            gap: 2,
                                                         }}>
-                                                            {treatNumber(chartedAbsence?.almindeligt.absent)} / {treatNumber(chartedAbsence?.almindeligt.settled)}
-                                                        </Text>
+                                                            {almindeligt?.map((a, i) => {
+                                                                const totalHeight = (a.absent / chartedAbsence.almindeligt.absent);
+
+                                                                return (
+                                                                    <View style={{
+                                                                        flexGrow: a.absent,
+                                                                        width: "100%",
+                                                                        backgroundColor: pieColors[i % pieColors.length],
+
+                                                                        justifyContent: "center",
+                                                                        alignItems: "center",
+                                                                    }} key={i}>
+                                                                        {totalHeight*300 > 7.5 && (
+                                                                            <Text style={{
+                                                                                color: scheme === "dark" ? "#FFF" : "#000",
+                                                                                position: "absolute"
+                                                                            }}>
+                                                                                {(totalHeight * 100).toFixed(0)}%
+                                                                            </Text>
+                                                                        )}
+                                                                    </View>
+                                                                )
+                                                            })}
+                                                        </View>
+
+                                                        <View style={{
+                                                            flexDirection: "column",
+                                                            width: "50%",
+
+                                                            marginLeft: 20,
+                                                        }}>
+                                                            {almindeligt?.map((a, i) => {
+                                                                return (
+                                                                    <View style={{
+                                                                        width: "100%",
+                                                                        alignItems: "center",
+
+                                                                        flexDirection: "row",
+                                                                    }} key={i}>
+                                                                        <View style={{
+                                                                            width: 12.5,
+                                                                            height: 12.5,
+                                                                            borderRadius: 2.5,
+                                                                            backgroundColor: pieColors[i % pieColors.length],
+                                                                        }} />
+
+                                                                        <Text style={{
+                                                                            color: theme.WHITE,
+                                                                            maxWidth: "70%",
+                                                                        }} numberOfLines={1} ellipsizeMode="tail">
+                                                                            {" "}{a.team}
+                                                                        </Text>
+                                                                    </View>
+                                                                )
+                                                            })}
+                                                        </View>
                                                     </View>
 
                                                     <View style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
+                                                        marginTop: 15,
+                                                        marginRight: 5,
+
+                                                        width: "60%",
+                                                        flexDirection: "row",
+                                                        justifyContent: "space-evenly",
                                                     }}>
-                                                        <Text style={{
-                                                            color: theme.WHITE,
+                                                        <View style={{
+                                                            alignItems: "center",
                                                         }}>
-                                                            For året
-                                                        </Text>
+                                                            <Text style={{
+                                                                color: scheme === "dark" ? "#FFF" : "#000",
+                                                                fontWeight: "600",
+                                                            }}>
+                                                                For nu
+                                                            </Text>
 
-                                                        <Text style={{
-                                                            color: theme.WHITE,
-                                                            fontWeight: "bold",
-                                                            fontSize: 35,
-                                                        }}>
-                                                            {(chartedAbsence?.almindeligt.absent != undefined && chartedAbsence?.almindeligt.yearly > 0) ?
-                                                                ((chartedAbsence?.almindeligt.absent / chartedAbsence?.almindeligt.yearly)*100).toFixed(2).toString().replace(".", ",")
-                                                                :
-                                                                "0,00"
-                                                                }%
-                                                        </Text>
+                                                            <Text style={{
+                                                                color: scheme === "dark" ? "#FFF" : "#000",
+                                                                fontWeight: "900",
 
-                                                        <Text style={{
-                                                            color: theme.WHITE,
-                                                            opacity: 0.8,
+                                                                fontSize: 15,
+                                                                marginBottom: 4,
+                                                            }}>
+                                                                {treatNumber((chartedAbsence.almindeligt.absent/chartedAbsence.almindeligt.settled)*100, 1)}%
+                                                            </Text>
+
+                                                            <Text style={{
+                                                                color: theme.WHITE,
+                                                            }}>
+                                                                {treatNumber(chartedAbsence.almindeligt.absent)}/{treatNumber(chartedAbsence.almindeligt.settled)}
+                                                            </Text>
+                                                        </View>
+
+                                                        <View style={{
+                                                            backgroundColor: theme.WHITE,
+
+                                                            height: "100%",
+                                                            width: StyleSheet.hairlineWidth,
+                                                        }} />
+
+                                                        <View style={{
+                                                            alignItems: "center",
                                                         }}>
-                                                            {treatNumber(chartedAbsence?.almindeligt.absent)} / {treatNumber(chartedAbsence?.almindeligt.yearly)}
-                                                        </Text>
+                                                            <Text style={{
+                                                                color: scheme === "dark" ? "#FFF" : "#000",
+                                                                fontWeight: "600",
+                                                            }}>
+                                                                For året
+                                                            </Text>
+
+                                                            <Text style={{
+                                                                color: scheme === "dark" ? "#FFF" : "#000",
+                                                                fontWeight: "900",
+
+                                                                fontSize: 15,
+                                                                marginBottom: 4,
+                                                            }}>
+                                                                {treatNumber((chartedAbsence.almindeligt.absent/chartedAbsence.almindeligt.yearly)*100, 1)}%
+                                                            </Text>
+
+                                                            <Text style={{
+                                                                color: theme.WHITE,
+                                                            }}>
+                                                                {treatNumber(chartedAbsence.almindeligt.absent)}/{treatNumber(chartedAbsence.almindeligt.yearly)}
+                                                            </Text>
+                                                        </View>
                                                     </View>
                                                 </View>
-
-                                                <View style={{
-                                                    width: "100%",
-                                                    
-                                                    borderBottomColor: theme.WHITE,
-                                                    borderBottomWidth: 1,
-                                                }} />
-
-                                            </View>
-
-                                    
-                                            <View style={{
-                                                display: 'flex',
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-
-                                                gap: 20,
-                                            }}>
-                                                <VictoryPie
-                                                    data={almindeligt}
-                                                    x="team"
-                                                    y="absent"
-                                                    labels={({ datum }) => {
-                                                        return ((datum.absent / (chartedAbsence?.almindeligt.absent ?? 1))*100).toFixed(1).replace(".", ",") + "%"
-                                                    }}
-                                                    colorScale={pieColors}
-                                                    labelPlacement={"parallel"}
-
-                                                    innerRadius={radius / 2}
-                                                    labelRadius={radius / 1.5}
-
-                                                    padAngle={0.5}
-
-                                                    width={radius * 2}
-                                                    height={radius * 2}
-                                                    radius={radius}
-
-                                                    style={{
-                                                        labels: {
-                                                            fill: "white",
-                                                            fontSize: 11,
-                                                            fontFamily: "Avenir-Light"
-                                                        }
-                                                    }}
-                                                />
-
-                                                <View style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    paddingVertical: 20,
-                                                }}>
-                                                    {chartedAbsence?.almindeligt.teams.map((team: string, index: number) => {
-                                                        return (
-                                                            <View style={{
-                                                                display: 'flex',
-                                                                flexDirection: 'row',
-                                                                marginVertical: 2,
-
-                                                                alignItems: 'center',
-                                                            }} key={index}>
-                                                                <View style={{
-                                                                    width: 10,
-                                                                    height: 10,
-                                                                    backgroundColor: pieColors[index % pieColors.length],
-                                                                    borderRadius: 2.5
-                                                                }} />
-                                                                <Text ellipsizeMode="tail" numberOfLines={1} style={{
-                                                                    color: theme.WHITE,
-                                                                    maxWidth: 100,
-
-                                                                    fontSize: 12,
-                                                                    lineHeight: 13,
-                                                                }}>
-                                                                    {" "}{team}
-                                                                </Text>
-                                                            </View>
-                                                        )
-                                                    })}
-                                                </View>
-                                            </View>
-                                            
+                                            )}
                                         </View>
 
                                         <View style={{
-                                            display: 'flex',
-                                            gap: 20,
+                                            flexDirection: "column",
                                         }}>
                                             <View style={{
-                                                display: "flex",
-                                                gap: 5,
+                                                borderBottomColor: hexToRgb(theme.WHITE.toString(), 0.3),
+                                                borderBottomWidth: StyleSheet.hairlineWidth,
+                                                marginBottom: 12.5,
+                                                paddingBottom: 5,
                                             }}>
                                                 <Text style={{
-                                                    color: theme.WHITE,
-                                                    fontSize: 20,
-                                                    fontWeight: "bold",
+                                                    fontSize: 12.5,
+                                                    letterSpacing: 0.7,
+                                                    fontWeight: "900",
+
+                                                    color: hexToRgb(theme.WHITE.toString(), 0.7),
                                                 }}>
                                                     Skriftligt fravær
                                                 </Text>
-
-                                                <View style={{
-                                                    width: "100%",
-                                                    
-                                                    borderBottomColor: theme.WHITE,
-                                                    borderBottomWidth: 1,
-                                                }} />
-
-                                                <View style={{
-                                                    display: 'flex',
-                                                    justifyContent: 'center',
-                                                    alignItems: 'center',
-
-                                                    gap: 50,
-                                                    flexDirection: "row",
-
-                                                    marginVertical: 10,
-                                                }}>
-                                                    <View style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                    }}>
-                                                        <Text style={{
-                                                            color: theme.WHITE,
-                                                        }}>
-                                                            Opgjort
-                                                        </Text>
-
-                                                        <Text style={{
-                                                            color: theme.WHITE,
-                                                            fontWeight: "bold",
-                                                            fontSize: 35,
-                                                        }}>
-                                                            {(chartedAbsence?.skriftligt.absent != undefined && chartedAbsence?.skriftligt.yearly > 0) ?
-                                                                ((chartedAbsence?.skriftligt.absent / chartedAbsence?.skriftligt.yearly)*100).toFixed(2).toString().replace(".", ",")
-                                                                :
-                                                                "0,00"
-                                                                }%
-                                                        </Text>
-
-                                                        <Text style={{
-                                                            color: theme.WHITE,
-                                                            opacity: 0.8,
-                                                        }}>
-                                                            {treatNumber(chartedAbsence?.skriftligt.absent)} / {treatNumber(chartedAbsence?.skriftligt.yearly)}
-                                                        </Text>
-                                                    </View>
-
-                                                    <View style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                    }}>
-                                                        <Text style={{
-                                                            color: theme.WHITE,
-                                                        }}>
-                                                            For året
-                                                        </Text>
-
-                                                        <Text style={{
-                                                            color: theme.WHITE,
-                                                            fontWeight: "bold",
-                                                            fontSize: 35,
-                                                        }}>
-                                                            {(chartedAbsence?.skriftligt.absent != undefined && chartedAbsence?.skriftligt.yearly > 0) ?
-                                                                (((chartedAbsence?.skriftligt.absent / chartedAbsence?.skriftligt.yearly)*100).toFixed(2).toString().replace(".", ","))
-                                                                :
-                                                                "0,00"
-                                                            }%
-                                                        </Text>
-
-                                                        <Text style={{
-                                                            color: theme.WHITE,
-                                                            opacity: 0.8,
-                                                        }}>
-                                                            {treatNumber(chartedAbsence?.skriftligt.absent)} / {treatNumber(chartedAbsence?.skriftligt.yearly)}
-                                                        </Text>
-                                                    </View>
-                                                </View>
-
-                                                <View style={{
-                                                    width: "100%",
-                                                    
-                                                    borderBottomColor: theme.WHITE,
-                                                    borderBottomWidth: 1,
-                                                }} />
-
                                             </View>
 
-                                            
-                                            <View style={{
-                                                display: 'flex',
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-
-                                                gap: 20,
-                                            }}>
-                                                <VictoryPie
-                                                    data={skriftligt}
-                                                    x="team"
-                                                    y="absent"
-                                                    labels={({ datum }) => {
-                                                        return ((datum.absent / (chartedAbsence?.skriftligt.absent ?? 1))*100).toFixed(1).replace(".", ",") + "%"
-                                                    }}
-                                                    colorScale={pieColors}
-                                                    labelPlacement={"parallel"}
-
-                                                    innerRadius={radius / 2}
-                                                    labelRadius={radius / 1.5}
-
-                                                    padAngle={0.5}
-                                                    padding={{
-                                                        bottom: 0,
-                                                        left: 0,
-                                                        right: 0,
-                                                        top: 0,
-                                                    }}
-
-                                                    width={radius * 2}
-                                                    height={radius * 2}
-                                                    radius={radius}
-
-                                                    style={{
-                                                        labels: {
-                                                            fill: "white",
-                                                            fontSize: 11,
-                                                            fontFamily: "Avenir-Light"
-                                                        }
-                                                    }}
-                                                />
-                                                
+                                            {chartedAbsence?.skriftligt?.absent && chartedAbsence?.skriftligt?.absent > 0 && (
                                                 <View style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    paddingVertical: 20,
+                                                    flexDirection: "column"
                                                 }}>
-                                                    {chartedAbsence?.skriftligt.teams.map((team: string, index: number) => (
-                                                        <View key={index}>
-                                                            <View style={{
-                                                                display: 'flex',
-                                                                flexDirection: 'row',
-                                                                marginVertical: 2,
-                                                                gap: 5,
+                                                    <View style={{
+                                                        flexDirection: "row",
+                                                    }}>
+                                                        <View style={{
+                                                            borderRadius: 10,
+                                                            width: "60%",
+                                                            overflow: "hidden",
 
-                                                                alignItems: 'center',
-                                                            }}>
-                                                                <View style={{
-                                                                    width: 10,
-                                                                    height: 10,
-                                                                    backgroundColor: pieColors[index % pieColors.length],
-                                                                }} />
-                                                                <Text ellipsizeMode="tail" numberOfLines={1} style={{
-                                                                    color: pieColors[index % pieColors.length],
-                                                                    maxWidth: 100,
-                                                                    
-                                                                }}>
-                                                                    {" "}{team}
-                                                                </Text>
-                                                            </View>
+                                                            height: 300,
+
+                                                            gap: 2,
+                                                        }}>
+                                                            {skriftligt?.map((a, i) => {
+                                                                const totalHeight = (a.absent / chartedAbsence.skriftligt.absent);
+
+                                                                return (
+                                                                    <View style={{
+                                                                        flexGrow: a.absent,
+                                                                        width: "100%",
+                                                                        backgroundColor: pieColors[i % pieColors.length],
+
+                                                                        justifyContent: "center",
+                                                                        alignItems: "center",
+                                                                    }} key={i}>
+                                                                        {totalHeight*300 > 7.5 && (
+                                                                            <Text style={{
+                                                                                color: scheme === "dark" ? "#FFF" : "#000",
+                                                                                position: "absolute"
+                                                                            }}>
+                                                                                {(totalHeight * 100).toFixed(0)}%
+                                                                            </Text>
+                                                                        )}
+                                                                    </View>
+                                                                )
+                                                            })}
                                                         </View>
-                                                    ))}
+
+                                                        <View style={{
+                                                            flexDirection: "column",
+                                                            width: "50%",
+
+                                                            marginLeft: 20,
+                                                        }}>
+                                                            {skriftligt?.map((a, i) => {
+                                                                return (
+                                                                    <View style={{
+                                                                        width: "100%",
+                                                                        alignItems: "center",
+
+                                                                        flexDirection: "row",
+                                                                    }} key={i}>
+                                                                        <View style={{
+                                                                            width: 12.5,
+                                                                            height: 12.5,
+                                                                            borderRadius: 2.5,
+                                                                            backgroundColor: pieColors[i % pieColors.length],
+                                                                        }} />
+
+                                                                        <Text style={{
+                                                                            color: theme.WHITE,
+                                                                            maxWidth: "70%",
+                                                                        }} numberOfLines={1} ellipsizeMode="tail">
+                                                                            {" "}{a.team}
+                                                                        </Text>
+                                                                    </View>
+                                                                )
+                                                            })}
+                                                        </View>
+                                                    </View>
+
+                                                    <View style={{
+                                                        marginTop: 15,
+                                                        marginRight: 5,
+
+                                                        width: "60%",
+                                                        flexDirection: "row",
+                                                        justifyContent: "space-evenly",
+                                                    }}>
+                                                        <View style={{
+                                                            alignItems: "center",
+                                                        }}>
+                                                            <Text style={{
+                                                                color: scheme === "dark" ? "#FFF" : "#000",
+                                                                fontWeight: "600",
+                                                            }}>
+                                                                For nu
+                                                            </Text>
+
+                                                            <Text style={{
+                                                                color: scheme === "dark" ? "#FFF" : "#000",
+                                                                fontWeight: "900",
+
+                                                                fontSize: 15,
+                                                                marginBottom: 4,
+                                                            }}>
+                                                                {treatNumber((chartedAbsence.skriftligt.absent/chartedAbsence.skriftligt.settled)*100, 1)}%
+                                                            </Text>
+
+                                                            <Text style={{
+                                                                color: theme.WHITE,
+                                                            }}>
+                                                                {treatNumber(chartedAbsence.skriftligt.absent)}/{treatNumber(chartedAbsence.skriftligt.settled)}
+                                                            </Text>
+                                                        </View>
+
+                                                        <View style={{
+                                                            backgroundColor: theme.WHITE,
+
+                                                            height: "100%",
+                                                            width: StyleSheet.hairlineWidth,
+                                                        }} />
+
+                                                        <View style={{
+                                                            alignItems: "center",
+                                                        }}>
+                                                            <Text style={{
+                                                                color: scheme === "dark" ? "#FFF" : "#000",
+                                                                fontWeight: "600",
+                                                            }}>
+                                                                For året
+                                                            </Text>
+
+                                                            <Text style={{
+                                                                color: scheme === "dark" ? "#FFF" : "#000",
+                                                                fontWeight: "900",
+
+                                                                fontSize: 15,
+                                                                marginBottom: 4,
+                                                            }}>
+                                                                {treatNumber((chartedAbsence.skriftligt.absent/chartedAbsence.skriftligt.yearly)*100, 1)}%
+                                                            </Text>
+
+                                                            <Text style={{
+                                                                color: theme.WHITE,
+                                                            }}>
+                                                                {treatNumber(chartedAbsence.skriftligt.absent)}/{treatNumber(chartedAbsence.skriftligt.yearly)}
+                                                            </Text>
+                                                        </View>
+                                                    </View>
                                                 </View>
-                                            </View>
-                                            
+                                            )}
                                         </View>
                                     </View>
+
+                                    <View style={{
+                                        height: 89 / 2,
+                                        width: "100%",
+                                    }} />
                                 </ScrollView>
                             }
                         </View>
