@@ -1,7 +1,11 @@
-import { Image } from "react-native";
 import { SCRAPE_URLS } from "../modules/api/scraper/Helpers";
 import { ContextMenuView } from "react-native-ios-context-menu";
 import Constants from 'expo-constants';
+import { useMemo, useRef } from "react";
+import { Image } from "@rneui/themed";
+import { UserIcon } from "react-native-heroicons/outline";
+import { StyleSheet, useColorScheme } from "react-native";
+import { themes } from "../modules/Themes";
 
 const isExpoGo = Constants.appOwnership === 'expo'
 
@@ -22,6 +26,9 @@ export default function ProfilePicture({
     borderRadius?: boolean,
     big?: boolean,
 }) {
+    const scheme = useColorScheme();
+    const theme = useMemo(() => themes[scheme ?? "dark"], [scheme]);
+
     if(noContextMenu || isExpoGo) {
         return  (
             <Image
@@ -36,6 +43,12 @@ export default function ProfilePicture({
                         "User-Agent": "Mozilla/5.0",
                         "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
                     },
+                }}
+                PlaceholderContent={<UserIcon color={theme.ACCENT} />}
+                placeholderStyle={{
+                    backgroundColor: theme.ACCENT_BLACK,
+                    borderColor: theme.ACCENT,
+                    borderWidth: StyleSheet.hairlineWidth,
                 }}
                 crossOrigin="use-credentials"
             />
@@ -82,6 +95,12 @@ export default function ProfilePicture({
                     },
                 }}
                 crossOrigin="use-credentials"
+                PlaceholderContent={<UserIcon color={theme.ACCENT} />}
+                placeholderStyle={{
+                    backgroundColor: theme.ACCENT_BLACK,
+                    borderColor: theme.ACCENT,
+                    borderWidth: StyleSheet.hairlineWidth,
+                }}
             />
         </ContextMenuView>
 
