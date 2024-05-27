@@ -889,14 +889,15 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                 deleteSaved(Key.BESKEDER);
                                 setMessages((prev) => {
                                     return (
-                                        [...(prev ?? []),
-                                        {
-                                            editDate: "i dag, " + now.getHours() + ":" + now.getMinutes(),
-                                            sender: profile == null ? "Ukendt" : profile.name,
-                                            title: title,
-                                            unread: false,
-                                            messageId: messageId == null ? "" : messageId,
-                                        }
+                                        [
+                                            {
+                                                editDate: "i dag, " + now.getHours() + ":" + now.getMinutes(),
+                                                sender: profile == null ? "Ukendt" : profile.name,
+                                                title: title,
+                                                unread: false,
+                                                messageId: messageId == null ? "" : messageId,
+                                            },
+                                            ...(prev ?? [])
                                         ]
                                     )
                                 })
@@ -906,6 +907,8 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                 setRecipients([]);
                                 setContent("");
                                 setTitle("");
+                            }).catch((err) => {
+                                console.log(err);
                             });
                         } else {
                             setSendError(!sendError);

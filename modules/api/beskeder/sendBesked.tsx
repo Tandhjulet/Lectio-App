@@ -1,9 +1,7 @@
-// @ts-ignore
-import DomSelector from 'react-native-dom-parser';
-
 import { SCRAPE_URLS, getASPHeaders, parseASPHeaders } from "../scraper/Helpers";
 import { Person } from "../scraper/class/ClassPictureScraper";
 import { UploadResult } from '../filer/FileManager';
+import treat, { _treat, treatRaw } from '../scraper/TextTreater';
 
 /**
  * Sends a message over lectio to the specified recipients with the specified data
@@ -30,14 +28,16 @@ export async function sendMessage(title: string, sendTo: Person[], content: stri
                     headers = await addFile(gymNummer, file, headers);
                     if (index === attachments.length -1) res();
                 } catch {
-                    if (attachments.length >= 1 && index === attachments.length-1) res();
-                    else rej();
+                    if (index === attachments.length -1) res();
                 } // if some error occurs we might be able to send the message anyway
-                  // just without the attachment from which the error originated...
+                  // it just wont include the attachment :-(
             });
         }).then(async () => {
             const response = await send(title, content, headers, gymNummer);
             const matches = response.url.match(new RegExp('id=(\\d+)', "gm"));
+
+            console.log(await response.text());
+
             if(matches == null) {
                 finished(null);
                 return;
@@ -132,7 +132,7 @@ async function addReceiver(gymNummer: string, receiver: Person, headers: {[id: s
         body: stringifiedData,
     })).text();
 
-    const parser = DomSelector(text);
+    const parser = treatRaw(text);
     const ASPHeaders = parser.getElementsByClassName("aspNetHidden");
 
     let newHeaders: {[id: string]: string} = {};
@@ -185,7 +185,7 @@ async function addFile(gymNummer: string, file: UploadResult, headers: {[id: str
         body: stringifiedData,
     })).text();
 
-    const parser = DomSelector(text);
+    const parser = treatRaw(text);
     const ASPHeaders = parser.getElementsByClassName("aspNetHidden");
 
     let newHeaders: {[id: string]: string} = {};
@@ -227,7 +227,7 @@ async function createMessage(gymNummer: string): Promise<{[id: string]: string}>
         body: stringifiedData,
     })).text();
 
-    const parser = DomSelector(text);
+    const parser = treatRaw(text);
     const ASPHeaders = parser.getElementsByClassName("aspNetHidden");
 
     let headers: {[id: string]: string} = {};

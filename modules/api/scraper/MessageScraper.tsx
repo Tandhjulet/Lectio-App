@@ -110,9 +110,16 @@ export async function scrapeMessage(parser: any): Promise<ThreadMessage[] | null
         const body: TextComponent[] = scrapeHelper(gridRowMessage.lastChild.firstChild.firstChild.lastChild.children);
         const title: string = gridRowMessage.lastChild.firstChild.firstChild.firstChild.firstChild.lastChild.firstChild.text;
 
+        const date = time.replace(", ", "").split(" ")[0].split("-");
+        const dateTime = time.replace(", ", "").split(" ")[1].split(":");
+        const d = new Date(parseInt(date[2]), parseInt(date[1])-1, parseInt(date[0]), parseInt(dateTime[0]), parseInt(dateTime[1]))
+        
         out.push({
             body: body,
-            date: time.replace(", ", ""),
+            date: d.toLocaleString("da-DK", {
+                dateStyle: "medium",
+                timeStyle: "short",
+            }),
             sender: sender,
             title: title,
         })
@@ -158,8 +165,8 @@ export async function scrapeMessages(parser: any): Promise<LectioMessage[] | nul
         const sender: string = message.children[5].firstChild.attributes.title;
 
 
-        let editDate: string = message.children[7].firstChild.text;
-        if(editDate.includes(":"))
+        let editDate: string = message.children[7].firstChild.text.trim();
+        if(editDate.includes(" ") && editDate.includes("/"))
             editDate =  editDate.replace("ma", "i mandags,")
                                 .replace("ti", "i tirsdags,")
                                 .replace("on", "i onsdags,")

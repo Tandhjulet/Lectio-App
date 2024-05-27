@@ -278,7 +278,7 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                             <Cell
                                 cellStyle="Basic"
-                                title="Lærere og elever"
+                                title="Personer"
                                 titleTextColor={theme.WHITE}
                                 image={
                                     <UsersIcon color={theme.ACCENT} style={{

@@ -10,7 +10,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 - opgavebeskrivelse
 - fraværsoversigt
 - fraværsregistreringer (årsagsvælger) 
-- message thread
 - karakterer
 
 ### HJEMMESIDE
@@ -31,9 +30,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 ### __LAV__
 - spørgeskemaer
 - aflevere filer
-
-### __KENDTE FEJL__
-- login med forkerte logindetaljer gr igennem, hvis du har valgt den korrekte skole og været logget ind tidligere (cookies bliver formentligt ikke slettet ordentligt)
 
 husk at opdatere landing pagens slutbrugerlicens og privatlivspolitik, så de linker til hjemmesiden!
 

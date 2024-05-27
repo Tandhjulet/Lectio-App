@@ -373,9 +373,20 @@ export function SkemaNavigator() {
       headerBackTitleVisible: false,
       contentStyle: {backgroundColor: theme.BLACK},
     }}>
-      <SkemaNav.Screen name={"Skema"} component={Skema} options={{
-        header: () => <></>
-      }} />
+      <SkemaNav.Screen name={"Skema"} component={Skema} options={
+          ({ route }) => {
+
+            const isOwn = !(route.params && "user" in route.params);
+
+            return {
+              // @ts-ignore
+              title: !isOwn ? route.params?.user?.navn.trim() : "",
+              headerBackVisible: !isOwn,
+
+              headerShown: !isOwn,
+            }
+          }
+      } />
       <SkemaNav.Screen name={"Modul View"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.title ?? route.params.modul.team.join(", ") })} />
       <Settings.Screen name={"NoAccess"} component={NoAccess} options={{title: "Køb abonnement", headerShown: false}} />
 
@@ -425,9 +436,18 @@ export function BeskedNavigator() {
         ),
       }} />
 
-      <Messages.Screen name={"BeskedView"} component={BeskedView} options={{
-        title: "Besked",
-      }} />
+      <Messages.Screen name={"BeskedView"} component={BeskedView} options={
+        ({ route }) => {
+          const params = route.params ?? {};
+
+          // @ts-ignore
+          const title: string = "message" in params ? params.message.title : "Besked";
+  
+          return {
+            title: title,
+          }
+        }
+      } />
     </Messages.Navigator>
   )
 }
@@ -508,7 +528,7 @@ export function MereNavigator() {
           }
         }
       } />
-      <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Lærere og elever"}} />
+      <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Personer"}} />
 
       <SkemaNav.Screen name={"Skemaoversigt"} component={Skema} options={
           ({ route }) => {

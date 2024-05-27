@@ -168,91 +168,107 @@ export default function BeskedView({ navigation, route }: {
                     {threadMessages?.map((message: ThreadMessage, i: number) => (
                         <View key={i} style={{
                             display: "flex",
-                            flexDirection: "column",
+                            flexDirection: "row",
 
-                            gap: 5,
+                            gap: 10,
                             marginTop: i === 0 ? 0 : 20,
+                            paddingRight: 10,
                         }}>
+                            <ProfilePicture navn={message.sender} gymNummer={gym?.gymNummer ?? ""} billedeId={people[CLEAN_NAME(message.sender)]?.billedeId ?? ""} size={50} />
+
                             <View style={{
-                                paddingHorizontal: 10,
-                                paddingVertical: 20,
-            
-                                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
-            
-                                borderRadius: 5,
+                                flexDirection: "column",
+                                gap: 5,
+                                flexGrow: 1,
                             }}>
                                 <View style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 10,
+                                    paddingBottom: 10,
+                                    borderRadius: 5,
+
+                                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
+                                    padding: 7.5,
                                 }}>
                                     <View style={{
                                         display: 'flex',
-                                        flexDirection: 'row',
-                                        gap: 10,
-        
-                                        alignItems: 'center',
+                                        flexDirection: 'column',
+                                        gap: 4,
                                     }}>
-                                        <ProfilePicture navn={message.sender} gymNummer={gym?.gymNummer ?? ""} billedeId={people[CLEAN_NAME(message.sender)]?.billedeId ?? ""} size={50} />
-
                                         <View style={{
-                                            maxWidth: "80%",
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            gap: 10,
+            
+                                            alignItems: 'center',
                                         }}>
-                                            <Text style={{
-                                                color: theme.WHITE,
-                                                fontWeight: 'bold',
-                                                fontSize: 12,
-        
-                                                opacity: 0.8,
-                                            }}>
-                                                {message.sender}
-                                            </Text>
-        
-                                            <Text style={{
-                                                color: theme.WHITE,
-                                                fontWeight: 'bold',
-                                            }}>
-                                                {message.title}
-                                            </Text>
-                                        </View>
-                                    </View>
-        
-                                    <View style={{
-                                        borderTopColor: theme.WHITE,
-                                        borderTopWidth: 1,
-                                        opacity: 0.5,
-                                        marginHorizontal: 5,
-                                    }} />
-        
-                                    <Text>
-                                        {message.body.map((component: TextComponent, index: number) => {
-                                            if(component.isFile) return;
 
-                                            if(component.isBreakLine)
-                                                return (
-                                                    <Text 
-                                                        key={index}
-                                                    >
-                                                        {"\n"}
-                                                    </Text>
-                                                )
-                                            if(component.isLink) {
+                                            <View style={{
+                                                maxWidth: "100%",
+                                            }}>
+                                                <Text style={{
+                                                    color: theme.WHITE,
+                                                    fontWeight: '600',
+                                                    fontSize: 11,
+            
+                                                    opacity: 0.8,
+                                                }}>
+                                                    {message.sender.split(" (")[0]}
+                                                </Text>
+            
+                                                <Text style={{
+                                                    color: theme.WHITE,
+                                                    fontWeight: '700',
+                                                }}>
+                                                    {message.title}
+                                                </Text>
+                                            </View>
+                                        </View>
+            
+                                        <Text style={{
+                                            paddingLeft: 7.5,
+                                        }}>
+                                            {message.body.map((component: TextComponent, index: number) => {
+                                                if(component.isFile) return;
+
+                                                if(component.isBreakLine)
+                                                    return (
+                                                        <Text 
+                                                            key={index}
+                                                        >
+                                                            {"\n"}
+                                                        </Text>
+                                                    )
+                                                if(component.isLink) {
+                                                    return (
+                                                        <Text
+                                                            key={index}
+                                                            onPress={() => {
+                                                                if(component.url == null) return;
+
+                                                                WebBrowser.openBrowserAsync(cleanURL(component.url), {
+                                                                    controlsColor: theme.ACCENT.toString(),
+                                                                    dismissButtonStyle: "close",
+                                                                    presentationStyle: WebBrowserPresentationStyle.POPOVER,
+                        
+                                                                    toolbarColor: theme.ACCENT_BLACK.toString(),
+                                                                })
+                                                            }}
+                                                            style={{
+                                                                color: scheme === "dark" ? "lightblue" : "darkblue",
+                                                                fontWeight: component.isBold ? "bold" : "normal",
+                                                                textDecorationLine: component.isUnderlined ? "underline" : "none",
+                                                                fontStyle: component.isItalic ? "italic" : "normal",
+                                                            }}
+                                                        >
+                                                            {component.inner?.trim()}
+                                                        </Text>
+                                                    )
+                                                }
+
                                                 return (
                                                     <Text
                                                         key={index}
-                                                        onPress={() => {
-                                                            if(component.url == null) return;
-
-                                                            WebBrowser.openBrowserAsync(cleanURL(component.url), {
-                                                                controlsColor: theme.ACCENT.toString(),
-                                                                dismissButtonStyle: "close",
-                                                                presentationStyle: WebBrowserPresentationStyle.POPOVER,
-                    
-                                                                toolbarColor: theme.ACCENT_BLACK.toString(),
-                                                            })
-                                                        }}
                                                         style={{
-                                                            color: scheme === "dark" ? "lightblue" : "darkblue",
+                                                            color: theme.WHITE,
                                                             fontWeight: component.isBold ? "bold" : "normal",
                                                             textDecorationLine: component.isUnderlined ? "underline" : "none",
                                                             fontStyle: component.isItalic ? "italic" : "normal",
@@ -261,50 +277,43 @@ export default function BeskedView({ navigation, route }: {
                                                         {component.inner?.trim()}
                                                     </Text>
                                                 )
-                                            }
+                                                
+                                            })}
+                                        </Text>
 
-                                            return (
-                                                <Text
-                                                    key={index}
-                                                    style={{
-                                                        color: theme.WHITE,
-                                                        fontWeight: component.isBold ? "bold" : "normal",
-                                                        textDecorationLine: component.isUnderlined ? "underline" : "none",
-                                                        fontStyle: component.isItalic ? "italic" : "normal",
-                                                    }}
-                                                >
-                                                    {component.inner?.trim()}
-                                                </Text>
-                                            )
-                                            
-                                        })}
-                                    </Text>
+                                        <Text style={{
+                                            color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                            textAlign: "right",
+                                        }}>
+                                            {message.date}
+                                        </Text>
+                                    </View>
                                 </View>
-                            </View>
-                            {message.body.filter((v) => v.isFile).map((file, i) => (
-                                <TouchableOpacity key={threadMessages.length + i} style={{
-                                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
-                                    width: "100%",
-                                    padding: 5,
-                                    borderRadius: 5,
+                                {message.body.filter((v) => v.isFile).map((file, i) => (
+                                    <TouchableOpacity key={threadMessages.length + i} style={{
+                                        backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
+                                        width: "100%",
+                                        padding: 5,
+                                        borderRadius: 5,
 
-                                    display: "flex",
-                                    flexDirection: "row",
+                                        display: "flex",
+                                        flexDirection: "row",
 
-                                    gap: 5,
-                                    alignItems: "center",
-                                }} onPress={() => {
-                                    openFile(file);
-                                }}>
-                                    {file.inner && findIcon(getUrlExtension(file.inner))}
-
-                                    <Text style={{
-                                        color: scheme === "dark" ? "lightblue" : "darkblue"
+                                        gap: 5,
+                                        alignItems: "center",
+                                    }} onPress={() => {
+                                        openFile(file);
                                     }}>
-                                        {file.inner}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
+                                        {file.inner && findIcon(getUrlExtension(file.inner))}
+
+                                        <Text style={{
+                                            color: scheme === "dark" ? "lightblue" : "darkblue"
+                                        }}>
+                                            {file.inner}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
                         </View>
                     ))}
                 

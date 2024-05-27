@@ -10,11 +10,12 @@ import TeacherSVG from "./TeacherSVG"
 
 export default function UserCell() {
 
-    const Cell = memo(function UserCell({ item, gym, theme, navigation, style }: {
+    const Cell = memo(function UserCell({ item, gym, theme, navigation, style, skemaScreenName }: {
         item: Person,
         gym: any,
         theme: Theme,
         navigation: StackNavigationProp<any>,
+        skemaScreenName: string,
         style?: ViewStyle,
     }) {
         return (
@@ -50,7 +51,7 @@ export default function UserCell() {
                     }],
                 }}
                 onPressMenuItem={() => {
-                    navigation.push("Skemaoversigt", {
+                    navigation.push(skemaScreenName, {
                         user: item,
                     })
                 }}
@@ -66,7 +67,7 @@ export default function UserCell() {
                     width: "100%",
 
                 }, style]} onPress={() => {
-                    navigation.push("Skemaoversigt", {
+                    navigation.push(skemaScreenName, {
                         user: item,
                     })
                 }}>

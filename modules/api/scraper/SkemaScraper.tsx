@@ -428,13 +428,19 @@ function parseLektieNote(href: string, raw: string) {
                 return;
 
             let info = match.split("data-tooltip=")[1];
-            if(info.startsWith("'") || info.startsWith("\"")) {
+
+            const data = /data-tooltip=".*?"/gms.exec(match);
+            if(data) {
+                info = data[0].replace("data-tooltip=\"", "").slice(0, -1)
+            }
+
+            if(!data && (info.startsWith("'") || info.startsWith("\""))) {
                 info = info.substring(1);
             }
 
-            if(info.endsWith("'>") || info.endsWith("\">")) {
+            if(!data && (info.endsWith("'>") || info.endsWith("\">"))) {
                 info = info.slice(0, -2);
-            } else if (info.endsWith("\" title>") || info.endsWith("\' title>")) {
+            } else if (!data && (info.endsWith("\" title>") || info.endsWith("\' title>"))) {
                 info = info.slice(0, -8);
             }
 

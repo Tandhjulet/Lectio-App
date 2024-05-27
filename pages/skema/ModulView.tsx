@@ -267,7 +267,7 @@ export default function ModulView({ navigation, route }: {
                                         <Cell
                                             key={index}
                                             cellContentView={(
-                                                <UCell item={person} gym={gym} navigation={navigation} theme={theme} />
+                                                <UCell item={person} gym={gym} navigation={navigation} theme={theme} skemaScreenName="Skema" />
                                             )}
                                         />
                                     ))}

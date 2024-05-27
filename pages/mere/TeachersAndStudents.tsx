@@ -129,7 +129,7 @@ export default function TeachersAndStudents() {
     }) => {
         const user = item.split(":")[0];
 
-        return <Cell item={rawPeople[user]} gym={gym} theme={theme} navigation={navigation} />
+        return <Cell item={rawPeople[user]} gym={gym} theme={theme} navigation={navigation} skemaScreenName="Skemaoversigt" />
     }, [rawPeople]);
 
     const renderItemSectionList = useCallback(({ item, index }: {
@@ -137,7 +137,7 @@ export default function TeachersAndStudents() {
         index: number,
     }) => <Cell item={item} gym={gym} theme={theme} navigation={navigation} style={{
         paddingLeft: 15,
-    }} />, []);
+    }} skemaScreenName="Skemaoversigt" />, []);
 
     return (
         <View style={{height: '100%',width:'100%'}}>

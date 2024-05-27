@@ -12,6 +12,6 @@ export default async function treat(res: Response): Promise<DomSelector> {
     return DomSelector(regexTreated);
 }
 
-export function treatRaw(text: string): Promise<DomSelector> {
+export function treatRaw(text: string): DomSelector {
     return DomSelector(_treat(text));
 }
