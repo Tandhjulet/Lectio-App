@@ -20,6 +20,7 @@ import Popover from "react-native-popover-view";
 import { Mode, Placement } from "react-native-popover-view/dist/Types";
 import Constants from 'expo-constants';
 import React from "react";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 /**
  * 
@@ -101,7 +102,7 @@ const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
  * @returns JSX for the schema view
  */
 export default function Skema({ navigation, route }: {
-    navigation: NavigationProp<any>,
+    navigation: StackNavigationProp<any>,
     route: RouteProp<any>,
 }) {
     const isOwnSkema = useMemo(() => {
@@ -1096,13 +1097,13 @@ export default function Skema({ navigation, route }: {
                                                                             })
                                                                 return;
                                                             };
-
-                                                            if(isOwnSkema) {
-                                                                navigation.navigate("Modul View", {
+                                                            
+                                                            if(route.name === "Skema") {
+                                                                navigation.push("Modul View", {
                                                                     modul: modul,
                                                                 })
                                                             } else {
-                                                                navigation.navigate("Modul information", {
+                                                                navigation.push("Modul information", {
                                                                     modul: modul,
                                                                 })
                                                             }

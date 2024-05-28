@@ -10,12 +10,13 @@ import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import ProfilePicture from "../../components/ProfilePicture";
 
 import 'react-native-console-time-polyfill';
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation, useRoute } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import UserCell from "../../components/UserCell";
 
 export default function TeachersAndStudents() {
     const navigation = useNavigation<StackNavigationProp<any>>();
+    const route = useRoute();
 
     const { Cell } = UserCell();
 
@@ -129,15 +130,15 @@ export default function TeachersAndStudents() {
     }) => {
         const user = item.split(":")[0];
 
-        return <Cell item={rawPeople[user]} gym={gym} theme={theme} navigation={navigation} skemaScreenName="Skemaoversigt" />
+        return <Cell item={rawPeople[user]} gym={gym} theme={theme} route={route} />
     }, [rawPeople]);
 
     const renderItemSectionList = useCallback(({ item, index }: {
         item: Person,
         index: number,
-    }) => <Cell item={item} gym={gym} theme={theme} navigation={navigation} style={{
+    }) => <Cell item={item} gym={gym} theme={theme} style={{
         paddingLeft: 15,
-    }} skemaScreenName="Skemaoversigt" />, []);
+    }} route={route} />, []);
 
     return (
         <View style={{height: '100%',width:'100%'}}>

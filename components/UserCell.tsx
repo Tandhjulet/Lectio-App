@@ -1,4 +1,4 @@
-import { memo } from "react"
+import { memo, useMemo } from "react"
 import { Person } from "../modules/api/scraper/class/ClassPictureScraper"
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewProps, ViewStyle } from "react-native"
 import { StackNavigationProp } from "@react-navigation/stack"
@@ -7,17 +7,29 @@ import { hexToRgb, Theme } from "../modules/Themes"
 import { ContextMenuView } from "react-native-ios-context-menu"
 import { AcademicCapIcon, CalendarIcon } from "react-native-heroicons/outline"
 import TeacherSVG from "./TeacherSVG"
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 
 export default function UserCell() {
 
-    const Cell = memo(function UserCell({ item, gym, theme, navigation, style, skemaScreenName }: {
+    const Cell = memo(function UserCell({ item, gym, theme, style, route }: {
         item: Person,
         gym: any,
         theme: Theme,
-        navigation: StackNavigationProp<any>,
-        skemaScreenName: string,
         style?: ViewStyle,
+        route: RouteProp<any>;
     }) {
+        const navigation = useNavigation<StackNavigationProp<any>>();
+        const skemaScreenName = useMemo(() => {
+            switch(route.name) {
+                case "Modul View":
+                    return "Skema";
+                case "TeachersAndStudents":
+                    return "Skemaoversigt";
+            }
+
+            console.log("[UserCell] could not find skema-path for origin", route.name)
+        }, [route])
+
         return (
             <ContextMenuView
                 previewConfig={{
@@ -51,6 +63,8 @@ export default function UserCell() {
                     }],
                 }}
                 onPressMenuItem={() => {
+                    if(!skemaScreenName) return;
+
                     navigation.push(skemaScreenName, {
                         user: item,
                     })
@@ -67,6 +81,8 @@ export default function UserCell() {
                     width: "100%",
 
                 }, style]} onPress={() => {
+                    if(!skemaScreenName) return;
+
                     navigation.push(skemaScreenName, {
                         user: item,
                     })
