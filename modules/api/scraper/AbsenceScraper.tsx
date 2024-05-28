@@ -212,9 +212,11 @@ export function scapeRegistration(parser: any): Registration[] | null {
 
             let timeSpan: Date | undefined;
             const regExpTimespan = absence.children[1].firstChild.text.match(new RegExp('\\d{2}:\\d{2}', "gm"));
+            const regExpStart = absence.children[1].firstChild.text.match(new RegExp(/\d{1,2}\/\d{1,2}-\d{4}/, "gm"));
 
-            if(regExpTimespan != null) {
-                const start = new Date();
+            if(regExpTimespan != null && regExpStart != null) {
+                const start = parseDate(regExpStart[0]);
+
                 start.setHours(parseInt(regExpTimespan[0].split(":")[0]))
                 start.setMinutes(parseInt(regExpTimespan[0].split(":")[1]))
                 timeSpan = start;

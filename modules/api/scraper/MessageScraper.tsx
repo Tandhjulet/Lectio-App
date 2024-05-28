@@ -166,7 +166,7 @@ export async function scrapeMessages(parser: any): Promise<LectioMessage[] | nul
 
 
         let editDate: string = message.children[7].firstChild.text.trim();
-        if(editDate.includes(" ") && editDate.includes("/"))
+        if(editDate.includes(" ") && !editDate.includes("/"))
             editDate =  editDate.replace("ma", "i mandags,")
                                 .replace("ti", "i tirsdags,")
                                 .replace("on", "i onsdags,")
@@ -174,6 +174,18 @@ export async function scrapeMessages(parser: any): Promise<LectioMessage[] | nul
                                 .replace("fr", "i fredags,")
                                 .replace("lø", "i lørdags,")
                                 .replace("sø", "i søndags,")
+        else if(editDate.includes("/")) {
+            const comps = editDate.includes(" ") ? editDate.split(" ")[1].split("/") : editDate.replace("-", "/").split("/")
+
+            const d = new Date()
+            d.setMonth(parseInt(comps[1])-1)
+            d.setDate(parseInt(comps[0]))
+            d.setFullYear(parseInt(comps[2] ?? d.getFullYear()))
+
+            editDate = d.toLocaleDateString("da-DK", {
+                dateStyle: "long",
+            })
+        }
 
         if(!editDate.startsWith("i ") && editDate.includes(":")) editDate = "i dag, " + editDate;
         

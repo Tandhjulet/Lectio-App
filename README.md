@@ -8,7 +8,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 ## NEEDED FOR RELAUNCH
 - aktivitet info
 - opgavebeskrivelse
-- fraværsregistreringer (årsagsvælger) 
 - karakterer
 
 ### HJEMMESIDE
@@ -29,6 +28,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 ### __LAV__
 - spørgeskemaer
 - aflevere filer
+- limit på profilbillede-requests
 
 husk at opdatere landing pagens slutbrugerlicens og privatlivspolitik, så de linker til hjemmesiden!
 

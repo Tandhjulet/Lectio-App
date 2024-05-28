@@ -20,6 +20,7 @@ import { FlatList } from "react-native";
 import { SectionList } from "react-native";
 import Shake from "../../components/Shake";
 import Logo from "../../components/Logo";
+import { LinearGradient } from "expo-linear-gradient";
 
 type ChartedAbsence = {
     almindeligt: {
@@ -256,7 +257,9 @@ export default function Absence({ navigation }: { navigation: any }) {
                 let index = 0;
 
                 for(let reg of res) {
-                    const str = reg.registered.toLocaleDateString("da-DK").replace(".", "/").replace(".", "-");
+                    const str = reg.modulStartTime.toLocaleDateString("da-DK", {
+                        dateStyle: "full",
+                    });
 
                     if(current != str) {
                         index = out.push({
@@ -368,7 +371,9 @@ export default function Absence({ navigation }: { navigation: any }) {
                 let index = 0;
 
                 for(let reg of res) {
-                    const str = reg.registered.toLocaleDateString("da-DK").replace(".", "/").replace(".", "-");
+                    const str = reg.modulStartTime.toLocaleDateString("da-DK", {
+                        dateStyle: "full",
+                    });
 
                     if(current != str) {
                         index = out.push({
@@ -438,12 +443,11 @@ export default function Absence({ navigation }: { navigation: any }) {
             key: string;
             data: Registration[];
         }>;
-    }) => <SectionHeader data={data} theme={theme} insertLine={!(data.section.key === remappedRegs[0].key)} />, [remappedRegs]);
+    }) => <SectionHeader data={data} theme={theme} />, [remappedRegs]);
 
     const SectionHeader = memo(function SectionHeader({
         data,
         theme,
-        insertLine,
     }: {
         data: {
             section: SectionListData<Registration, {
@@ -452,7 +456,6 @@ export default function Absence({ navigation }: { navigation: any }) {
             }>;
         },
         theme: Theme,
-        insertLine: boolean,
     }) {
         return (
             <View style={{
@@ -460,13 +463,6 @@ export default function Absence({ navigation }: { navigation: any }) {
                 alignItems: "center",
                 width: "100%",
             }}>
-                {insertLine && (
-                    <View style={{
-                        width: "95%",
-                        height: StyleSheet.hairlineWidth,
-                        backgroundColor: hexToRgb(theme.WHITE.toString(), 0.25),
-                    }} />
-                )}
 
                 <View style={{
                     marginTop: 12,
@@ -477,12 +473,12 @@ export default function Absence({ navigation }: { navigation: any }) {
                 }}>
 
                     <Text style={{
-                        color: hexToRgb(theme.ACCENT.toString(), 0.5),
+                        color: hexToRgb(theme.WHITE.toString(), 0.8),
                         fontWeight: "normal",
                         fontSize: 15,
                         marginBottom: 5,
                     }}>
-                        {["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"][parseDate(data.section.key).getDay()]} d. {data.section.key}
+                        {data.section.key}
                     </Text>
 
                     <Text style={{
@@ -501,7 +497,7 @@ export default function Absence({ navigation }: { navigation: any }) {
     const Registration = memo(function Registration({
         reg,
         theme,
-        i
+        i,
     }: {
         reg: Registration,
         theme: Theme,
@@ -509,133 +505,132 @@ export default function Absence({ navigation }: { navigation: any }) {
     }) {
         const colorIndex = fraværIndexes.findIndex((v) => v == (!reg.studentProvidedReason ? "Ikke angivet" : reg.studentNote?.split("\n")[0])?.toLowerCase())
         const color = fraværColors[colorIndex];
-    
+
         return (
             <TouchableOpacity
                 onPress={() => handlePress(reg)}
+
+                style={{
+                    marginTop: !(i == 0) ? 4 : 0,
+                }}
             >
                 <View style={{
-                    paddingVertical: 10,
-                    paddingLeft: 0,
-    
-                    borderBottomColor: hexToRgb(theme.WHITE.toString(), 0.2),
-    
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-    
-                    width: "100%",
-                    gap: 15,
+                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.07),
+
+                    borderRadius: 10,
+                    overflow: "hidden",
+
+                    maxWidth: "100%",
                 }}>
-                    <View style={{
-                        borderRadius: 999,
-                        borderColor: color,
-                        borderWidth: 2,
+                    <LinearGradient
+                        start={[0, 0]}
+                        end={[1, 0]}
+                        colors={[color, "transparent"]}
     
-                        position: "relative",
-                    }}>
-                        <Progress.Pie
-                            size={60}
-                            progress={parseFloat(reg.absence)/100}
-                            color={hexToRgb(color, 0.2)}
-                            borderWidth={1}
-                        />
-    
-                        <View style={{
+                        style={{
                             position: "absolute",
-                            width: 60, // width and width of chart is 60 if radius is 30
-                            height: 60,
+                            width: "100%",
+                            height: "100%",
     
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                        }}>
-                            <Text style={{
-                                color: color,
-                                fontFamily: "bold",
-                                letterSpacing: 0.6,
-                            }}>
-                                {reg.absence}%
-                            </Text>
-                        </View>
-                    </View>
-    
+                            transform: [{
+                                rotate: "180deg",
+                            }],
+                            zIndex: 1,
+                            opacity: 0.15,
+                        }}
+                    />
+
                     <View style={{
                         display: "flex",
-                        gap: 5,
-    
-                        width: "100%",
+                        flexDirection: "row",
+                        alignItems: "flex-start",
+                        padding: 10,
                     }}>
                         <View style={{
-                            display: "flex",
-                            flexDirection: "row",
-    
-                            justifyContent: "space-between",
-                            alignItems: "center",
-    
-                            paddingRight: 15*5,
-    
-                            width: "100%",
+                            flexDirection: "column",
+                            alignItems: "flex-start",
+
+                            gap: 5,
+
+                            maxWidth: "80%",
                         }}>
                             <Text style={{
                                 color: theme.WHITE,
-                                fontSize: 15,
-                                fontWeight: "bold",
-                                letterSpacing: 0.5,
-    
-                                flex: 0,
+                                fontWeight: "700",
+                                fontSize: 14,
+                                letterSpacing: 0.2,
                             }}>
                                 {reg.modul}
                             </Text>
-    
-                            <Text style={{
-                                color: hexToRgb(theme.WHITE.toString(), 0.6),
-                                fontSize: 15,
-    
-                                flex: 0,
+
+                            <View style={{
+                                paddingVertical: 7.5,
+                                paddingHorizontal: 15,
+
+                                backgroundColor: hexToRgb(color, 0.1),
+                                borderRadius: 5,
                             }}>
-                                {reg.modulStartTime?.toLocaleTimeString("de-DK", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                })}
-                            </Text>
+                                <Text style={{
+                                    color: hexToRgb(color, 1),
+                                    fontWeight: "800",
+                                    letterSpacing: 0.1,
+                                    fontSize: 15,
+                                }}>
+                                    {reg.studentNote?.split("\n")[0] ?? "Opgiv årsag"}
+                                </Text>
+
+                                {reg.studentNote?.split("\n")[1] && (
+                                    <Text style={{
+                                        color: hexToRgb(color, 1),
+                                        fontSize: 14,
+                                    }} adjustsFontSizeToFit minimumFontScale={0.6}>
+                                        {reg.studentNote?.split("\n")[1] ?? "Ingen elevnote noteret"}
+                                    </Text>
+                                )}
+                            </View>
                         </View>
-    
+
                         <View style={{
-                            backgroundColor: hexToRgb(color, 0.2),
-    
-                            paddingHorizontal: 20,
-                            paddingVertical: 10,
-    
-                            borderRadius: 5,
-                            alignSelf: "flex-start",
-                            maxWidth: "90%",
+                            flexGrow: 1,
+                        }} />
+
+                        <View style={{
+                            position: "relative",
                         }}>
-                            <Text style={{
-                                color: color,
-                                flex: 0,
-    
-                                fontWeight: "bold",
+                            <Progress.Circle
+                                size={60}
+                                progress={parseFloat(reg.absence)/100}
+                                color={color}
+                                thickness={2}
+                                borderWidth={0}
+
+                                unfilledColor={hexToRgb(color, 0.2)}
+                            />
+        
+                            <View style={{
+                                position: "absolute",
+                                width: 60, // width and width of chart is 60 if radius is 30
+                                height: 60,
+        
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
                             }}>
-                                {!reg.studentProvidedReason ? "Ikke angivet" : reg.studentNote?.split("\n")[0]}
-                            </Text>
-                            {reg.studentNote?.split("\n").length == 2 && (
                                 <Text style={{
                                     color: color,
-                                    flex: 0,
-    
-                                    fontWeight: "normal",
-                                    maxWidth: "90%",
+                                    fontFamily: "bold",
+                                    letterSpacing: 0.6,
                                 }}>
-                                    {reg.studentNote.split("\n")[1]}
+                                    {reg.absence}%
                                 </Text>
-                            )}
+                            </View>
                         </View>
                     </View>
+
                 </View>
             </TouchableOpacity>
         )
-    })
+    }, (prev, next) => Object.is(prev.reg.url, next.reg.url))
 
     const RegistrationComponent = memo(({
         title,
@@ -1135,7 +1130,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                     keyExtractor={(item, index) => index + item.modul + item.registeredTime}
 
                                     style={{
-                                        paddingHorizontal: 20,
+                                        paddingHorizontal: 15,
                                     }}
 
                                     contentContainerStyle={{
