@@ -1,6 +1,6 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native";
 import { ActivityIndicator, RefreshControl, ScrollView, Text, View, useColorScheme } from "react-native";
-import { themes } from "../../modules/Themes";
+import { hexToRgb, themes } from "../../modules/Themes";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { Modul, replaceHTMLEntities } from "../../modules/api/scraper/SkemaScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
@@ -15,6 +15,7 @@ import { UserIcon } from "react-native-heroicons/solid";
 import { SCHEMA_SEP_CHAR } from "../../modules/Config";
 import UserCell from "../../components/UserCell";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { MapPinIcon } from "react-native-heroicons/outline";
 
 /**
  * 
@@ -115,100 +116,175 @@ export default function ModulView({ navigation, route }: {
                     marginHorizontal: 20,
                 }}>
                     <Section header={"INFORMATION"} roundedCorners={true} hideSurroundingSeparators={true}>
-                        {modul.title && (
-                            <Cell
-                                cellStyle="RightDetail"
-                                title="Titel"
-                                detail={modul.title}
-                                
-                                detailTextStyle={{
-                                    maxWidth: "80%",
-                                }}
-                            />
-                        )}
-
                         <Cell
-                            cellStyle="RightDetail"
-                            title="Hold"
-                            detail={modul.team.join(", ")}
+                            cellContentView={
+                                <View style={{
+                                    width: "100%",
 
-                            detailTextStyle={{
-                                maxWidth: "80%",
-                            }}
-                        />
+                                    flexDirection: "column",
+                                    paddingBottom: 20,
 
-                        {modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim().length > 0 && (
-                            <Cell
-                                cellStyle="RightDetail"
-                                title="Lokale"
-                                detail={modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim()}
-
-                                detailTextStyle={{
-                                    maxWidth: "80%",
-                                }}
-                            />
-                        )}
-
-                        <Cell
-                            cellStyle="RightDetail"
-                            title="Start"
-                            detail={modul.timeSpan.start}
-                        />
-
-                        <Cell
-                            cellStyle="RightDetail"
-                            title="Slut"
-                            detail={modul.timeSpan.end} 
-                        />
-
-                        <Cell
-                            cellStyle="RightDetail"
-                            title="Status"
-                            detail={getStatus(modul)}
-
-                            detailTextStyle={{
-                                maxWidth: "80%",
-                            }}
-                        />
-
-                        <Cell
-                            cellStyle="RightDetail"
-                            title="Lektier"
-                            detail={modul.homework ? "Ja" : "Nej"}
-
-                            detailTextStyle={{
-                                fontWeight: "bold",
-                            }}
-                        />
-
-                        {modul.note != undefined &&
-                            <Cell
-                                contentContainerStyle={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-
-                                    alignItems: "flex-start",
-                                    paddingBottom: 10,
-                                }}
-                                cellContentView={
-                                    <>
+                                    gap: 10,
+                                }}>
+                                    <View style={{
+                                        marginVertical: 15,
+                                        alignItems: "center",
+                                    }}>
                                         <Text style={{
-                                            color: scheme === "dark" ? "#fff" : "#000",
-                                            paddingBottom: 5,
-                                            paddingTop: 8,
-                                            fontSize: 16,
+                                            color: hexToRgb(theme.WHITE.toString(), 0.7),
+                                            textAlign: "center",
+                                            fontSize: 15,
+
+                                            fontWeight: modul.title ? "normal" : "900"
                                         }}>
-                                            Note
+                                            {modul.team.join(", ")}
                                         </Text>
-                                        <Text style={{
-                                            color: theme.WHITE,
+
+                                        {modul.title && (
+                                            <Text style={{
+                                                fontWeight: "900",
+                                                fontSize: 15,
+                                                color: theme.WHITE,
+                                                textAlign: "center",
+                                            }}>
+                                                {modul.title}
+                                            </Text>
+                                        )}
+
+                                        <View style={{
+                                            flexDirection: "column",
+                                            marginTop: 10,
+
+                                            alignItems: "center",
                                         }}>
-                                            {modul.note}
-                                        </Text>
-                                    </>
-                                }
-                            />
-                        }
+                                            <MapPinIcon color={theme.WHITE} />
+
+                                            <Text style={{
+                                                color: theme.WHITE,
+                                            }}>
+                                                {modul.lokale}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    <View style={{
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
+                                        paddingHorizontal: 30,
+                                    }}>
+                                        <View style={{
+                                            flexDirection: "column",
+                                        }}>
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                fontWeight: "bold",
+                                                textAlign: "left",
+
+                                                fontSize: 15,
+                                            }}>
+                                                Start
+                                            </Text>
+
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 1),
+                                                textAlign: "left",
+
+                                                fontSize: 16,
+                                            }}>
+                                                {modul.timeSpan.start}
+                                            </Text>
+                                        </View>
+
+                                        <View style={{
+                                            flexDirection: "column",
+                                        }}>
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                fontWeight: "bold",
+                                                textAlign: "right",
+                                            }}>
+                                                Slut
+                                            </Text>
+
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 1),
+                                                textAlign: "right",
+                                            }}>
+                                                {modul.timeSpan.end}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    <View style={{
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
+                                        paddingHorizontal: 30,
+                                    }}>
+                                        <View style={{
+                                            flexDirection: "column",
+                                        }}>
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                fontWeight: "bold",
+                                                textAlign: "left",
+
+                                                fontSize: 15,
+                                            }}>
+                                                Status
+                                            </Text>
+
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 1),
+                                                textAlign: "left",
+
+                                                fontSize: 16,
+                                            }}>
+                                                {getStatus(modul)}
+                                            </Text>
+                                        </View>
+
+                                        <View style={{
+                                            flexDirection: "column",
+                                        }}>
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                fontWeight: "bold",
+                                                textAlign: "right",
+                                            }}>
+                                                Lektier
+                                            </Text>
+
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 1),
+                                                textAlign: "right",
+                                            }}>
+                                                {modul.homework ? "Ja" : "Nej"}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    
+                                    {modul.note && (
+                                        <View style={{
+                                            paddingHorizontal: 20,
+                                            marginTop: 10,
+                                        }}>
+                                            <Text style={{
+                                                color: theme.WHITE,
+                                            }}>
+                                                <Text style={{
+                                                    color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                }}>
+                                                    Note:
+                                                </Text>
+
+                                                {" "}{modul.note}
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                            }
+                            hideSeparator
+                        />
                     </Section>
 
                     {modul.homework && modul.lektier != undefined &&

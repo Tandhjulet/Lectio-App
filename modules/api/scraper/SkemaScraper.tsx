@@ -157,8 +157,6 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
             team: string[],
             title?: string,
             teamId: string | null,
-            changed: boolean,
-            cancelled: boolean,
             modul?: string,
         } = parseInfoString(brik.lastChild)
 
@@ -168,8 +166,8 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
         const endNum = parseInt(timeSpan[0].getHours().toString().padStart(2,"0") + timeSpan[0].getMinutes().toString().padStart(2,"0"));
 
         out.push({
-            changed: parsedInfoString.changed,
-            cancelled: parsedInfoString.cancelled,
+            changed: modul.classList.includes("s2changed"),
+            cancelled: modul.classList.includes("s2cancelled"),
 
             lokale: parsedInfoString.lokale,
             team: parsedInfoString.team,
@@ -309,13 +307,6 @@ export function parseInfoString(info: any): {
 
     if(info == undefined)
         return out;
-
-    if (info.classList.includes("s2changed")) {
-        out.changed = true;
-    }
-    else if (info.classList.includes("s2cancelled")) {
-        out.cancelled = true;
-    }
 
     info.children.forEach((element: any) => {
         if(element.text == ` ${SCHEMA_SEP_CHAR} `) 
