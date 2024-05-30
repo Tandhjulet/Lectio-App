@@ -132,3 +132,22 @@ export async function getSaved(key: Key, identifier: string = ""): Promise<Resul
         value: item.value,
     }
 }
+
+export async function fetchWithCache<T>(req: Request, key: Key, identifier: string = "", timespan: number, cb: (data: T) => Promise<void>, parsingFunc: Function, args?: any[]): Promise<T> { 
+    const cached = await getSaved(key, identifier);
+    if(cached.valid) {
+        await cb(cached.value)
+    }
+
+    const response = await fetch(req);
+    const result = parsingFunc.apply([
+        await response.text(),
+        ...(args ?? []),
+    ]);
+
+    await cb(result);
+
+    await saveFetch(key, result, timespan, identifier)
+
+    return result;
+}
