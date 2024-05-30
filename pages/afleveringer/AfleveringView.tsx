@@ -1,5 +1,5 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native"
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from "react-native";
 import { Cell, Section, Separator, TableView } from "react-native-tableview-simple";
 import { Opgave, OpgaveDetails, Status } from "../../modules/api/scraper/OpgaveScraper";
@@ -126,7 +126,9 @@ export default function AfleveringView({ navigation, route }: {
         width,
         height,
     } = Dimensions.get("screen");
-    
+
+    const afleveringsFrist = new Date(aflevering.dateObject);
+
     return (
         <View style={{
             minHeight: "100%",
@@ -144,57 +146,176 @@ export default function AfleveringView({ navigation, route }: {
                         hideSurroundingSeparators={true}
                     >
                         <Cell
-                            cellStyle="RightDetail"
-                            title="Team"
-                            detail={aflevering.team}
+                            cellContentView={
+                                <View style={{
+                                    width: "100%",
 
-                            detailTextStyle={{
-                                maxWidth: "70%",
-                            }}
-                        />
+                                    flexDirection: "column",
+                                    paddingBottom: 20,
 
-                        <Cell
-                            cellStyle="RightDetail"
-                            title="Status"
-                            detail={Status[aflevering.status]}
+                                    gap: 10,
+                                }}>
+                                    <View style={{
+                                        marginVertical: 15,
+                                        alignItems: "center",
+                                    }}>
+                                        <Text style={{
+                                            fontWeight: "800",
+                                            fontSize: 13.5,
+                                            color: hexToRgb(theme.WHITE.toString(), 0.7),
+                                            letterSpacing: 0.7,
+                                            textAlign: "center",
+                                            textTransform: "capitalize",
+                                        }}>
+                                            {Status[aflevering.status]}
+                                        </Text>
 
-                            detailTextStyle={{
-                                textTransform: "capitalize",
-                                maxWidth: "70%",
-                            }}
-                        />
+                                        <Text style={{
+                                            fontWeight: "900",
+                                            fontSize: 15,
+                                            color: theme.WHITE,
+                                            textAlign: "center",
+                                        }}>
+                                            {aflevering.title}
+                                        </Text>
 
-                        <Cell
-                            cellStyle="RightDetail"
-                            title="Fravær"
-                            detail={aflevering.absence}
+                                        <Text style={{
+                                            color: hexToRgb(theme.WHITE.toString(), 0.7),
+                                            textAlign: "center",
+                                            fontSize: 15,
+                                        }}>
+                                            <Text style={{
+                                                textTransform: "capitalize",
+                                            }}>
+                                                {opgaveDetails?.ansvarlig?.split("(")[0]}
+                                            </Text>
+                                            ({opgaveDetails?.ansvarlig?.split("(")[1]}
+                                        </Text>
+                                    </View>
 
-                            detailTextStyle={{
-                                maxWidth: "70%",
-                            }}
-                        />
+                                    
+                                    <View style={{
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
+                                        paddingHorizontal: 30,
+                                    }}>
+                                        <View style={{
+                                            flexDirection: "column",
+                                        }}>
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                fontWeight: "bold",
+                                                textAlign: "left",
+                                            }}>
+                                                Elevtid
+                                            </Text>
 
-                        <Cell
-                            cellStyle="RightDetail"
-                            title="Frist"
-                            detail={new Date(aflevering.dateObject).toLocaleString("da-DK", {
-                                dateStyle: "medium",
-                                timeStyle: "short",
-                            })}
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 1),
+                                                textAlign: "left",
+                                            }}>
+                                                {aflevering.time} elevtimer
+                                            </Text>
+                                        </View>
 
-                            detailTextStyle={{
-                                maxWidth: "70%",
-                            }}
-                        />
+                                        <View style={{
+                                            flexDirection: "column",
+                                        }}>
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                fontWeight: "bold",
+                                                textAlign: "right",
 
-                        <Cell
-                            cellStyle="RightDetail"
-                            title="Elevtid"
-                            detail={aflevering.time}
+                                                fontSize: 15,
+                                            }}>
+                                                Fravær
+                                            </Text>
 
-                            detailTextStyle={{
-                                maxWidth: "70%",
-                            }}
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 1),
+                                                textAlign: "right",
+
+                                                fontSize: 16,
+                                            }}>
+                                                {aflevering.absence}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    <View style={{
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
+                                        paddingHorizontal: 30,
+                                    }}>
+                                        <View style={{
+                                            flexDirection: "column",
+                                        }}>
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                fontWeight: "bold",
+                                                textAlign: "left",
+                                            }}>
+                                                Karakterskala
+                                            </Text>
+
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 1),
+                                                textAlign: "left",
+                                                maxWidth: "80%",
+                                            }} ellipsizeMode="tail" numberOfLines={2}>
+                                                {opgaveDetails?.karakterSkala}
+                                            </Text>
+                                        </View>
+
+                                        <View style={{
+                                            flexDirection: "column",
+                                        }}>
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                fontWeight: "bold",
+                                                textAlign: "right",
+
+                                                fontSize: 15,
+                                            }}>
+                                                Afleveringsfrist
+                                            </Text>
+
+                                            <Text style={{
+                                                color: hexToRgb(theme.WHITE.toString(), 1),
+                                                textAlign: "right",
+
+                                                fontSize: 16,
+                                            }}>
+                                                {afleveringsFrist.toLocaleDateString("da-DK", {
+                                                    dateStyle: "medium",
+                                                })}{"\n"}
+                                                kl. {afleveringsFrist.toLocaleTimeString("da-DK", {
+                                                    timeStyle: "short"
+                                                }).replace(".", ":")}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    {opgaveDetails?.note && (
+                                        <View style={{
+                                            paddingHorizontal: 10,
+                                            marginTop: 10,
+                                        }}>
+                                            <Text style={{
+                                                color: theme.WHITE,
+                                            }}>
+                                                <Text style={{
+                                                    color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                }}>
+                                                    Note:
+                                                </Text>
+
+                                                {"\n"}{opgaveDetails?.note}
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                            }
                         />
 
                         {!loading ?
@@ -208,158 +329,38 @@ export default function AfleveringView({ navigation, route }: {
                                                         display: "flex",
                                                         flexDirection: "column",
 
-                                                        paddingBottom: 10,
+                                                        paddingVertical: 10,
+                                                        gap: 5,
                                                     }}>
-                                                        <Text style={{
-                                                            color: scheme === "dark" ? "#fff" : "#000",
-                                                            paddingBottom: 5,
-                                                            paddingTop: 8,
-                                                            fontSize: 16,
-                                                        }}>
-                                                            Opgavebeskrivelse
-                                                        </Text>
+                                                        {opgaveDetails.opgaveBeskrivelse?.map((document, i) => (
+                                                            <TouchableOpacity style={{
+                                                                display: "flex",
+                                                                flexDirection: "row",
+                                                                alignItems: "center",
 
-                                                        <View style={{
-                                                            display: "flex",
-                                                            flexDirection: "column",
-                                                            gap: 5,
-                                                        }}>
-                                                            {opgaveDetails.opgaveBeskrivelse?.map((document, i) => (
-                                                                <TouchableOpacity style={{
-                                                                    display: "flex",
-                                                                    flexDirection: "row",
-                                                                    alignItems: "center",
+                                                                gap: 7.5,
+                                                            }} key={i} onPress={() => {
+                                                                openFile(document)
+                                                            }}>
+                                                                {findIcon(getUrlExtension(document.fileName))}
+                                                                
+                                                                <Text
+                                                                    style={{
+                                                                        color: scheme == "dark" ? "lightblue" : "darkblue",
+                                                                        maxWidth: "90%",
+                                                                    }}
 
-                                                                    gap: 7.5,
-                                                                }} key={i} onPress={() => {
-                                                                    openFile(document)
-                                                                }}>
-                                                                    {findIcon(getUrlExtension(document.fileName))}
-                                                                    
-                                                                    <Text
-                                                                        style={{
-                                                                            color: scheme == "dark" ? "lightblue" : "darkblue",
-                                                                            maxWidth: "90%",
-                                                                        }}
-
-                                                                        ellipsizeMode="middle"
-                                                                        numberOfLines={2}
-                                                                    >
-                                                                        {document.fileName}
-                                                                    </Text>
-                                                                </TouchableOpacity>
-                                                            ))}
-                                                        </View>
+                                                                    ellipsizeMode="middle"
+                                                                    numberOfLines={2}
+                                                                >
+                                                                    {document.fileName}
+                                                                </Text>
+                                                            </TouchableOpacity>
+                                                        ))}
                                                     </View>
                                                 }
                                             />
                                         )}
-
-                                        {(opgaveDetails.karakterSkala != null && opgaveDetails.karakterSkala != "Der gives ikke karakter" && opgaveDetails.karakterSkala != "") && opgaveDetails.opgaveBeskrivelse && <Separator />}
-
-                                        {(opgaveDetails.karakterSkala != null && opgaveDetails.karakterSkala != "Der gives ikke karakter" && opgaveDetails.karakterSkala != "") &&
-                                            <View>
-                                                <Cell
-                                                    cellStyle="RightDetail"
-                                                    title="Karakter Skala"
-                                                    detail={opgaveDetails?.karakterSkala}
-
-                                                    detailTextStyle={{
-                                                        maxWidth: "70%",
-                                                    }}
-                                                />
-                                            </View>
-                                        }
-
-                                        {(opgaveDetails.karakterSkala != null && opgaveDetails.karakterSkala != "Der gives ikke karakter" && opgaveDetails.karakterSkala != "") && (opgaveDetails.note != null && opgaveDetails.note != "") && <Separator />}
-
-                                        {(opgaveDetails.note != null && opgaveDetails.note != "") &&
-                                            <View>
-                                                <Cell
-                                                    cellContentView={
-                                                        <View style={{
-                                                            display: "flex",
-                                                            flexDirection: "column",
-
-                                                            paddingBottom: 10,
-                                                        }}>
-                                                            <Text style={{
-                                                                color: scheme === "dark" ? "#fff" : "#000",
-                                                                paddingBottom: 5,
-                                                                paddingTop: 8,
-                                                                fontSize: 16,
-                                                            }}>
-                                                                Note
-                                                            </Text>
-                                                            <Text style={{
-                                                                color: theme.WHITE,
-                                                            }}>
-                                                                {opgaveDetails?.note}
-                                                            </Text>
-                                                        </View>
-                                                    }
-                                                />
-                                            </View>
-                                        }
-
-                                        {!(opgaveDetails.note != null && opgaveDetails.note != "") && (opgaveDetails.ansvarlig != null && opgaveDetails.ansvarlig != "") && (opgaveDetails.karakterSkala != null && opgaveDetails.karakterSkala != "Der gives ikke karakter" && opgaveDetails.karakterSkala != "") && <Separator />}
-
-                                        {(opgaveDetails.note != null && opgaveDetails.note != "") && (opgaveDetails.ansvarlig != null && opgaveDetails.ansvarlig != "") && <Separator />}
-
-                                        {(opgaveDetails.ansvarlig != null && opgaveDetails.ansvarlig != "") &&
-                                            <Cell
-                                                contentContainerStyle={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                
-                                                    alignItems: "flex-start",
-                                                    paddingBottom: 10,
-                                                }}
-                                                cellContentView={
-                                                    <>
-                                                        <Text style={{
-                                                            color: theme.WHITE,
-                                                            paddingBottom: 5,
-                                                            paddingTop: 8,
-                                                            fontSize: 16,
-                                                        }}>
-                                                            Ansvarlig
-                                                        </Text>
-                                                        <View style={{
-                                                            display: "flex",
-                                                            flexDirection: "row",
-                                                            alignItems: "center",
-
-                                                            gap: 10,
-                                                        }}>
-                                                            
-                                                            {billedeId != null ?
-                                                                <ProfilePicture gymNummer={gym?.gymNummer ?? ""} billedeId={billedeId} size={40} navn={opgaveDetails?.ansvarlig} />
-                                                            :
-                                                                <View style={{
-                                                                    width: 40,
-                                                                    height: 40,
-                                                                    borderRadius: 100,
-
-                                                                    display: "flex",
-                                                                    justifyContent: "center",
-                                                                    alignItems: "center",
-                                                                }}>
-                                                                    <UserIcon color={theme.WHITE} />
-                                                                </View>
-                                                            }
-                                                                
-                                                            <Text style={{
-                                                                color: theme.WHITE,
-                                                                maxWidth: "80%",
-                                                            }} numberOfLines={1}>
-                                                                {opgaveDetails?.ansvarlig}
-                                                            </Text>
-                                                        </View>
-                                                    </>
-                                                }
-                                            />
-                                        }
                                     </View>
                                 }
                             </View>

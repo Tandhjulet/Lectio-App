@@ -701,21 +701,23 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                 </View>
             :
                 <View>
-                    {(!afleveringer || !afleveringer[sortedBy] || Object.keys(afleveringer[sortedBy]).length == 0) && (
-                        <View style={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
+                    {(!afleveringer || !(afleveringer[sortedBy]) || Object.keys(afleveringer[sortedBy]).length == 0) && (
+                        <ScrollView refreshControl={
+                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                        } contentContainerStyle={{
+                            flexDirection: 'column',
+                            alignItems: "center",
 
-                            flexDirection: 'column-reverse',
-
-                            minHeight: '80%',
-
-                            gap: 5,
+                            height: "100%",
                         }}>
+                            <Logo size={40} style={{
+                                marginTop: 200,
+                            }} />
                             <Text style={{
                                 color: theme.WHITE,
-                                textAlign: 'center'
+                                textAlign: 'center',
+
+                                fontSize: 16,
                             }}>
                                 {sortedBy == "Alle" ?
                                     "Du har ingen opgaver"
@@ -723,11 +725,10 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                                     `Du har ingen opgaver der ${sortedBy == "Afleveret" ? "er " : ""}${sortedBy.toLowerCase()}.`
                                 }
                             </Text>
-                            <Logo size={40} />
-                        </View>
+                        </ScrollView>
                     )}
 
-                    {afleveringer && afleveringer[sortedBy] && (
+                    {afleveringer && afleveringer[sortedBy] && Object.keys(afleveringer[sortedBy]).length > 0 && (
                         <SectionList
                             sections={afleveringer[sortedBy]}
                             renderItem={renderItemSectionList}
