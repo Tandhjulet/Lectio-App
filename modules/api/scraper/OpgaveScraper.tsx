@@ -48,6 +48,7 @@ const scrapeOpgaveDetails = (data: any) => {
 }
 
 export interface Indlæg {
+    time: string,
     byUser: string,
     comment: string,
     document?: Document,
@@ -137,6 +138,7 @@ export async function scrapeOpgave(parser: any): Promise<OpgaveDetails | null> {
                 } catch {}
 
                 out.push({
+                    time: indlæg.children[0].firstChild.text,
                     byUser: indlæg.children[1].firstChild.firstChild.text,
                     document: document,
                     comment: scrapeText(indlæg.children[2].children)

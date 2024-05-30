@@ -2,7 +2,7 @@ import { NavigationProp, RouteProp } from "@react-navigation/native"
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from "react-native";
 import { Cell, Section, Separator, TableView } from "react-native-tableview-simple";
-import { Opgave, OpgaveDetails, Status } from "../../modules/api/scraper/OpgaveScraper";
+import { Opgave, OpgaveDetails, parseDate, Status } from "../../modules/api/scraper/OpgaveScraper";
 import { formatDate } from "../Afleveringer";
 import { getAflevering } from "../../modules/api/scraper/Scraper";
 import { secureGet, getUnsecure } from "../../modules/api/Authentication";
@@ -165,9 +165,8 @@ export default function AfleveringView({ navigation, route }: {
                                             color: hexToRgb(theme.WHITE.toString(), 0.7),
                                             letterSpacing: 0.7,
                                             textAlign: "center",
-                                            textTransform: "capitalize",
                                         }}>
-                                            {Status[aflevering.status]}
+                                            {aflevering.team}
                                         </Text>
 
                                         <Text style={{
@@ -179,18 +178,23 @@ export default function AfleveringView({ navigation, route }: {
                                             {aflevering.title}
                                         </Text>
 
-                                        <Text style={{
-                                            color: hexToRgb(theme.WHITE.toString(), 0.7),
-                                            textAlign: "center",
-                                            fontSize: 15,
-                                        }}>
+                                        {opgaveDetails ? (
                                             <Text style={{
-                                                textTransform: "capitalize",
+                                                color: hexToRgb(theme.WHITE.toString(), 0.7),
+                                                textAlign: "center",
+                                                fontSize: 15,
                                             }}>
-                                                {opgaveDetails?.ansvarlig?.split("(")[0]}
+                                                <Text style={{
+                                                    textTransform: "capitalize",
+                                                }}>
+                                                    {opgaveDetails?.ansvarlig?.split("(")[0]}
+                                                </Text>
+                                                {"(" + opgaveDetails?.ansvarlig?.split("(")[1]}
                                             </Text>
-                                            ({opgaveDetails?.ansvarlig?.split("(")[1]}
-                                        </Text>
+                                        ): (
+                                            <ActivityIndicator size={"small"} />
+                                        )}
+
                                     </View>
 
                                     
@@ -258,13 +262,23 @@ export default function AfleveringView({ navigation, route }: {
                                                 Karakterskala
                                             </Text>
 
-                                            <Text style={{
-                                                color: hexToRgb(theme.WHITE.toString(), 1),
-                                                textAlign: "left",
-                                                maxWidth: "80%",
-                                            }} ellipsizeMode="tail" numberOfLines={2}>
-                                                {opgaveDetails?.karakterSkala}
-                                            </Text>
+                                            {opgaveDetails ? (
+                                                <Text style={{
+                                                    color: hexToRgb(theme.WHITE.toString(), 1),
+                                                    textAlign: "left",
+                                                    maxWidth: "80%",
+                                                }} ellipsizeMode="tail" numberOfLines={2}>
+                                                    {opgaveDetails?.karakterSkala}
+                                                </Text>
+                                            ) : (
+                                                <View style={{
+                                                    width: "100%",
+                                                    alignItems: "flex-start",
+                                                    justifyContent: "flex-start",
+                                                }}>
+                                                    <ActivityIndicator size={"small"} />
+                                                </View>
+                                            )}
                                         </View>
 
                                         <View style={{
@@ -296,10 +310,27 @@ export default function AfleveringView({ navigation, route }: {
                                         </View>
                                     </View>
 
+                                    <View style={{
+                                        paddingHorizontal: 10,
+                                    }}>
+                                        <Text style={{
+                                            color: hexToRgb(theme.WHITE.toString(), 0.7),
+                                        }}>
+                                            Status:{" "}
+                                            <Text style={{
+                                                textTransform: "capitalize",
+                                                color: theme.WHITE,
+                                                fontWeight: "bold",
+                                            }}>
+                                                {Status[aflevering.status]}
+                                            </Text>
+                                        </Text>
+                                    </View>
+
                                     {opgaveDetails?.note && (
                                         <View style={{
                                             paddingHorizontal: 10,
-                                            marginTop: 10,
+                                            marginTop: 5,
                                         }}>
                                             <Text style={{
                                                 color: theme.WHITE,
@@ -312,6 +343,14 @@ export default function AfleveringView({ navigation, route }: {
 
                                                 {"\n"}{opgaveDetails?.note}
                                             </Text>
+                                        </View>
+                                    )}
+
+                                    {!opgaveDetails && (
+                                        <View style={{
+                                            marginTop: 10,
+                                        }}>
+                                            <ActivityIndicator size={"small"} />
                                         </View>
                                     )}
                                 </View>
@@ -346,7 +385,8 @@ export default function AfleveringView({ navigation, route }: {
                                                                 
                                                                 <Text
                                                                     style={{
-                                                                        color: scheme == "dark" ? "lightblue" : "darkblue",
+                                                                        color: theme.ACCENT,
+                                                                        fontWeight: "600",
                                                                         maxWidth: "90%",
                                                                     }}
 
@@ -463,6 +503,8 @@ export default function AfleveringView({ navigation, route }: {
                                     name = extensionKnown ? indlæg.document.fileName.replace(new RegExp("\\." + getUrlExtension(indlæg.document.fileName) + "$"), "") : indlæg.document.fileName;
                                 }
 
+                                const indlægDate = parseDate(indlæg.time);
+
                                 return (
                                     <Cell
                                         key={i}
@@ -470,28 +512,35 @@ export default function AfleveringView({ navigation, route }: {
                                         cellContentView={
                                             <View style={{
                                                 paddingVertical: 7.5,
+                                                width: "100%",
                                             }}>
                                                 <View style={{
                                                     display: "flex",
-                                                    justifyContent: "space-between",
                                                     flexDirection: "row",
+                                                    justifyContent: "space-between",
+
+                                                    width: "100%",
                                                 }}>
                                                     <Text style={{
                                                         color: theme.WHITE.toString(),
                                                         fontWeight: "bold",
                                                         fontSize: 12.5,
+                                                        maxWidth: "60%",
                                                     }}>
                                                         {indlæg.byUser}
                                                     </Text>
-                                                </View>
 
-                                                {indlæg.comment !== "" && (
                                                     <Text style={{
-                                                        color: scheme === "dark" ? "#FFF" : "#000",
-                                                    }} >
-                                                        {indlæg.comment}
+                                                        color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                        maxWidth: "40%",
+                                                    }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+                                                        {indlægDate.toLocaleTimeString("da-DK", {
+                                                            timeStyle: "short"
+                                                        }).replace(".", ":")}, {indlægDate.toLocaleDateString("da-DK", {
+                                                            dateStyle: "medium",
+                                                        })}
                                                     </Text>
-                                                )}
+                                                </View>
                                                 
                                                 {indlæg.document && (
                                                     <TouchableOpacity style={{
@@ -500,26 +549,33 @@ export default function AfleveringView({ navigation, route }: {
 
                                                         alignItems: "center",
 
-                                                        marginTop: 5,
                                                         marginLeft: -3,
+                                                        marginVertical: 5,
                                                         
                                                         gap: 2.5,
-                                                    }} onPress={() => {
-                                                        // @ts-ignore
-                                                        openFile(indlæg.document)
                                                     }}>
-                                                        {findIcon(getUrlExtension(indlæg.document.fileName), 25)}
 
                                                         <Text style={{
-                                                            color: scheme === "dark" ? "lightblue" : "darkblue",
-                                                            textDecorationLine: "underline",
+                                                            color: theme.ACCENT,
+                                                            fontWeight: "700"
                                                         }}>
                                                             {name}
                                                         </Text>
                                                     </TouchableOpacity>
                                                 )}
+
+                                                {indlæg.comment !== "" && (
+                                                    <Text style={{
+                                                        color: theme.WHITE,
+                                                    }} >
+                                                        {indlæg.comment}
+                                                    </Text>
+                                                )}
                                             </View>
                                         }
+                                        onPress={() => {
+                                            openFile(indlæg.document!)
+                                        }}
                                     />
                                 )
                             })}

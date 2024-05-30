@@ -6,7 +6,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 ## Prioriteringer/mangler ved appen
 
 ## NEEDED FOR RELAUNCH
-- opgavebeskrivelse
 - karakterer
 
 ### HJEMMESIDE
