@@ -61,10 +61,11 @@ export default function BeskedView({ navigation, route }: {
 
             setPeople(await getPeople() ?? {});
 
-            const messageThread: ThreadMessage[] | null = await getMessage(gym.gymNummer, message.messageId, headers, true);
-            
-            setThreadMessages(messageThread ?? []);
-            setLoading(false)
+            await getMessage(gym.gymNummer, message.messageId, headers, false, (messageThread) => {
+                setThreadMessages(messageThread ?? []);
+                setLoading(false)
+            });
+
         })()
     }, [])
 
@@ -78,10 +79,10 @@ export default function BeskedView({ navigation, route }: {
 
             setPeople(await getPeople() ?? {});
 
-            const messageThread: ThreadMessage[] | null = await getMessage(gym.gymNummer, message.messageId, headers, true);
-            
-            setThreadMessages(messageThread ?? []);
-            setRefreshing(false)
+            await getMessage(gym.gymNummer, message.messageId, headers, true, (messageThread) => {
+                setThreadMessages(messageThread ?? []);
+                setRefreshing(false)
+            });
         })()
 
     }, [refreshing])

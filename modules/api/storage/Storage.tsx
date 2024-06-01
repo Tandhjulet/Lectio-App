@@ -1,6 +1,19 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Timespan } from "./Timespan";
 import BeskedView from "../../../pages/beskeder/BeskedView";
+import treat, { _treat } from "../scraper/TextTreater";
+
+// @ts-ignore
+import DomSelector from 'react-native-dom-parser';
+
+export function isRateLimited(parser: any): boolean {
+    try {
+        const text = parser.getElementsByClassName("content-container")[0].firstChild.firstChild.firstChild.text;
+        return text.includes("403 - Forbidden");
+    } catch(e) {
+        return false;
+    }
+}
 
 export enum Key {
     SKEMA,
@@ -24,6 +37,11 @@ export enum Key {
 
     REGISTRATION,
     GRADES,
+
+    BOOKS,
+
+    DOCUMENTS,
+    FOLDERS,
 }
 
 export type SaveStructure = {
@@ -133,21 +151,25 @@ export async function getSaved(key: Key, identifier: string = ""): Promise<Resul
     }
 }
 
-export async function fetchWithCache<T>(req: Request, key: Key, identifier: string = "", timespan: number, cb: (data: T) => Promise<void>, parsingFunc: Function, args?: any[]): Promise<T> { 
-    const cached = await getSaved(key, identifier);
-    if(cached.valid) {
-        await cb(cached.value)
+export async function fetchWithCache<T>(req: Request, key: Key, identifier: string = "", timespan: number, cb: (data: T | undefined) => Promise<void> | void, parsingFunc: Function, bypassCache: boolean = false): Promise<T | undefined | null> { 
+    if(!bypassCache) {
+        const cached = await getSaved(key, identifier);
+        if(cached.value) { // doesn't need to be before expiration date.
+                           // will be updated in a few seconds anyway
+            await cb(cached.value)
+        }
     }
 
     const response = await fetch(req);
-    const result = parsingFunc.apply([
-        await response.text(),
-        ...(args ?? []),
-    ]);
+    const text = _treat(await response.text());
+    const parser = DomSelector(text);
 
-    await cb(result);
+    const args = key == Key.SKEMA ? [parser, text] : [parser];
+    const result = await parsingFunc.apply(null, args);
+    const notRateLimited = !(isRateLimited(parser));
+    await cb(notRateLimited ? result : undefined);
 
-    await saveFetch(key, result, timespan, identifier)
+    notRateLimited && (await saveFetch(key, result, timespan, identifier))
 
-    return result;
+    return notRateLimited ? result : undefined;
 }

@@ -201,26 +201,26 @@ export default function Absence({ navigation }: { navigation: any }) {
         setLoading(true);
         
         (async (): Promise<string> => {
-            const out: ChartedAbsence = {
-                almindeligt: {
-                    yearly: 0,
-                    settled: 0,
-                    absent: 0,
-                    teams: []
-                },
-                skriftligt: {
-                    yearly: 0,
-                    settled: 0,
-                    absent: 0,
-                    teams: []
-                }
-            }
-            
             const gymNummer = (await secureGet("gym")).gymNummer;
 
-            await getAbsence(gymNummer).then(({ payload, rateLimited }): any => {
-                setRateLimited(rateLimited)
-                if(payload == null) {
+            getAbsence(gymNummer, false, (payload) => {
+                const out: ChartedAbsence = {
+                    almindeligt: {
+                        yearly: 0,
+                        settled: 0,
+                        absent: 0,
+                        teams: []
+                    },
+                    skriftligt: {
+                        yearly: 0,
+                        settled: 0,
+                        absent: 0,
+                        teams: []
+                    }
+                }
+
+                setRateLimited(payload == undefined)
+                if(!payload) {
                     setLoading(false);
                     return;
                 }
@@ -232,7 +232,7 @@ export default function Absence({ navigation }: { navigation: any }) {
             return gymNummer;
         })().then(async (gymNummer: string) => { // render registrations after absence
             
-            getAbsenceRegistration(gymNummer).then((res: Registration[] | null) => {
+            getAbsenceRegistration(gymNummer, false, (res) => {
                 if(!res) {
                     setRemappedRegs([]);
                     setRegistrationLoading(false);
@@ -292,25 +292,25 @@ export default function Absence({ navigation }: { navigation: any }) {
         (async () => {
             const gymNummer: string = (await secureGet("gym")).gymNummer;
 
-            const out: ChartedAbsence = {
-                almindeligt: {
-                    yearly: 0,
-                    settled: 0,
-                    absent: 0,
-                    teams: []
-                },
-                skriftligt: {
-                    yearly: 0,
-                    settled: 0,
-                    absent: 0,
-                    teams: []
+            getAbsence(gymNummer, true, (payload) => {
+                const out: ChartedAbsence = {
+                    almindeligt: {
+                        yearly: 0,
+                        settled: 0,
+                        absent: 0,
+                        teams: []
+                    },
+                    skriftligt: {
+                        yearly: 0,
+                        settled: 0,
+                        absent: 0,
+                        teams: []
+                    }
                 }
-            }
 
-            getAbsence(gymNummer, true).then(({ payload, rateLimited }): any => {
-                setRateLimited(rateLimited)
-                if(payload == null) {
-                    setRefreshing(false);
+                setRateLimited(payload == undefined)
+                if(!payload) {
+                    setLoading(false);
                     return;
                 }
 
@@ -348,7 +348,7 @@ export default function Absence({ navigation }: { navigation: any }) {
 
         (async () => {
             const gymNummer = (await secureGet("gym")).gymNummer;
-            getAbsenceRegistration(gymNummer, true).then((res: Registration[] | null) => {
+            getAbsenceRegistration(gymNummer, true, (res) => {
                 if(!res) {
                     setRemappedRegs([]);
                     return;
@@ -1089,7 +1089,9 @@ export default function Absence({ navigation }: { navigation: any }) {
                         
                         <View key="1">
                             {remappedRegs.length == 0 && !registrationLoading && (
-                                <View style={{
+                                <ScrollView refreshControl={
+                                    <RefreshControl refreshing={registrationRefreshing} onRefresh={onRegistrationRefresh} />
+                                } contentContainerStyle={{
                                     display: 'flex',
                                     justifyContent: 'center',
                                     alignItems: 'center',
@@ -1105,7 +1107,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                     }}>
                                         Du har ingen fraværsregistreringer.
                                     </Text>
-                                </View>
+                                </ScrollView>
                             )}
                             {registrationLoading && (
                                 <View style={{

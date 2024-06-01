@@ -14,6 +14,7 @@ import RNFS from "react-native-fs";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import * as Progress from 'react-native-progress';
 import File from "../../modules/File";
+import RateLimit from "../../components/RateLimit";
 
 export default function Documents({ route }: {
     route: any,
@@ -22,8 +23,9 @@ export default function Documents({ route }: {
 
     const currentFolder: Folder | undefined = route.params && route.params.currentFolder;
 
-    const [folders, setFolders] = useState<Folder[] | undefined>(currentFolder?.subfolders ?? undefined);
-    const [documents, setDocuments] = useState<Document[]>();
+    const [folders, setFolders] = useState<Folder[] | undefined | null>(currentFolder?.subfolders ?? undefined);
+    const [documents, setDocuments] = useState<Document[] | undefined | null>();
+    const [ratelimited, setRatelimited] = useState<boolean>(false);
 
     const [progress, setProgress] = useState<number>(-1);
 
@@ -75,13 +77,17 @@ export default function Documents({ route }: {
             const profile = await getProfile();
 
             if(!currentFolder?.subfolders) {
-                const folders = await scrapeFolders(gymNummer, profile.elevId, currentFolder?.id ?? "S" + profile.elevId + "__");
-                setFolders(folders);
+                scrapeFolders(gymNummer, profile.elevId, currentFolder?.id ?? "S" + profile.elevId + "__", (folders) => {
+                    setRatelimited(folders == undefined)
+                    setFolders(folders);
+                });
             }
 
             if(currentFolder) {
-                const documents = await scrapeDocuments(gymNummer, profile.elevId, currentFolder.id);
-                setDocuments(documents);
+                scrapeDocuments(gymNummer, profile.elevId, currentFolder.id, (documents) => {
+                    setRatelimited(folders == undefined)
+                    setDocuments(documents);
+                });
             }
         })();
     }, []);
@@ -137,15 +143,19 @@ export default function Documents({ route }: {
                         const extensionKnown = !(findIcon(getUrlExtension(document.fileName)).props.color == hexToRgb(theme.WHITE.toString(), 0.8));
                         
                         const name = extensionKnown ? document.fileName.replace(new RegExp("\\." + getUrlExtension(document.fileName) + "$"), "") : document.fileName;
-                        const dateComps = document.date.split(" ")[1].split("/");
-                        const month = ["januar", "februar", "marts", "april", "maj", "juni", "juli", "august", "september", "oktober", "november", "december"][parseInt(dateComps[1])-1]
-                        const day =  document.date.split(" ")[0].replace("ma", "mandag")
-                                                                .replace("ti", "tirsdag")
-                                                                .replace("on", "onsdag")
-                                                                .replace("to", "torsdag")
-                                                                .replace("fr", "fredag")
-                                                                .replace("lø", "lørdag")
-                                                                .replace("sø", "søndag");
+
+                        let month, day, dateComps;
+                        if(document.date) {
+                            dateComps = document.date.split(" ")[1].split("/");
+                            month = ["januar", "februar", "marts", "april", "maj", "juni", "juli", "august", "september", "oktober", "november", "december"][parseInt(dateComps[1])-1]
+                            day =  document.date.split(" ")[0].replace("ma", "mandag")
+                                                                   .replace("ti", "tirsdag")
+                                                                   .replace("on", "onsdag")
+                                                                   .replace("to", "torsdag")
+                                                                   .replace("fr", "fredag")
+                                                                   .replace("lø", "lørdag")
+                                                                   .replace("sø", "søndag");
+                        }
 
                         return (
                             <Cell
@@ -192,7 +202,7 @@ export default function Documents({ route }: {
                                                         fontSize: 15,
                                                         letterSpacing: -0.32,
                                                     }} ellipsizeMode="middle" numberOfLines={1}>
-                                                        {" "}{day} d. {dateComps[0]}. {month}
+                                                        {dateComps ? " " + day + " d. " + dateComps[0] + ". " + month : ""}
                                                     </Text>
 
                                                     <Text style={{
@@ -298,6 +308,8 @@ export default function Documents({ route }: {
                     </View>
                 </View>
             )}
+
+            {ratelimited && <RateLimit />}
         </View>
     )
 }

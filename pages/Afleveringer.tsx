@@ -263,11 +263,11 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
 
             const gymNummer = (await secureGet("gym")).gymNummer;
 
-            getAfleveringer(gymNummer).then(({payload, rateLimited}): any => {
+            getAfleveringer(gymNummer, false, (payload) => {
                 setOpgaveCount(countOpgaver(payload));
 
                 setAfleveringer(filterData(payload))
-                setRateLimited(rateLimited)
+                setRateLimited(payload === undefined)
                 setLoading(false);
             })
         })();
@@ -282,11 +282,11 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
         (async () => {
             const gymNummer = (await secureGet("gym")).gymNummer;
 
-            getAfleveringer(gymNummer, true).then(({payload, rateLimited}): any => {
+            getAfleveringer(gymNummer, true, (payload) => {
                 setOpgaveCount(countOpgaver(payload));
 
                 setAfleveringer(filterData(payload))
-                setRateLimited(rateLimited)
+                setRateLimited(payload === undefined)
                 setRefreshing(false);
             })
         })();

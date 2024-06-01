@@ -21,9 +21,10 @@ export default function Books() {
             const { gymNummer } = await secureGet("gym");
             const profile = await getProfile();
 
-            const books = await scrapeBooks(gymNummer, profile.elevId);
-            setBooks(books);
-            setLoading(false);
+            scrapeBooks(gymNummer, profile.elevId, (books => {
+                setBooks(books);
+                setLoading(false);
+            }));
         })();
     }, [])
 

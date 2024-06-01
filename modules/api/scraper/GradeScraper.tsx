@@ -1,8 +1,7 @@
 export interface Grade {
     fag: string,
-    type: "Mundtlig" | "Skriftlig" | "Samlet",
-    karakterer: {[id: string]: WeightedGrade},
-    weight: string,
+    type: string[],
+    karakterer: {[id: string]: WeightedGrade}[],
 }
 
 export interface WeightedGrade {
@@ -15,7 +14,7 @@ export function parseGrades(parser: any): Grade[] {
     if(table === null)
         return [];
 
-    const out: Grade[] = [];
+    const out: {[id: string]: Grade} = {};
     const cols: string[] = [];
 
     table.children.forEach((child: any, i: number) => {        
@@ -49,13 +48,18 @@ export function parseGrades(parser: any): Grade[] {
             }
         })
 
-        out.push(({
-            fag: fag.split(", ")[0],
-            karakterer: grades,
-            type: fag.split(", ")[1] === "SAM" ? "Samlet" : fag.split(", ")[1],
-            weight: "",
-        }))
+        const fagNavn = fag.split(", ")[0];
+        if(!out[fagNavn]) {
+            out[fagNavn] = {
+                fag: fag.split(", ")[0],
+                karakterer: [grades],
+                type: [fag.split(", ")[1] === "SAM" ? "Samlet" : fag.split(", ")[1]],
+            }
+        } else {
+            out[fagNavn].type.push(fag.split(", ")[1] === "SAM" ? "Samlet" : fag.split(", ")[1]);
+            out[fagNavn].karakterer.push(grades);
+        }
     })
 
-    return out;
+    return Object.values(out);
 }

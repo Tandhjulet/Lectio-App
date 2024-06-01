@@ -47,7 +47,7 @@ export default function AfleveringView({ navigation, route }: {
             const gym: { gymName: string, gymNummer: string } = await secureGet("gym")
             setGym(gym);
 
-            getAflevering(gym.gymNummer, aflevering.id).then(async (v) => {
+            getAflevering(gym.gymNummer, aflevering.id, false, async (v) => {
                 setOpgaveDetails(v);
 
                 const people = await getPeople();
@@ -71,7 +71,7 @@ export default function AfleveringView({ navigation, route }: {
             if(gym == null)
                 return;
 
-            getAflevering(gym.gymNummer, aflevering.id, true).then(async (v) => {
+            getAflevering(gym.gymNummer, aflevering.id, false, async (v) => {
                 setOpgaveDetails(v);
 
                 const people = await getPeople();
@@ -79,7 +79,7 @@ export default function AfleveringView({ navigation, route }: {
                 if(people != null && v?.ansvarlig != null)
                     setBilledeId(people[CLEAN_NAME(v.ansvarlig)]?.billedeId)
 
-                    setRefreshing(false);
+                setRefreshing(false);
             })
         })();
     }, [refreshing])
@@ -345,19 +345,11 @@ export default function AfleveringView({ navigation, route }: {
                                             </Text>
                                         </View>
                                     )}
-
-                                    {!opgaveDetails && (
-                                        <View style={{
-                                            marginTop: 10,
-                                        }}>
-                                            <ActivityIndicator size={"small"} />
-                                        </View>
-                                    )}
                                 </View>
                             }
                         />
 
-                        {!loading ?
+                        {!loading && (
                             <View>
                                 {opgaveDetails != null &&
                                     <View>
@@ -404,18 +396,7 @@ export default function AfleveringView({ navigation, route }: {
                                     </View>
                                 }
                             </View>
-                        :
-                            <View style={{
-                                marginVertical: 50,
-                                width: "100%",
-                                display: "flex",
-
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}>
-                                <ActivityIndicator color={theme.ACCENT} />
-                            </View>
-                        }
+                        )}
                     </Section>
 
                     {((opgaveDetails?.tilbagemedling && (opgaveDetails.tilbagemedling.karakter !== "" || opgaveDetails.tilbagemedling.karakterNote !== "")) || aflevering.elevNote) && (

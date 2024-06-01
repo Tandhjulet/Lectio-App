@@ -225,18 +225,9 @@ export default function Skema({ navigation, route }: {
      */
     useEffect(() => {
         (async () => {
+            setLoading(true);
             setBlockScroll(true);
             const profile = await getProfile();
-
-            const saved = await getSaved(Key.SKEMA, getWeekNumber(loadDate).toString());
-            let hasCache = false;
-            if(isOwnSkema && saved.valid && saved.value != null) {
-                setSkema(saved.value.days);
-                setModulTimings(saved.value.modul);
-                hasCache = true;
-            } else {
-                setLoading(true);
-            }
 
             const gymNummer = (await secureGet("gym")).gymNummer;
 
@@ -246,23 +237,23 @@ export default function Skema({ navigation, route }: {
             setDaysOfThreeWeeks([...getDaysOfThreeWeeks(loadDate)])
 
             setProfile(profile);
-            getSkema(gymNummer, loadDate, route?.params?.user).then(({ payload, rateLimited }) => {
-                if(!rateLimited && payload != null) {
+            getSkema(gymNummer, loadDate, (payload) => {
+                console.log("called")
+
+                if(payload) {
                     setSkema([...payload.days]);
                     setModulTimings([...payload.modul]);
                 } else {
-                    if(!hasCache) {
-                        setSkema(null);
-                        setModulTimings([]);
-                    }
+                    setSkema(null);
+                    setModulTimings([]);
                 }
                 
-                chooseSchema(payload?.days ?? (hasCache ? saved.value.days : []), payload?.modul ?? (hasCache ? saved.value.modul : []))
+                chooseSchema(payload?.days, payload?.modul)
 
                 setLoading(false);
                 setBlockScroll(false);
-                setRateLimited(rateLimited)
-            })
+                setRateLimited(payload === undefined)
+            }, route?.params?.user)
         })();
 
     }, [loadDate])
@@ -280,17 +271,17 @@ export default function Skema({ navigation, route }: {
         
         (async () => {
             const gymNummer = (await secureGet("gym")).gymNummer;
-            getSkema(gymNummer, loadDate, route?.params?.user).then(({ payload, rateLimited }) => {
-                if(!rateLimited && payload != null) {
+            getSkema(gymNummer, loadDate, (payload) => {
+                if(payload) {
                     setSkema([...payload.days]);
                     setModulTimings([...payload.modul]);
                 } else {
                     setSkema(null);
                     setModulTimings([]);
                 }
-                setRateLimited(rateLimited)
+                setRateLimited(payload === undefined)
                 setRefreshing(false)
-            })
+            }, route?.params?.user)
         })();
 
     }, [refreshing])

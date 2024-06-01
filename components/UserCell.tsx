@@ -69,6 +69,9 @@ export default function UserCell() {
                         user: item,
                     })
                 }}
+                style={{
+                    height: 70,
+                }}
             >
                 <TouchableOpacity style={[{
                     paddingVertical: 15,

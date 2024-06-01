@@ -15,7 +15,6 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import UserCell from "../../components/UserCell";
 
 export default function TeachersAndStudents() {
-    const navigation = useNavigation<StackNavigationProp<any>>();
     const route = useRoute();
 
     const { Cell } = UserCell();
@@ -105,14 +104,13 @@ export default function TeachersAndStudents() {
                     return 1;
                 } else if(b.startsWith("<") && !a.startsWith("<")) {
                     return -1;
-                }
-                else {
-                    return a.localeCompare(b, "da-DK", {
-                        ignorePunctuation: true,
-                        collation: "ducet",
-                    })
+                } else {
+                    if(a < b) return -1;
+                    else if(a > b) return 1;
+                    return 0;
                 }
             });
+
             const nameAndClasslist = namelist.flatMap((v) => v + ":" + peopleList[v].klasse);
 
             setNamelistAndClassList(nameAndClasslist)
@@ -265,7 +263,7 @@ export default function TeachersAndStudents() {
                                             directionalLockEnabled={true}
 
                                             maxToRenderPerBatch={5}
-                                            initialNumToRender={20}
+                                            initialNumToRender={10}
 
                                             keyboardDismissMode="on-drag"
                                             keyboardShouldPersistTaps="always"

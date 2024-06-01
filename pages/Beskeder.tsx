@@ -335,11 +335,11 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
             else if(sortedBy == "Ulæste") mappeId = -40;
             else if(sortedBy == "Slettede") mappeId = -60;
 
-            getMessages(gym.gymNummer, mappeId).then(({payload, rateLimited}): any => {
+            getMessages(gym.gymNummer, mappeId, false, (payload) => {
                 setMessages(payload.messages);
                 setHeaders(payload.headers);
 
-                setRateLimited(rateLimited);
+                setRateLimited(payload === undefined);
                 setLoading(false);
             })
         })();
@@ -361,11 +361,11 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
             if(gym == null)
                 return;
             
-            getMessages(gym.gymNummer, mappeId, true).then(({payload, rateLimited}): any => {
+            getMessages(gym.gymNummer, mappeId, true, (payload) => {
                 setMessages(payload.messages);
                 setHeaders(payload.headers);
 
-                setRateLimited(rateLimited);
+                setRateLimited(payload === undefined);
                 setRefreshing(false);
             })
         })();

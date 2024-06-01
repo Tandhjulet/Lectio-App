@@ -11,15 +11,14 @@ import { secureGet, saveUnsecure } from '../Authentication';
 import { Hold, holdScraper, scrapeHoldListe } from './hold/HoldScraper';
 import { HEADERS, SCRAPE_URLS, getASPHeaders, parseASPHeaders } from './Helpers';
 import { Opgave, OpgaveDetails, scrapeOpgave, scrapeOpgaver } from './OpgaveScraper';
-import { modulRegnskabScraper, Modulregnskab } from './hold/ModulRegnskabScraper';
-import { Key, Result, getSaved, saveFetch } from '../storage/Storage';
+import { Key, Result, fetchWithCache, getSaved, saveFetch } from '../storage/Storage';
 import { Timespan } from '../storage/Timespan';
 import { CacheParams, scrapePeople, stringifyCacheParams } from './cache/CacheScraper';
 import { Person } from './class/ClassPictureScraper';
 import treat, { _treat, treatRaw } from './TextTreater';
 import { Grade, parseGrades } from './GradeScraper';
 import { Folder, parseDocuments, parseFolders, Document } from './DocumentScraper';
-import { parseBooks } from './BookScraper';
+import { Book, parseBooks } from './BookScraper';
 
 export async function scrapeCache(gymNummer: string, params?: CacheParams): Promise<Person[]> {
     const saved = await getSaved(Key.CACHE_PEOPLE);
@@ -80,22 +79,20 @@ export async function scrapeHold(holdId: string, gymNummer: string, bypassCache:
     return hold;
 }
 
-export async function scrapeFolders(gymNummer: string, elevId: string, folderId: string, bypassCache: boolean = false): Promise<Folder[]> {
-    const res = await fetch(SCRAPE_URLS(gymNummer, elevId, folderId).DOCUMENTS, {
+export async function scrapeFolders(gymNummer: string, elevId: string, folderId: string, cb: (data: Folder[] | undefined) => Promise<void> | void, bypassCache: boolean = false): Promise<Folder[] | null | undefined> {
+    const req = new Request(SCRAPE_URLS(gymNummer, elevId, folderId).DOCUMENTS, {
         method: "GET",
         credentials: 'include',
         headers: {
             "User-Agent": "Mozilla/5.0",
         },
     });
-    const parser = await treat(res);
-    const folders = parseFolders(parser);
 
-    return folders;
+    return await fetchWithCache(req, Key.FOLDERS, folderId, Timespan.WEEK, cb, parseFolders, bypassCache)
 }
 
-export async function scrapeDocuments(gymNummer: string, elevId: string, folderId: string, bypassCache: boolean = false): Promise<Document[]> {
-    const res = await fetch(SCRAPE_URLS(gymNummer, elevId, folderId).DOCUMENTS, {
+export async function scrapeDocuments(gymNummer: string, elevId: string, folderId: string, cb: (data: Document[] | undefined) => Promise<void> | void, bypassCache: boolean = false): Promise<Document[] | null | undefined> {
+    const req = new Request(SCRAPE_URLS(gymNummer, elevId, folderId).DOCUMENTS, {
         method: "GET",
         credentials: 'include',
         headers: {
@@ -103,23 +100,11 @@ export async function scrapeDocuments(gymNummer: string, elevId: string, folderI
         },
     });
 
-    const text = await res.text();
-
-    const parser = await treatRaw(text);
-    const documents = parseDocuments(parser);
-
-    return documents;
+    return await fetchWithCache(req, Key.DOCUMENTS, folderId, Timespan.WEEK, cb, parseDocuments, bypassCache)
 }
 
-export async function scrapeGrades(gymNummer: string, elevId: string, bypassCache: boolean = false): Promise<Grade[]> {
-    if(!bypassCache) {
-        const saved = await getSaved(Key.GRADES);
-        if(saved.valid && saved.value != null) {
-            return saved.value;
-        }
-    }
-
-    const res = await fetch(SCRAPE_URLS(gymNummer, elevId).GRADES, {
+export async function scrapeGrades(gymNummer: string, elevId: string, cb: (data: Grade[] | undefined) => Promise<void> | void, bypassCache: boolean = false): Promise<Grade[] | null | undefined> {
+    const req = new Request(SCRAPE_URLS(gymNummer, elevId).GRADES, {
         method: "GET",
         credentials: 'include',
         headers: {
@@ -127,13 +112,7 @@ export async function scrapeGrades(gymNummer: string, elevId: string, bypassCach
         },
     });
 
-    const parser = await treat(res);
-    const grades = parseGrades(parser);
-
-    if(grades != null)
-        await saveFetch(Key.GRADES, grades, -1);
-
-    return grades;
+    return await fetchWithCache(req, Key.GRADES, undefined, -1, cb, parseGrades, bypassCache)
 }
 
 export interface Studiekort {
@@ -192,31 +171,6 @@ export async function scrapeStudiekort(gymNummer: string): Promise<Studiekort> {
         pictureurl,
         qrcodeurl: SCRAPE_URLS(gymNummer, profile.elevId).QR_CODE_URL,
     };
-}
-
-export async function scrapeModulRegnskab(gymNummer: string, holdId: string, bypassCache: boolean = false): Promise<Modulregnskab | null> {
-    if(!bypassCache) {
-        const saved = await getSaved(Key.MODULREGNSKAB, holdId);
-        if(saved.valid && saved.value != null) {
-            return saved.value;
-        }
-    }
-
-    const res = await fetch(SCRAPE_URLS(gymNummer, holdId).MODUL_REGNSKAB, {
-        method: "GET",
-        credentials: 'include',
-        headers: {
-            "User-Agent": "Mozilla/5.0",
-        },
-    });
-
-    const parser = await treat(res);
-    const hold = await modulRegnskabScraper(parser);
-
-    if(hold != null)
-        await saveFetch(Key.MODULREGNSKAB, hold, -1, holdId);
-    
-    return hold;
 }
 
 export async function getSchools(): Promise<{[id: string]: string;}> {
@@ -390,11 +344,11 @@ export async function getProfile(): Promise<Profile> {
 
 // end of stupidity.
 
-export async function getSkema(gymNummer: string, date: Date, person?: Person): Promise<{ payload: Week | null, rateLimited: boolean }> {
+export async function getSkema(gymNummer: string, date: Date, cb: (data: Week | undefined) => Promise<void> | void, person?: Person): Promise<Week | null | undefined> {
     const id = person?.personId;
     const url = SCRAPE_URLS(gymNummer).SKEMA + (id !== undefined ? `?${person?.type === "ELEV" ? "elevid" : "laererid"}=`+id+"&" : "?") + `week=${getWeekNumber(date).toString().padStart(2, "0")}${date.getFullYear()}`;
 
-    const res = await fetch(url, {
+    const req = new Request(url, {
         method: "GET",
         credentials: 'include',
         headers: {
@@ -416,28 +370,10 @@ export async function getSkema(gymNummer: string, date: Date, person?: Person): 
         },
     });
 
-    const text = _treat(await res.text());
-    const parser = DomSelector(text);
-
-    const skema: Week | null = scrapeSchema(parser, text);
-
-    if(skema != null && !id)
-        await saveFetch(Key.SKEMA, skema, Timespan.WEEK, getWeekNumber(date).toString());
-
-    return {
-        payload: skema,
-        rateLimited: isRateLimited(parser),
-    };
+    return await fetchWithCache(req, Key.SKEMA, getWeekNumber(date).toString(), Timespan.WEEK * 2, cb, scrapeSchema, false)
 }
 
-export async function getMessage(gymNummer: string, messageId: string, headers: {}, bypassCache: boolean = false): Promise<ThreadMessage[] | null> {
-    if(!bypassCache) {
-        const saved = await getSaved(Key.S_BESKED, messageId);
-        if(saved.valid && saved.value != null) {
-            return saved.value;
-        }    
-    }
-    
+export async function getMessage(gymNummer: string, messageId: string, headers: {}, bypassCache: boolean = false, cb: (data: ThreadMessage[] | undefined) => Promise<void> | void): Promise<ThreadMessage[] | null | void> {
     const payload: {[id: string]: string} = {
         ...headers,
 
@@ -458,7 +394,7 @@ export async function getMessage(gymNummer: string, messageId: string, headers: 
     }
     const stringifiedData = parsedData.join("&");
 
-    const res = await fetch(SCRAPE_URLS(gymNummer, messageId).S_MESSAGE, {
+    const req = new Request(SCRAPE_URLS(gymNummer, messageId).S_MESSAGE, {
         method: "POST",
         credentials: 'include',
         headers: {
@@ -468,28 +404,11 @@ export async function getMessage(gymNummer: string, messageId: string, headers: 
         body: stringifiedData,
     });
 
-    const parser = await treat(res);
-    const messageBody = await scrapeMessage(parser);
-    
-    if( messageBody != null)
-        await saveFetch(Key.S_BESKED, messageBody, Timespan.HOUR * 6, messageId)
-
-    return messageBody;
+    return await fetchWithCache<ThreadMessage[]>(req, Key.S_BESKED, messageId, Timespan.DAY, cb, scrapeMessage, bypassCache)
 }
 
-export async function getMessages(gymNummer: string, mappeId: number = -70, bypassCache: boolean = false): Promise<{ payload: { messages: LectioMessage[] | null, headers: {[id: string]: string}}, rateLimited: boolean }> {
-    if(!bypassCache) {
-        const saved = await getSaved(Key.BESKEDER, mappeId.toString());
-        if(saved.valid && saved.value != null) {
-            return {
-                payload: saved.value,
-                rateLimited: false,
-            };
-        }
-    }
-
-
-    const res = await fetch(SCRAPE_URLS(gymNummer, undefined, undefined, undefined, mappeId).MESSAGES, {
+export async function getMessages(gymNummer: string, mappeId: number = -70, bypassCache: boolean = false, cb: (data: { messages: LectioMessage[] | null, headers: {[id: string]: string}} | undefined) => Promise<void> | void): Promise<{ messages: LectioMessage[] | null, headers: {[id: string]: string}} | null | undefined> {
+    const req = new Request(SCRAPE_URLS(gymNummer, mappeId.toString()).MESSAGES, {
         method: "GET",
         credentials: 'include',
         headers: {
@@ -497,42 +416,25 @@ export async function getMessages(gymNummer: string, mappeId: number = -70, bypa
         },
     });
 
-    const parser = await treat(res);
+    return await fetchWithCache<{ messages: LectioMessage[] | null, headers: {[id: string]: string}}>(req, Key.BESKEDER, mappeId.toString(), -1, cb, async (parser: DomSelector) => {
+        const ASPHeaders = parser.getElementsByClassName("aspNetHidden");
+        let headers: {[id: string]: string} = {};
+        ASPHeaders.forEach((header: any) => {
+            headers = {...headers, ...parseASPHeaders(header)};
+        })
     
-    const ASPHeaders = parser.getElementsByClassName("aspNetHidden");
-    let headers: {[id: string]: string} = {};
-    ASPHeaders.forEach((header: any) => {
-        headers = {...headers, ...parseASPHeaders(header)};
-    })
-
-    const messages = await scrapeMessages(parser);
-
-    if(messages != null && headers != null)
-        await saveFetch(Key.BESKEDER, {
+        const messages = await scrapeMessages(parser);
+        return {
             messages: messages,
             headers: headers
-        }, Timespan.MINUTE * 5, mappeId.toString())
+        };
+    }, bypassCache)
 
-    return {
-        payload: {
-            messages: messages,
-            headers: headers
-        },
-        rateLimited: isRateLimited(parser),
-    };
 }
 
-export async function getAflevering(gymNummer: string, id: string, bypassCache: boolean = false): Promise<OpgaveDetails | null> {
-    if(!bypassCache) {
-        const saved = await getSaved(Key.S_AFLEVERING, id);
-        if(saved.valid && saved.value != null) {
-            return saved.value;
-        }
-    }
-
+export async function getAflevering(gymNummer: string, id: string, bypassCache: boolean = false, cb: (data: OpgaveDetails | undefined) => Promise<void> | void): Promise<OpgaveDetails | null | undefined> {
     const profile = await getProfile();
-
-    const res = await fetch(SCRAPE_URLS(gymNummer, profile.elevId, id).S_OPGAVE, {
+    const req = new Request(SCRAPE_URLS(gymNummer, profile.elevId, id).S_OPGAVE, {
         method: "GET",
         credentials: "include",
         headers: {
@@ -540,26 +442,10 @@ export async function getAflevering(gymNummer: string, id: string, bypassCache: 
         },
     });
 
-    const parser = await treat(res);
-    const opgaver = await scrapeOpgave(parser);
-
-    if(opgaver != null)
-        await saveFetch(Key.S_AFLEVERING, opgaver, Timespan.HOUR * 6, id)
-
-    return opgaver;
+    return await fetchWithCache<OpgaveDetails>(req, Key.S_AFLEVERING, id, Timespan.DAY * 3, cb, scrapeOpgave, bypassCache)
 }
 
-export async function getAfleveringer(gymNummer: string, bypassCache: boolean = false): Promise<{ payload: Opgave[] | null, rateLimited: boolean }> {
-    if(!bypassCache) {
-        const saved = await getSaved(Key.AFLEVERINGER);
-        if(saved.valid && saved.value != null) {
-            return {
-                payload: saved.value,
-                rateLimited: false,
-            };
-        }
-    }
-
+export async function getAfleveringer(gymNummer: string, bypassCache: boolean = false, cb: (data: Opgave[] | undefined) => Promise<void> | void): Promise<Opgave[] | null | undefined> {
     const payload: {[id: string]: string} = {
         ...(await getASPHeaders(SCRAPE_URLS(gymNummer).OPGAVER)),
 
@@ -580,7 +466,7 @@ export async function getAfleveringer(gymNummer: string, bypassCache: boolean = 
     }
     const stringifiedData = parsedData.join("&");
 
-    const res = await fetch(SCRAPE_URLS(gymNummer).OPGAVER, {
+    const req = new Request(SCRAPE_URLS(gymNummer).OPGAVER, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -590,30 +476,11 @@ export async function getAfleveringer(gymNummer: string, bypassCache: boolean = 
         body: stringifiedData,
     });
 
-    const parser = await treat(res);
-    const opgaver = scrapeOpgaver(parser);
-
-    if(opgaver != null)
-        await saveFetch(Key.AFLEVERINGER, opgaver, Timespan.MINUTE * 5)
-
-    return {
-        payload: opgaver,
-        rateLimited: isRateLimited(parser),
-    };
+    return await fetchWithCache<Opgave[]>(req, Key.AFLEVERINGER, undefined, -1, cb, scrapeOpgaver, bypassCache)
 }
 
-export async function getAbsence(gymNummer: string, bypassCache: boolean = false): Promise<{ payload: Fag[] | null, rateLimited: boolean}> {
-    if(!bypassCache) {
-        const saved = await getSaved(Key.FRAVÆR);
-        if(saved.valid && saved.value != null) {
-            return {
-                payload: saved.value,
-                rateLimited: false,
-            };
-        }   
-    }
-
-    const res = await fetch(SCRAPE_URLS(gymNummer).ABSENCE, {
+export async function getAbsence(gymNummer: string, bypassCache: boolean = false, cb: (data: Fag[] | undefined) => Promise<void> | void): Promise<Fag[] | null | undefined> {
+    const req = new Request(SCRAPE_URLS(gymNummer).ABSENCE, {
         method: "GET",
         credentials: 'include',
         headers: {
@@ -621,27 +488,11 @@ export async function getAbsence(gymNummer: string, bypassCache: boolean = false
         },
     });
 
-    const parser = await treat(res);
-    const absence = scrapeAbsence(parser);
-
-    if(absence != null)
-        await saveFetch(Key.FRAVÆR, absence, Timespan.HOUR)
-
-    return {
-        payload: absence,
-        rateLimited: isRateLimited(parser),
-    };
+    return await fetchWithCache<Fag[]>(req, Key.FRAVÆR, undefined, -1, cb, scrapeAbsence, bypassCache)
 }
 
-export async function getAbsenceRegistration(gymNummer: string, bypassCache: boolean = false): Promise<Registration[] | null> { 
-    if(!bypassCache) {
-        const saved = await getSaved(Key.REGISTRATION);
-        if(saved.valid && saved.value != null) {
-            return saved.value;
-        }   
-    }
-
-    const res = await fetch(SCRAPE_URLS(gymNummer).ABSENCE_REGISTRATION, {
+export async function getAbsenceRegistration(gymNummer: string, bypassCache: boolean = false, cb: (data: Registration[] | undefined) => Promise<void> | void): Promise<Registration[] | undefined | null> { 
+    const req = new Request(SCRAPE_URLS(gymNummer).ABSENCE_REGISTRATION, {
         method: "GET",
         credentials: 'include',
         headers: {
@@ -649,18 +500,11 @@ export async function getAbsenceRegistration(gymNummer: string, bypassCache: boo
         },
     });
 
-    const parser = await treat(res);
-    const registration = scapeRegistration(parser);
-
-    if(registration != null && registration.length > 0) {
-        await saveFetch(Key.REGISTRATION, registration, Timespan.HOUR)
-    }
-
-    return registration
+    return await fetchWithCache<Registration[]>(req, Key.REGISTRATION, undefined, -1, cb, scapeRegistration, bypassCache)
 }
 
-export async function scrapeBooks(gymNummer: string, elevID: string) {
-    const res = await fetch(SCRAPE_URLS(gymNummer, elevID).BOOKS, {
+export async function scrapeBooks(gymNummer: string, elevID: string, cb: (data: Book[] | undefined) => void | Promise<void>) {
+    const req = new Request(SCRAPE_URLS(gymNummer, elevID).BOOKS, {
         method: "GET",
         credentials: 'include',
         headers: {
@@ -668,10 +512,7 @@ export async function scrapeBooks(gymNummer: string, elevID: string) {
         },
     });
 
-    const parser = await treat(res);
-    const books = parseBooks(parser);
-
-    return books;
+    return await fetchWithCache<Book[]>(req, Key.BOOKS, undefined, -1, cb, parseBooks)
 }
 
 export function getWeekNumber(d: any): number {
@@ -682,13 +523,4 @@ export function getWeekNumber(d: any): number {
     const weekNo: any = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
 
     return weekNo;
-}
-
-export function isRateLimited(parser: any): boolean {
-    try {
-        const text = parser.getElementsByClassName("content-container")[0].firstChild.firstChild.firstChild.text;
-        return text.includes("403 - Forbidden");
-    } catch(e) {
-        return false;
-    }
 }

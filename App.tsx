@@ -22,7 +22,6 @@ import ModulView from './pages/skema/ModulView';
 import { scrapePeople } from './modules/api/scraper/class/PeopleList';
 import Afleveringer from './pages/Afleveringer';
 import AfleveringView from './pages/afleveringer/AfleveringView';
-import ModulRegnskab from './pages/mere/ModulRegnskab';
 import { Appearance, Button, EmitterSubscription, Pressable, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronLeftIcon, PencilSquareIcon } from 'react-native-heroicons/solid';
 import { HeaderStyleInterpolators, TransitionPresets, createStackNavigator } from '@react-navigation/stack';
@@ -513,7 +512,6 @@ export function MereNavigator() {
         }
       }} />
 
-      <Settings.Screen name={"ModulRegnskab"} component={ModulRegnskab} options={{title: "Modulregnskab"}} />
       <Settings.Screen name={"Grades"} component={Grades} options={{title: "Karakterer"}} />
       <Settings.Screen name={"Dokumenter"} component={Documents} options={
         ({ route }) => {
