@@ -238,8 +238,6 @@ export default function Skema({ navigation, route }: {
 
             setProfile(profile);
             getSkema(gymNummer, loadDate, (payload) => {
-                console.log("called")
-
                 if(payload) {
                     setSkema([...payload.days]);
                     setModulTimings([...payload.modul]);
@@ -248,7 +246,7 @@ export default function Skema({ navigation, route }: {
                     setModulTimings([]);
                 }
                 
-                chooseSchema(payload?.days, payload?.modul)
+                chooseSchema(payload?.days ?? null, payload?.modul ?? [])
 
                 setLoading(false);
                 setBlockScroll(false);

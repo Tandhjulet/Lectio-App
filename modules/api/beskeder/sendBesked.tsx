@@ -36,8 +36,6 @@ export async function sendMessage(title: string, sendTo: Person[], content: stri
             const response = await send(title, content, headers, gymNummer);
             const matches = response.url.match(new RegExp('id=(\\d+)', "gm"));
 
-            console.log(await response.text());
-
             if(matches == null) {
                 finished(null);
                 return;

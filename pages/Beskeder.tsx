@@ -336,8 +336,8 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
             else if(sortedBy == "Slettede") mappeId = -60;
 
             getMessages(gym.gymNummer, mappeId, false, (payload) => {
-                setMessages(payload.messages);
-                setHeaders(payload.headers);
+                setMessages(payload?.messages ?? null);
+                setHeaders(payload?.headers);
 
                 setRateLimited(payload === undefined);
                 setLoading(false);
@@ -362,8 +362,8 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                 return;
             
             getMessages(gym.gymNummer, mappeId, true, (payload) => {
-                setMessages(payload.messages);
-                setHeaders(payload.headers);
+                setMessages(payload?.messages ?? null);
+                setHeaders(payload?.headers);
 
                 setRateLimited(payload === undefined);
                 setRefreshing(false);

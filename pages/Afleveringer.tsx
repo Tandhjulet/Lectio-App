@@ -34,7 +34,7 @@ export const formatDate = (date: Date) => {
  * @param data assignments to count
  * @returns the amount of different types of assignments
  */
-const countOpgaver = (data: Opgave[] | null) => {
+const countOpgaver = (data: Opgave[] | null | undefined) => {
     const out: {
         alle: number,
         venter: number,
@@ -46,7 +46,7 @@ const countOpgaver = (data: Opgave[] | null) => {
         mangler: 0,
         afleveret: 0,
     }
-    if(data == null)
+    if(!data)
         return out;
 
     data.forEach((opgave) => {
@@ -73,7 +73,7 @@ const countOpgaver = (data: Opgave[] | null) => {
  * @param filter what to filter for
  * @returns filtered data
  */
-const filterData = (data: Opgave[] | null) => {
+const filterData = (data: Opgave[] | null | undefined) => {
     const out: {[id: string]: {
         data: Opgave[],
         key: string,

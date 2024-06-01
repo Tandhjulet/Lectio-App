@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState } from "react"
+import React, { memo, useCallback, useEffect, useState } from "react"
 import { getProfile, scrapeGrades } from "../../modules/api/scraper/Scraper";
 import { secureGet } from "../../modules/api/Authentication";
 import { ActivityIndicator, ColorSchemeName, RefreshControl, ScrollView, StyleSheet, Text, useColorScheme, View } from "react-native";
@@ -40,7 +40,7 @@ export default function Grades() {
             scrapeGrades(gymNummer, profile.elevId, (grades) => {
                 setGrades(grades);
                 setLoading(false);
-            }, true);
+            });
         })();
     }, [])
 
@@ -127,7 +127,7 @@ export default function Grades() {
                                             const color = calculateColor(avg);
 
                                             return (
-                                                <View key={index + "b"} style={{
+                                                <View key={index + "d"} style={{
                                                     width: "25%",
                                                     aspectRatio: 1,
 
@@ -144,7 +144,7 @@ export default function Grades() {
                                                             color: scheme === "dark" ? "#FFF" : "#000",
                                                             opacity: 0.9,
                                                             fontWeight: "900",
-                                                            fontSize: 12.5,
+                                                            fontSize: 11,
                                                             paddingHorizontal: 6,
                                                             textAlign: "center",
                                                         }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
@@ -199,20 +199,20 @@ export default function Grades() {
                                                     backgroundColor: hexToRgb(theme.WHITE.toString(), 0.5),
                                                 }} />
 
-                                                {grade.karakterer.map((karakter, i) => (
+                                                {grade.karakterer.map((karakter, j) => (
                                                     <View style={{
                                                         flexDirection: "column",
                                                         gap: 7.5,
-                                                    }}> 
+                                                    }} key={j + "j"}> 
                                                         <Text style={{
                                                             fontWeight: "bold",
                                                             color: theme.WHITE,
                                                         }}>
-                                                            {grade.type[i]}
+                                                            {grade.type[j]}
                                                         </Text>
 
-                                                        {Object.keys(karakter).map((key) => {
-                                                            if(karakter[key].grade == "") return <></>;
+                                                        {Object.keys(karakter).map((key, i) => {
+                                                            if(karakter[key].grade == "") return <React.Fragment key={i + "a"}></React.Fragment>;
 
                                                             const color = calculateColor(parseInt(karakter[key].grade));
 
@@ -224,7 +224,7 @@ export default function Grades() {
                                                                     paddingLeft: 5,
 
                                                                     alignItems: "center"
-                                                                }}>
+                                                                }} key={i + "a"}>
                                                                     <View style={{
                                                                         padding: 20,
                                                                         backgroundColor: color,

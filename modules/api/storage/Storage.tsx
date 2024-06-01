@@ -169,7 +169,7 @@ export async function fetchWithCache<T>(req: Request, key: Key, identifier: stri
     const notRateLimited = !(isRateLimited(parser));
     await cb(notRateLimited ? result : undefined);
 
-    notRateLimited && (await saveFetch(key, result, timespan, identifier))
+    (notRateLimited && result) && (await saveFetch(key, result, timespan, identifier))
 
     return notRateLimited ? result : undefined;
 }

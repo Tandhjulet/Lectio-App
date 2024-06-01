@@ -445,35 +445,35 @@ export async function getAflevering(gymNummer: string, id: string, bypassCache: 
     return await fetchWithCache<OpgaveDetails>(req, Key.S_AFLEVERING, id, Timespan.DAY * 3, cb, scrapeOpgave, bypassCache)
 }
 
-export async function getAfleveringer(gymNummer: string, bypassCache: boolean = false, cb: (data: Opgave[] | undefined) => Promise<void> | void): Promise<Opgave[] | null | undefined> {
-    const payload: {[id: string]: string} = {
-        ...(await getASPHeaders(SCRAPE_URLS(gymNummer).OPGAVER)),
+export async function getAfleveringer(gymNummer: string, bypassCache: boolean = false, cb: (data: Opgave[] | undefined | null) => Promise<void> | void): Promise<Opgave[] | null | undefined> {
+    // const payload: {[id: string]: string} = {
+    //     ...(await getASPHeaders(SCRAPE_URLS(gymNummer).OPGAVER)),
 
-        "__EVENTTARGET": "s$m$Content$Content$ShowThisTermOnlyCB",
-        "masterfootervalue": "X1!ÆØÅ",
-        "s$m$ChooseTerm$term": "2023",
-        "s$m$searchinputfield": "",
-        "s$m$Content$Content$ShowHoldElementDD": "",
-        "LectioPostbackId": "",
-    }
+    //     "__EVENTTARGET": "s$m$Content$Content$ShowThisTermOnlyCB",
+    //     "masterfootervalue": "X1!ÆØÅ",
+    //     "s$m$ChooseTerm$term": "2023",
+    //     "s$m$searchinputfield": "",
+    //     "s$m$Content$Content$ShowHoldElementDD": "",
+    //     "LectioPostbackId": "",
+    // }
 
-    delete payload["s$m$Content$Content$CurrentExerciseFilterCB"]
-    delete payload["s$m$Content$Content$ShowThisTermOnlyCB"]
+    // delete payload["s$m$Content$Content$CurrentExerciseFilterCB"]
+    // delete payload["s$m$Content$Content$ShowThisTermOnlyCB"]
     
-    const parsedData = [];
-    for (const key in payload) {
-        parsedData.push(encodeURIComponent(key) + "=" + encodeURIComponent(payload[key]));
-    }
-    const stringifiedData = parsedData.join("&");
+    // const parsedData = [];
+    // for (const key in payload) {
+    //     parsedData.push(encodeURIComponent(key) + "=" + encodeURIComponent(payload[key]));
+    // }
+    // const stringifiedData = parsedData.join("&");
 
     const req = new Request(SCRAPE_URLS(gymNummer).OPGAVER, {
-        method: "POST",
+        method: "GET", // "POST",
         credentials: "include",
         headers: {
             "User-Agent": "Mozilla/5.0",
             "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: stringifiedData,
+        //body: stringifiedData,
     });
 
     return await fetchWithCache<Opgave[]>(req, Key.AFLEVERINGER, undefined, -1, cb, scrapeOpgaver, bypassCache)
