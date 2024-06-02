@@ -22,6 +22,8 @@ import Constants from 'expo-constants';
 import React from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 
+import 'react-native-console-time-polyfill';
+
 /**
  * 
  * @param moduler a list of all the modules of the given day
@@ -111,17 +113,25 @@ export default function Skema({ navigation, route }: {
 
     const [time, setTime] = useState<Date>(new Date());
 
+    const chooseSelectedDay = useMemo(() => {
+        let selectedDay = new Date(time);
+        if(selectedDay.getDay() % 6 === 0) {
+            selectedDay.setDate(selectedDay.getDate() + (selectedDay.getDay() === 0 ? 1 : 2));
+        }
+
+        return selectedDay;
+    }, [time])
+
     const { subscriptionState } = useContext(SubscriptionContext);
     const [refreshing, setRefreshing] = useState(false);
 
-    const [ dayNum, setDayNum ] = useState<number>((getDay(new Date()).weekDayNumber));
-
-    const [ selectedDay, setSelectedDay ] = useState<Date>(new Date());
+    const [ dayNum, setDayNum ] = useState<number>((getDay(chooseSelectedDay).weekDayNumber));
+    const [ selectedDay, setSelectedDay ] = useState<Date>(chooseSelectedDay);
 
     const [ daysOfThreeWeeks, setDaysOfThreeWeeks ] = useState<WeekDay[][]>([]);
-    const [ loadWeekDate, setLoadWeekDate ] = useState<Date>(new Date());
+    const [ loadWeekDate, setLoadWeekDate ] = useState<Date>(chooseSelectedDay);
 
-    const [ loadDate, setLoadDate ] = useState<Date>(new Date());
+    const [ loadDate, setLoadDate ] = useState<Date>(chooseSelectedDay);
 
     const [ skema, setSkema ] = useState<Day[] | null>([]);
     const [ day, setDay ] = useState<{
@@ -173,40 +183,6 @@ export default function Skema({ navigation, route }: {
         });
     }, [subscriptionState])
 
-    const chooseSchema = useRef((skema: Day[] | null, modulTimings: ModulDate[]) => {
-        if(hasBeenCalled.current) return;
-        if(skema == null || skema.length == 0) 
-            return;
-
-        hasBeenCalled.current = true;
-        
-        let extrenumDates;
-        try {
-            const moduler = skema[dayNum - 1].moduler;
-            extrenumDates = findExtremumDates(moduler, {
-                min: moduler[0].timeSpan,
-                max: moduler[moduler.length - 1].timeSpan,
-            })
-        } catch {
-            setSelectedDay(new Date());
-            setDayNum(getDay(new Date()).weekDayNumber)
-            return;
-        }
-        
-        const hoursBetween = hoursBetweenDates(extrenumDates, 0.75)
-        if(time.getHours() < Math.max(...hoursBetween)) {
-            setSelectedDay(new Date());
-            setDayNum(getDay(new Date()).weekDayNumber)
-        } else {
-            const currentDate = new Date();
-            if(currentDate.getDay() !== 0) 
-                currentDate.setDate(currentDate.getDate() + 1);
-
-            setSelectedDay(currentDate);
-            setDayNum(getDay(currentDate).weekDayNumber)
-        }
-    }).current
-
 
     const hasBeenCalled = useRef(false);
     /**
@@ -236,8 +212,6 @@ export default function Skema({ navigation, route }: {
                     setModulTimings([]);
                 }
                 
-                chooseSchema(payload?.days ?? null, payload?.modul ?? [])
-
                 setLoading(false);
                 setBlockScroll(false);
                 setRateLimited(payload === undefined)
@@ -525,10 +499,9 @@ export default function Skema({ navigation, route }: {
             return <></>;
         }
 
-        const day = new Date()
-        if(!(day.getMonth() == selectedDay.getMonth() &&
-            day.getDate() == selectedDay.getDate() &&
-            day.getFullYear() == selectedDay.getFullYear())) {
+        if(!(time.getMonth() == selectedDay.getMonth() &&
+            time.getDate() == selectedDay.getDate() &&
+            time.getFullYear() == selectedDay.getFullYear())) {
             return <></>;
         }
 
@@ -637,16 +610,16 @@ export default function Skema({ navigation, route }: {
                     <TouchableOpacity onPress={() => {
                         if(loading) return;
 
-                        setLoadDate(new Date());
-                        setSelectedDay(new Date());
-                        setDayNum(getDay(new Date()).weekDayNumber)
+                        setLoadDate(time);
+                        setSelectedDay(time);
+                        setDayNum(getDay(time).weekDayNumber)
                     }}>
                         <View style={{
                             backgroundColor: theme.LIGHT,
                             padding: 5,
                             borderRadius: 12.5,
 
-                            opacity: (!loading && !dateCompare(selectedDay, new Date())) ? 1 : 0.5,
+                            opacity: (!loading && !dateCompare(selectedDay, time)) ? 1 : 0.5,
                         }}>
                             <BackwardIcon color={theme.DARK} />
                         </View>
