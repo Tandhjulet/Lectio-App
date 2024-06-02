@@ -1,6 +1,6 @@
 import { ActivityIndicator, Alert, Animated, ColorValue, DimensionValue, Dimensions, LogBox, Modal, PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
-import { createRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createRef, memo, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
 import { secureGet } from "../modules/api/Authentication";
 import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
@@ -114,7 +114,7 @@ export default function Skema({ navigation, route }: {
     const [time, setTime] = useState<Date>(new Date());
 
     const chooseSelectedDay = useMemo(() => {
-        let selectedDay = new Date(time);
+        let selectedDay = new Date();
         if(selectedDay.getDay() % 6 === 0) {
             selectedDay.setDate(selectedDay.getDate() + (selectedDay.getDay() === 0 ? 1 : 2));
         }
@@ -129,7 +129,6 @@ export default function Skema({ navigation, route }: {
     const [ selectedDay, setSelectedDay ] = useState<Date>(chooseSelectedDay);
 
     const [ daysOfThreeWeeks, setDaysOfThreeWeeks ] = useState<WeekDay[][]>([]);
-    const [ loadWeekDate, setLoadWeekDate ] = useState<Date>(chooseSelectedDay);
 
     const [ loadDate, setLoadDate ] = useState<Date>(chooseSelectedDay);
 
@@ -144,7 +143,7 @@ export default function Skema({ navigation, route }: {
     const [ modulTimings, setModulTimings ] = useState<ModulDate[]>([]);
     const [ hoursToMap, setHoursToMap ] = useState<number[]>([]);
     const [ loading, setLoading ] = useState(true);
-    const [ blockScroll, setBlockScroll ] = useState(true);
+    let blockScroll = useRef(false).current;
 
     const [rateLimited, setRateLimited] = useState(false);
 
@@ -183,21 +182,17 @@ export default function Skema({ navigation, route }: {
         });
     }, [subscriptionState])
 
-
-    const hasBeenCalled = useRef(false);
     /**
      * Fetches the data needed to display the page, on page load.
      * If anything is cached it will render that whilst waiting for the server to respond.
      */
-    useEffect(() => {
+    useLayoutEffect(() => {
         (async () => {
             setLoading(true);
-            setBlockScroll(true);
+            blockScroll = true;
             const profile = await getProfile();
 
             const gymNummer = (await secureGet("gym")).gymNummer;
-
-            setLoadWeekDate(loadDate);
 
             setDayNum(getDay(selectedDay).weekDayNumber)
             setDaysOfThreeWeeks([...getDaysOfThreeWeeks(loadDate)])
@@ -213,7 +208,7 @@ export default function Skema({ navigation, route }: {
                 }
                 
                 setLoading(false);
-                setBlockScroll(false);
+                blockScroll = false;
                 setRateLimited(payload === undefined)
             }, route?.params?.user)
         })();
@@ -593,7 +588,7 @@ export default function Skema({ navigation, route }: {
                         fontSize: 30,
                         fontWeight: "bold",
                         color: theme.WHITE,
-                    }}>Uge {getWeekNumber(loadWeekDate)}</Text>
+                    }}>Uge {getWeekNumber(loadDate)}</Text>
                 </View>
                 <View style={{
                     display: 'flex',
