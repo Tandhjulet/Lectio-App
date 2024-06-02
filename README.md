@@ -13,7 +13,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 ### __HØJ__
 - fix skema ift. 3(+) moduler: skift evt. til lectios skemasystem
 - optimer skema
-- app crasher pga. context menu
 
 ### __MELLEM__
 - push notifs
@@ -25,7 +24,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 ### __LAV__
 - spørgeskemaer
 - aflevere filer
-- limit på profilbillede-requests
+- limit på profilbillede-requests (skal gøres native tror jeg)
 
 husk at opdatere landing pagens slutbrugerlicens og privatlivspolitik, så de linker til hjemmesiden!
 

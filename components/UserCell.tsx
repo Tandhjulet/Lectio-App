@@ -1,15 +1,126 @@
-import { memo, useMemo } from "react"
+import { createRef, memo, useCallback, useMemo, useRef } from "react"
 import { Person } from "../modules/api/scraper/class/ClassPictureScraper"
-import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewProps, ViewStyle } from "react-native"
+import { ActivityIndicator, StyleProp, StyleSheet, Text, TouchableOpacity, useColorScheme, View, ViewProps, ViewStyle } from "react-native"
 import { StackNavigationProp } from "@react-navigation/stack"
-import ProfilePicture from "./ProfilePicture"
-import { hexToRgb, Theme } from "../modules/Themes"
+import { hexToRgb, Theme, themes } from "../modules/Themes"
 import { ContextMenuView } from "react-native-ios-context-menu"
-import { AcademicCapIcon, CalendarIcon } from "react-native-heroicons/outline"
+import { AcademicCapIcon, CalendarIcon, UserIcon } from "react-native-heroicons/outline"
 import TeacherSVG from "./TeacherSVG"
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native"
+import { SCRAPE_URLS } from "../modules/api/scraper/Helpers"
+import Constants from 'expo-constants';
+import { Image } from "@rneui/themed"
+
+
+const isExpoGo = Constants.appOwnership === 'expo'
 
 export default function UserCell() {
+    const ProfilePicture = memo(function ProfilePicture({
+        gymNummer,
+        billedeId,
+        size,
+        navn,
+        noContextMenu = false,
+        borderRadius = true,
+        big = false,
+    }: {
+        gymNummer: string,
+        billedeId: string,
+        size: number,
+        navn: string,
+        noContextMenu?: boolean,
+        borderRadius?: boolean,
+        big?: boolean,
+    }) {
+        const scheme = useColorScheme();
+        const theme = useMemo(() => themes[scheme ?? "dark"], [scheme]);
+
+        if(noContextMenu || isExpoGo) {
+            return  (
+                <Image
+                    style={{
+                        borderRadius: borderRadius ? 999 : 0,
+                        width: big ? 3/4 * (size * 6) : size,
+                        height: big ? size * 6 : size,
+                    }}
+                    PlaceholderContent={<ActivityIndicator size={"small"} />}
+                    placeholderStyle={{
+                        backgroundColor: theme.ACCENT_BLACK,
+                        borderColor: hexToRgb(theme.ACCENT.toString(), 0.2),
+                        borderWidth: StyleSheet.hairlineWidth,
+                    }}
+                    crossOrigin="use-credentials"
+
+                    source={{
+                        uri: SCRAPE_URLS(gymNummer, billedeId).PICTURE_HIGHQUALITY,
+                        headers: {
+                            "User-Agent": "Mozilla/5.0",
+                            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                        }
+                    }}
+                />
+            )
+        }
+    
+        return (
+            <ContextMenuView
+                previewConfig={{
+                    previewType: "CUSTOM",
+                    previewSize: "INHERIT",
+                }}
+                renderPreview={() => (
+                    <Image
+                        style={{
+                            width: 3/4 * (size * 6),
+                            height: size * 6,
+                        }} // aspect ratio is 3/4
+                        source={{
+                            uri: SCRAPE_URLS(gymNummer, billedeId).PICTURE_HIGHQUALITY,
+                            headers: {
+                                "User-Agent": "Mozilla/5.0",
+                                "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                            },
+                        }}
+                        crossOrigin="use-credentials"
+                    />
+                )}
+                menuConfig={{
+                    menuTitle: navn,
+                }}
+            >
+                <Image
+                    style={{
+                        borderRadius: size * 2,
+                        width: size,
+                        height: size,
+                    }}
+                    source={{
+                        uri: SCRAPE_URLS(gymNummer, billedeId).PICTURE_HIGHQUALITY,
+                        headers: {
+                            "User-Agent": "Mozilla/5.0",
+                            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                        },
+                    }}
+                    crossOrigin="use-credentials"
+                    PlaceholderContent={<UserIcon color={hexToRgb(theme.ACCENT.toString(), 0.2)} />}
+                    placeholderStyle={{
+                        backgroundColor: theme.ACCENT_BLACK,
+                        borderColor: hexToRgb(theme.ACCENT.toString(), 0.2),
+                        borderWidth: StyleSheet.hairlineWidth,
+                    }}
+                />
+            </ContextMenuView>
+    
+        )
+    })
+
+    let pressed = useRef(false).current;
+
+    const focusEffect = useCallback(() => {
+        pressed = false;
+    }, [])
+
+    useFocusEffect(focusEffect)
 
     const Cell = memo(function UserCell({ item, gym, theme, style, route }: {
         item: Person,
@@ -30,8 +141,11 @@ export default function UserCell() {
             console.log("[UserCell] could not find skema-path for origin", route.name)
         }, [route])
 
+        const ref = createRef<ContextMenuView>();
+
         return (
             <ContextMenuView
+                ref={ref}
                 previewConfig={{
                     previewType: "CUSTOM",
                     previewSize: "INHERIT",
@@ -62,12 +176,17 @@ export default function UserCell() {
                         actionSubtitle: "Få vist personens skema"
                     }],
                 }}
-                onPressMenuItem={() => {
-                    if(!skemaScreenName) return;
 
-                    navigation.push(skemaScreenName, {
-                        user: item,
-                    })
+                onPressMenuItem={() => {
+                    if(!skemaScreenName || pressed) return;
+
+                    pressed = true;
+
+                    ref.current?.dismissMenu().then(() => {
+                        navigation.push(skemaScreenName, {
+                            user: item,
+                        });
+                    });
                 }}
                 style={{
                     height: 70,
@@ -84,11 +203,15 @@ export default function UserCell() {
                     width: "100%",
 
                 }, style]} onPress={() => {
-                    if(!skemaScreenName) return;
+                    if(!skemaScreenName || pressed) return;
 
-                    navigation.push(skemaScreenName, {
-                        user: item,
-                    })
+                    pressed = true;
+
+                    ref.current?.dismissMenu().then(() => {
+                        navigation.push(skemaScreenName, {
+                            user: item,
+                        });
+                    });
                 }}>
                     <ProfilePicture
                         gymNummer={gym?.gymNummer ?? ""}
@@ -126,6 +249,7 @@ export default function UserCell() {
     }, (prev, next) => Object.is(prev.item.rawName, next.item.rawName))
     
     return {
-        Cell
+        Cell,
+        ProfilePicture
     }
 }

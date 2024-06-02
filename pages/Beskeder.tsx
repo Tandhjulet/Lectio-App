@@ -22,7 +22,6 @@ import { getPeople } from "../modules/api/scraper/class/PeopleList";
 import { KeyboardAvoidingView } from "react-native";
 import { sendMessage } from "../modules/api/beskeder/sendBesked";
 import Logo from "../components/Logo";
-import ProfilePicture from "../components/ProfilePicture";
 import File from "../modules/File";
 import Popover from "react-native-popover-view/dist/Popover";
 import { Placement } from "react-native-popover-view/dist/Types";
@@ -30,6 +29,7 @@ import { LinkIcon, PaperClipIcon } from "react-native-heroicons/outline";
 import { upload, UploadResult } from "../modules/api/filer/FileManager";
 import React from "react";
 import Shake from "../components/Shake";
+import UserCell from "../components/UserCell";
 
 export default function Beskeder({ navigation }: {navigation: NavigationProp<any>}) {
 
@@ -344,6 +344,8 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
             })
         })();
     }, [sortedBy]);
+
+    const { ProfilePicture } = UserCell();
 
     /**
      * Drag-to-refresh functionality
@@ -959,7 +961,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
 
                                             alignItems: "center",
                                         }}>
-                                            <ProfilePicture gymNummer={gym?.gymNummer ?? ""} billedeId={person.billedeId ?? ""} size={40} navn={person.navn} noContextMenu />
+                                            <ProfilePicture billedeId={person.billedeId ?? ""} size={40} navn={person.navn} noContextMenu />
 
                                             <Text style={{
                                                 color: theme.WHITE,

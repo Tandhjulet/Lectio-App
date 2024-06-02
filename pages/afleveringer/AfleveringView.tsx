@@ -11,7 +11,6 @@ import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { CLEAN_NAME } from "../beskeder/BeskedView";
 import { UserIcon } from "react-native-heroicons/solid";
-import ProfilePicture from "../../components/ProfilePicture";
 import File from "../../modules/File";
 import FileViewer from "react-native-file-viewer";
 import RNFS from "react-native-fs";
@@ -29,7 +28,6 @@ export default function AfleveringView({ navigation, route }: {
     const [refreshing, setRefreshing] = useState<boolean>(false);
 
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>();
-    const [billedeId, setBilledeId] = useState<string>();
 
     const aflevering: Opgave = route.params?.opgave;
 
@@ -52,9 +50,6 @@ export default function AfleveringView({ navigation, route }: {
 
                 const people = await getPeople();
 
-                if(people != null && v?.ansvarlig != null)
-                    setBilledeId(people[CLEAN_NAME(v.ansvarlig)]?.billedeId)
-
                 setLoading(false);
             })
         })();
@@ -75,9 +70,6 @@ export default function AfleveringView({ navigation, route }: {
                 setOpgaveDetails(v);
 
                 const people = await getPeople();
-
-                if(people != null && v?.ansvarlig != null)
-                    setBilledeId(people[CLEAN_NAME(v.ansvarlig)]?.billedeId)
 
                 setRefreshing(false);
             })

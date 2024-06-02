@@ -9,7 +9,6 @@ import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { UserIcon } from "react-native-heroicons/solid";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
-import ProfilePicture from "../../components/ProfilePicture";
 import * as WebBrowser from 'expo-web-browser';
 import { WebBrowserPresentationStyle } from "expo-web-browser";
 import React from "react";
@@ -17,6 +16,7 @@ import File from "../../modules/File";
 import FileViewer from "react-native-file-viewer";
 import RNFS from "react-native-fs";
 import * as Progress from 'react-native-progress';
+import UserCell from "../../components/UserCell";
 
 
 /**
@@ -135,6 +135,8 @@ export default function BeskedView({ navigation, route }: {
             setProgress(-1);
         })
     }, [progress])
+
+    const { ProfilePicture } = UserCell();
 
     const {height, width} = Dimensions.get("screen");
 

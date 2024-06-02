@@ -7,7 +7,6 @@ import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { Theme, themes } from "../../modules/Themes";
 import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
-import ProfilePicture from "../../components/ProfilePicture";
 
 import 'react-native-console-time-polyfill';
 import { NavigationProp, useNavigation, useRoute } from "@react-navigation/native";
@@ -138,6 +137,11 @@ export default function TeachersAndStudents() {
         paddingLeft: 15,
     }} route={route} />, []);
 
+    const keyExtractor = useCallback((item: Person, index: number) => item.navn + "-" + item.billedeId + ":" + index, [])
+    const getLayout = useCallback((data: any, index: number) => {
+        return {length: 70 + StyleSheet.hairlineWidth, offset: index * (70 + StyleSheet.hairlineWidth), index: index}
+    }, [])
+
     return (
         <View style={{height: '100%',width:'100%'}}>
             {!loading &&
@@ -200,9 +204,7 @@ export default function TeachersAndStudents() {
                                                 paddingLeft: 5,
                                             }}
 
-                                            getItemLayout={(data, index) => {
-                                                return {length: 70 + StyleSheet.hairlineWidth, offset: index * (70 + StyleSheet.hairlineWidth), index: index}
-                                            }}
+                                            getItemLayout={getLayout}
 
                                             directionalLockEnabled={true}
                                             removeClippedSubviews
@@ -228,7 +230,6 @@ export default function TeachersAndStudents() {
                                             renderItem={renderItemSectionList}
 
                                             renderSectionHeader={(data) => {
-                                                
                                                 return (
                                                     <View style={{
                                                         paddingTop: 7.5,
@@ -247,7 +248,7 @@ export default function TeachersAndStudents() {
                                                 )
                                             }}
 
-                                            keyExtractor={(item, index) => item.navn + "-" + item.billedeId + ":" + index}
+                                            keyExtractor={keyExtractor}
 
                                             getItemLayout={(data, index) => {
                                                 return {length: 70 + StyleSheet.hairlineWidth, offset: index * (70 + StyleSheet.hairlineWidth), index: index}
@@ -264,6 +265,16 @@ export default function TeachersAndStudents() {
 
                                             maxToRenderPerBatch={5}
                                             initialNumToRender={10}
+                                            removeClippedSubviews
+
+                                            viewabilityConfig={{
+                                                itemVisiblePercentThreshold: 0,
+                                                minimumViewTime: 200,
+                                                waitForInteraction: false,
+                                            }}
+                                            onViewableItemsChanged={(items) => {
+                                                
+                                            }}
 
                                             keyboardDismissMode="on-drag"
                                             keyboardShouldPersistTaps="always"
