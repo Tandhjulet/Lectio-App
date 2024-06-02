@@ -209,6 +209,8 @@ export default function ModulView({ navigation, route }: {
                                             <Text style={{
                                                 color: hexToRgb(theme.WHITE.toString(), 1),
                                                 textAlign: "right",
+
+                                                fontSize: 16,
                                             }}>
                                                 {modul.timeSpan.end}
                                             </Text>
@@ -257,6 +259,8 @@ export default function ModulView({ navigation, route }: {
                                             <Text style={{
                                                 color: hexToRgb(theme.WHITE.toString(), 1),
                                                 textAlign: "right",
+
+                                                fontSize: 16,
                                             }}>
                                                 {modul.homework ? "Ja" : "Nej"}
                                             </Text>

@@ -202,6 +202,8 @@ export default function AfleveringView({ navigation, route }: {
                                                 color: hexToRgb(theme.WHITE.toString(), 0.6),
                                                 fontWeight: "bold",
                                                 textAlign: "left",
+
+                                                fontSize: 14,
                                             }}>
                                                 Elevtid
                                             </Text>
@@ -209,6 +211,8 @@ export default function AfleveringView({ navigation, route }: {
                                             <Text style={{
                                                 color: hexToRgb(theme.WHITE.toString(), 1),
                                                 textAlign: "left",
+
+                                                fontSize: 15,
                                             }}>
                                                 {aflevering.time} elevtimer
                                             </Text>
@@ -222,7 +226,7 @@ export default function AfleveringView({ navigation, route }: {
                                                 fontWeight: "bold",
                                                 textAlign: "right",
 
-                                                fontSize: 15,
+                                                fontSize: 14,
                                             }}>
                                                 Fravær
                                             </Text>
@@ -231,7 +235,7 @@ export default function AfleveringView({ navigation, route }: {
                                                 color: hexToRgb(theme.WHITE.toString(), 1),
                                                 textAlign: "right",
 
-                                                fontSize: 16,
+                                                fontSize: 15,
                                             }}>
                                                 {aflevering.absence}
                                             </Text>
@@ -250,6 +254,8 @@ export default function AfleveringView({ navigation, route }: {
                                                 color: hexToRgb(theme.WHITE.toString(), 0.6),
                                                 fontWeight: "bold",
                                                 textAlign: "left",
+
+                                                fontSize: 14,
                                             }}>
                                                 Karakterskala
                                             </Text>
@@ -258,7 +264,9 @@ export default function AfleveringView({ navigation, route }: {
                                                 <Text style={{
                                                     color: hexToRgb(theme.WHITE.toString(), 1),
                                                     textAlign: "left",
-                                                    maxWidth: "80%",
+                                                    maxWidth: "85%",
+
+                                                    fontSize: 15,
                                                 }} ellipsizeMode="tail" numberOfLines={2}>
                                                     {opgaveDetails?.karakterSkala}
                                                 </Text>
@@ -281,7 +289,7 @@ export default function AfleveringView({ navigation, route }: {
                                                 fontWeight: "bold",
                                                 textAlign: "right",
 
-                                                fontSize: 15,
+                                                fontSize: 14,
                                             }}>
                                                 Afleveringsfrist
                                             </Text>
@@ -290,7 +298,7 @@ export default function AfleveringView({ navigation, route }: {
                                                 color: hexToRgb(theme.WHITE.toString(), 1),
                                                 textAlign: "right",
 
-                                                fontSize: 16,
+                                                fontSize: 15,
                                             }}>
                                                 {afleveringsFrist.toLocaleDateString("da-DK", {
                                                     dateStyle: "medium",

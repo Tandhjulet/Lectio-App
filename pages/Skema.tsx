@@ -109,6 +109,8 @@ export default function Skema({ navigation, route }: {
         return route?.params?.user == undefined;
     }, [route]);
 
+    const [time, setTime] = useState<Date>(new Date());
+
     const { subscriptionState } = useContext(SubscriptionContext);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -142,7 +144,7 @@ export default function Skema({ navigation, route }: {
      * Used in the gestureRecognizer to go to the next/previous day
      * @param t if it should go to the next day or the previous, respectively "ADD" or "REMOVE"
      */
-    const daySelector = (t: "ADD" | "REMOVE") => {
+    const daySelector = useCallback((t: "ADD" | "REMOVE") => {
         setSelectedDay((prev) => {
             const copy = new Date(prev);
     
@@ -169,19 +171,7 @@ export default function Skema({ navigation, route }: {
             
             return copy;
         });
-    }
-    
-    /**
-     * Parses the schema for the currently selected day in the schema viewer
-     * @param skema all of the modules for the week
-     */
-    function parseSkema(skema: Day[]) {
-        if(skema == null)
-            return;
-
-        const out = calculateIntersects(skema[dayNum - 1].moduler)
-        setDay(out);
-    }
+    }, [subscriptionState])
 
     const chooseSchema = useRef((skema: Day[] | null, modulTimings: ModulDate[]) => {
         if(hasBeenCalled.current) return;
@@ -300,8 +290,7 @@ export default function Skema({ navigation, route }: {
         
         const hoursBetween = hoursBetweenDates(extrenumDates, 1)
         setHoursToMap(hoursBetween)
-
-        parseSkema(skema)
+        setDay(calculateIntersects(skema[dayNum - 1].moduler));
     }, [modulTimings, dayNum])
 
     /**
@@ -311,22 +300,22 @@ export default function Skema({ navigation, route }: {
      * @param d2 
      * @returns true if they are equal, otherwise false
      */
-    const dateCompare = (d1: Date, d2: Date) => {
+    const dateCompare = useCallback((d1: Date, d2: Date) => {
         return (d1.getMonth() == d2.getMonth() &&
                 d1.getDate() == d2.getDate() &&
                 d1.getFullYear() == d2.getFullYear())
-    }
+    }, [])
 
     /**
      * Used to calculate how long down a module should be on the schema view
      * @param date the date to calculate the top-property of
      * @returns a number used for formatting
      */
-    function calculateTop(date: ModulDate) {
+    const calculateTop = useCallback(function calculateTop(date: ModulDate) {
         const min: Date = formatDate(date.startNum.toString())
         const out = ((min.getHours() - Math.min(...hoursToMap))*60 + min.getMinutes());
         return (out == Infinity || out == -Infinity) ? 0 : out;
-    }
+    }, [hoursToMap])
 
     /**
      * Searches the given dict for any overlaps
@@ -336,7 +325,7 @@ export default function Skema({ navigation, route }: {
      * @returns the overlap if any are detected, else null
      */
 
-    let searchCache: {[id: number]: number[]} = {};
+    let searchCache: {[id: number]: number[]} = useRef({}).current;
     function searchDateDict(dict: Modul[], i: number): number[] {
         if(searchCache[i]) {
             return searchCache[i];
@@ -431,19 +420,18 @@ export default function Skema({ navigation, route }: {
      * Returns a different greeting depending on the time
      * @returns a greeting
      */
-    const getTimeOfDayAsString: () => string = () => {
-        const d = new Date()
-        if(d.getHours() < 8) {
+    const getTimeOfDayAsString = useCallback(() => {
+        if(time.getHours() < 8) {
             return "Godmorgen"
-        } else if (d.getHours() < 11) {
+        } else if (time.getHours() < 11) {
             return "Godformiddag"
-        } else if (d.getHours() < 13) {
+        } else if (time.getHours() < 13) {
             return "Godmiddag"
-        } else if (d.getHours() < 20) {
+        } else if (time.getHours() < 20) {
             return "Goddag"
         }
         return "Godaften"
-    }
+    }, [time])
 
     /**
      * Used for auto-refresh
@@ -452,19 +440,19 @@ export default function Skema({ navigation, route }: {
         setRefreshing(true);
     }, []);
 
-    const {width,height} = Dimensions.get('screen');
+    const { width } = Dimensions.get('screen');
 
     const pagerRef = createRef<PagerView>();
 
     const scheme = useColorScheme();
-    const theme = themes[scheme ?? "dark"];
+    const theme = useMemo(() => themes[scheme ?? "dark"], [scheme]);
 
     const pan = useRef(new Animated.ValueXY()).current;
 
     const threshold = useRef(60).current;
     const maxExtension = useRef(90).current;
 
-    const panResponder = 
+    const panResponder = useRef(
         PanResponder.create({
             onStartShouldSetPanResponder : () => false,
             onMoveShouldSetPanResponder : (e, gestureState) => {
@@ -499,7 +487,7 @@ export default function Skema({ navigation, route }: {
                     }
                 ).start();
             }
-        });
+        })).current;
 
     /**
      * Calculates the color of a given module from it's status.
@@ -507,7 +495,7 @@ export default function Skema({ navigation, route }: {
      * @param modul the module to calculate the color for
      * @returns a string color in RGBA-format
      */
-    const calcColor: (opacity: number, modul: Modul) => string = (opacity: number, modul: Modul) => {
+    const calcColor = useCallback((opacity: number, modul: Modul) => {
         if(modul.changed) {
             return scheme == "dark" ? `rgba(255, 211, 0, ${opacity-0.05})` : `rgba(201, 172, 30, ${opacity})`;
         }
@@ -517,9 +505,7 @@ export default function Skema({ navigation, route }: {
         }
 
         return scheme == "dark" ? `rgba(31, 184, 124, ${opacity})` : `rgba(9, 135, 86, ${opacity-0.1})`;
-    };
-
-    const [time, setTime] = useState<Date>(new Date());
+    }, [scheme]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -572,7 +558,7 @@ export default function Skema({ navigation, route }: {
         )
     }, [time, hoursToMap, selectedDay]);
 
-    const color = ((isSelectedDay: boolean, isToday: boolean, title: boolean) => {
+    const color = useCallback((isSelectedDay: boolean, isToday: boolean, title: boolean) => {
         if(isSelectedDay) {
             return "#00c972";
         }
@@ -584,7 +570,7 @@ export default function Skema({ navigation, route }: {
         }
 
         return theme.WHITE;
-    });
+    }, []);
 
     const renderSkemaNoter = useCallback((skemaNoter: string | string[] | undefined) => {
 
@@ -785,27 +771,19 @@ export default function Skema({ navigation, route }: {
                                     backgroundColor: hexToRgb(theme.WHITE.toString(), 0.15),
                                     borderRadius: 5,
                                 }}>
-                                    {_.map((day,i) => {
-                                        const isSelectedDay =   day.date.getMonth() == selectedDay.getMonth() &&
-                                                                day.date.getDate() == selectedDay.getDate() &&
-                                                                day.date.getFullYear() == selectedDay.getFullYear();
+                                    {_.map((day,j) => {
+                                        const isSelectedDay = dateCompare(day.date, selectedDay);
 
-                                        const dateCopy = new Date(day.date);
-                                        dateCopy.setDate(dateCopy.getDate()+1);
-
-                                        const isDayBeforeSelectedDay =  dateCopy.getMonth() == selectedDay.getMonth() &&
-                                                                        dateCopy.getDate() == selectedDay.getDate() &&
-                                                                        dateCopy.getFullYear() == selectedDay.getFullYear();
+                                        const nextDate = i == 1 && _[j+1]?.date;
+                                        const isDayBeforeSelectedDay = nextDate && dateCompare(nextDate, selectedDay)
                                                                         
-                                        const isToday = day.date.getMonth() == time.getMonth() &&
-                                                        day.date.getDate() == time.getDate() &&
-                                                        day.date.getFullYear() == time.getFullYear();
+                                        const isToday = dateCompare(day.date, time);
 
                                         let hasModulesToday = (skema != null && (skema[day.weekDayNumber - 1] == undefined || Object.keys(skema[day.weekDayNumber - 1].moduler).length == 0));
                                         if(!skema) hasModulesToday = true;
 
                                         return (
-                                            <React.Fragment key={i + "."}>
+                                            <React.Fragment key={j + "."}>
                                                 <Pressable onPress={() => {
                                                     setDayNum(day.weekDayNumber);
                                                     setSelectedDay(day.date);
@@ -829,7 +807,7 @@ export default function Skema({ navigation, route }: {
                                                         }}>{day.dayName.slice(0,3)}.</Text>
                                                     </View>
                                                 </Pressable>
-                                                {i+1 !== _.length && (
+                                                {j+1 !== _.length && (
                                                     <View style={{
                                                         height: 41,
                                                         width: StyleSheet.hairlineWidth,
