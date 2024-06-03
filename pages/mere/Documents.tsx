@@ -202,7 +202,7 @@ export default function Documents({ route }: {
                                                         fontSize: 15,
                                                         letterSpacing: -0.32,
                                                     }} ellipsizeMode="middle" numberOfLines={1}>
-                                                        {dateComps ? " " + day + " d. " + dateComps[0] + ". " + month : ""}
+                                                        {dateComps ? day + " d. " + dateComps[0] + ". " + month : ""}
                                                     </Text>
 
                                                     <Text style={{
