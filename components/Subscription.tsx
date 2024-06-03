@@ -152,8 +152,10 @@ export function Option({
 
 export default function Subscription({
     bottomSheetModalRef,
+    bottomInset = 146,
 }: {
     bottomSheetModalRef: React.RefObject<BottomSheetModalMethods>,
+    bottomInset?: number,
 }) {
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
@@ -163,7 +165,7 @@ export default function Subscription({
             ref={bottomSheetModalRef}
             index={0}
 
-            bottomInset={146}
+            bottomInset={bottomInset}
             enableOverDrag
 
             backgroundStyle={{

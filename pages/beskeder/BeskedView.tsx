@@ -144,6 +144,7 @@ export default function BeskedView({ navigation, route }: {
         <View style={{
             backgroundColor: theme.BLACK,
             width: "100%",
+            minHeight: "100%",
         }}>
             {loading ? 
                 <View style={{

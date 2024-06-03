@@ -6,14 +6,14 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 ## Prioriteringer/mangler ved appen
 
 ### __HØJ__
-- fix skema ift. 3(+) moduler: skift evt. til lectios skemasystem
-- optimer skema
+- forbedr skema
 
 ### __MELLEM__
 - push notifs
 - gør så appen kan bruges uden/med manglende internet
 - https://github.com/stevenselcuk/react-native-ask-for-review
 - widgets
+- fraværs registrering load hurtigere
 
 ### __LAV__
 - spørgeskemaer

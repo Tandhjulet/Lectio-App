@@ -21,6 +21,7 @@ import { SectionList } from "react-native";
 import Shake from "../../components/Shake";
 import Logo from "../../components/Logo";
 import { LinearGradient } from "expo-linear-gradient";
+import Subscription from "../../components/Subscription";
 
 type ChartedAbsence = {
     almindeligt: {
@@ -335,6 +336,7 @@ export default function Absence({ navigation }: { navigation: any }) {
 
 
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+    const noAccessRef = useRef<BottomSheetModal>(null);
     const bottomSheetAbsenceRegistrationRef = useRef<BottomSheetModal>(null);
 
     const onRegistrationRefresh = useCallback(() => {
@@ -412,7 +414,7 @@ export default function Absence({ navigation }: { navigation: any }) {
     const handlePress = useCallback((reg: Registration) => {
         // @ts-ignore
         if(!subscriptionState?.hasSubscription) {
-            navigation.navigate("NoAccess")
+            noAccessRef.current?.present();
             return;
         }
 
@@ -507,12 +509,16 @@ export default function Absence({ navigation }: { navigation: any }) {
         const color = fraværColors[colorIndex];
 
         return (
-            <TouchableOpacity
+            <Pressable
                 onPress={() => handlePress(reg)}
 
-                style={{
-                    marginTop: !(i == 0) ? 4 : 0,
-                }}
+                style={({pressed}) => [
+                    {
+                        opacity: pressed ? 0.6 : 1,
+                        marginTop: !(i == 0) ? 4 : 0,
+                    }
+                ]}
+
             >
                 <View style={{
                     backgroundColor: hexToRgb(theme.WHITE.toString(), 0.07),
@@ -628,7 +634,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                     </View>
 
                 </View>
-            </TouchableOpacity>
+            </Pressable>
         )
     }, (prev, next) => Object.is(prev.reg.url, next.reg.url))
 
@@ -1453,7 +1459,8 @@ export default function Absence({ navigation }: { navigation: any }) {
                             })()}
                         </View>
                     </BottomSheetModal>
-
+                    
+                    <Subscription bottomSheetModalRef={noAccessRef} bottomInset={89} />
                 </View>
             </BottomSheetModalProvider>
         </GestureHandlerRootView>

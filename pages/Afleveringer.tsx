@@ -1,5 +1,5 @@
 import { NavigationProp } from "@react-navigation/native";
-import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, ColorSchemeName, Modal, Pressable, RefreshControl, ScrollView, SectionList, SectionListData, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, VirtualizedList, useColorScheme } from "react-native";
 import { secureGet, getUnsecure } from "../modules/api/Authentication";
 import { getAfleveringer } from "../modules/api/scraper/Scraper";
@@ -15,6 +15,10 @@ import Popover from "react-native-popover-view";
 import { Placement } from "react-native-popover-view/dist/Types";
 import { BellAlertIcon, CheckBadgeIcon, ClockIcon, ExclamationCircleIcon, ShieldExclamationIcon } from "react-native-heroicons/outline";
 import { LinearGradient } from "expo-linear-gradient";
+import Subscription from "../components/Subscription";
+import { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 /**
  * Formats the dates weekday as text.
@@ -134,6 +138,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
     const { subscriptionState } = useContext(SubscriptionContext);
 
     const currTime = useRef(new Date().valueOf()).current;
+    const bottomSheetModalRef = useRef<BottomSheetModalMethods>(null);
 
     /**
      * 
@@ -526,7 +531,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                 onPress={() => {
                     // @ts-ignore
                     if(!subscriptionState?.hasSubscription) {
-                        navigation.navigate("NoAccess")
+                        bottomSheetModalRef.current?.present();
                         return;
                     }
         
@@ -682,84 +687,90 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
     }) => <SectionHeader data={data.section.key} theme={theme} />, [theme]);
 
     return (
-        <View style={{
-            minHeight: "100%",
-            minWidth: "100%",
-        }}>
-            {loading ?
+        <GestureHandlerRootView>
+            <BottomSheetModalProvider>
                 <View style={{
-                    position: "absolute",
-
-                    top: "20%",
-                    left: "50%",
-
-                    transform: [{
-                        translateX: -12.5,
-                    }]
+                    minHeight: "100%",
+                    minWidth: "100%",
                 }}>
-                    <ActivityIndicator size={"small"} color={theme.ACCENT} />
-                </View>
-            :
-                <View>
-                    {(!afleveringer || !(afleveringer[sortedBy]) || Object.keys(afleveringer[sortedBy]).length == 0) && (
-                        <ScrollView refreshControl={
-                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                        } contentContainerStyle={{
-                            flexDirection: 'column',
-                            alignItems: "center",
+                    {loading ?
+                        <View style={{
+                            position: "absolute",
 
-                            height: "100%",
+                            top: "20%",
+                            left: "50%",
+
+                            transform: [{
+                                translateX: -12.5,
+                            }]
                         }}>
-                            <Logo size={40} style={{
-                                marginTop: 200,
-                            }} />
-                            <Text style={{
-                                color: theme.WHITE,
-                                textAlign: 'center',
+                            <ActivityIndicator size={"small"} color={theme.ACCENT} />
+                        </View>
+                    :
+                        <View>
+                            {(!afleveringer || !(afleveringer[sortedBy]) || Object.keys(afleveringer[sortedBy]).length == 0) && (
+                                <ScrollView refreshControl={
+                                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                                } contentContainerStyle={{
+                                    flexDirection: 'column',
+                                    alignItems: "center",
 
-                                fontSize: 16,
-                            }}>
-                                {sortedBy == "Alle" ?
-                                    "Du har ingen opgaver"
-                                :
-                                    `Du har ingen opgaver der ${sortedBy == "Afleveret" ? "er " : ""}${sortedBy.toLowerCase()}.`
-                                }
-                            </Text>
-                        </ScrollView>
-                    )}
+                                    height: "100%",
+                                }}>
+                                    <Logo size={40} style={{
+                                        marginTop: 200,
+                                    }} />
+                                    <Text style={{
+                                        color: theme.WHITE,
+                                        textAlign: 'center',
 
-                    {afleveringer && afleveringer[sortedBy] && Object.keys(afleveringer[sortedBy]).length > 0 && (
-                        <SectionList
-                            sections={afleveringer[sortedBy]}
-                            renderItem={renderItemSectionList}
-                            renderSectionHeader={renderSectionHeader}
+                                        fontSize: 16,
+                                    }}>
+                                        {sortedBy == "Alle" ?
+                                            "Du har ingen opgaver"
+                                        :
+                                            `Du har ingen opgaver der ${sortedBy == "Afleveret" ? "er " : ""}${sortedBy.toLowerCase()}.`
+                                        }
+                                    </Text>
+                                </ScrollView>
+                            )}
 
-                            keyExtractor={(data, i) => i + ":" + data.id}
-                            getItemLayout={(data, i) => ({
-                                index: i,
-                                length: 70,
-                                offset: 70 * i,
-                            })}
+                            {afleveringer && afleveringer[sortedBy] && Object.keys(afleveringer[sortedBy]).length > 0 && (
+                                <SectionList
+                                    sections={afleveringer[sortedBy]}
+                                    renderItem={renderItemSectionList}
+                                    renderSectionHeader={renderSectionHeader}
 
-                            stickySectionHeadersEnabled={false}
+                                    keyExtractor={(data, i) => i + ":" + data.id}
+                                    getItemLayout={(data, i) => ({
+                                        index: i,
+                                        length: 70,
+                                        offset: 70 * i,
+                                    })}
 
-                            initialNumToRender={25}
+                                    stickySectionHeadersEnabled={false}
 
-                            refreshControl={
-                                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                            }
+                                    initialNumToRender={25}
 
-                            contentContainerStyle={{
-                                minHeight: "100%",
-                                paddingBottom: 150,
-                                paddingTop: 2.5,
-                            }}
-                        />
-                    )}
+                                    refreshControl={
+                                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                                    }
+
+                                    contentContainerStyle={{
+                                        minHeight: "100%",
+                                        paddingBottom: 150,
+                                        paddingTop: 2.5,
+                                    }}
+                                />
+                            )}
+                        </View>
+                    }
+
+                    {rateLimited && <RateLimit />}
                 </View>
-            }
 
-            {rateLimited && <RateLimit />}
-        </View>
+                <Subscription bottomSheetModalRef={bottomSheetModalRef} bottomInset={89} />
+            </BottomSheetModalProvider>
+        </GestureHandlerRootView>
     )
 }

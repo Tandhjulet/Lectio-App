@@ -137,7 +137,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 onPress={() => {
                                     // @ts-ignore
                                     if(!subscriptionState?.hasSubscription) {
-                                        navigation.navigate("NoAccess")
+                                        bottomSheetModalRef.current?.present();
                                         return;
                                     }
 
@@ -163,7 +163,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 onPress={() => {
                                     // @ts-ignore
                                     if(!subscriptionState?.hasSubscription) {
-                                        navigation.navigate("NoAccess")
+                                        bottomSheetModalRef.current?.present();
                                         return;
                                     }
 
@@ -203,7 +203,7 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 onPress={() => {
                                     // @ts-ignore
                                     if(!subscriptionState?.hasSubscription) {
-                                        navigation.navigate("NoAccess")
+                                        bottomSheetModalRef.current?.present();
                                         return;
                                     }
 
