@@ -5,11 +5,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 
 ## Prioriteringer/mangler ved appen
 
-### HJEMMESIDE
-- ny slutbrugerlicensaftale
-- ny privatlivspolitik
-- ny hjemmeside
-
 ### __HØJ__
 - fix skema ift. 3(+) moduler: skift evt. til lectios skemasystem
 - optimer skema
@@ -23,7 +18,4 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 ### __LAV__
 - spørgeskemaer
 - limit på profilbillede-requests (skal gøres native tror jeg)
-
-husk at opdatere landing pagens slutbrugerlicens og privatlivspolitik, så de linker til hjemmesiden!
-
-https://www.npmjs.com/package/didyoumean2 
+- https://www.npmjs.com/package/didyoumean2 

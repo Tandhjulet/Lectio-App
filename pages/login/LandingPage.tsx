@@ -3,6 +3,7 @@ import Logo from "../../components/Logo";
 import { hexToRgb, Theme, themes } from "../../modules/Themes";
 import { ChevronRightIcon } from "react-native-heroicons/solid";
 import BackgroundSVG from "../../components/BackgroundSVG";
+import * as WebBrowser from 'expo-web-browser';
 
 import Constants from 'expo-constants';
 import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -309,7 +310,36 @@ export default function LandingPage({
                     textAlign: "center",
                     textAlignVertical: "center",
                 }}>
-                    Ved at bruge Lectio 360 accepterer du vores slutbrugerlicensaftale og privatlivspolitik!
+                    Ved at bruge Lectio 360 accepterer du vores{" "}
+                    <Text onPress={() => {
+                        WebBrowser.openBrowserAsync("https://lectio360.dk/eula", {
+                            controlsColor: theme.ACCENT.toString(),
+                            dismissButtonStyle: "close",
+                            presentationStyle: WebBrowser.WebBrowserPresentationStyle.POPOVER,
+
+                            toolbarColor: theme.ACCENT_BLACK.toString(),
+                        })
+                    }} style={{
+                        textDecorationLine: "underline",
+                        color: hexToRgb(theme.ACCENT.toString(), 0.8),
+                    }}>
+                        slutbrugerlicensaftale
+                    </Text>
+                    {" og "}
+                    <Text onPress={() => {
+                        WebBrowser.openBrowserAsync("https://lectio360.dk/privatliv", {
+                            controlsColor: theme.ACCENT.toString(),
+                            dismissButtonStyle: "close",
+                            presentationStyle: WebBrowser.WebBrowserPresentationStyle.POPOVER,
+
+                            toolbarColor: theme.ACCENT_BLACK.toString(),
+                        })
+                    }} style={{
+                        textDecorationLine: "underline",
+                        color: hexToRgb(theme.ACCENT.toString(), 0.8),
+                    }}>
+                        privatlivspolitik
+                    </Text>!
                 </Text>
             </View>
         </View>
