@@ -284,21 +284,14 @@ const App = () => {
   return (
   <SubscriptionContext.Provider value={{ subscriptionState, dispatchSubscription }}>
     <AuthContext.Provider value={authContext}>
-      <NavigationContainer theme={{colors: {
-        background: theme.BLACK.toString(),
-        primary: '',
-        card: '',
-        text: '',
-        border: '',
-        notification: ''
-      }, dark: true}}>
+      <NavigationContainer>
           {state.isLoading ? (
-
             <AppStack.Navigator screenOptions={{
               headerShown: false,
+              animation: "fade",
             }}>
               <AppStack.Screen name="Splash" component={SplashScreen} options={{
-                header: () => <></>
+                header: () => <></>,
               }} />
             </AppStack.Navigator>
           ) : (
@@ -309,7 +302,6 @@ const App = () => {
                   contentStyle: {
                     backgroundColor: theme.BLACK
                   },
-                  animation:'none',
         
                   headerStyle: {
                     backgroundColor: theme.ACCENT_BLACK.toString(),
@@ -320,14 +312,23 @@ const App = () => {
                   headerBackVisible: false,
                 }}>
                   <AppStack.Screen name="LandingPage" component={LandingPage} options={{
-                    header: () => <></>
+                    header: () => <></>,
+                    animation: 'none',
                   }} />
                   <AppStack.Screen name="Login" component={Login} options={{
-                    header: () => <></>
+                    presentation: "formSheet",
+                    gestureEnabled: true,
+                    header: () => <></>,
                   }} />
 
                   <AppStack.Screen name="Schools" component={Schools} options={{
-                    header: ({ route, options }) => Header({ route, options })
+                    headerSearchBarOptions: {
+                      inputType: "text",
+                      placeholder: "Søg efter skole",
+                      cancelButtonText: "Annuller",
+                      hideWhenScrolling: false,
+                    },
+                    title: "Vælg din skole",
                   }} />
                 </AppStack.Navigator>
               ) : (

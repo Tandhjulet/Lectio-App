@@ -1,6 +1,7 @@
-import React, {memo, useEffect, useState} from 'react';
+import React, {memo, useCallback, useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   Keyboard,
   Pressable,
   ScrollView,
@@ -9,15 +10,19 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
   useColorScheme,
 } from 'react-native';
 import {Cell, Section, TableView} from 'react-native-tableview-simple';
-import { themes } from '../../modules/Themes';
+import { hexToRgb, themes } from '../../modules/Themes';
 import { getSchools } from '../../modules/api/scraper/Scraper';
 import { saveUnsecure, secureSave } from '../../modules/api/Authentication';
 import { replaceHTMLEntities } from '../../modules/api/scraper/SkemaScraper';
+import Constants from "expo-constants";
+import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 /**
  * Finds first alphabet character in a string
@@ -31,9 +36,7 @@ function findFirstChar(str: string): string {
 /**
  * Renders the school in a memo to reduce lag/skip rerendering
  */
-const School = memo(function School({ index, section, navigation, gymNummer, gymName }: {
-  index: number,
-  section: any,
+const School = memo(function School({ navigation, gymNummer, gymName }: {
   navigation: any,
   gymNummer: string,
   gymName: string,
@@ -42,13 +45,12 @@ const School = memo(function School({ index, section, navigation, gymNummer, gym
   const theme = themes[scheme ?? "dark"];
 
   return (
-    <Pressable onPress={() => {
+    <TouchableOpacity onPress={() => {
       secureSave("gym", JSON.stringify({ "gymNummer": gymNummer, "gymName": gymName })).then(() => {
         navigation.navigate("Login", {
           _gym: [gymName, gymNummer]
         })
       })
-
     }}>
       <View style={{
         height: 48,
@@ -59,12 +61,6 @@ const School = memo(function School({ index, section, navigation, gymNummer, gym
           
           backgroundColor: theme.BLACK,
 
-          borderTopLeftRadius: index == 0 ? 20 : 0,
-          borderTopRightRadius: index == 0 ? 20 : 0,
-
-          borderBottomLeftRadius: index == section.data.length - 1 ? 20 : 0,
-          borderBottomRightRadius: index == section.data.length - 1 ? 20 : 0,
-
           display: 'flex',
           gap: 10,
           flexDirection: "row",
@@ -73,24 +69,13 @@ const School = memo(function School({ index, section, navigation, gymNummer, gym
         }}>
           <Text style={{
             color: theme.WHITE,
+            fontSize: 15,
           }}>
             {gymName}
           </Text>
         </View>
-        
-        <View style={{
-          marginHorizontal: 15,
-        }}>
-          <View style={{
-            backgroundColor: theme.WHITE,
-            width: "100%",
-            height: StyleSheet.hairlineWidth,
-
-            opacity: 0.2,
-          }} />
-        </View>
       </View>
-    </Pressable>
+    </TouchableOpacity>
   )
 })
 
@@ -100,7 +85,7 @@ const School = memo(function School({ index, section, navigation, gymNummer, gym
  * @param contains optional filter to apply
  * @returns parsed data
  */
-function parseData(data: {[id: string]: string}, contains?: string): {
+function parseData(data: {[id: string]: string}): {
   letter: string,
   data: string[];
 }[] {
@@ -108,9 +93,6 @@ function parseData(data: {[id: string]: string}, contains?: string): {
 
   for(let schoolName in data) {
     const c = findFirstChar(schoolName.toUpperCase());
-
-    if(contains != undefined && !schoolName.toLowerCase().includes(contains.toLowerCase()))
-      continue;
 
     if(out[c] == undefined)
       out[c] = [];
@@ -134,26 +116,57 @@ function parseData(data: {[id: string]: string}, contains?: string): {
   return formattedOut;
 }
 
-const Schools = ({ navigation }: any) => {
-  const [loading, setLoading] = useState(true);
-
+const Schools = ({ navigation }: {
+  navigation: NativeStackNavigationProp<any>,
+}) => {
   const [schools, setSchools] = useState<{
     letter: string,
     data: string[];
   }[]>([]);
   const [rawData, setRawData] = useState<{[key: string]: string}>({});
+  const [query, setQuery] = useState<string>();
+
+  let namelist = useRef<string[]>([]).current;
+  const [filteredNamelist, setFilteredNamelist] = useState<string[]>([]);
+
+  const filterSearch = useCallback(function filterSearch(filterText: string, reuse: boolean) {
+    if(reuse && filteredNamelist.length === 0) reuse = false;
+
+    setFilteredNamelist((reuse ? filteredNamelist : namelist).filter((name: string) => {
+        return name.toLowerCase().includes(filterText.toLowerCase());
+    }));
+}, [filteredNamelist])
 
   /**
    * Loads the schools upon page load
    */
   useEffect(() => {
+    console.log("called")
+
+    navigation.setOptions({
+      headerSearchBarOptions: {
+        inputType: "text",
+        hideWhenScrolling: false,
+        cancelButtonText: "Annuller",
+        placeholder: "Søg efter skole",
+        
+
+        onChangeText: (changeTextEvent) => {
+          const text = changeTextEvent.nativeEvent.text;
+          filterSearch(text, text.length > (query?.length ?? 0));
+          setQuery(text);
+        },
+      },
+    })
+
     const load = async () => {
       const rawData = await getSchools();
       setRawData(rawData);
-      const data = parseData(rawData);
-      setSchools(data);
+      setSchools(parseData(rawData));
 
-      setLoading(false);
+      namelist = Object.keys(rawData);
+      setFilteredNamelist(namelist);
+
     }
 
     load();
@@ -163,80 +176,108 @@ const Schools = ({ navigation }: any) => {
   const theme = themes[scheme ?? "dark"];
 
   return (
-      <View style={{paddingBottom: 40, minHeight: "100%"}}>
-        <TextInput placeholder="Søg efter skole..." onChangeText={(text) => {setSchools(parseData(rawData, text))}} style={{
-          color: theme.WHITE,
-          fontSize: 15,
-
-          backgroundColor: theme.DARK,
-
-          marginHorizontal: 20,
-          padding: 5,
-          borderRadius: 5,
-
-          marginBottom: 10,
-        }} />
-
-        {loading &&
-            <View style={{
-                position: "absolute",
-
-                top: "20%",
-                left: "50%",
-
-                transform: [{
-                    translateX: -12.5,
-                }]
-            }}>
-                <ActivityIndicator size={"small"} color={theme.ACCENT} />
-            </View>
-        }
-
-        <View style={{
-          marginHorizontal: 20,
-        }}>
+      <View style={{
+        paddingBottom: 40,
+        marginTop: Constants.statusBarHeight,
+        minHeight: "100%"
+      }}>
+        <View>
           <TableView>
-            <SectionList
-              sections={schools}
+            {query && query.length > 0 ? (
+              <FlatList
+                data={filteredNamelist}
+                renderItem={({ item }) => {
+                  return <School gymNummer={rawData[item]} gymName={item} navigation={navigation} />
+                }}
+                ItemSeparatorComponent={() => (
+                  <View style={{
+                    marginLeft: 15,
+                  }}>
+                    <View style={{
+                      backgroundColor: theme.WHITE,
+                      width: "100%",
+                      height: StyleSheet.hairlineWidth,
+          
+                      opacity: 0.2,
+                    }} />
+                  </View>
+                )}
 
-              renderItem={({item, index, section}) => {
-                  return <School gymNummer={rawData[item]} gymName={item} index={index} section={section} navigation={navigation} />
-              }}
+                keyExtractor={(item, index) => item + "-" + index}
+                getItemLayout={(data, index) => {
+                    return {length: 48, offset: 48 * index, index: index}
+                }}
 
-              renderSectionHeader={(data) => {
-                  return (
-                      <View style={{
-                          paddingTop: 7.5,
+                contentInsetAdjustmentBehavior="automatic"
 
-                          backgroundColor: theme.BLACK,
-                          opacity: 0.9,
-                      }}>
-                          <Text style={{
-                              color: theme.WHITE,
-                              fontWeight: "bold",
-                          }}>
-                              {data.section.letter.toUpperCase()}
-                          </Text>
-                      </View>
-                  )
-              }}
-              keyExtractor={(item, index) => item + "-" + index}
-              getItemLayout={(data, index) => {
-                  return {length: 48, offset: 48 * index, index: index}
-              }}
+                directionalLockEnabled={true}
 
-              bounces={false}
+                contentContainerStyle={{
+                  paddingBottom: 150,
+                }}
 
-              stickySectionHeadersEnabled={false}
-              directionalLockEnabled={true}
+                keyboardDismissMode="on-drag"
+                keyboardShouldPersistTaps="always"
+              />
+            ) : (
+              <SectionList
+                sections={schools}
 
-              contentContainerStyle={{
-                paddingBottom: 150,
-              }}
+                renderItem={({ item }) => {
+                    return <School gymNummer={rawData[item]} gymName={item} navigation={navigation} />
+                }}
+                ItemSeparatorComponent={() => (
+                  <View style={{
+                    marginLeft: 15,
+                  }}>
+                    <View style={{
+                      backgroundColor: theme.WHITE,
+                      width: "100%",
+                      height: StyleSheet.hairlineWidth,
+          
+                      opacity: 0.2,
+                    }} />
+                  </View>
+                )}
 
-              keyboardDismissMode="on-drag"
-              keyboardShouldPersistTaps="always"
-            />
+                renderSectionHeader={(data) => {
+                    return (
+                        <View style={{
+                            paddingTop: 7.5,
+
+                            backgroundColor: theme.BLACK,
+                            opacity: 0.9,
+
+                            marginLeft: 7.5,
+                        }}>
+                            <Text style={{
+                                color: theme.WHITE,
+                                fontWeight: "bold",
+                            }}>
+                                {data.section.letter.toUpperCase()}
+                            </Text>
+                        </View>
+                    )
+                }}
+
+                keyExtractor={(item, index) => item + "-" + index}
+                getItemLayout={(data, index) => {
+                    return {length: 48, offset: 48 * index, index: index}
+                }}
+
+                contentInsetAdjustmentBehavior="automatic"
+
+                stickySectionHeadersEnabled={false}
+                directionalLockEnabled={true}
+
+                contentContainerStyle={{
+                  paddingBottom: 150,
+                }}
+
+                keyboardDismissMode="on-drag"
+                keyboardShouldPersistTaps="always"
+              />
+            )}
           </TableView>
         </View>
       </View>

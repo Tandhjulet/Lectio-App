@@ -269,7 +269,7 @@ export default function LandingPage({
                 marginTop: 15,
             }}>
                 <TouchableOpacity onPress={() => {
-                    navigation.navigate("Login")
+                    navigation.navigate("Schools")
                 }}>
                     <View style={{
                         paddingLeft: 40,

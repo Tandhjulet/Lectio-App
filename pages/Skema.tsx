@@ -317,7 +317,6 @@ export default function Skema({ navigation, route }: {
             }
         }
 
-        overlaps.splice(overlaps.indexOf(i), 1);
         searchCache[i].push(...overlaps);
         return overlaps;
     }
@@ -340,14 +339,11 @@ export default function Skema({ navigation, route }: {
             left: string,
         }[] = [];
 
-        const sortedModules = modules.sort((a,b) => {
-            return (a.timeSpan.diff - b.timeSpan.diff)
-        }); // sorts from shortest to longest module
 
-        sortedModules.forEach((modul: Modul, i: number) => {
+        modules.forEach((modul: Modul, i: number) => {
             const overlaps = searchDateDict(modules, i); // O(n)
 
-            if(overlaps.length == 0) {
+            if(overlaps.length == 1) {
                 out.push({
                     modul: modul,
 
@@ -355,29 +351,14 @@ export default function Skema({ navigation, route }: {
                     left: "0%",
                 })
             } else {
-                if(overlaps.length == 1) {
-                    out.push({
-                        modul: modul,
-    
-                        width: "50%",
-                        left: i < overlaps[0] ? "50%" : "0%",
-                    })
-                } else {
-                    let max = 0;
-                    overlaps.forEach((overlap) => { // worst-case: O(n^2), in a case where every module overlaps every other module.
-                                                    // This is pretty unlikely though!
-                        const overlaps = searchDateDict(modules, overlap).length; // O(1) as requested elements will be cached.
-                        if(overlaps > max) max = overlaps;
-                    })
+                const index = overlaps.findIndex((v) => v == i)
+                
+                out.push({
+                    modul: modul,
 
-                    out.push({
-                        modul: modul,
-    
-                        width: (1/(max+1)) * 100 + "%",
-                        left: ((1-i)/(max+1)) * 100 + "%",
-                    })
-                }
-
+                    width: (1/overlaps.length) * 100 + "%",
+                    left: (index/overlaps.length) * 100 + "%",
+                })
             }
         })
 

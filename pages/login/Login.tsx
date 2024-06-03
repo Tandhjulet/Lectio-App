@@ -1,7 +1,7 @@
 import { ActivityIndicator, Animated, Keyboard, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle, useColorScheme } from "react-native";
 import { hexToRgb, themes } from "../../modules/Themes";
 import { ArrowRightCircleIcon, ChevronDoubleRightIcon, LockClosedIcon, UserIcon } from "react-native-heroicons/solid";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createRef, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { SignInPayload } from "../../App";
 import { AuthContext } from "../../modules/Auth";
 import { useFocusEffect } from "@react-navigation/native";
@@ -14,7 +14,7 @@ export default function Login({ route, navigation }: {
 }) {
     const { signIn } = useContext(AuthContext);
 
-    const passwdRef = useRef<TextInput>(null);
+    const passwdRef = createRef<TextInput>();
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string } | null>()
 
     /**
@@ -75,7 +75,6 @@ export default function Login({ route, navigation }: {
     return (
         <View style={{
             width: '100%',
-            height: "100%",
 
             backgroundColor: theme.BLACK,
             
@@ -87,6 +86,23 @@ export default function Login({ route, navigation }: {
 
             paddingBottom: 275,
         }}>
+            <View style={{
+                paddingVertical: 10,
+                width: "100%",
+
+                backgroundColor: theme.ACCENT_BLACK,
+
+                justifyContent: "center",
+                alignItems: "center",
+                marginBottom: 10,
+            }}>
+                <View style={{
+                    width: 30,
+                    height: 3,
+                    borderRadius: 5,
+                    backgroundColor: theme.WHITE,
+                }} />
+            </View>
 
             <Logo style={{
                 marginBottom: 20,
@@ -148,11 +164,11 @@ export default function Login({ route, navigation }: {
                             ...styles.textInput,
                             color: theme.WHITE,
                         }}
-                        textContentType="username"
-                        autoComplete="username"
-                        autoFocus
+                        textContentType="oneTimeCode"
+                        autoComplete="off"
 
                         cursorColor={theme.ACCENT}
+                        autoFocus
 
                         onSubmitEditing={() => {
                             passwdRef.current?.focus();
@@ -179,8 +195,8 @@ export default function Login({ route, navigation }: {
                             ...styles.textInput,
                             color: theme.WHITE,
                         }}
-                        textContentType="password"
-                        autoComplete="current-password"
+                        textContentType="oneTimeCode"
+                        autoComplete="off"
 
                         cursorColor={theme.ACCENT}
 
@@ -202,35 +218,6 @@ export default function Login({ route, navigation }: {
                 flexDirection: "row",
                 gap: 20,
             }}>
-                <Pressable
-                    onPress={() => {
-                        navigation.navigate("LandingPage")
-                    }}
-                >
-                    <View style={{
-
-                        paddingHorizontal: 15,
-                        paddingVertical: 10,
-                        borderRadius: 99,
-
-                        backgroundColor: hexToRgb(theme.WHITE.toString(), 0.2),
-
-                        display: 'flex',
-                        flexDirection: 'row',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        gap: 5,
-                    }}>
-                        <Text style={{
-                            color: theme.WHITE,
-                            fontSize: 17,
-                            fontWeight: "normal",
-                        }}>
-                            Tilbage
-                        </Text>
-                    </View>
-                </Pressable>
-
                 <Pressable
                     onPress={validateAndContinue}
                 >
