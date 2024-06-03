@@ -51,7 +51,6 @@ export async function uploadFile(document: LocalDocument, binary: string): Promi
     const form = new FormData();
     form.append("file", binary);
 
-
     const res = await RNFetchBlob.fetch("POST", SCRAPE_URLS(gymNummer).DOCUMENT_UPLOAD, {
         'Content-Type' : 'multipart/form-data',
     }, [

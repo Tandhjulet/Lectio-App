@@ -432,7 +432,7 @@ export async function getMessages(gymNummer: string, mappeId: number = -70, bypa
 
 }
 
-export async function getAflevering(gymNummer: string, id: string, bypassCache: boolean = false, cb: (data: OpgaveDetails | undefined) => Promise<void> | void): Promise<OpgaveDetails | null | undefined> {
+export async function getAflevering(gymNummer: string, id: string, bypassCache: boolean = false, cb: (data: {opgaveDetails: OpgaveDetails, headers: {[id: string]: string}} | undefined) => Promise<void> | void): Promise<{opgaveDetails: OpgaveDetails, headers: {[id: string]: string}} | null | undefined> {
     const profile = await getProfile();
     const req = new Request(SCRAPE_URLS(gymNummer, profile.elevId, id).S_OPGAVE, {
         method: "GET",
@@ -442,7 +442,19 @@ export async function getAflevering(gymNummer: string, id: string, bypassCache: 
         },
     });
 
-    return await fetchWithCache<OpgaveDetails>(req, Key.S_AFLEVERING, id, Timespan.DAY * 3, cb, scrapeOpgave, bypassCache)
+    return await fetchWithCache<{opgaveDetails: OpgaveDetails, headers: {[id: string]: string}}>(req, Key.S_AFLEVERING, id, Timespan.DAY * 3, cb, async (parser: DomSelector) => {
+        const ASPHeaders = parser.getElementsByClassName("aspNetHidden");
+        let headers: {[id: string]: string} = {};
+        ASPHeaders.forEach((header: any) => {
+            headers = {...headers, ...parseASPHeaders(header)};
+        })
+    
+        const messages = await scrapeOpgave(parser);
+        return {
+            opgaveDetails: messages,
+            headers: headers
+        };
+    }, bypassCache)
 }
 
 export async function getAfleveringer(gymNummer: string, bypassCache: boolean = false, cb: (data: Opgave[] | undefined | null) => Promise<void> | void): Promise<Opgave[] | null | undefined> {

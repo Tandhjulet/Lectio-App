@@ -61,7 +61,7 @@ export function parseDocuments(parser: any): Document[] {
 
         out.push({
             date: date,
-            fileName: name,
+            fileName: name.trim(),
             size: size,
             url: url,
         })

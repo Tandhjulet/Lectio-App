@@ -1,6 +1,9 @@
+import { StringOmit } from "@rneui/base";
 import { Document } from "./DocumentScraper";
 import { SCRAPE_URLS } from "./Helpers";
 import { replaceHTMLEntities } from "./SkemaScraper";
+import { UploadResult } from "../filer/FileManager";
+import { getProfile } from "./Scraper";
 
 export enum Status {
     AFLEVERET,
@@ -74,6 +77,44 @@ function scrapeText(data: any[]) {
     })
 
     return out;
+}
+
+export async function postDocument(gymNummer: string, elevId: string, id: string, file: UploadResult, headers: {[id: string]: string}): Promise<boolean> {
+    if(!file.ok) return false;
+
+    const payload: {[id: string]: string} = {
+        ...headers,
+
+        "__EVENTTARGET": "m$Content$choosedocument",
+        "__EVENTARGUMENT": "documentId",
+        "masterfootervalue": "X1!ÆØÅ",
+        "s$m$searchinputfield": "",
+        "m$Content$CommentsTB$tb": "",
+        "m$Content$choosedocument$selectedDocumentId": JSON.stringify({
+            type: "serializedAnyFileId",
+            serializedId: file.serializedId,
+            isPublic: true,
+            filename: file.fileName,
+        }),
+        "LectioPostbackId": "",
+    }
+
+    const parsedData = [];
+    for (const key in payload) {
+        parsedData.push(encodeURIComponent(key) + "=" + encodeURIComponent(payload[key]));
+    }
+    const stringifiedData = parsedData.join("&");
+
+    const res = await fetch(SCRAPE_URLS(gymNummer, elevId, id).S_OPGAVE, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+        },
+        body: stringifiedData,
+    })
+    return res.status == 200;
 }
 
 export async function scrapeOpgave(parser: any): Promise<OpgaveDetails | null> {

@@ -961,7 +961,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
 
                                             alignItems: "center",
                                         }}>
-                                            <ProfilePicture billedeId={person.billedeId ?? ""} size={40} navn={person.navn} noContextMenu />
+                                            <ProfilePicture gymNummer={gym?.gymNummer ?? ""} billedeId={person.billedeId ?? ""} size={40} navn={person.navn} noContextMenu />
 
                                             <Text style={{
                                                 color: theme.WHITE,

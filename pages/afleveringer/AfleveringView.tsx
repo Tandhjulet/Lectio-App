@@ -1,10 +1,10 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native"
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from "react-native";
 import { Cell, Section, Separator, TableView } from "react-native-tableview-simple";
-import { Opgave, OpgaveDetails, parseDate, Status } from "../../modules/api/scraper/OpgaveScraper";
+import { Opgave, OpgaveDetails, parseDate, postDocument, Status } from "../../modules/api/scraper/OpgaveScraper";
 import { formatDate } from "../Afleveringer";
-import { getAflevering } from "../../modules/api/scraper/Scraper";
+import { getAflevering, getProfile } from "../../modules/api/scraper/Scraper";
 import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { hexToRgb, themes } from "../../modules/Themes";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
@@ -17,6 +17,9 @@ import RNFS from "react-native-fs";
 import * as Progress from 'react-native-progress';
 import { Document } from "../../modules/api/scraper/DocumentScraper";
 import { replaceHTMLEntities } from "../../modules/api/scraper/SkemaScraper";
+import { DocumentCheckIcon } from "react-native-heroicons/outline";
+import { upload } from "../../modules/api/filer/FileManager";
+import Shake from "../../components/Shake";
 
 export default function AfleveringView({ navigation, route }: {
     navigation: NavigationProp<any>,
@@ -25,7 +28,11 @@ export default function AfleveringView({ navigation, route }: {
     const [loading, setLoading] = useState<boolean>(true);
     const [opgaveDetails, setOpgaveDetails] = useState<OpgaveDetails | null>();
 
+    let headers: {[id: string]: string} = useRef({}).current;
+
     const [refreshing, setRefreshing] = useState<boolean>(false);
+
+    const [uploadError, setUploadError] = useState<boolean>(false);
 
     const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>();
 
@@ -46,10 +53,8 @@ export default function AfleveringView({ navigation, route }: {
             setGym(gym);
 
             getAflevering(gym.gymNummer, aflevering.id, false, async (v) => {
-                setOpgaveDetails(v);
-
-                const people = await getPeople();
-
+                headers = v?.headers ?? {};
+                setOpgaveDetails(v?.opgaveDetails);
                 setLoading(false);
             })
         })();
@@ -67,10 +72,8 @@ export default function AfleveringView({ navigation, route }: {
                 return;
 
             getAflevering(gym.gymNummer, aflevering.id, false, async (v) => {
-                setOpgaveDetails(v);
-
-                const people = await getPeople();
-
+                headers = v?.headers ?? {};
+                setOpgaveDetails(v?.opgaveDetails);
                 setRefreshing(false);
             })
         })();
@@ -89,13 +92,32 @@ export default function AfleveringView({ navigation, route }: {
     } = File()
 
     const [downloading, setDownloading] = useState<boolean>(false);
+    const [uploading, setUploading] = useState<boolean>(false);
+
+    const uploadFile = useCallback(async () => {
+        if(uploading || downloading) {
+            setUploadError(!uploadError);
+            return;
+        }
+
+        setUploading(true);
+        const profile = await getProfile();
+
+        const file = await upload();
+        const document = await postDocument(gym?.gymNummer ?? "", profile.elevId, aflevering.id, file, headers)
+
+        setUploading(false);
+        if(document)
+            setRefreshing(true);
+        else
+            setUploadError(!uploadError)
+    }, [])
 
     const openFile = useCallback((file: Document) => {
-        if(downloading) return;
+        if(downloading || uploading) return;
 
         setDownloading(true);
-        const extension = getUrlExtension(file.fileName);
-        const fileURI = RNFS.CachesDirectoryPath + "/tempfile." + extension;
+        const fileURI = RNFS.CachesDirectoryPath + "/" + file.fileName.trim();
 
         RNFS.downloadFile({
             fromUrl: replaceHTMLEntities(file.url),
@@ -471,97 +493,124 @@ export default function AfleveringView({ navigation, route }: {
                             )}
                         </Section>
                     )}
-                    {opgaveDetails?.opgaveIndlæg && opgaveDetails.opgaveIndlæg.length > 0 && (
-                        <Section
-                            header="OPGAVEINDLÆG"
-                            roundedCorners={true}
-                            hideSurroundingSeparators={true}
-                        >
-                            {opgaveDetails.opgaveIndlæg.map((indlæg, i) => {
-                                let name;
-                                if(indlæg.document) {
-                                    const extensionKnown = !(findIcon(getUrlExtension(indlæg.document.fileName)).props.color == hexToRgb(theme.WHITE.toString(), 0.8));
-                                    name = extensionKnown ? indlæg.document.fileName.replace(new RegExp("\\." + getUrlExtension(indlæg.document.fileName) + "$"), "") : indlæg.document.fileName;
-                                }
 
-                                const indlægDate = parseDate(indlæg.time);
+                    <Section
+                        header="OPGAVEINDLÆG"
+                        roundedCorners={true}
+                        hideSurroundingSeparators={true}
+                    >
+                        {opgaveDetails?.opgaveIndlæg?.map((indlæg, i) => {
+                            let name;
+                            if(indlæg.document) {
+                                const extensionKnown = !(findIcon(getUrlExtension(indlæg.document.fileName)).props.color == hexToRgb(theme.WHITE.toString(), 0.8));
+                                name = extensionKnown ? indlæg.document.fileName.replace(new RegExp("\\." + getUrlExtension(indlæg.document.fileName) + "$"), "") : indlæg.document.fileName;
+                            }
 
-                                return (
-                                    <Cell
-                                        key={i}
-                                        cellStyle="Basic"
-                                        cellContentView={
+                            const indlægDate = parseDate(indlæg.time);
+
+                            return (
+                                <Cell
+                                    key={i}
+                                    cellStyle="Basic"
+                                    cellContentView={
+                                        <View style={{
+                                            paddingVertical: 7.5,
+                                            width: "100%",
+                                        }}>
                                             <View style={{
-                                                paddingVertical: 7.5,
+                                                display: "flex",
+                                                flexDirection: "row",
+                                                justifyContent: "space-between",
+
                                                 width: "100%",
                                             }}>
+                                                <Text style={{
+                                                    color: theme.WHITE.toString(),
+                                                    fontWeight: "bold",
+                                                    fontSize: 12.5,
+                                                    maxWidth: "60%",
+                                                }}>
+                                                    {indlæg.byUser}
+                                                </Text>
+
+                                                <Text style={{
+                                                    color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                                    maxWidth: "40%",
+                                                }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+                                                    {indlægDate.toLocaleTimeString("da-DK", {
+                                                        timeStyle: "short"
+                                                    }).replace(".", ":")}, {indlægDate.toLocaleDateString("da-DK", {
+                                                        dateStyle: "medium",
+                                                    })}
+                                                </Text>
+                                            </View>
+                                            
+                                            {indlæg.document && (
                                                 <View style={{
                                                     display: "flex",
                                                     flexDirection: "row",
-                                                    justifyContent: "space-between",
 
-                                                    width: "100%",
+                                                    alignItems: "center",
+
+                                                    marginLeft: 0,
+                                                    marginVertical: 5,
+                                                    
+                                                    gap: 2.5,
                                                 }}>
                                                     <Text style={{
-                                                        color: theme.WHITE.toString(),
-                                                        fontWeight: "bold",
-                                                        fontSize: 12.5,
-                                                        maxWidth: "60%",
+                                                        color: theme.ACCENT,
+                                                        fontWeight: "700"
                                                     }}>
-                                                        {indlæg.byUser}
-                                                    </Text>
-
-                                                    <Text style={{
-                                                        color: hexToRgb(theme.WHITE.toString(), 0.6),
-                                                        maxWidth: "40%",
-                                                    }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-                                                        {indlægDate.toLocaleTimeString("da-DK", {
-                                                            timeStyle: "short"
-                                                        }).replace(".", ":")}, {indlægDate.toLocaleDateString("da-DK", {
-                                                            dateStyle: "medium",
-                                                        })}
+                                                        {name}
                                                     </Text>
                                                 </View>
-                                                
-                                                {indlæg.document && (
-                                                    <TouchableOpacity style={{
-                                                        display: "flex",
-                                                        flexDirection: "row",
+                                            )}
 
-                                                        alignItems: "center",
+                                            {indlæg.comment !== "" && (
+                                                <Text style={{
+                                                    color: theme.WHITE,
+                                                }} >
+                                                    {indlæg.comment}
+                                                </Text>
+                                            )}
+                                        </View>
+                                    }
+                                    onPress={() => {
+                                        openFile(indlæg.document!)
+                                    }}
+                                />
+                            )
+                        })}
+                    </Section>
 
-                                                        marginLeft: -3,
-                                                        marginVertical: 5,
-                                                        
-                                                        gap: 2.5,
-                                                    }}>
+                    <View style={{
+                        marginTop: -20,
+                    }}>
+                        <Section roundedCorners hideSurroundingSeparators>
+                            <Shake deps={[uploadError]} shakeOn={() => true}>
+                                <Cell
+                                    cellStyle="Subtitle"
+                                    title="Upload dokument"
+                                    titleTextStyle={{
+                                        fontWeight: "600",
+                                        color: theme.ACCENT,
+                                    }}
+                                    detail={"Indsend en besvarelse"}
+                                    contentContainerStyle={{
+                                        paddingVertical: 7.5,
+                                    }}
 
-                                                        <Text style={{
-                                                            color: theme.ACCENT,
-                                                            fontWeight: "700"
-                                                        }}>
-                                                            {name}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                )}
+                                    cellAccessoryView={
+                                        <DocumentCheckIcon color={theme.LIGHT} />
+                                    }
 
-                                                {indlæg.comment !== "" && (
-                                                    <Text style={{
-                                                        color: theme.WHITE,
-                                                    }} >
-                                                        {indlæg.comment}
-                                                    </Text>
-                                                )}
-                                            </View>
-                                        }
-                                        onPress={() => {
-                                            openFile(indlæg.document!)
-                                        }}
-                                    />
-                                )
-                            })}
+                                    onPress={() => {
+                                        uploadFile()
+                                    }} 
+                                />
+                            </Shake>
                         </Section>
-                    )}
+                    </View>
 
                     <View 
                         style={{
@@ -571,7 +620,7 @@ export default function AfleveringView({ navigation, route }: {
                 </TableView>
             </ScrollView>
 
-            {downloading && (
+            {(downloading || uploading) && (
                 <View style={{
                     position: "absolute",
                     height: height / 2,
@@ -598,7 +647,8 @@ export default function AfleveringView({ navigation, route }: {
                         <Text style={{
                             color: theme.WHITE,
                         }}>
-                            Henter fil...
+                            {downloading && "Henter fil..."}
+                            {uploading && "Uploader fil..."}
                         </Text>
 
                         <Progress.Circle
