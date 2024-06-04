@@ -6,16 +6,16 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 ## Prioriteringer/mangler ved appen
 
 ### __HØJ__
-- forbedr skema
 
 ### __MELLEM__
 - push notifs
-- gør så appen kan bruges uden/med manglende internet
-- https://github.com/stevenselcuk/react-native-ask-for-review
 - widgets
 - fraværs registrering load hurtigere
+- skema: bredde af moduler bliver undervurderet
 
 ### __LAV__
 - spørgeskemaer
 - limit på profilbillede-requests (skal gøres native tror jeg)
-- https://www.npmjs.com/package/didyoumean2 
+- https://www.npmjs.com/package/didyoumean2
+- https://github.com/stevenselcuk/react-native-ask-for-review
+- gør så appen kan bruges uden/med manglende internet

@@ -15,10 +15,7 @@ import Popover from "react-native-popover-view";
 import { Placement } from "react-native-popover-view/dist/Types";
 import { BellAlertIcon, CheckBadgeIcon, ClockIcon, ExclamationCircleIcon, ShieldExclamationIcon } from "react-native-heroicons/outline";
 import { LinearGradient } from "expo-linear-gradient";
-import Subscription from "../components/Subscription";
-import { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 /**
  * Formats the dates weekday as text.
@@ -134,11 +131,10 @@ const filterData = (data: Opgave[] | null | undefined) => {
 }
 
 
-export default function Afleveringer({ navigation }: {navigation: NavigationProp<any>}) {
+export default function Afleveringer({ navigation }: {navigation: NativeStackNavigationProp<any>}) {
     const { subscriptionState } = useContext(SubscriptionContext);
 
     const currTime = useRef(new Date().valueOf()).current;
-    const bottomSheetModalRef = useRef<BottomSheetModalMethods>(null);
 
     /**
      * 
@@ -531,7 +527,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                 onPress={() => {
                     // @ts-ignore
                     if(!subscriptionState?.hasSubscription) {
-                        bottomSheetModalRef.current?.present();
+                        navigation.push("NoAccess");
                         return;
                     }
         
@@ -548,7 +544,7 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
                     height: 75,
     
                     width: "100%",
-                }}>
+                }} shouldRasterizeIOS renderToHardwareTextureAndroid>
                     <View
                         style={{
                             display: "flex",
@@ -687,90 +683,84 @@ export default function Afleveringer({ navigation }: {navigation: NavigationProp
     }) => <SectionHeader data={data.section.key} theme={theme} />, [theme]);
 
     return (
-        <GestureHandlerRootView>
-            <BottomSheetModalProvider>
+        <View style={{
+            minHeight: "100%",
+            minWidth: "100%",
+        }}>
+            {loading ?
                 <View style={{
-                    minHeight: "100%",
-                    minWidth: "100%",
+                    position: "absolute",
+
+                    top: "20%",
+                    left: "50%",
+
+                    transform: [{
+                        translateX: -12.5,
+                    }]
                 }}>
-                    {loading ?
-                        <View style={{
-                            position: "absolute",
-
-                            top: "20%",
-                            left: "50%",
-
-                            transform: [{
-                                translateX: -12.5,
-                            }]
-                        }}>
-                            <ActivityIndicator size={"small"} color={theme.ACCENT} />
-                        </View>
-                    :
-                        <View>
-                            {(!afleveringer || !(afleveringer[sortedBy]) || Object.keys(afleveringer[sortedBy]).length == 0) && (
-                                <ScrollView refreshControl={
-                                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                                } contentContainerStyle={{
-                                    flexDirection: 'column',
-                                    alignItems: "center",
-
-                                    height: "100%",
-                                }}>
-                                    <Logo size={40} style={{
-                                        marginTop: 200,
-                                    }} />
-                                    <Text style={{
-                                        color: theme.WHITE,
-                                        textAlign: 'center',
-
-                                        fontSize: 16,
-                                    }}>
-                                        {sortedBy == "Alle" ?
-                                            "Du har ingen opgaver"
-                                        :
-                                            `Du har ingen opgaver der ${sortedBy == "Afleveret" ? "er " : ""}${sortedBy.toLowerCase()}.`
-                                        }
-                                    </Text>
-                                </ScrollView>
-                            )}
-
-                            {afleveringer && afleveringer[sortedBy] && Object.keys(afleveringer[sortedBy]).length > 0 && (
-                                <SectionList
-                                    sections={afleveringer[sortedBy]}
-                                    renderItem={renderItemSectionList}
-                                    renderSectionHeader={renderSectionHeader}
-
-                                    keyExtractor={(data, i) => i + ":" + data.id}
-                                    getItemLayout={(data, i) => ({
-                                        index: i,
-                                        length: 70,
-                                        offset: 70 * i,
-                                    })}
-
-                                    stickySectionHeadersEnabled={false}
-
-                                    initialNumToRender={25}
-
-                                    refreshControl={
-                                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                                    }
-
-                                    contentContainerStyle={{
-                                        minHeight: "100%",
-                                        paddingBottom: 150,
-                                        paddingTop: 2.5,
-                                    }}
-                                />
-                            )}
-                        </View>
-                    }
-
-                    {rateLimited && <RateLimit />}
+                    <ActivityIndicator size={"small"} color={theme.ACCENT} />
                 </View>
+            :
+                <View>
+                    {(!afleveringer || !(afleveringer[sortedBy]) || Object.keys(afleveringer[sortedBy]).length == 0) && (
+                        <ScrollView refreshControl={
+                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                        } contentContainerStyle={{
+                            flexDirection: 'column',
+                            alignItems: "center",
 
-                <Subscription bottomSheetModalRef={bottomSheetModalRef} bottomInset={89} />
-            </BottomSheetModalProvider>
-        </GestureHandlerRootView>
+                            height: "100%",
+                        }}>
+                            <Logo size={40} style={{
+                                marginTop: 200,
+                            }} />
+                            <Text style={{
+                                color: theme.WHITE,
+                                textAlign: 'center',
+
+                                fontSize: 16,
+                            }}>
+                                {sortedBy == "Alle" ?
+                                    "Du har ingen opgaver"
+                                :
+                                    `Du har ingen opgaver der ${sortedBy == "Afleveret" ? "er " : ""}${sortedBy.toLowerCase()}.`
+                                }
+                            </Text>
+                        </ScrollView>
+                    )}
+
+                    {afleveringer && afleveringer[sortedBy] && Object.keys(afleveringer[sortedBy]).length > 0 && (
+                        <SectionList
+                            sections={afleveringer[sortedBy]}
+                            renderItem={renderItemSectionList}
+                            renderSectionHeader={renderSectionHeader}
+
+                            keyExtractor={(data, i) => i + ":" + data.id}
+                            getItemLayout={(data, i) => ({
+                                index: i,
+                                length: 70,
+                                offset: 70 * i,
+                            })}
+
+                            stickySectionHeadersEnabled={false}
+
+                            initialNumToRender={25}
+
+                            refreshControl={
+                                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                            }
+
+                            contentContainerStyle={{
+                                minHeight: "100%",
+                                paddingBottom: 150,
+                                paddingTop: 2.5,
+                            }}
+                        />
+                    )}
+                </View>
+            }
+
+            {rateLimited && <RateLimit />}
+        </View>
     )
 }

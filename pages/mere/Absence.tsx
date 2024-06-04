@@ -22,6 +22,7 @@ import Shake from "../../components/Shake";
 import Logo from "../../components/Logo";
 import { LinearGradient } from "expo-linear-gradient";
 import Subscription from "../../components/Subscription";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 type ChartedAbsence = {
     almindeligt: {
@@ -137,7 +138,7 @@ interface Props extends SvgProps {
 
 const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
 
-export default function Absence({ navigation }: { navigation: any }) {
+export default function Absence({ navigation }: { navigation: NativeStackNavigationProp<any> }) {
 
     //const gymNummer = useRef((await secureGet("gym")).gymNummer).current;
 
@@ -336,7 +337,6 @@ export default function Absence({ navigation }: { navigation: any }) {
 
 
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-    const noAccessRef = useRef<BottomSheetModal>(null);
     const bottomSheetAbsenceRegistrationRef = useRef<BottomSheetModal>(null);
 
     const onRegistrationRefresh = useCallback(() => {
@@ -414,7 +414,7 @@ export default function Absence({ navigation }: { navigation: any }) {
     const handlePress = useCallback((reg: Registration) => {
         // @ts-ignore
         if(!subscriptionState?.hasSubscription) {
-            noAccessRef.current?.present();
+            navigation.push("NoAccess")
             return;
         }
 
@@ -505,29 +505,30 @@ export default function Absence({ navigation }: { navigation: any }) {
         theme: Theme,
         i: number,
     }) {
-        const colorIndex = fraværIndexes.findIndex((v) => v == (!reg.studentProvidedReason ? "Ikke angivet" : reg.studentNote?.split("\n")[0])?.toLowerCase())
-        const color = fraværColors[colorIndex];
+        const colorIndex = useRef(fraværIndexes.findIndex((v) => v == (!reg.studentProvidedReason ? "Ikke angivet" : reg.studentNote?.split("\n")[0])?.toLowerCase())).current;
+        const color = useRef(fraværColors[colorIndex]).current;
 
         return (
-            <Pressable
+            <TouchableOpacity
                 onPress={() => handlePress(reg)}
 
-                style={({pressed}) => [
-                    {
-                        opacity: pressed ? 0.6 : 1,
-                        marginTop: !(i == 0) ? 4 : 0,
-                    }
-                ]}
-
+                style={{
+                    marginTop: !(i == 0) ? 4 : 0,
+                }}
             >
-                <View style={{
-                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.07),
+                <View 
+                    style={{
+                        backgroundColor: hexToRgb(theme.WHITE.toString(), 0.07),
 
-                    borderRadius: 10,
-                    overflow: "hidden",
+                        borderRadius: 10,
+                        overflow: "hidden",
 
-                    maxWidth: "100%",
-                }}>
+                        maxWidth: "100%",
+                    }}
+                    
+                    shouldRasterizeIOS
+                    renderToHardwareTextureAndroid
+                >
                     <LinearGradient
                         start={[0, 0]}
                         end={[1, 0]}
@@ -542,7 +543,7 @@ export default function Absence({ navigation }: { navigation: any }) {
                                 rotate: "180deg",
                             }],
                             zIndex: 1,
-                            opacity: 0.15,
+                            opacity: 0.1,
                         }}
                     />
 
@@ -589,8 +590,10 @@ export default function Absence({ navigation }: { navigation: any }) {
                                     <Text style={{
                                         color: hexToRgb(color, 1),
                                         fontSize: 14,
-                                    }} adjustsFontSizeToFit minimumFontScale={0.6}>
-                                        {reg.studentNote?.split("\n")[1] ?? "Ingen elevnote noteret"}
+                                        lineHeight: 15,
+
+                                    }} adjustsFontSizeToFit minimumFontScale={0.8} numberOfLines={4} ellipsizeMode="middle">
+                                        {reg.studentNote?.split("\n")[1]}
                                     </Text>
                                 )}
                             </View>
@@ -632,9 +635,8 @@ export default function Absence({ navigation }: { navigation: any }) {
                             </View>
                         </View>
                     </View>
-
                 </View>
-            </Pressable>
+            </TouchableOpacity>
         )
     }, (prev, next) => Object.is(prev.reg.url, next.reg.url))
 
@@ -1137,6 +1139,10 @@ export default function Absence({ navigation }: { navigation: any }) {
                                     stickySectionHeadersEnabled={false}
                                     keyExtractor={(item, index) => index + item.modul + item.registeredTime}
 
+                                    getItemLayout={(data, index) => {
+                                        return {index, length: 80, offset: 80 * index}
+                                    }}
+
                                     style={{
                                         paddingHorizontal: 15,
                                     }}
@@ -1459,8 +1465,6 @@ export default function Absence({ navigation }: { navigation: any }) {
                             })()}
                         </View>
                     </BottomSheetModal>
-                    
-                    <Subscription bottomSheetModalRef={noAccessRef} bottomInset={89} />
                 </View>
             </BottomSheetModalProvider>
         </GestureHandlerRootView>

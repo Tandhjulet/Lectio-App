@@ -70,6 +70,7 @@ import Books from './pages/mere/Books';
 import { Opgave } from './modules/api/scraper/OpgaveScraper';
 import { hasProfileSaved } from './modules/api/scraper/Scraper';
 import Studiekort from './pages/mere/Studiekort';
+import NoAccess from './pages/NoAccess';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -387,9 +388,17 @@ export function SkemaNavigator() {
           }
       } />
       <SkemaNav.Screen name={"Modul View"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.title ?? route.params.modul.team.join(", ") })} />
-      <Settings.Screen name="Tak" component={ThankYou} options={{
+      <SkemaNav.Screen name="Tak" component={ThankYou} options={{
         header: () => <></>
       }} />
+      <SkemaNav.Screen name={"NoAccessSkema"} component={NoAccess} options={{
+        title: "Køb abonnement",
+        headerShown: false,
+        header: () => <></>,
+
+        presentation: "formSheet",
+      }} />
+
     </SkemaNav.Navigator>
   )
 }
@@ -543,6 +552,13 @@ export function MereNavigator() {
 
       <Settings.Screen name={"Books"} component={Books} options={{title: "Bøger"}} />
       <Settings.Screen name={"Studiekort"} component={Studiekort} options={{title: "Studiekort", header: () => <></>}} />
+      <Settings.Screen name={"NoAccess"} component={NoAccess} options={{
+        title: "Køb abonnement",
+        headerShown: false,
+        header: () => <></>,
+
+        presentation: "formSheet",
+      }} />
       <Settings.Screen name="Tak" component={ThankYou} options={{
         header: () => <></>
       }} />

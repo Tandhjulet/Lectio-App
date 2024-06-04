@@ -23,10 +23,6 @@ import React from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 
 import 'react-native-console-time-polyfill';
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import Subscription from "../components/Subscription";
-import { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 
 /**
  * 
@@ -126,8 +122,6 @@ export default function Skema({ navigation, route }: {
         return selectedDay;
     }, [time])
 
-    const bottomSheetModalRef = useRef<BottomSheetModalMethods>(null);
-
     const { subscriptionState } = useContext(SubscriptionContext);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -172,7 +166,7 @@ export default function Skema({ navigation, route }: {
             if(getWeekNumber(prev) != getWeekNumber(copy)) {
                 // @ts-ignore
                 if(!subscriptionState?.hasSubscription) {
-                    bottomSheetModalRef.current?.present();
+                    navigation.push("NoAccessSkema")
                     pagerRef.current?.setPageWithoutAnimation(1);
                     return prev;
                 }
@@ -538,699 +532,694 @@ export default function Skema({ navigation, route }: {
     }, [skema])
 
     return (
-        <GestureHandlerRootView>
-            <BottomSheetModalProvider>
-                <Subscription bottomSheetModalRef={bottomSheetModalRef} bottomInset={283} />
-                <View>
-                    <View style={{
-                        paddingTop: isOwnSkema ? Constants.statusBarHeight : 10,
-                
-                        backgroundColor: theme.ACCENT_BLACK,
+        <View>
+            <View style={{
+                paddingTop: isOwnSkema ? Constants.statusBarHeight : 10,
+        
+                backgroundColor: theme.ACCENT_BLACK,
 
-                        display: 'flex',
-                        flexDirection: 'row',
+                display: 'flex',
+                flexDirection: 'row',
 
-                        width: "100%",
+                width: "100%",
+            }}>
+                <View style={{
+                    paddingHorizontal: 20,
+                }}>
+                    {isOwnSkema && !(profile == undefined) ? (
+                        <Text style={{
+                            fontSize: 20,
+                            color: theme.LIGHT,
+                        }}>{getTimeOfDayAsString()}, {profile.name.split(' ')[0]}</Text>
+                    ) : (
+                        <Text style={{
+                            textTransform: "uppercase",
+                            color: theme.LIGHT,
+                            fontWeight: "bold",
+                            fontSize: 13,
+                        }}>
+                            {time.toLocaleDateString("da-DK", {
+                                dateStyle:"medium",
+                            })}
+                        </Text>
+                    )}
+
+                    
+                    <Text style={{
+                        fontSize: 30,
+                        fontWeight: "bold",
+                        color: theme.WHITE,
+                    }}>Uge {getWeekNumber(loadDate)}</Text>
+                </View>
+                <View style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+
+                    position: "absolute",
+                    right: 0,
+                    bottom: 0,
+
+                    paddingRight: 20,
+                }}>
+                    <TouchableOpacity onPress={() => {
+                        if(loading) return;
+
+                        setLoadDate(time);
+                        setSelectedDay(time);
+                        setDayNum(getDay(time).weekDayNumber)
                     }}>
                         <View style={{
-                            paddingHorizontal: 20,
-                        }}>
-                            {isOwnSkema && !(profile == undefined) ? (
-                                <Text style={{
-                                    fontSize: 20,
-                                    color: theme.LIGHT,
-                                }}>{getTimeOfDayAsString()}, {profile.name.split(' ')[0]}</Text>
-                            ) : (
-                                <Text style={{
-                                    textTransform: "uppercase",
-                                    color: theme.LIGHT,
-                                    fontWeight: "bold",
-                                    fontSize: 13,
-                                }}>
-                                    {time.toLocaleDateString("da-DK", {
-                                        dateStyle:"medium",
-                                    })}
-                                </Text>
-                            )}
+                            backgroundColor: theme.LIGHT,
+                            padding: 5,
+                            borderRadius: 12.5,
 
-                            
-                            <Text style={{
-                                fontSize: 30,
-                                fontWeight: "bold",
-                                color: theme.WHITE,
-                            }}>Uge {getWeekNumber(loadDate)}</Text>
+                            opacity: (!loading && !dateCompare(selectedDay, time)) ? 1 : 0.5,
+                        }}>
+                            <BackwardIcon color={theme.DARK} />
                         </View>
+                    </TouchableOpacity>
+
+                    <Popover
+                        placement={[Placement.BOTTOM, Placement.LEFT]}
+
+                        popoverStyle={{
+                            backgroundColor: hexToRgb(theme.ACCENT_BLACK.toString()),
+                            borderRadius: 7,
+                        }}
+                        backgroundStyle={{
+                            backgroundColor: "rgba(0,0,0,0.2)"
+                        }}
+                        offset={5}
+                        from={(
+                            <TouchableOpacity style={{
+                                backgroundColor: theme.LIGHT,
+                                padding: 5,
+                                borderRadius: 12.5,
+                                marginLeft: 20,
+
+                                opacity: (skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter.length == 0)) ? 0.5 : 1,
+                            }}>
+                                <ClipboardDocumentListIcon color={theme.DARK} />
+                            </TouchableOpacity>
+                        )}
+                    >
                         <View style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            justifyContent: 'center',
-                            alignItems: 'center',
+                            padding: 17.5,
 
-                            position: "absolute",
-                            right: 0,
-                            bottom: 0,
-
-                            paddingRight: 20,
+                            gap: 5,
                         }}>
-                            <TouchableOpacity onPress={() => {
-                                if(loading) return;
+                            <Text style={{
+                                color: hexToRgb(theme.WHITE.toString(), 0.5),
+                            }}>
+                                Skemanoter
+                            </Text>
 
-                                setLoadDate(time);
-                                setSelectedDay(time);
-                                setDayNum(getDay(time).weekDayNumber)
+                            <Text style={{
+                                color: theme.WHITE,
+                                lineHeight: 20,
+                            }}>
+                                {skema ? renderSkemaNoter(skema[dayNum-2]?.skemaNoter) : "Ingen skemanoter"}
+                            </Text>
+                        </View>
+                    </Popover>
+                </View>
+            </View>
+
+
+            <View style={{
+                backgroundColor: theme.ACCENT_BLACK,
+            }}>
+                <AnimatedPagerView
+                    ref={pagerRef}
+                    initialPage={1}
+                    orientation={"horizontal"}
+                    offscreenPageLimit={3}
+                    overdrag
+
+                    style={{
+                        width: width,
+                        height: 56 + 15 + 10,
+                    }}
+
+                    scrollEnabled={!loading}
+
+                    onPageSelected={(e) => {
+                        if(blockScroll)
+                            return;
+
+                        if(e.nativeEvent.position == 2 || e.nativeEvent.position == 0) {
+                            // @ts-ignore
+                            if(!subscriptionState?.hasSubscription) {
+                                navigation.push("NoAccessSkema")
+                                setTimeout(() => pagerRef.current?.setPageWithoutAnimation(1), 300);
+                                return;
+                            }
+                        }
+                        
+                        if(e.nativeEvent.position == 2) {
+                            setLoadDate(() => {
+                                const week = getNextWeek(selectedDay);
+        
+                                setSelectedDay(week);
+                                return week;
+                            })
+                        } else if (e.nativeEvent.position == 0) {
+                            setLoadDate(() => {
+                                const week = getPrevWeek(selectedDay);
+        
+                                setSelectedDay(week);
+                                return week;
+                            })
+                        }
+
+                    }}
+                >
+                    {daysOfThreeWeeks.map((_, i) => {
+                        return (
+                            <View key={i} style={{
+                                paddingTop: 15,
+
+                                width: width,
+                                height: 56 + 15 + 10,
+
+                                paddingHorizontal: 20,
+                                marginBottom: 10,
                             }}>
                                 <View style={{
-                                    backgroundColor: theme.LIGHT,
-                                    padding: 5,
-                                    borderRadius: 12.5,
+                                    width: width - 20*2,
+                                    display: 'flex',
+                                    flexDirection: 'row',
 
-                                    opacity: (!loading && !dateCompare(selectedDay, time)) ? 1 : 0.5,
+                                    paddingHorizontal: 5,
+
+                                    justifyContent:'space-between',
+                                    flexWrap: "nowrap",
+
+                                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.15),
+                                    borderRadius: 5,
                                 }}>
-                                    <BackwardIcon color={theme.DARK} />
+                                    {_.map((day,j) => {
+                                        const isSelectedDay = dateCompare(day.date, selectedDay);
+
+                                        const nextDate = i == 1 && _[j+1]?.date;
+                                        const isDayBeforeSelectedDay = nextDate && dateCompare(nextDate, selectedDay)
+                                                                        
+                                        const isToday = dateCompare(day.date, time);
+
+                                        let hasModulesToday = (skema != null && (skema[day.weekDayNumber - 1] == undefined || Object.keys(skema[day.weekDayNumber - 1].moduler).length == 0));
+                                        if(!skema) hasModulesToday = true;
+
+                                        return (
+                                            <React.Fragment key={j + "."}>
+                                                <Pressable onPress={() => {
+                                                    setDayNum(day.weekDayNumber);
+                                                    setSelectedDay(day.date);
+                                                }} style={({pressed}) => [
+                                                    {
+                                                        opacity: pressed ? 0.6 : 1,
+                                                    }
+                                                ]}>
+                                                    <View style={{...styles.dayContainer}}>
+                                                        <Text style={{
+                                                            color: color(isSelectedDay, isToday, true),
+                                                            fontWeight: "bold",
+                                                            fontSize: 20,
+                                                            opacity: hasModulesToday && !isSelectedDay ? 0.9 : 1,
+                                                        }}>{day.dayNumber.toString()}</Text>
+
+                                                        <Text style={{
+                                                            textTransform: 'lowercase',
+                                                            color: color(isSelectedDay, isToday, false),
+                                                            opacity: hasModulesToday && !isSelectedDay ? 0.4 : 1,
+                                                        }}>{day.dayName.slice(0,3)}.</Text>
+                                                    </View>
+                                                </Pressable>
+                                                {j+1 !== _.length && (
+                                                    <View style={{
+                                                        height: 41,
+                                                        width: StyleSheet.hairlineWidth,
+                                                        marginVertical: 5,
+
+                                                        backgroundColor: isDayBeforeSelectedDay || isSelectedDay ? hexToRgb("#00c972", 0.6) : hexToRgb(theme.WHITE.toString(), 0.5),
+                                                    }} />
+                                                )}
+                                            </React.Fragment>
+                                        )
+                                    })}
                                 </View>
-                            </TouchableOpacity>
+                            </View>
+                        )
+                    })}
+                </AnimatedPagerView>
+            </View>
 
-                            <Popover
-                                placement={[Placement.BOTTOM, Placement.LEFT]}
+            <View style={{
+                backgroundColor: theme.ACCENT_BLACK,
+            }} {...panResponder.panHandlers}>
+                <View
+                    style={{
+                        backgroundColor: theme.ACCENT,
+                        opacity: 0.6,
+                        height: 1,
 
-                                popoverStyle={{
-                                    backgroundColor: hexToRgb(theme.ACCENT_BLACK.toString()),
-                                    borderRadius: 7,
-                                }}
-                                backgroundStyle={{
-                                    backgroundColor: "rgba(0,0,0,0.2)"
-                                }}
-                                offset={5}
-                                from={(
-                                    <TouchableOpacity style={{
-                                        backgroundColor: theme.LIGHT,
-                                        padding: 5,
-                                        borderRadius: 12.5,
-                                        marginLeft: 20,
-            
-                                        opacity: (skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter.length == 0)) ? 0.5 : 1,
-                                    }}>
-                                        <ClipboardDocumentListIcon color={theme.DARK} />
-                                    </TouchableOpacity>
-                                )}
-                            >
+                        borderRadius: 5,
+
+                        marginHorizontal: 20,
+                        marginBottom: 5,
+                    }}
+                />
+
+                
+                <View style={{
+                    backgroundColor: theme.BLACK,
+                    minHeight: "100%",
+
+                    paddingBottom: 200,
+                }}>
+
+                    {loading ?
+                        <View style={{
+                            position: "absolute",
+
+                            top: "20%",
+                            left: "50%",
+
+                            transform: [{
+                                translateX: -12.5,
+                            }]
+                        }}>
+                            <ActivityIndicator size={"small"} color={theme.ACCENT} />
+                        </View>
+                        :
+                        <ScrollView style={{
+                            zIndex: 50,
+                            minHeight: "100%",
+                            flex: 1,
+                        }} refreshControl={
+                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                        } scrollEnabled>
+                            <View style={{
+                                paddingTop: 20,
+                            }} />
+
+                            {skema == null && 
                                 <View style={{
-                                    padding: 17.5,
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+
+                                    flexDirection: 'column-reverse',
+
+                                    minHeight: '40%',
+
+                                    gap: 20,
+                                }}>
+                                    <Text style={{
+                                        color: theme.RED,
+                                        textAlign: 'center'
+                                    }}>
+                                        Der opstod en fejl.
+                                        {"\n"}
+                                        Du kan prøve igen ved at genindlæse.
+                                    </Text>
+
+                                </View>
+                            }
+
+                            {skema != null && (skema[dayNum - 1] == undefined || Object.keys(skema[dayNum - 1].moduler).length == 0) ? (
+                                <View style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+
+                                    paddingTop: 35,
 
                                     gap: 5,
                                 }}>
+                                    <Logo size={60} color={hexToRgb(theme.ACCENT.toString(), 0.8)} minOpacity={0.8} />
                                     <Text style={{
-                                        color: hexToRgb(theme.WHITE.toString(), 0.5),
+                                        fontSize: 20,
+                                        color: hexToRgb(theme.LIGHT.toString(), 1),
                                     }}>
-                                        Skemanoter
+                                        Du har ingen moduler!
                                     </Text>
-
                                     <Text style={{
                                         color: theme.WHITE,
-                                        lineHeight: 20,
+                                        textAlign: 'center'
                                     }}>
-                                        {skema ? renderSkemaNoter(skema[dayNum-2]?.skemaNoter) : "Ingen skemanoter"}
+                                        Ha' en god dag!
                                     </Text>
                                 </View>
-                            </Popover>
-                        </View>
-                    </View>
+                            )
+                            :
+                            <View>
+                                {skema != null && (
+                                    <>
+                                        {hoursToMap.map((hour: number, index: number) => {
+                                            const hours = time.getHours() + time.getMinutes()/60;
+                                            const isCurrentTimeClose = (hours > hour-0.3 && hours < hour+0.3) && (
+                                                (time.getMonth() == selectedDay.getMonth() &&
+                                                time.getDate() == selectedDay.getDate() &&
+                                                time.getFullYear() == selectedDay.getFullYear())
+                                            )
+                                            return (
+                                                <View key={index} style={{
+                                                    position: "absolute",
+                                                    top: (hour - Math.min(...hoursToMap)) * 60,
+                                                    zIndex: 2,
 
+                                                    display: "flex",
+                                                    flexDirection: "row-reverse",
+                                                    alignItems: "center",
 
-                    <View style={{
-                        backgroundColor: theme.ACCENT_BLACK,
-                    }}>
-                        <AnimatedPagerView
-                            ref={pagerRef}
-                            initialPage={1}
-                            orientation={"horizontal"}
-                            offscreenPageLimit={3}
-                            overdrag
+                                                    right: 10,
+                                                    gap: 5,
 
-                            style={{
-                                width: width,
-                                height: 56 + 15 + 10,
-                            }}
+                                                    transform: [{
+                                                        translateY: -(17 / 2),
+                                                    }],
+                                                    opacity: isCurrentTimeClose ? 0.3 : 0.8,
+                                                }}>
+                                                    <Text style={{
+                                                        color: hexToRgb(theme.WHITE.toString(), 0.8),
+                                                        width: 39,
 
-                            scrollEnabled={!loading}
+                                                        textAlign: "center",
+                                                        textAlignVertical: "center",
+                                                    }}>
+                                                        {hour.toString().padStart(2, "0")}:00
+                                                    </Text>
+                                                    <View style={{
+                                                        height: StyleSheet.hairlineWidth,
+                                                        backgroundColor: hexToRgb(theme.WHITE.toString(), 0.3),
+                                                        flex: 1,
+                                                        zIndex: 1,
+                                                    }} />
+                                                </View>
+                                            )
+                                        })}
 
-                            onPageSelected={(e) => {
-                                if(blockScroll)
-                                    return;
+                                        {currentTime}
 
-                                if(e.nativeEvent.position == 2 || e.nativeEvent.position == 0) {
-                                    // @ts-ignore
-                                    if(!subscriptionState?.hasSubscription) {
-                                        bottomSheetModalRef.current?.present();
-                                        pagerRef.current?.setPageWithoutAnimation(1);
-                                        return;
-                                    }
-                                }
-                                
-                                if(e.nativeEvent.position == 2) {
-                                    setLoadDate(() => {
-                                        const week = getNextWeek(selectedDay);
-                
-                                        setSelectedDay(week);
-                                        return week;
-                                    })
-                                } else if (e.nativeEvent.position == 0) {
-                                    setLoadDate(() => {
-                                        const week = getPrevWeek(selectedDay);
-                
-                                        setSelectedDay(week);
-                                        return week;
-                                    })
-                                }
+                                        {modulTimings.map((modulTiming: ModulDate, index: number) => {
+                                            return (
+                                                <View key={index} style={{
+                                                    position: "absolute",
 
-                            }}
-                        >
-                            {daysOfThreeWeeks.map((_, i) => {
-                                return (
-                                    <View key={i} style={{
-                                        paddingTop: 15,
+                                                    transform: [{
+                                                        translateY: modulTiming.diff/2 -30/2,
+                                                    }],
+                                                    height: modulTiming.diff > 60 ? 30 : modulTiming.diff,
+                                                    width: modulTiming.diff > 60 ? 30 : 33.5+5,
 
-                                        width: width,
-                                        height: 56 + 15 + 10,
+                                                    left: modulTiming.diff > 60 ? 5 : 0,
+                                                    
+                                                    borderBottomLeftRadius: modulTiming.diff > 60 ? 500 : 0,
+                                                    borderTopLeftRadius: modulTiming.diff > 60 ? 500 : 0,
+                                                    borderTopRightRadius: modulTiming.diff > 60 ? 0 : 5,
+                                                    borderBottomRightRadius: modulTiming.diff > 60 ? 0 : 5,
 
-                                        paddingHorizontal: 20,
-                                        marginBottom: 10,
-                                    }}>
+                                                    display: "flex",
+                                                    justifyContent: "center",
+                                                    alignItems: "center",
+
+                                                    backgroundColor: scheme == "dark" ? "#1f1f1f" : "#cecece",
+                                                    zIndex: 5,
+
+                                                    top: calculateTop(modulTiming)
+                                                }}>
+                                                    {modulTiming.diff > 60 && (
+                                                        <View style={{
+                                                            position:"absolute",
+
+                                                            right: -4,
+                                                            top: 0,
+
+                                                            height: modulTiming.diff,
+                                                            width: 20,
+
+                                                            //borderCurve: "continuous",
+                                                            borderBottomLeftRadius: 5,
+                                                            borderTopLeftRadius: 5,
+                                                            borderTopRightRadius: 7.5,
+                                                            borderBottomRightRadius: 7.5,
+
+                                                            transform: [{
+                                                                translateY: -modulTiming.diff/2 +30/2
+                                                            }],
+                                                            backgroundColor: scheme == "dark" ? "#1f1f1f" : "#cecece",
+                                                        }}/>
+                                                    )}
+                                                    <Text style={{
+                                                        color: theme.WHITE,
+                                                        fontWeight: "bold",
+                                                        opacity: 0.7,
+                                                    }}>
+                                                        {index+1}.
+                                                    </Text>
+                                                </View>
+                                            )
+                                        })}
+
                                         <View style={{
-                                            width: width - 20*2,
-                                            display: 'flex',
-                                            flexDirection: 'row',
+                                            position: "relative",
+                                            marginLeft: 38 + 7.5,
+                                            marginRight: 40 + 7.5 * 2,
 
-                                            paddingHorizontal: 5,
-
-                                            justifyContent:'space-between',
-                                            flexWrap: "nowrap",
-
-                                            backgroundColor: hexToRgb(theme.WHITE.toString(), 0.15),
-                                            borderRadius: 5,
+                                            zIndex: 5,
                                         }}>
-                                            {_.map((day,j) => {
-                                                const isSelectedDay = dateCompare(day.date, selectedDay);
-
-                                                const nextDate = i == 1 && _[j+1]?.date;
-                                                const isDayBeforeSelectedDay = nextDate && dateCompare(nextDate, selectedDay)
-                                                                                
-                                                const isToday = dateCompare(day.date, time);
-
-                                                let hasModulesToday = (skema != null && (skema[day.weekDayNumber - 1] == undefined || Object.keys(skema[day.weekDayNumber - 1].moduler).length == 0));
-                                                if(!skema) hasModulesToday = true;
+                                            {day != null && day.map(({ modul, width, left}, index: number) => {
+                                                const widthNum = parseInt(width.replace("%", ""));
 
                                                 return (
-                                                    <React.Fragment key={j + "."}>
-                                                        <Pressable onPress={() => {
-                                                            setDayNum(day.weekDayNumber);
-                                                            setSelectedDay(day.date);
-                                                        }} style={({pressed}) => [
-                                                            {
-                                                                opacity: pressed ? 0.6 : 1,
+                                                    <TouchableHighlight
+                                                        key={index}
+
+                                                        onPress={() => {
+                                                            if(modul.href.includes("proevehold")) {
+                                                                Alert.alert("Eksamen",
+                                                                            "Du kan desværre ikke se yderligere information om din eksamen i Lectio 360.",
+                                                                            [
+                                                                                {
+                                                                                    text: "OK",
+                                                                                    style: "cancel",
+                                                                                    isPreferred: true,
+                                                                                }
+                                                                            ],
+                                                                            {
+                                                                                cancelable: true,
+                                                                            })
+                                                                return;
+                                                            };
+                                                            
+                                                            if(route.name === "Skema") {
+                                                                navigation.push("Modul View", {
+                                                                    modul: modul,
+                                                                })
+                                                            } else {
+                                                                navigation.push("Modul information", {
+                                                                    modul: modul,
+                                                                })
                                                             }
-                                                        ]}>
-                                                            <View style={{...styles.dayContainer}}>
-                                                                <Text style={{
-                                                                    color: color(isSelectedDay, isToday, true),
-                                                                    fontWeight: "bold",
-                                                                    fontSize: 20,
-                                                                    opacity: hasModulesToday && !isSelectedDay ? 0.9 : 1,
-                                                                }}>{day.dayNumber.toString()}</Text>
+                                                        }}
+                                                    >
+                                                        <View style={{
+                                                            position:"absolute",
 
-                                                                <Text style={{
-                                                                    textTransform: 'lowercase',
-                                                                    color: color(isSelectedDay, isToday, false),
-                                                                    opacity: hasModulesToday && !isSelectedDay ? 0.4 : 1,
-                                                                }}>{day.dayName.slice(0,3)}.</Text>
-                                                            </View>
-                                                        </Pressable>
-                                                        {j+1 !== _.length && (
+                                                            top: calculateTop(modul.timeSpan),
+                                                            height: modul.timeSpan.diff,
+                                                            
+                                                            width: width as DimensionValue,
+                                                            left: left as DimensionValue,
+
+                                                            zIndex: 5,
+                                                        }}>
                                                             <View style={{
-                                                                height: 41,
-                                                                width: StyleSheet.hairlineWidth,
-                                                                marginVertical: 5,
+                                                                width: "100%",
+                                                            }}>
+                                                                <View style={{
+                                                                    backgroundColor: (modul.changed && scheme == "light") ? calcColor(0.3, modul) : calcColor(0.5, modul),
+                                                                    borderRadius: 5,
 
-                                                                backgroundColor: isDayBeforeSelectedDay || isSelectedDay ? hexToRgb("#00c972", 0.6) : hexToRgb(theme.WHITE.toString(), 0.5),
-                                                            }} />
-                                                        )}
-                                                    </React.Fragment>
+                                                                    width: "100%",
+                                                                    height: "100%",
+
+                                                                    overflow: "hidden",
+
+                                                                    paddingHorizontal: 10,
+                                                                    paddingVertical: modul.timeSpan.diff > 25 ? 5 : 2.5,
+                                                                }}>
+                                                                    <View
+                                                                        style={{
+                                                                            position: 'absolute',
+                                                                            backgroundColor: calcColor(1, modul),
+
+                                                                            minHeight: modul.timeSpan.diff,
+                                                                            width: 4,
+
+                                                                            left: 0,
+                                                                        }}
+                                                                    />
+
+                                                                    {modul.timeSpan.diff > 30 && modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim().length > 0 && (
+                                                                        <Text style={{
+                                                                            color: calcColor(1, modul),
+                                                                            fontSize: 12.5,
+                                                                        }}>
+                                                                            {modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim()}
+                                                                        </Text>
+                                                                    )}
+
+                                                                    {modul.title && (
+                                                                        <Text style={{
+                                                                            color: calcColor(1, modul),
+                                                                            fontWeight: "bold",
+
+                                                                        }} ellipsizeMode="middle" numberOfLines={1}>
+                                                                            {modul.title}
+                                                                        </Text>
+                                                                    )}
+
+                                                                    <Text style={{
+                                                                        color: calcColor(1, modul),
+                                                                        fontWeight: "500",
+
+                                                                        overflow: "hidden",
+                                                                    }} ellipsizeMode="middle" numberOfLines={Math.floor(widthNum/25)}>
+                                                                        {modul.team.join(", ")}
+                                                                    </Text>
+
+                                                                    {modul.timeSpan.diff > 70 && (
+                                                                        <View style={{
+                                                                            position: "absolute",
+                                                                            top: widthNum > 75 ? 0 : undefined,
+                                                                            bottom: widthNum > 75 ? undefined : 0,
+                                                                            right: 0,
+
+                                                                            display: 'flex',
+                                                                            flexDirection: 'row',
+                                                                            gap: 5,
+                                                                            
+                                                                            margin: 5,
+                                                                        }}>
+                                                                            {modul.comment ?
+                                                                                <ChatBubbleBottomCenterTextIcon color={calcColor(1, modul)} />
+                                                                            : null}
+                                                        
+                                                                            {modul.homework ?
+                                                                                <InboxStackIcon color={calcColor(1, modul)} />
+                                                                            : null}
+                                                                            
+                                                                        </View>
+                                                                    )}
+                                                                </View>
+                                                            </View>
+                                                        </View>
+                                                    </TouchableHighlight>
                                                 )
                                             })}
                                         </View>
-                                    </View>
-                                )
-                            })}
-                        </AnimatedPagerView>
-                    </View>
+
+                                        <View style={{
+                                            width: "100%",
+                                            height: hoursToMap.length * 60 + (110 + 81) + 60
+                                        }} />
+                                    </>
+                                )}
+                            </View>
+                            }
+                        </ScrollView>
+                    }
 
                     <View style={{
-                        backgroundColor: theme.ACCENT_BLACK,
-                    }} {...panResponder.panHandlers}>
-                        <View
-                            style={{
-                                backgroundColor: theme.ACCENT,
-                                opacity: 0.6,
-                                height: 1,
+                        width: "100%",
+                        height: "100%",
 
-                                borderRadius: 5,
+                        position: "absolute",
+                        pointerEvents: "none",
+                        overflow: "hidden",
 
-                                marginHorizontal: 20,
-                                marginBottom: 5,
-                            }}
-                        />
+                        zIndex: 50,
+                    }}>
+                        <Animated.View style={{
+                            position: "absolute",
+                            top: "25%",
+                            left: -77,
 
-                        
-                        <View style={{
-                            backgroundColor: theme.BLACK,
-                            minHeight: "100%",
+                            width: 75,
+                            height: 75,
 
-                            paddingBottom: 200,
+                            transform: [{translateX: pan.x.interpolate({
+                                inputRange: [0, width],
+                                outputRange: [0, 75 * 2],
+                            }) }],
+
+                            backgroundColor: theme.ACCENT_BLACK,
+                            opacity: 1,
+                            borderRadius: 75,
+
+                            display: "flex",
+                            alignItems: "flex-end",
+
+                            zIndex: 50,
                         }}>
-
-                            {loading ?
-                                <View style={{
-                                    position: "absolute",
-
-                                    top: "20%",
-                                    left: "50%",
-
-                                    transform: [{
-                                        translateX: -12.5,
-                                    }]
-                                }}>
-                                    <ActivityIndicator size={"small"} color={theme.ACCENT} />
-                                </View>
-                                :
-                                <ScrollView style={{
-                                    zIndex: 50,
-                                    minHeight: "100%",
-                                    flex: 1,
-                                }} refreshControl={
-                                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                                } scrollEnabled>
-                                    <View style={{
-                                        paddingTop: 20,
-                                    }} />
-
-                                    {skema == null && 
-                                        <View style={{
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-
-                                            flexDirection: 'column-reverse',
-
-                                            minHeight: '40%',
-
-                                            gap: 20,
-                                        }}>
-                                            <Text style={{
-                                                color: theme.RED,
-                                                textAlign: 'center'
-                                            }}>
-                                                Der opstod en fejl.
-                                                {"\n"}
-                                                Du kan prøve igen ved at genindlæse.
-                                            </Text>
-
-                                        </View>
-                                    }
-
-                                    {skema != null && (skema[dayNum - 1] == undefined || Object.keys(skema[dayNum - 1].moduler).length == 0) ? (
-                                        <View style={{
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-
-                                            paddingTop: 35,
-
-                                            gap: 5,
-                                        }}>
-                                            <Logo size={60} color={hexToRgb(theme.ACCENT.toString(), 0.8)} minOpacity={0.8} />
-                                            <Text style={{
-                                                fontSize: 20,
-                                                color: hexToRgb(theme.LIGHT.toString(), 1),
-                                            }}>
-                                                Du har ingen moduler!
-                                            </Text>
-                                            <Text style={{
-                                                color: theme.WHITE,
-                                                textAlign: 'center'
-                                            }}>
-                                                Ha' en god dag!
-                                            </Text>
-                                        </View>
-                                    )
-                                    :
-                                    <View>
-                                        {skema != null && (
-                                            <>
-                                                {hoursToMap.map((hour: number, index: number) => {
-                                                    const hours = time.getHours() + time.getMinutes()/60;
-                                                    const isCurrentTimeClose = (hours > hour-0.3 && hours < hour+0.3) && (
-                                                        (time.getMonth() == selectedDay.getMonth() &&
-                                                        time.getDate() == selectedDay.getDate() &&
-                                                        time.getFullYear() == selectedDay.getFullYear())
-                                                    )
-                                                    return (
-                                                        <View key={index} style={{
-                                                            position: "absolute",
-                                                            top: (hour - Math.min(...hoursToMap)) * 60,
-                                                            zIndex: 2,
-
-                                                            display: "flex",
-                                                            flexDirection: "row-reverse",
-                                                            alignItems: "center",
-
-                                                            right: 10,
-                                                            gap: 5,
-
-                                                            transform: [{
-                                                                translateY: -(17 / 2),
-                                                            }],
-                                                            opacity: isCurrentTimeClose ? 0.3 : 0.8,
-                                                        }}>
-                                                            <Text style={{
-                                                                color: hexToRgb(theme.WHITE.toString(), 0.8),
-                                                                width: 39,
-
-                                                                textAlign: "center",
-                                                                textAlignVertical: "center",
-                                                            }}>
-                                                                {hour.toString().padStart(2, "0")}:00
-                                                            </Text>
-                                                            <View style={{
-                                                                height: StyleSheet.hairlineWidth,
-                                                                backgroundColor: hexToRgb(theme.WHITE.toString(), 0.3),
-                                                                flex: 1,
-                                                                zIndex: 1,
-                                                            }} />
-                                                        </View>
-                                                    )
-                                                })}
-
-                                                {currentTime}
-
-                                                {modulTimings.map((modulTiming: ModulDate, index: number) => {
-                                                    return (
-                                                        <View key={index} style={{
-                                                            position: "absolute",
-
-                                                            transform: [{
-                                                                translateY: modulTiming.diff/2 -30/2,
-                                                            }],
-                                                            height: modulTiming.diff > 60 ? 30 : modulTiming.diff,
-                                                            width: modulTiming.diff > 60 ? 30 : 33.5+5,
-
-                                                            left: modulTiming.diff > 60 ? 5 : 0,
-                                                            
-                                                            borderBottomLeftRadius: modulTiming.diff > 60 ? 500 : 0,
-                                                            borderTopLeftRadius: modulTiming.diff > 60 ? 500 : 0,
-                                                            borderTopRightRadius: modulTiming.diff > 60 ? 0 : 5,
-                                                            borderBottomRightRadius: modulTiming.diff > 60 ? 0 : 5,
-
-                                                            display: "flex",
-                                                            justifyContent: "center",
-                                                            alignItems: "center",
-
-                                                            backgroundColor: scheme == "dark" ? "#1f1f1f" : "#cecece",
-                                                            zIndex: 5,
-
-                                                            top: calculateTop(modulTiming)
-                                                        }}>
-                                                            {modulTiming.diff > 60 && (
-                                                                <View style={{
-                                                                    position:"absolute",
-
-                                                                    right: -4,
-                                                                    top: 0,
-
-                                                                    height: modulTiming.diff,
-                                                                    width: 20,
-
-                                                                    //borderCurve: "continuous",
-                                                                    borderBottomLeftRadius: 5,
-                                                                    borderTopLeftRadius: 5,
-                                                                    borderTopRightRadius: 7.5,
-                                                                    borderBottomRightRadius: 7.5,
-
-                                                                    transform: [{
-                                                                        translateY: -modulTiming.diff/2 +30/2
-                                                                    }],
-                                                                    backgroundColor: scheme == "dark" ? "#1f1f1f" : "#cecece",
-                                                                }}/>
-                                                            )}
-                                                            <Text style={{
-                                                                color: theme.WHITE,
-                                                                fontWeight: "bold",
-                                                                opacity: 0.7,
-                                                            }}>
-                                                                {index+1}.
-                                                            </Text>
-                                                        </View>
-                                                    )
-                                                })}
-
-                                                <View style={{
-                                                    position: "relative",
-                                                    marginLeft: 38 + 7.5,
-                                                    marginRight: 40 + 7.5 * 2,
-
-                                                    zIndex: 5,
-                                                }}>
-                                                    {day != null && day.map(({ modul, width, left}, index: number) => {
-                                                        const widthNum = parseInt(width.replace("%", ""));
-
-                                                        return (
-                                                            <TouchableHighlight
-                                                                key={index}
-
-                                                                onPress={() => {
-                                                                    if(modul.href.includes("proevehold")) {
-                                                                        Alert.alert("Eksamen",
-                                                                                    "Du kan desværre ikke se yderligere information om din eksamen i Lectio 360.",
-                                                                                    [
-                                                                                        {
-                                                                                            text: "OK",
-                                                                                            style: "cancel",
-                                                                                            isPreferred: true,
-                                                                                        }
-                                                                                    ],
-                                                                                    {
-                                                                                        cancelable: true,
-                                                                                    })
-                                                                        return;
-                                                                    };
-                                                                    
-                                                                    if(route.name === "Skema") {
-                                                                        navigation.push("Modul View", {
-                                                                            modul: modul,
-                                                                        })
-                                                                    } else {
-                                                                        navigation.push("Modul information", {
-                                                                            modul: modul,
-                                                                        })
-                                                                    }
-                                                                }}
-                                                            >
-                                                                <View style={{
-                                                                    position:"absolute",
-
-                                                                    top: calculateTop(modul.timeSpan),
-                                                                    height: modul.timeSpan.diff,
-                                                                    
-                                                                    width: width as DimensionValue,
-                                                                    left: left as DimensionValue,
-
-                                                                    zIndex: 5,
-                                                                }}>
-                                                                    <View style={{
-                                                                        width: "100%",
-                                                                    }}>
-                                                                        <View style={{
-                                                                            backgroundColor: (modul.changed && scheme == "light") ? calcColor(0.3, modul) : calcColor(0.5, modul),
-                                                                            borderRadius: 5,
-
-                                                                            width: "100%",
-                                                                            height: "100%",
-
-                                                                            overflow: "hidden",
-
-                                                                            paddingHorizontal: 10,
-                                                                            paddingVertical: modul.timeSpan.diff > 25 ? 5 : 2.5,
-                                                                        }}>
-                                                                            <View
-                                                                                style={{
-                                                                                    position: 'absolute',
-                                                                                    backgroundColor: calcColor(1, modul),
-
-                                                                                    minHeight: modul.timeSpan.diff,
-                                                                                    width: 4,
-
-                                                                                    left: 0,
-                                                                                }}
-                                                                            />
-
-                                                                            {modul.timeSpan.diff > 30 && modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim().length > 0 && (
-                                                                                <Text style={{
-                                                                                    color: calcColor(1, modul),
-                                                                                    fontSize: 12.5,
-                                                                                }}>
-                                                                                    {modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim()}
-                                                                                </Text>
-                                                                            )}
-
-                                                                            {modul.title && (
-                                                                                <Text style={{
-                                                                                    color: calcColor(1, modul),
-                                                                                    fontWeight: "bold",
-
-                                                                                }} ellipsizeMode="middle" numberOfLines={1}>
-                                                                                    {modul.title}
-                                                                                </Text>
-                                                                            )}
-
-                                                                            <Text style={{
-                                                                                color: calcColor(1, modul),
-                                                                                fontWeight: "500",
-
-                                                                                overflow: "hidden",
-                                                                            }} ellipsizeMode="middle" numberOfLines={Math.floor(widthNum/25)}>
-                                                                                {modul.team.join(", ")}
-                                                                            </Text>
-
-                                                                            {modul.timeSpan.diff > 70 && (
-                                                                                <View style={{
-                                                                                    position: "absolute",
-                                                                                    top: widthNum > 75 ? 0 : undefined,
-                                                                                    bottom: widthNum > 75 ? undefined : 0,
-                                                                                    right: 0,
-
-                                                                                    display: 'flex',
-                                                                                    flexDirection: 'row',
-                                                                                    gap: 5,
-                                                                                    
-                                                                                    margin: 5,
-                                                                                }}>
-                                                                                    {modul.comment ?
-                                                                                        <ChatBubbleBottomCenterTextIcon color={calcColor(1, modul)} />
-                                                                                    : null}
-                                                                
-                                                                                    {modul.homework ?
-                                                                                        <InboxStackIcon color={calcColor(1, modul)} />
-                                                                                    : null}
-                                                                                    
-                                                                                </View>
-                                                                            )}
-                                                                        </View>
-                                                                    </View>
-                                                                </View>
-                                                            </TouchableHighlight>
-                                                        )
-                                                    })}
-                                                </View>
-
-                                                <View style={{
-                                                    width: "100%",
-                                                    height: hoursToMap.length * 60 + (110 + 81) + 60
-                                                }} />
-                                            </>
-                                        )}
-                                    </View>
-                                    }
-                                </ScrollView>
-                            }
-
                             <View style={{
-                                width: "100%",
+                                width: "50%",
                                 height: "100%",
 
-                                position: "absolute",
-                                pointerEvents: "none",
-                                overflow: "hidden",
+                                borderRadius: 75,
 
-                                zIndex: 50,
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
                             }}>
-                                <Animated.View style={{
-                                    position: "absolute",
-                                    top: "25%",
-                                    left: -77,
-
-                                    width: 75,
-                                    height: 75,
-
-                                    transform: [{translateX: pan.x.interpolate({
-                                        inputRange: [0, width],
-                                        outputRange: [0, 75 * 2],
-                                    }) }],
-
-                                    backgroundColor: theme.ACCENT_BLACK,
-                                    opacity: 1,
-                                    borderRadius: 75,
-
-                                    display: "flex",
-                                    alignItems: "flex-end",
-
-                                    zIndex: 50,
-                                }}>
-                                    <View style={{
-                                        width: "50%",
-                                        height: "100%",
-
-                                        borderRadius: 75,
-
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                    }}>
-                                        <ArrowLeftIcon size={20} color={theme.WHITE} />
-                                    </View>
-                                </Animated.View>
-
-                                <Animated.View style={{
-                                    position: "absolute",
-                                    top: "25%",
-                                    right: -77,
-
-                                    width: 75,
-                                    height: 75,
-
-                                    transform: [{translateX: pan.x.interpolate({
-                                        inputRange: [0, width],
-                                        outputRange: [0, 75 * 2],
-                                    }) }],
-
-                                    backgroundColor: theme.ACCENT_BLACK,
-                                    borderRadius: 75,
-
-                                    display: "flex",
-                                    alignItems: "flex-start",
-
-                                    zIndex: 50,
-                                }}>
-                                    <View style={{
-                                        width: "50%",
-                                        height: "100%",
-
-                                        borderRadius: 75,
-
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                    }}>
-                                        <ArrowRightIcon size={20} color={theme.WHITE} />
-                                    </View>
-                                </Animated.View>
+                                <ArrowLeftIcon size={20} color={theme.WHITE} />
                             </View>
+                        </Animated.View>
 
-                        </View>
+                        <Animated.View style={{
+                            position: "absolute",
+                            top: "25%",
+                            right: -77,
+
+                            width: 75,
+                            height: 75,
+
+                            transform: [{translateX: pan.x.interpolate({
+                                inputRange: [0, width],
+                                outputRange: [0, 75 * 2],
+                            }) }],
+
+                            backgroundColor: theme.ACCENT_BLACK,
+                            borderRadius: 75,
+
+                            display: "flex",
+                            alignItems: "flex-start",
+
+                            zIndex: 50,
+                        }}>
+                            <View style={{
+                                width: "50%",
+                                height: "100%",
+
+                                borderRadius: 75,
+
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}>
+                                <ArrowRightIcon size={20} color={theme.WHITE} />
+                            </View>
+                        </Animated.View>
                     </View>
 
-                    {rateLimited && <RateLimit paddingTop={45} />}
                 </View>
-            </BottomSheetModalProvider>
-        </GestureHandlerRootView>
+            </View>
+
+            {rateLimited && <RateLimit paddingTop={45} />}
+        </View>
     )
 }
 
