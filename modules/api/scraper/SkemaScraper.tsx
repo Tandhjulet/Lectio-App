@@ -64,6 +64,11 @@ export type Modul = {
     extra?: string[],
     note?: string,
     lærerNavn?: string,
+
+    width: string,
+    height: string,
+    left: string,
+    top: string,
 }
 
 export type Day = {
@@ -165,6 +170,15 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
         const startNum = parseInt(timeSpan[1].getHours().toString().padStart(2,"0") + timeSpan[1].getMinutes().toString().padStart(2,"0"));
         const endNum = parseInt(timeSpan[0].getHours().toString().padStart(2,"0") + timeSpan[0].getMinutes().toString().padStart(2,"0"));
 
+        const {
+            width,
+            height,
+            top,
+            left,
+        } = scrapeLayout(modul);
+
+        console.log(width, height, top, left)
+
         out.push({
             changed: modul.classList.includes("s2changed"),
             cancelled: modul.classList.includes("s2cancelled"),
@@ -191,6 +205,11 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
                 diff: differenceBetweenDates(timeSpan[1], timeSpan[0]),
             },
 
+            width,
+            left,
+            top,
+            height,
+
             ...lektier,
         })
 
@@ -201,6 +220,46 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
         moduler: out,
         skemaNoter: skemaNoter,
     };
+}
+
+function scrapeLayout(modul: any): {
+    width: string,
+    left: string,
+    top: string,
+    height: string,
+} {
+    function scrapeProperties(modul: any): {width: string; left: string; top: string; height: string} {
+        const properties: { width: string; left: string; top: string; height: string; } | {[id: string]: string} = {};
+
+        const style: string = modul.attributes.style.replace(" ", "");
+        // @ts-ignore
+        ["width", "height", "left", "top"].forEach((property: "width" | "height" | "left" | "top") => {
+            const match = new RegExp(`${property}:.*?;`).exec(style)
+            properties[property] = (match ?? ["0em"])[0].replace(property + ":", "").replace(";", "");
+        })
+
+        console.log(properties)
+    
+        // @ts-ignore
+        return properties;
+    }
+
+    const out: {[id: string]: string} = {};
+
+    const properties = scrapeProperties(modul);
+    const parentProperties = scrapeProperties(modul.parent);
+
+    // @ts-ignore
+    ["width", "height", "left", "top"].flatMap((v: "width" | "height" | "left" | "top") => {
+        const propertyToFind = (v === "left" ? "width" : false) || (v === "top" ? "height" : false) || v;
+
+        const property = parseFloat(properties[v].replace("em", ""));
+        const parentProperty = parseFloat(parentProperties[propertyToFind].replace("em", ""));
+        out[v] = (property / parentProperty) * 100 + "%";
+    })
+
+    // @ts-ignore
+    return out;
 }
 
 function parseDate(dateString: string): Date {
