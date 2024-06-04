@@ -321,15 +321,8 @@ export default function Skema({ navigation, route }: {
         return overlaps;
     }
 
-    /**
-     * This function calculates the intersects of the modules and formats them into a dict. An intersection is when two modules have overlapping times.
-     * E.g module A starts at 08:00 and ends 09:30, whilst module B starts 09:00 and ends 10:00. The app needs to be able to register this, and render without 
-     * overlapping the two modules. Hence this function.
-     * @param modules a list of modules for the selected day
-     * @returns a dict of all the intersects. The keys are formatted as "{INTERSECT_START_DATE}-{INTERSECT_END_DATE}".
-     * Every entry contains any internal children intersections. This makes it easy to render if any modules.
-     */
-    function calculateIntersects(modules: Modul[], depth: number = 1) {
+    // timer brugt her: ~30
+    function calculateIntersects(modules: Modul[]) {
         searchCache = {};
 
         const out: {
@@ -339,10 +332,86 @@ export default function Skema({ navigation, route }: {
             left: string,
         }[] = [];
 
+        // console.log("\n---------\n\n")
+
+        // modules.sort((a,b) => a.timeSpan.startNum - b.timeSpan.startNum)
+
+
+        // let i = -1;
+        // let seen: Set<number> = new Set();
+
+        // let max: {
+        //     key: number,
+        //     value: number[],
+        // } | undefined;
+
+        // function calculateIntersect(num: number) {
+        //     const overlaps = searchDateDict(modules, num);
+        //     if(overlaps.length > (max?.value?.length ?? -1)) max = {key: num, value: overlaps};
+
+        //     overlaps.forEach((num) => {
+        //         if(seen.has(num)) return;
+        //         seen.add(num);
+
+        //         const overlaps2 = searchDateDict(modules, num);
+        //         if(overlaps.length > (max?.value?.length ?? -1)) max = {key: num, value: overlaps};
+
+        //         overlaps2.forEach((num2) => {
+        //             i = num2;
+
+        //             if(!overlaps.includes(num2)) return;
+
+        //             calculateIntersect(num2)
+        //         })
+
+        //     })
+        // }
+
+        // function calculateWidth(numbers: number[]) {
+        //     if(!max?.value) return;
+
+        //     const width = (1-(1/(max?.value.length-1)))/(numbers.length-1) * 100 + "%";
+        //     console.log(numbers, width)
+
+        //     numbers.forEach((number) => { 
+        //         if(seen.has(number)) return;
+
+        //         out.push({
+        //             modul: modules[number],
+
+        //             left: (1/numbers.length) * 100 + "%",
+        //             width: width,
+        //         })
+
+        //         seen.add(number);
+        //         calculateWidth(searchDateDict(modules, number))
+        //     })
+        // }
+
+        // while (++i < modules.length) {
+        //     seen.add(i);
+        //     calculateIntersect(i);
+
+        //     if(max == undefined) break;
+
+        //     const index = max.value.findIndex((v) => v == max?.key)
+    
+        //     out.push({
+        //         modul: modules[max?.key],
+    
+        //         left: (index/max.value.length) * 100 + "%",
+        //         width: (1/max.value.length) * 100 + "%",
+        //     })
+        
+        //     seen = new Set([max.key]);
+        //     calculateWidth(max.value);
+
+        //     seen = new Set();
+        //     max = undefined;
+        // }
 
         modules.forEach((modul: Modul, i: number) => {
-            const overlaps = searchDateDict(modules, i); // O(n)
-
+            const overlaps = searchDateDict(modules, i)
             if(overlaps.length == 1) {
                 out.push({
                     modul: modul,

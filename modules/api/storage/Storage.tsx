@@ -151,7 +151,7 @@ export async function getSaved(key: Key, identifier: string = ""): Promise<Resul
     }
 }
 
-export async function fetchWithCache<T>(req: Request, key: Key, identifier: string = "", timespan: number, cb: (data: T | undefined) => Promise<void> | void, parsingFunc: Function, bypassCache: boolean = false): Promise<T | undefined | null> { 
+export async function fetchWithCache<T>(req: Request, key: Key, identifier: string = "", timespan: number, cb: (data: T | undefined) => Promise<void> | void, parsingFunc: Function, bypassCache: boolean = false, cache: boolean = true): Promise<T | undefined | null> { 
     if(!bypassCache) {
         const cached = await getSaved(key, identifier);
         if(cached.value) { // doesn't need to be before expiration date.
@@ -169,7 +169,7 @@ export async function fetchWithCache<T>(req: Request, key: Key, identifier: stri
     const notRateLimited = !(isRateLimited(parser));
     await cb(notRateLimited ? result : undefined);
 
-    (notRateLimited && result) && (await saveFetch(key, result, timespan, identifier))
+    (notRateLimited && result && cache) && (await saveFetch(key, result, timespan, identifier))
 
     return notRateLimited ? result : undefined;
 }

@@ -370,7 +370,7 @@ export async function getSkema(gymNummer: string, date: Date, cb: (data: Week | 
         },
     });
 
-    return await fetchWithCache(req, Key.SKEMA, getWeekNumber(date).toString(), Timespan.WEEK * 2, cb, scrapeSchema, false)
+    return await fetchWithCache(req, Key.SKEMA, getWeekNumber(date).toString(), Timespan.WEEK * 2, cb, scrapeSchema, !!person, !person)
 }
 
 export async function getMessage(gymNummer: string, messageId: string, headers: {}, bypassCache: boolean = false, cb: (data: ThreadMessage[] | undefined) => Promise<void> | void): Promise<ThreadMessage[] | null | void> {
