@@ -133,12 +133,6 @@ export default function Skema({ navigation, route }: {
     const [ loadDate, setLoadDate ] = useState<Date>(chooseSelectedDay);
 
     const [ skema, setSkema ] = useState<Day[] | null>([]);
-    const [ day, setDay ] = useState<{
-        modul: Modul,
-
-        width: string,
-        left: string,
-    }[]>([]);
 
     const [ modulTimings, setModulTimings ] = useState<ModulDate[]>([]);
     const [ hoursToMap, setHoursToMap ] = useState<number[]>([]);
@@ -259,7 +253,6 @@ export default function Skema({ navigation, route }: {
         
         const hoursBetween = hoursBetweenDates(extrenumDates, 1)
         setHoursToMap(hoursBetween)
-        setDay(calculateIntersects(skema[dayNum - 1].moduler));
     }, [modulTimings, dayNum])
 
     /**
@@ -286,153 +279,150 @@ export default function Skema({ navigation, route }: {
         return (out == Infinity || out == -Infinity) ? 0 : out;
     }, [hoursToMap])
 
-    /**
-     * Searches the given dict for any overlaps
-     * @param dict dict containing module intersects
-     * @param startDate the start date formatted as a number
-     * @param endDate the end date formatted as a number
-     * @returns the overlap if any are detected, else null
-     */
+    // /**
+    //  * Searches the given dict for any overlaps
+    //  * @param dict dict containing module intersects
+    //  * @param startDate the start date formatted as a number
+    //  * @param endDate the end date formatted as a number
+    //  * @returns the overlap if any are detected, else null
+    //  */
 
-    let searchCache: {[id: number]: number[]} = useRef({}).current;
-    function searchDateDict(dict: Modul[], i: number): number[] {
-        if(searchCache[i]) {
-            return searchCache[i];
-        } else {
-            searchCache[i] = [];
-        }
+    // let searchCache: {[id: number]: number[]} = useRef({}).current;
+    // function searchDateDict(dict: Modul[], i: number): number[] {
+    //     if(searchCache[i]) {
+    //         return searchCache[i];
+    //     } else {
+    //         searchCache[i] = [];
+    //     }
 
-        const xmin1 = formatDate(dict[i].timeSpan.startNum.toString())
-        const xmax1 = formatDate(dict[i].timeSpan.endNum.toString())
+    //     const xmin1 = formatDate(dict[i].timeSpan.startNum.toString())
+    //     const xmax1 = formatDate(dict[i].timeSpan.endNum.toString())
 
-        const overlaps: number[] = [];
+    //     const overlaps: number[] = [];
 
-        for(let j = 0; j < dict.length; j++) {
+    //     for(let j = 0; j < dict.length; j++) {
 
-            const xmin2 = formatDate(dict[j].timeSpan.startNum.toString());
-            const xmax2 = formatDate(dict[j].timeSpan.endNum.toString());
+    //         const xmin2 = formatDate(dict[j].timeSpan.startNum.toString());
+    //         const xmax2 = formatDate(dict[j].timeSpan.endNum.toString());
 
-            if(xmax1 > xmin2 && xmax2 > xmin1) { // if true timestamps are overlapping
-                overlaps.push(j);
-            }
-        }
+    //         if(xmax1 > xmin2 && xmax2 > xmin1) { // if true timestamps are overlapping
+    //             overlaps.push(j);
+    //         }
+    //     }
 
-        searchCache[i].push(...overlaps);
-        return overlaps;
-    }
+    //     searchCache[i].push(...overlaps);
+    //     return overlaps;
+    // }
 
-    // timer brugt her: ~30
-    function calculateIntersects(modules: Modul[]) {
-        searchCache = {};
+    // // timer brugt her: ~30
+    // function calculateIntersects(modules: Modul[]) {
+    //     searchCache = {};
 
-        const out: {
-            modul: Modul,
+    //     const out: {
+    //         modul: Modul,
     
-            width: string,
-            left: string,
-        }[] = [];
+    //         width: string,
+    //         left: string,
+    //     }[] = [];
 
-        // console.log("\n---------\n\n")
-
-        // modules.sort((a,b) => a.timeSpan.startNum - b.timeSpan.startNum)
+    //     // modules.sort((a,b) => a.timeSpan.startNum - b.timeSpan.startNum)
 
 
-        // let i = -1;
-        // let seen: Set<number> = new Set();
+    //     // let i = -1;
+    //     // let seen: Set<number> = new Set();
 
-        // let max: {
-        //     key: number,
-        //     value: number[],
-        // } | undefined;
+    //     // let max: {
+    //     //     key: number,
+    //     //     value: number[],
+    //     // } | undefined;
 
-        // function calculateIntersect(num: number) {
-        //     const overlaps = searchDateDict(modules, num);
-        //     if(overlaps.length > (max?.value?.length ?? -1)) max = {key: num, value: overlaps};
+    //     // function calculateIntersect(num: number) {
+    //     //     const overlaps = searchDateDict(modules, num);
+    //     //     if(overlaps.length > (max?.value?.length ?? -1)) max = {key: num, value: overlaps};
 
-        //     overlaps.forEach((num) => {
-        //         if(seen.has(num)) return;
-        //         seen.add(num);
+    //     //     overlaps.forEach((num) => {
+    //     //         if(seen.has(num)) return;
+    //     //         seen.add(num);
 
-        //         const overlaps2 = searchDateDict(modules, num);
-        //         if(overlaps.length > (max?.value?.length ?? -1)) max = {key: num, value: overlaps};
+    //     //         const overlaps2 = searchDateDict(modules, num);
+    //     //         if(overlaps.length > (max?.value?.length ?? -1)) max = {key: num, value: overlaps};
 
-        //         overlaps2.forEach((num2) => {
-        //             i = num2;
+    //     //         overlaps2.forEach((num2) => {
+    //     //             i = num2;
 
-        //             if(!overlaps.includes(num2)) return;
+    //     //             if(!overlaps.includes(num2)) return;
 
-        //             calculateIntersect(num2)
-        //         })
+    //     //             calculateIntersect(num2)
+    //     //         })
 
-        //     })
-        // }
+    //     //     })
+    //     // }
 
-        // function calculateWidth(numbers: number[]) {
-        //     if(!max?.value) return;
+    //     // function calculateWidth(numbers: number[]) {
+    //     //     if(!max?.value) return;
 
-        //     const width = (1-(1/(max?.value.length-1)))/(numbers.length-1) * 100 + "%";
-        //     console.log(numbers, width)
+    //     //     const width = (1-(1/(max?.value.length-1)))/(numbers.length-1) * 100 + "%";
 
-        //     numbers.forEach((number) => { 
-        //         if(seen.has(number)) return;
+    //     //     numbers.forEach((number) => { 
+    //     //         if(seen.has(number)) return;
 
-        //         out.push({
-        //             modul: modules[number],
+    //     //         out.push({
+    //     //             modul: modules[number],
 
-        //             left: (1/numbers.length) * 100 + "%",
-        //             width: width,
-        //         })
+    //     //             left: (1/numbers.length) * 100 + "%",
+    //     //             width: width,
+    //     //         })
 
-        //         seen.add(number);
-        //         calculateWidth(searchDateDict(modules, number))
-        //     })
-        // }
+    //     //         seen.add(number);
+    //     //         calculateWidth(searchDateDict(modules, number))
+    //     //     })
+    //     // }
 
-        // while (++i < modules.length) {
-        //     seen.add(i);
-        //     calculateIntersect(i);
+    //     // while (++i < modules.length) {
+    //     //     seen.add(i);
+    //     //     calculateIntersect(i);
 
-        //     if(max == undefined) break;
+    //     //     if(max == undefined) break;
 
-        //     const index = max.value.findIndex((v) => v == max?.key)
+    //     //     const index = max.value.findIndex((v) => v == max?.key)
     
-        //     out.push({
-        //         modul: modules[max?.key],
+    //     //     out.push({
+    //     //         modul: modules[max?.key],
     
-        //         left: (index/max.value.length) * 100 + "%",
-        //         width: (1/max.value.length) * 100 + "%",
-        //     })
+    //     //         left: (index/max.value.length) * 100 + "%",
+    //     //         width: (1/max.value.length) * 100 + "%",
+    //     //     })
         
-        //     seen = new Set([max.key]);
-        //     calculateWidth(max.value);
+    //     //     seen = new Set([max.key]);
+    //     //     calculateWidth(max.value);
 
-        //     seen = new Set();
-        //     max = undefined;
-        // }
+    //     //     seen = new Set();
+    //     //     max = undefined;
+    //     // }
 
-        modules.forEach((modul: Modul, i: number) => {
-            const overlaps = searchDateDict(modules, i)
-            if(overlaps.length == 1) {
-                out.push({
-                    modul: modul,
+    //     modules.forEach((modul: Modul, i: number) => {
+    //         const overlaps = searchDateDict(modules, i)
+    //         if(overlaps.length == 1) {
+    //             out.push({
+    //                 modul: modul,
 
-                    width: "100%",
-                    left: "0%",
-                })
-            } else {
-                const index = overlaps.findIndex((v) => v == i)
+    //                 width: "100%",
+    //                 left: "0%",
+    //             })
+    //         } else {
+    //             const index = overlaps.findIndex((v) => v == i)
                 
-                out.push({
-                    modul: modul,
+    //             out.push({
+    //                 modul: modul,
 
-                    width: (1/overlaps.length) * 100 + "%",
-                    left: (index/overlaps.length) * 100 + "%",
-                })
-            }
-        })
+    //                 width: (1/overlaps.length) * 100 + "%",
+    //                 left: (index/overlaps.length) * 100 + "%",
+    //             })
+    //         }
+    //     })
 
-        return out
-    }
+    //     return out
+    // }
 
 
     /**
@@ -1059,8 +1049,15 @@ export default function Skema({ navigation, route }: {
 
                                             zIndex: 5,
                                         }}>
-                                            {day != null && day.map(({ modul, width, left}, index: number) => {
+                                            {skema && skema[dayNum - 1].moduler.map((modul, index) => {
+                                                const {
+                                                    width,
+                                                    height,
+                                                    left,
+                                                } = modul;
+
                                                 const widthNum = parseInt(width.replace("%", ""));
+                                                //const widthNum = 25;
 
                                                 return (
                                                     <TouchableHighlight
@@ -1098,7 +1095,7 @@ export default function Skema({ navigation, route }: {
                                                             position:"absolute",
 
                                                             top: calculateTop(modul.timeSpan),
-                                                            height: modul.timeSpan.diff,
+                                                            height: height as DimensionValue,
                                                             
                                                             width: width as DimensionValue,
                                                             left: left as DimensionValue,
@@ -1132,7 +1129,7 @@ export default function Skema({ navigation, route }: {
                                                                         }}
                                                                     />
 
-                                                                    {modul.timeSpan.diff > 30 && modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim().length > 0 && (
+                                                                    {((modul.title && height > 50) || !modul.title) && modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim().length > 0 && (
                                                                         <Text style={{
                                                                             color: calcColor(1, modul),
                                                                             fontSize: 12.5,
@@ -1159,6 +1156,7 @@ export default function Skema({ navigation, route }: {
                                                                     }} ellipsizeMode="middle" numberOfLines={Math.floor(widthNum/25)}>
                                                                         {modul.team.join(", ")}
                                                                     </Text>
+                                                                    
 
                                                                     {modul.timeSpan.diff > 70 && (
                                                                         <View style={{

@@ -141,8 +141,6 @@ const Schools = ({ navigation }: {
    * Loads the schools upon page load
    */
   useEffect(() => {
-    console.log("called")
-
     navigation.setOptions({
       headerSearchBarOptions: {
         inputType: "text",

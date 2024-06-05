@@ -66,9 +66,9 @@ export type Modul = {
     lærerNavn?: string,
 
     width: string,
-    height: string,
+    height: number,
     left: string,
-    top: string,
+    top: number,
 }
 
 export type Day = {
@@ -177,8 +177,6 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
             left,
         } = scrapeLayout(modul);
 
-        console.log(width, height, top, left)
-
         out.push({
             changed: modul.classList.includes("s2changed"),
             cancelled: modul.classList.includes("s2cancelled"),
@@ -225,8 +223,8 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
 function scrapeLayout(modul: any): {
     width: string,
     left: string,
-    top: string,
-    height: string,
+    top: number,
+    height: number,
 } {
     function scrapeProperties(modul: any): {width: string; left: string; top: string; height: string} {
         const properties: { width: string; left: string; top: string; height: string; } | {[id: string]: string} = {};
@@ -237,25 +235,31 @@ function scrapeLayout(modul: any): {
             const match = new RegExp(`${property}:.*?;`).exec(style)
             properties[property] = (match ?? ["0em"])[0].replace(property + ":", "").replace(";", "");
         })
-
-        console.log(properties)
     
         // @ts-ignore
         return properties;
     }
 
-    const out: {[id: string]: string} = {};
+    const out: {[id: string]: number | string} = {};
 
     const properties = scrapeProperties(modul);
     const parentProperties = scrapeProperties(modul.parent);
 
+    const parentWidth = parseFloat(parentProperties["width"].replace("em", "")) * 12 * (16/12);
+
     // @ts-ignore
     ["width", "height", "left", "top"].flatMap((v: "width" | "height" | "left" | "top") => {
-        const propertyToFind = (v === "left" ? "width" : false) || (v === "top" ? "height" : false) || v;
+        if(v === "top" || v === "height") {
+            out[v] = parseFloat(properties[v].replace("em", ""))*12 * (16/12);
+        } else {
+            let property = parseFloat(properties[v].replace("em", "")) * 12 * (16/12);
 
-        const property = parseFloat(properties[v].replace("em", ""));
-        const parentProperty = parseFloat(parentProperties[propertyToFind].replace("em", ""));
-        out[v] = (property / parentProperty) * 100 + "%";
+            if(v === "left") {
+                property -= 8.8;
+            }
+
+            out[v] = (property / parentWidth) * 1.0787989 * 100 + "%";
+        }
     })
 
     // @ts-ignore

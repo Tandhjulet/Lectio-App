@@ -9,6 +9,7 @@ import { WebBrowserPresentationStyle } from "expo-web-browser";
 import { abort } from "../../modules/api/scraper/class/PeopleList";
 import { AuthContext } from "../../modules/Auth";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function UserSettings() {
     const [darkMode, setDarkMode] = useState<boolean>()
@@ -124,6 +125,36 @@ export default function UserSettings() {
                                     }}
                                 />
                             </Section>
+
+                            {__DEV__ && (
+                                <Section>
+                                <Cell
+                                    cellStyle="Basic"
+                                    title="Slet data og log ud"
+
+                                    titleTextStyle={{
+                                        fontWeight: "bold"
+                                    }}
+                                    titleTextColor={theme.RED}
+                                    accessory="DisclosureIndicator"
+
+                                    onPress={() => {
+                                        (async () => {
+                                            await removeSecure("password");
+                                            await removeSecure("username");
+                                            await removeSecure("gym");
+
+                                            await AsyncStorage.clear();
+
+                                            await signOutReq();
+                                            await abort();
+
+                                            await signOut();
+                                        })();
+                                    }}
+                                />
+                                </Section>
+                            )}
 
                         </TableView>
                     </ScrollView>
