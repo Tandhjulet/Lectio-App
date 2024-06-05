@@ -23,6 +23,7 @@ import React from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 
 import 'react-native-console-time-polyfill';
+import Connectivity from "../components/Connectivity";
 
 /**
  * 
@@ -107,6 +108,12 @@ export default function Skema({ navigation, route }: {
     navigation: StackNavigationProp<any>,
     route: RouteProp<any>,
 }) {
+    const {
+        noConnectionUIError,
+        isConnected,
+        showUIError,
+    } = Connectivity();
+
     const isOwnSkema = useMemo(() => {
         return route?.params?.user == undefined;
     }, [route]);
@@ -168,13 +175,15 @@ export default function Skema({ navigation, route }: {
                 if(t === "ADD") pagerRef.current?.setPage(2);
                 else if(t === "REMOVE") pagerRef.current?.setPage(0);
                 setLoadDate(copy);
+
+                !isConnected && showUIError();
             } else {
                 setDayNum(getDay(copy).weekDayNumber)
             }
             
             return copy;
         });
-    }, [subscriptionState])
+    }, [subscriptionState, isConnected])
 
     /**
      * Fetches the data needed to display the page, on page load.
@@ -643,11 +652,13 @@ export default function Skema({ navigation, route }: {
                     paddingRight: 20,
                 }}>
                     <TouchableOpacity onPress={() => {
-                        if(loading) return;
+                        if(loading || dateCompare(selectedDay, time)) return;
 
                         setLoadDate(time);
                         setSelectedDay(time);
                         setDayNum(getDay(time).weekDayNumber)
+                        
+                        !isConnected && showUIError();
                     }}>
                         <View style={{
                             backgroundColor: theme.LIGHT,
@@ -753,6 +764,7 @@ export default function Skema({ navigation, route }: {
                             })
                         }
 
+                        !isConnected && showUIError();
                     }}
                 >
                     {daysOfThreeWeeks.map((_, i) => {
@@ -1286,6 +1298,7 @@ export default function Skema({ navigation, route }: {
             </View>
 
             {rateLimited && <RateLimit paddingTop={45} />}
+            {!isConnected && noConnectionUIError}
         </View>
     )
 }

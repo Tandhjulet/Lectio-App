@@ -2,9 +2,23 @@ import { getUnsecure, removeUnsecure, saveUnsecure, secureGet } from "../../Auth
 import { Timespan } from "../../storage/Timespan";
 import { Person, scrapeStudentPictures } from "./ClassPictureScraper";
 import { Klasse, getClasses } from "./ClassScraper";
+import NetInfo from "@react-native-community/netinfo";
 
 let IDS: number[] = []
 
+enum InterruptReason {
+    RATELIMITED,
+    NO_INTERNET,
+}
+
+const unsubscribe = NetInfo.addEventListener((state) => {
+    if(ERROR === InterruptReason.NO_INTERNET && state.isConnected) {
+        ERROR = undefined;
+        scrapePeople();
+    }
+})
+
+let ERROR: InterruptReason | undefined;
 export async function scrapePeople(force: boolean = false) {
 
     const lastScrape: {date: number} | null = await getUnsecure("lastScrape");
@@ -18,6 +32,8 @@ export async function scrapePeople(force: boolean = false) {
         await saveUnsecure("peopleList", res)
 
         await saveUnsecure("lastScrape", { date: new Date().valueOf() })
+
+        unsubscribe();
     }
 
     const klasser = await getClasses();
@@ -30,20 +46,26 @@ export async function scrapePeople(force: boolean = false) {
     if(oldData)
         out = oldData.data;
 
-    let ERROR = false;
-
     IDS = [];
     for(let i = (oldData == null ? 0 : oldData.stage); i < klasser.length; i++) {
         IDS.push(setTimeout(async () => {
             if(ERROR)
                 return;
 
+            const { isConnected } = await NetInfo.fetch();
+            if(!isConnected) { // no internet connection
+                await saveUnsecure("peopleListBackup", { stage: i, data: out })
+
+                ERROR = InterruptReason.NO_INTERNET;
+                return;
+            }
+
             const pictureData = (await scrapeStudentPictures(klasser[i].classId, klasser[i].name, gym));
             if(pictureData == null) {
                 // save current stage. probably rate limited?
                 await saveUnsecure("peopleListBackup", { stage: i, data: out })
 
-                ERROR = true;
+                ERROR = InterruptReason.RATELIMITED;
                 return;
             }
             out = {...out, ...pictureData};

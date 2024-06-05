@@ -5,6 +5,7 @@ import treat, { _treat } from "../scraper/TextTreater";
 
 // @ts-ignore
 import DomSelector from 'react-native-dom-parser';
+import { fetch as fetchNetInfo } from "@react-native-community/netinfo";
 
 export function isRateLimited(parser: any): boolean {
     try {
@@ -151,25 +152,32 @@ export async function getSaved(key: Key, identifier: string = ""): Promise<Resul
     }
 }
 
-export async function fetchWithCache<T>(req: Request, key: Key, identifier: string = "", timespan: number, cb: (data: T | undefined) => Promise<void> | void, parsingFunc: Function, bypassCache: boolean = false, cache: boolean = true): Promise<T | undefined | null> { 
+export async function fetchWithCache<T>(req: Request, key: Key, identifier: string = "", timespan: number, cb: (data: T | undefined | null) => Promise<void> | void, parsingFunc: Function, bypassCache: boolean = false, cache: boolean = true): Promise<T | undefined | null> { 
+    let cachedValue;
     if(!bypassCache) {
         const cached = await getSaved(key, identifier);
-        if(cached.value) { // doesn't need to be before expiration date.
+        if((cachedValue = cached.value)) { // doesn't need to be before expiration date.
                            // will be updated in a few seconds anyway
-            await cb(cached.value)
+            await cb(cachedValue)
         }
     }
 
-    const response = await fetch(req);
-    const text = _treat(await response.text());
-    const parser = DomSelector(text);
+    const { isConnected } = await fetchNetInfo();
+    if(isConnected) {
+        const response = await fetch(req);
+        const text = _treat(await response.text());
+        const parser = DomSelector(text);
+    
+        const args = key == Key.SKEMA ? [parser, text] : [parser];
+        const result = await parsingFunc.apply(null, args);
+        const notRateLimited = !(isRateLimited(parser));
+        await cb(notRateLimited ? result : undefined);
+    
+        (notRateLimited && result && cache) && (await saveFetch(key, result, timespan, identifier));   
+        return notRateLimited ? result : undefined;
+    } else {
+        await cb(cachedValue ?? null);
+    }
 
-    const args = key == Key.SKEMA ? [parser, text] : [parser];
-    const result = await parsingFunc.apply(null, args);
-    const notRateLimited = !(isRateLimited(parser));
-    await cb(notRateLimited ? result : undefined);
-
-    (notRateLimited && result && cache) && (await saveFetch(key, result, timespan, identifier))
-
-    return notRateLimited ? result : undefined;
+    return null;
 }

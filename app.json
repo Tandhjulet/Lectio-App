@@ -19,11 +19,6 @@
       "bundleIdentifier": "com.tandhjulet.lectio360",
       "buildNumber": "21"
     },
-    "extra": {
-      "eas": {
-        "projectId": "eb5f1f65-f81d-465a-89f1-3e33692e3ba6"
-      }
-    },
     "plugins": [
       [
         "expo-build-properties",
@@ -33,6 +28,11 @@
           }
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "066f8395-174f-432c-abde-ad17a45a3a88"
+      }
+    }
   }
 }

@@ -57,7 +57,7 @@ export default function RateLimit({ paddingTop = 10 }: {
 
             top: 0,
 
-            backgroundColor: theme.RED,
+            backgroundColor: "#FC5353",
             paddingHorizontal: 20,
         }}>
             <View style={{

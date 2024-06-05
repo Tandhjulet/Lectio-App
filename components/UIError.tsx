@@ -1,29 +1,34 @@
 import { Animated, Text, View, ViewStyle, useColorScheme } from "react-native";
-import React, { PropsWithChildren, useEffect, useRef } from "react";
+import React, { PropsWithChildren, useEffect, useRef, useState } from "react";
 import { themes } from "../modules/Themes";
 
-type FlyInViewProps = PropsWithChildren<{style?: ViewStyle}>;
+type FlyInViewProps = PropsWithChildren<{style?: ViewStyle, deps: any[], setDep: ((v: boolean) => void)[]}>;
 
 const FlyInView: React.FC<FlyInViewProps> = props => {
     const flyAnim = useRef(new Animated.Value(-150)).current;
   
     useEffect(() => {
+        if(!props.deps[0]) return;
+
         Animated.sequence([
             Animated.timing(flyAnim, {
                 toValue: 0,
-                delay: 1000,
+                delay: 500,
                 duration: 500,
                 useNativeDriver: true,
             }),
             Animated.timing(flyAnim, {
                 toValue: -150,
-                delay: 6500,
+                delay: 2000,
                 duration: 500,
                 useNativeDriver: true,
             }),
-        ]).start();
-
-    }, [flyAnim]);
+        ]).start(() => {
+            props.setDep.length > 0 && (
+                props.setDep[0](false)
+            );
+        });
+    }, [flyAnim, ...props.deps]);
   
     return (
       <Animated.View
@@ -39,8 +44,10 @@ const FlyInView: React.FC<FlyInViewProps> = props => {
     );
   };
 
-export default function UIError({ details }: {
-    details: string[]
+export default function UIError({ details, deps, setDep }: {
+    details: string[],
+    deps?: any[],
+    setDep?: ((v: boolean) => void)[],
 }) {
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
@@ -57,9 +64,9 @@ export default function UIError({ details }: {
 
             top: 0,
 
-            backgroundColor: theme.RED,
+            backgroundColor: "#FC5353",
             paddingHorizontal: 20,
-        }}>
+        }} deps={deps ?? []} setDep={setDep ?? []}>
             <View style={{
                 display: "flex",
                 justifyContent: "center",
