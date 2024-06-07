@@ -16,7 +16,7 @@ import { Reducer, useCallback, useEffect, useMemo, useReducer, useState } from '
 import { authorize, secureGet, getUnsecure, saveUnsecure, secureSave } from './modules/api/Authentication';
 import SplashScreen from './pages/SplashScreen';
 import { AuthContext } from './modules/Auth';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { BottomTabBar, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import NavigationBar from './components/Navbar';
 import ModulView from './pages/skema/ModulView';
 import { scrapePeople } from './modules/api/scraper/class/PeopleList';
@@ -335,10 +335,11 @@ const App = () => {
                 </AppStack.Navigator>
               ) : (
                 <Tab.Navigator
-                  tabBar={props => <NavigationBar currentTab={props.state.key} navigation={props.navigation}/>}
+                  tabBar={props => <NavigationBar {...props} />}
                 >
                   <Tab.Screen name="SkemaNavigator" component={SkemaNavigator} options={{
-                    header: () => <></>
+                    header: () => <></>,
+                    title: "Skema"
                   }} />
         
                   <Tab.Screen name="Indbakke" component={BeskedNavigator} options={{
@@ -346,7 +347,7 @@ const App = () => {
                   }} />
         
                   <Tab.Screen name="Mere" component={MereNavigator} options={{
-                    header: () => <></>
+                    header: () => <></>,
                   }} />
                 </Tab.Navigator>
               )}
@@ -477,7 +478,9 @@ export function MereNavigator() {
 
       headerBackVisible: true,
       headerBackTitleVisible: false,
-      contentStyle: {backgroundColor: theme.BLACK}
+      contentStyle: {
+        backgroundColor: theme.BLACK
+      }
     }}>
       <Settings.Screen name={"Settings"} component={Mere} options={{title: "Yderligere", headerShown: false}} />
       <Settings.Screen name={"UserSettings"} component={UserSettings} options={{title: "Brugerindstillinger"}} />
