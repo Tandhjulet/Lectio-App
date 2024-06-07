@@ -205,10 +205,8 @@ export default function UserCell() {
 
                     setPressed(true);
 
-                    ref.current?.dismissMenu().then(() => {
-                        navigation.push(skemaScreenName, {
-                            user: item,
-                        });
+                    navigation.push(skemaScreenName, {
+                        user: item,
                     });
                 }}
                 style={{
