@@ -1,14 +1,15 @@
 import React, { memo, useCallback, useEffect, useState } from "react"
 import { getProfile, scrapeGrades } from "../../modules/api/scraper/Scraper";
 import { secureGet } from "../../modules/api/Authentication";
-import { ActivityIndicator, ColorSchemeName, RefreshControl, ScrollView, StyleSheet, Text, useColorScheme, View } from "react-native";
+import { ActivityIndicator, ColorSchemeName, Dimensions, DimensionValue, RefreshControl, ScrollView, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { Grade, WeightedGrade } from "../../modules/api/scraper/GradeScraper";
 import { hexToRgb, Theme, themes } from "../../modules/Themes";
 import Logo from "../../components/Logo";
+import * as Progress from 'react-native-progress';
 
 export default function Grades() {
 
-    const [grades, setGrades] = useState<Grade[]>();
+    const [grades, setGrades] = useState<Grade[] | undefined | null>();
 
     const [ loading, setLoading ] = useState<boolean>(true);
     const [ refreshing, setRefreshing ] = useState<boolean>(false);
@@ -65,7 +66,7 @@ export default function Grades() {
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
 
-    const calculateColor = useCallback((grade: number) => {
+    const calculateColor = useCallback((grade: number, opacity: number = 1) => {
         const COLOR2 = [0, 201, 114];
         const COLOR1 = [66, 135, 245]
 
@@ -77,8 +78,10 @@ export default function Grades() {
             COLOR1[2] + percent * (COLOR2[2] - COLOR1[2]),
                     ]
 
-        return `rgb(${res[0]}, ${res[1]}, ${res[2]})`;
+        return `rgba(${res[0]}, ${res[1]}, ${res[2]}, ${opacity})`;
     }, [theme])
+
+    const { width } = Dimensions.get("screen");
 
     return (
         <View>
@@ -103,39 +106,96 @@ export default function Grades() {
                                 <View style={{
                                     backgroundColor: hexToRgb(theme.WHITE.toString(), 0.12),
                                     padding: 20,
-                                    justifyContent: "center",
-                                    alignItems: "center",
-
-                                    flexDirection: "column",
-                                    gap: 10,
                                 }}>
-                                    <Text style={{
-                                        color: theme.WHITE,
-                                        fontWeight: "600",
-                                        fontSize: 15,
-                                    }}>
-                                        Karaktergennemsnit
-                                    </Text>
-
                                     <View style={{
                                         flexDirection: "row",
                                         justifyContent: "space-evenly",
                                         width: "100%",
+
+                                        gap: 20,
                                     }}>
                                         {grades && grades[0]?.karakterer[0] && Object.keys(grades[0].karakterer[0]).map((title, index) => {
                                             const avg = calculateAverage(title);
                                             const color = calculateColor(avg);
 
+                                            const l = 1/Object.keys(grades[0].karakterer[0]).length;
+                                            let size = (width - 20*2) * l;
+                                            if(size > 116) size = 116;
+                                            
+                                            return (
+                                                <View style={{
+                                                    justifyContent: "center",
+                                                    alignItems: "center",
+
+                                                    width: size,
+                                                    height: size,
+                                                    paddingHorizontal: 14,
+                                                }}>
+                                                    <Progress.Circle
+                                                        key={index + "d"}
+
+                                                        size={size}
+                                                        progress={(avg+3)/15}
+                                                        color={color}
+                                                        thickness={5}
+                                                        borderWidth={0}
+                                                        strokeCap="round"
+
+                                                        unfilledColor={hexToRgb(theme.WHITE.toString(), 0.1)}
+                                                        style={{
+                                                            position: "absolute",
+                                                        }}
+                                                    />
+
+                                                    <View style={{
+                                                        alignItems: "center",
+                                                    }}>
+                                                        <Text style={{
+                                                            color: scheme === "dark" ? "#FFF" : "#000",
+                                                            opacity: 0.9,
+                                                            fontWeight: "500",
+                                                            fontSize: 11,
+                                                            paddingHorizontal: 8,
+                                                            textAlign: "center",
+                                                        }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
+                                                            Gennemsnit
+                                                        </Text>
+
+                                                        <Text style={{
+                                                            color: scheme === "dark" ? "#FFF" : "#000",
+                                                            fontWeight: "700",
+                                                            fontSize: 25,
+                                                        }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
+                                                            {avg.toFixed(2).replace(".", ",")}
+                                                        </Text>
+
+                                                        <Text style={{
+                                                            color: scheme === "dark" ? "#FFF" : "#000",
+                                                            opacity: 0.9,
+                                                            fontWeight: "900",
+                                                            fontSize: 11,
+                                                            paddingHorizontal: 5,
+                                                            textAlign: "center",
+                                                        }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
+                                                            {title}
+                                                        </Text>
+                                                    </View>
+                                                </View>
+                                            )
+
                                             return (
                                                 <View key={index + "d"} style={{
-                                                    width: "25%",
+                                                    width: l as DimensionValue,
+                                                    maxWidth: "30%",
                                                     aspectRatio: 1,
 
                                                     borderRadius: 200,
-                                                    backgroundColor: color,
+                                                    borderColor: color,
+                                                    borderWidth: 7,
 
                                                     justifyContent: "center",
                                                     alignItems: "center",
+                                                    paddingHorizontal: 10,
                                                 }}>
                                                     <View style={{
                                                         alignItems: "center",
@@ -143,20 +203,31 @@ export default function Grades() {
                                                         <Text style={{
                                                             color: scheme === "dark" ? "#FFF" : "#000",
                                                             opacity: 0.9,
-                                                            fontWeight: "900",
+                                                            fontWeight: "600",
                                                             fontSize: 11,
-                                                            paddingHorizontal: 6,
+                                                            paddingHorizontal: 8,
                                                             textAlign: "center",
                                                         }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
-                                                            {title}
+                                                            Gennemsnit
                                                         </Text>
-                
+
                                                         <Text style={{
                                                             color: scheme === "dark" ? "#FFF" : "#000",
                                                             fontWeight: "800",
-                                                            fontSize: 20,
+                                                            fontSize: 25,
                                                         }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
                                                             {avg.toFixed(2).replace(".", ",")}
+                                                        </Text>
+
+                                                        <Text style={{
+                                                            color: scheme === "dark" ? "#FFF" : "#000",
+                                                            opacity: 0.9,
+                                                            fontWeight: "900",
+                                                            fontSize: 11,
+                                                            paddingHorizontal: 3,
+                                                            textAlign: "center",
+                                                        }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
+                                                            {title}
                                                         </Text>
                                                     </View>
                                                 </View>
@@ -215,32 +286,33 @@ export default function Grades() {
                                                             if(karakter[key].grade == "") return <React.Fragment key={i + "a"}></React.Fragment>;
 
                                                             const color = calculateColor(parseInt(karakter[key].grade));
+                                                            const percentCompleted = ((parseInt(karakter[key].grade)+3)/15);
 
                                                             return (
                                                                 <View style={{
                                                                     flexDirection: "row",
                                                                     marginBottom: 2,
                                                                     gap: 7.5,
-                                                                    paddingLeft: 5,
 
                                                                     alignItems: "center"
                                                                 }} key={i + "a"}>
-                                                                    <View style={{
-                                                                        padding: 20,
-                                                                        backgroundColor: color,
-                                                                        borderRadius: 100,
+                                                                    <Progress.Circle
+                                                                        size={40 + 2*2}
+                                                                        progress={percentCompleted}
+                                                                        color={color}
+                                                                        thickness={2}
+                                                                        borderWidth={0}
 
-                                                                        justifyContent: "center",
-                                                                        alignItems: "center",
-                                                                    }}>
-                                                                        <Text style={{
+                                                                        unfilledColor={hexToRgb(theme.WHITE.toString(), 0.1)}
+                                                                        showsText
+                                                                        formatText={() => karakter[key].grade}
+                                                                        textStyle={{
                                                                             color: scheme === "dark" ? "#FFF" : "#000",
                                                                             fontWeight: "900",
                                                                             position: "absolute",
-                                                                        }}>
-                                                                            {karakter[key].grade}
-                                                                        </Text>
-                                                                    </View>
+                                                                            fontSize: 14,
+                                                                        }}
+                                                                    />
 
                                                                     <View>
                                                                         <Text style={{
