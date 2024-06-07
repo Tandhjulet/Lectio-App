@@ -144,7 +144,8 @@ export default function Skema({ navigation, route }: {
     const [ modulTimings, setModulTimings ] = useState<ModulDate[]>([]);
     const [ hoursToMap, setHoursToMap ] = useState<number[]>([]);
     const [ loading, setLoading ] = useState(true);
-    let blockScroll = useRef(false).current;
+
+    const [blockScroll, setBlockScroll] = useState<boolean>(false);
 
     const [rateLimited, setRateLimited] = useState(false);
 
@@ -171,6 +172,7 @@ export default function Skema({ navigation, route }: {
                     pagerRef.current?.setPageWithoutAnimation(1);
                     return prev;
                 }
+                setBlockScroll(true);
 
                 if(t === "ADD") pagerRef.current?.setPage(2);
                 else if(t === "REMOVE") pagerRef.current?.setPage(0);
@@ -189,16 +191,17 @@ export default function Skema({ navigation, route }: {
      * Fetches the data needed to display the page, on page load.
      * If anything is cached it will render that whilst waiting for the server to respond.
      */
-    useLayoutEffect(() => {
+    useEffect(() => {
         (async () => {
             setLoading(true);
-            blockScroll = true;
             const profile = await getProfile();
 
             const gymNummer = (await secureGet("gym")).gymNummer;
 
             setDayNum(getDay(selectedDay).weekDayNumber)
             setDaysOfThreeWeeks([...getDaysOfThreeWeeks(loadDate)])
+
+            pagerRef.current?.setPageWithoutAnimation(1);
 
             setProfile(profile);
             getSkema(gymNummer, loadDate, (payload) => {
@@ -211,16 +214,11 @@ export default function Skema({ navigation, route }: {
                 }
                 
                 setLoading(false);
-                blockScroll = false;
                 setRateLimited(payload === undefined)
             }, route?.params?.user)
         })();
 
     }, [loadDate])
-
-    useEffect(() => {
-        pagerRef.current?.setPageWithoutAnimation(1);
-    }, [daysOfThreeWeeks]);
 
     /**
      * Used for drag-to-refresh functionality
@@ -460,7 +458,7 @@ export default function Skema({ navigation, route }: {
 
     const { width } = Dimensions.get('screen');
 
-    const pagerRef = createRef<PagerView>();
+    const pagerRef = useRef<PagerView>(null);
 
     const scheme = useColorScheme();
     const theme = useMemo(() => themes[scheme ?? "dark"], [scheme]);
@@ -589,6 +587,90 @@ export default function Skema({ navigation, route }: {
         return theme.WHITE;
     }, []);
 
+    const renderSlider = useMemo(() => {
+        return daysOfThreeWeeks.map((days, i) => (
+            <View style={{
+                paddingTop: 15,
+
+                width: width,
+                height: 56 + 15 + 10,
+
+                paddingHorizontal: 20,
+                marginBottom: 10,
+            }} key={i}>
+                <View style={{
+                    width: width - 20*2,
+                    display: 'flex',
+                    flexDirection: 'row',
+
+                    paddingHorizontal: 5,
+
+                    justifyContent:'space-between',
+                    flexWrap: "nowrap",
+
+                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.15),
+                    borderRadius: 5,
+                }}>
+                    {days.map((day,j) => {
+                        // doesn't surve any purpose to move this to a memo.
+                        // will be re-rendered anyway, because react...
+
+                        // maybe a useCallback with a nested memo could work...
+
+                        const isSelectedDay = dateCompare(day.date, selectedDay);
+
+                        const nextDate = i == 1 && days[j+1]?.date;
+                        const isDayBeforeSelectedDay = nextDate && dateCompare(nextDate, selectedDay)
+                                                        
+                        const isToday = dateCompare(day.date, time);
+
+                        let hasNoModulesToday = i == 1 ? (skema != null && (skema[day.weekDayNumber - 1] == undefined || Object.keys(skema[day.weekDayNumber - 1].moduler).length == 0)) : true;
+                        if(!skema || loading) hasNoModulesToday = true;
+
+                        return (
+                            <React.Fragment key={j + "."}>
+                                <Pressable onPress={() => {
+                                    setDayNum(day.weekDayNumber);
+                                    setSelectedDay(day.date);
+                                }} style={({pressed}) => [
+                                    {
+                                        opacity: pressed ? 0.6 : 1,
+                                    }
+                                ]}>
+                                    <View style={{...styles.dayContainer}}>
+                                        <Text style={{
+                                            color: color(isSelectedDay, isToday, true),
+                                            fontWeight: "bold",
+                                            fontSize: 20,
+                                            opacity: hasNoModulesToday && !isSelectedDay ? 0.9 : 1,
+                                        }}>{day.dayNumber.toString()}</Text>
+
+                                        <Text style={{
+                                            textTransform: 'lowercase',
+                                            color: color(isSelectedDay, isToday, false),
+                                            opacity: hasNoModulesToday && !isSelectedDay ? 0.4 : 1,
+                                        }}>{day.dayName.slice(0,3)}.</Text>
+                                    </View>
+                                </Pressable>
+                                {j+1 !== days.length && (
+                                    <View style={{
+                                        height: 41,
+                                        width: StyleSheet.hairlineWidth,
+                                        marginVertical: 5,
+
+                                        backgroundColor: isDayBeforeSelectedDay || isSelectedDay ? hexToRgb("#00c972", 0.6) : hexToRgb(theme.WHITE.toString(), 0.5),
+                                    }} />
+                                )}
+                            </React.Fragment>
+                        )
+                    })}
+                </View>
+            </View>
+        ))
+    }, [daysOfThreeWeeks, selectedDay, loading])
+    // skema depends on loading and will always be set before loading
+    // therefor its not needed on the list
+
     const renderSkemaNoter = useCallback((skemaNoter: string | string[] | undefined) => {
 
         if(!skemaNoter || skemaNoter.length == 0) {
@@ -652,11 +734,14 @@ export default function Skema({ navigation, route }: {
                     paddingRight: 20,
                 }}>
                     <TouchableOpacity onPress={() => {
-                        if(loading || dateCompare(selectedDay, time)) return;
+                        if(loading || dateCompare(selectedDay, time) || blockScroll) return;
 
                         setLoadDate(time);
                         setSelectedDay(time);
                         setDayNum(getDay(time).weekDayNumber)
+
+                        setBlockScroll(true);
+                        pagerRef.current?.setPage(selectedDay > time ? 0 : 2);
                         
                         !isConnected && showUIError();
                     }}>
@@ -736,8 +821,13 @@ export default function Skema({ navigation, route }: {
                     scrollEnabled={!loading}
 
                     onPageSelected={(e) => {
-                        if(blockScroll)
+                        // this gets called every time PagerView#setPage is called
+                        // super annoying to deal with...
+
+                        if(blockScroll) {
+                            setBlockScroll(false);
                             return;
+                        }
 
                         if(e.nativeEvent.position == 2 || e.nativeEvent.position == 0) {
                             // @ts-ignore
@@ -767,82 +857,7 @@ export default function Skema({ navigation, route }: {
                         !isConnected && showUIError();
                     }}
                 >
-                    {daysOfThreeWeeks.map((_, i) => {
-                        return (
-                            <View key={i} style={{
-                                paddingTop: 15,
-
-                                width: width,
-                                height: 56 + 15 + 10,
-
-                                paddingHorizontal: 20,
-                                marginBottom: 10,
-                            }}>
-                                <View style={{
-                                    width: width - 20*2,
-                                    display: 'flex',
-                                    flexDirection: 'row',
-
-                                    paddingHorizontal: 5,
-
-                                    justifyContent:'space-between',
-                                    flexWrap: "nowrap",
-
-                                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.15),
-                                    borderRadius: 5,
-                                }}>
-                                    {_.map((day,j) => {
-                                        const isSelectedDay = dateCompare(day.date, selectedDay);
-
-                                        const nextDate = i == 1 && _[j+1]?.date;
-                                        const isDayBeforeSelectedDay = nextDate && dateCompare(nextDate, selectedDay)
-                                                                        
-                                        const isToday = dateCompare(day.date, time);
-
-                                        let hasModulesToday = (skema != null && (skema[day.weekDayNumber - 1] == undefined || Object.keys(skema[day.weekDayNumber - 1].moduler).length == 0));
-                                        if(!skema) hasModulesToday = true;
-
-                                        return (
-                                            <React.Fragment key={j + "."}>
-                                                <Pressable onPress={() => {
-                                                    setDayNum(day.weekDayNumber);
-                                                    setSelectedDay(day.date);
-                                                }} style={({pressed}) => [
-                                                    {
-                                                        opacity: pressed ? 0.6 : 1,
-                                                    }
-                                                ]}>
-                                                    <View style={{...styles.dayContainer}}>
-                                                        <Text style={{
-                                                            color: color(isSelectedDay, isToday, true),
-                                                            fontWeight: "bold",
-                                                            fontSize: 20,
-                                                            opacity: hasModulesToday && !isSelectedDay ? 0.9 : 1,
-                                                        }}>{day.dayNumber.toString()}</Text>
-
-                                                        <Text style={{
-                                                            textTransform: 'lowercase',
-                                                            color: color(isSelectedDay, isToday, false),
-                                                            opacity: hasModulesToday && !isSelectedDay ? 0.4 : 1,
-                                                        }}>{day.dayName.slice(0,3)}.</Text>
-                                                    </View>
-                                                </Pressable>
-                                                {j+1 !== _.length && (
-                                                    <View style={{
-                                                        height: 41,
-                                                        width: StyleSheet.hairlineWidth,
-                                                        marginVertical: 5,
-
-                                                        backgroundColor: isDayBeforeSelectedDay || isSelectedDay ? hexToRgb("#00c972", 0.6) : hexToRgb(theme.WHITE.toString(), 0.5),
-                                                    }} />
-                                                )}
-                                            </React.Fragment>
-                                        )
-                                    })}
-                                </View>
-                            </View>
-                        )
-                    })}
+                    {renderSlider}
                 </AnimatedPagerView>
             </View>
 
