@@ -40,10 +40,7 @@ export async function scrapePeople(stringifiedData: string): Promise<{[id: strin
         const type = getTypeFromLetter(stringifiedPerson[1].slice(0, 1))
 
         if(type == "ELEV") {
-            const match = /(.*) \d+/.exec(klasse);
-            if(match) {
-                klasse = match[0];
-            }
+            klasse = klasse.replace(/(.*) \d+$/, "$1");
         }
 
         out[name] = ({
