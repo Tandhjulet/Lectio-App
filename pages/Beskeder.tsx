@@ -1,7 +1,7 @@
 import { ActivityIndicator, Alert, Button, ColorValue, Image, Keyboard, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
-import { Profile, getMessages, getProfile, scrapeCache } from "../modules/api/scraper/Scraper";
+import { Profile, getMessages, getProfile } from "../modules/api/scraper/Scraper";
 import { hexToRgb, themes } from "../modules/Themes";
 import { secureGet, getUnsecure } from "../modules/api/Authentication";
 import { LectioMessage } from "../modules/api/scraper/MessageScraper";
@@ -670,7 +670,6 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                 }}
 
                                 onChangeText={(text) => {
-                                    
                                     setFilteredPeople(filterPeople(text));
                                 }}
                             />

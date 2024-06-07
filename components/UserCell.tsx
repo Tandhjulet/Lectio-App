@@ -35,8 +35,29 @@ export default function UserCell() {
         const scheme = useColorScheme();
         const theme = useMemo(() => themes[scheme ?? "dark"], [scheme]);
 
+        const url = (billedeId === "" || gymNummer === "") ? null : SCRAPE_URLS(gymNummer, billedeId).PICTURE_HIGHQUALITY;
+
         if(noContextMenu || isExpoGo) {
-            return  (
+            if(!url) {
+                return (
+                    <View style={{
+                        borderRadius: borderRadius ? 999 : 0,
+                        width: big ? 3/4 * (size * 6) : size,
+                        height: big ? size * 6 : size,
+
+                        borderWidth: StyleSheet.hairlineWidth,
+                        borderColor: hexToRgb(theme.ACCENT.toString(), 0.2),
+                        backgroundColor: theme.ACCENT_BLACK,
+
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}>
+                        <UserIcon color={hexToRgb(theme.ACCENT.toString(), 0.6)} size={20} />
+                    </View>
+                )
+            }
+
+            return (
                 <Image
                     style={{
                         borderRadius: borderRadius ? 999 : 0,
@@ -52,7 +73,7 @@ export default function UserCell() {
                     crossOrigin="use-credentials"
 
                     source={{
-                        uri: SCRAPE_URLS(gymNummer, billedeId).PICTURE_HIGHQUALITY,
+                        uri: url,
                         headers: {
                             "User-Agent": "Mozilla/5.0",
                             "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
@@ -75,7 +96,7 @@ export default function UserCell() {
                             height: size * 6,
                         }} // aspect ratio is 3/4
                         source={{
-                            uri: SCRAPE_URLS(gymNummer, billedeId).PICTURE_HIGHQUALITY,
+                            uri: url ?? "",
                             headers: {
                                 "User-Agent": "Mozilla/5.0",
                                 "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
@@ -95,7 +116,7 @@ export default function UserCell() {
                         height: size,
                     }}
                     source={{
-                        uri: SCRAPE_URLS(gymNummer, billedeId).PICTURE_HIGHQUALITY,
+                        uri: url ?? "", // if url is null lets just keep the placeholder content forever.
                         headers: {
                             "User-Agent": "Mozilla/5.0",
                             "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",

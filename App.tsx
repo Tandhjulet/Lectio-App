@@ -194,7 +194,7 @@ const App = () => {
             dispatch({ type: 'SIGN_OUT' });
           } else {
             dispatch({ type: 'SIGN_IN' });
-            setTimeout(() => scrapePeople(), 2500);
+            setTimeout(() => scrapePeople(), 100);
 
             if(await hasProfileSaved())
               return;
@@ -211,7 +211,7 @@ const App = () => {
         }, 100)
       } else {
         dispatch({ type: 'SIGN_IN' });
-        setTimeout(() => scrapePeople(), 2500);
+        setTimeout(() => scrapePeople(), 100);
       }
     })();
   }, []);
@@ -247,6 +247,8 @@ const App = () => {
           await secureSave("password", payload.password);
           
           dispatch({ type: 'SIGN_IN' })
+
+          setTimeout(() => scrapePeople(), 100);
           return true;
         }
 
@@ -533,7 +535,15 @@ export function MereNavigator() {
           }
         }
       } />
-      <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{title: "Personer"}} />
+      <Settings.Screen name={"TeachersAndStudents"} component={TeachersAndStudents} options={{
+        headerSearchBarOptions: {
+          inputType: "text",
+          placeholder: "Søg efter lære eller elev",
+          cancelButtonText: "Annuller",
+          hideWhenScrolling: false,
+        },
+        title: "Personer"
+        }} />
 
       <SkemaNav.Screen name={"Skemaoversigt"} component={Skema} options={
           ({ route }) => {

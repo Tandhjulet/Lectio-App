@@ -18,10 +18,10 @@ export function stringifyCacheParams(params: CacheParams): string {
     return out.join("&");
 }
 
-export async function scrapePeople(stringifiedData: string): Promise<Person[]> {
+export async function scrapePeople(stringifiedData: string): Promise<{[id: string]: Person}> {
     const cleanedData = stringifiedData.replace(/.*= /, "").replaceAll("\",, ", "\", null,").replace(";", "");
 
-    const out: Person[] = [];
+    const out: {[id: string]: Person} = {};
     const getTypeFromLetter = (letter: string): "LÆRER" | "ELEV" => {
         if(letter.toUpperCase() == "T") return "LÆRER"
         if(letter.toUpperCase() == "S") return "ELEV"
@@ -30,12 +30,25 @@ export async function scrapePeople(stringifiedData: string): Promise<Person[]> {
 
     const parsedData = JSON.parse(cleanedData);
     parsedData.forEach((stringifiedPerson: string) => {
-        const name = stringifiedPerson[0].split(" (")[0]
-        const id = stringifiedPerson[1].slice(1);
+        let klasse = stringifiedPerson[0]?.split(" (")[1]?.slice(0, -1) ?? "Ukendt klasse";
+        if(klasse?.includes("inaktiv")) return;
+
+        const name = stringifiedPerson[0]?.split(" (")[0]
+        if(!name) return;
+
+        const id = stringifiedPerson[1]?.slice(1);
         const type = getTypeFromLetter(stringifiedPerson[1].slice(0, 1))
 
-        out.push({
+        if(type == "ELEV") {
+            const match = /(.*) \d+/.exec(klasse);
+            if(match) {
+                klasse = match[0];
+            }
+        }
+
+        out[name] = ({
             navn: name,
+            klasse,
             type: type,
             personId: id,
             rawName: stringifiedPerson[0],

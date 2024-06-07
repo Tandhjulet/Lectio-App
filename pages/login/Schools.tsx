@@ -158,7 +158,7 @@ const Schools = ({ navigation }: {
     })
 
     const load = async () => {
-      const rawData = await getSchools();
+      const rawData = await getSchools(true);
       setRawData(rawData);
       setSchools(parseData(rawData));
 

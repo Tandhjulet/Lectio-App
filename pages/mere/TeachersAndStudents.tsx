@@ -1,34 +1,37 @@
 import { ActivityIndicator, FlatList, Image, ImageBackground, Modal, Pressable, ScrollView, SectionList, SectionListData, StyleSheet, Text, TextInput, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../../components/Navbar";
-import React, { Suspense, memo, useCallback, useEffect, useState } from "react";
+import React, { Suspense, memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import { Theme, themes } from "../../modules/Themes";
+import { hexToRgb, Theme, themes } from "../../modules/Themes";
 import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 
 import 'react-native-console-time-polyfill';
-import { NavigationProp, useNavigation, useRoute } from "@react-navigation/native";
+import { NavigationProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import UserCell from "../../components/UserCell";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-export default function TeachersAndStudents() {
+export default function TeachersAndStudents({ navigation }: {
+    navigation: NativeStackNavigationProp<any>,
+}) {
     const route = useRoute();
 
     const { Cell } = UserCell();
 
     const [loading, setLoading] = useState<boolean>(true);
 
-    const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>({gymName: "", gymNummer: ""});
+    const [gym, setGym] = useState<{ gymName: string, gymNummer: string }>();
     const [people, setPeople] = useState<{
         letter: string,
         data: Person[];
-    }[]>([]);
+    }[] | null>([]);
 
     const [rawPeople, setRawPeople] = useState<{[id: string]: Person}>({});
 
-    const [namelistAndClassList, setNamelistAndClassList] = useState<string[]>([]);
+    let namelistAndClassList = useRef<string[]>([]).current;
     const [filteredNamelist, setFilteredNamelist] = useState<string[]>([]);
 
     const [query, setQuery] = useState<string>();
@@ -45,9 +48,10 @@ export default function TeachersAndStudents() {
 
         if(reuse && filteredNamelist.length === 0) reuse = false;
 
-        setFilteredNamelist((reuse ? filteredNamelist : namelistAndClassList).filter((name) => {
+        const setTo = (reuse ? filteredNamelist : namelistAndClassList).filter((name) => {
             return name.toLowerCase().includes(filterText.toLowerCase());
-        }));
+        });
+        setFilteredNamelist(setTo);
     }, [filteredNamelist, namelistAndClassList])
 
     const parseData = useCallback(function parseData(data: {[id: string]: Person}, list: string[], filter?: string): {
@@ -80,11 +84,36 @@ export default function TeachersAndStudents() {
         return out;
     }, []);
 
+    let [gestureEnabled, setGestureEnabled] = useState<boolean>(true);
+    useEffect(() => {
+        navigation.setOptions({
+            gestureEnabled: gestureEnabled,
+        })
+    }, [gestureEnabled]);
+
     /**
      * Fetches the people to be rendered on page load
      */
     useEffect(() => {
         setLoading(true);
+
+        navigation.setOptions({
+            headerSearchBarOptions: {
+                inputType: "text",
+                hideWhenScrolling: false,
+                cancelButtonText: "Annuller",
+                placeholder: "Søg efter lære eller elev",
+            
+                onChangeText: (changeTextEvent) => {
+                    const text = changeTextEvent.nativeEvent.text;
+                    filterSearch(text, text.length > (query?.length ?? 0));
+                    setQuery(text);
+                },
+                
+                onFocus: () => setGestureEnabled(false),
+                onCancelButtonPress: () => setGestureEnabled(true),
+            },
+        });
 
         (async () => {
             const gym: { gymName: string, gymNummer: string } = await secureGet("gym");
@@ -93,6 +122,7 @@ export default function TeachersAndStudents() {
             const peopleList: { [id: string]: Person } | null = await getPeople();
 
             if(peopleList == null) {
+                setPeople(null);
                 setLoading(false);
                 return;
             }
@@ -110,10 +140,10 @@ export default function TeachersAndStudents() {
                 }
             });
 
-            const nameAndClasslist = namelist.flatMap((v) => v + ":" + peopleList[v].klasse);
+            const nameClass = namelist.flatMap((v) => v + ":" + peopleList[v].klasse);
 
-            setNamelistAndClassList(nameAndClasslist)
-            setFilteredNamelist(nameAndClasslist);
+            namelistAndClassList = nameClass
+            setFilteredNamelist(nameClass);
 
             setPeople(parseData(peopleList, namelist))
 
@@ -127,15 +157,17 @@ export default function TeachersAndStudents() {
     }) => {
         const user = item.split(":")[0];
 
-        return <Cell item={rawPeople[user]} gym={gym} theme={theme} route={route} />
-    }, [rawPeople]);
+        return <Cell item={rawPeople[user]} gym={gym} theme={theme} route={route} style={{
+            paddingLeft: 15,
+        }} />
+    }, [rawPeople, gym, theme, route]);
 
-    const renderItemSectionList = useCallback(({ item, index }: {
+    const renderItemSectionList = useCallback(({ item }: {
         item: Person,
         index: number,
     }) => <Cell item={item} gym={gym} theme={theme} style={{
         paddingLeft: 15,
-    }} route={route} />, []);
+    }} route={route} />, [gym, theme, route]);
 
     const keyExtractor = useCallback((item: Person, index: number) => item.navn + "-" + item.billedeId + ":" + index, [])
     const getLayout = useCallback((data: any, index: number) => {
@@ -146,48 +178,41 @@ export default function TeachersAndStudents() {
         <View style={{height: '100%',width:'100%'}}>
             {!loading &&
                 <>
-                    <TextInput placeholder="Søg efter lære eller elev..." onChangeText={(text) => {
-                        filterSearch(text, text.length > (query?.length ?? 0));
-                        setQuery(text);
-                        //setPeople(parseData(rawPeople, namelist, text));
-                    }} style={{
-                        color: theme.WHITE,
-                        fontSize: 15,
-
-                        backgroundColor: theme.DARK,
-
-                        marginHorizontal: 20,
-                        padding: 5,
-                        borderRadius: 5,
-
-                        marginVertical: 10,
-                    }} />
-
                     <TableView style={{
                         paddingLeft: 5,
                     }}>   
                         {people == null ? 
-
-                            <View style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-            
-                                flexDirection: 'column-reverse',
-            
-                                minHeight: '40%',
-            
-                                gap: 20,
-                            }}>
+                            <ScrollView style={{
+                                height: "100%",
+                            }} contentContainerStyle={{
+                                height: "60%",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                paddingHorizontal: 30,
+                            }} contentInsetAdjustmentBehavior="automatic">
                                 <Text style={{
-                                    color: theme.RED,
-                                    textAlign: 'center'
+                                    color: theme.WHITE,
+                                    textAlign: 'center',
+
+                                    fontSize: 15,
+                                    fontWeight: "700",
                                 }}>
-                                    Der opstod en fejl.
-                                    {"\n"}
-                                    Du kan prøve igen ved at genindlæse.
+                                    Indlæser personer...
                                 </Text>
-                            </View>
+
+                                <Text style={{
+                                    color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                    textAlign: 'center',
+
+                                    letterSpacing: 0.2,
+                                    fontSize: 12,
+                                }}>
+                                    Eftersom det er en af de første gange du åbner appen, er Lectio 360 stadig i gang med at hente skolens elever og lærere fra Lectio.
+                                    Dette gøres i baggrunden mens appen er åben, og tager sjældent længere end et minut.
+                                    {"\n\n"}
+                                    Det kan være nødvendigt at genstarte appen, for at personerne vises, hvis de er blevet indlæst.
+                                </Text>
+                            </ScrollView>
                             :
                             <>
                                 <View style={{
@@ -195,6 +220,8 @@ export default function TeachersAndStudents() {
                                 }}>
                                     {query && query.length > 0 ? (
                                         <FlatList
+                                            contentInsetAdjustmentBehavior="automatic"
+
                                             data={filteredNamelist}
                                             renderItem={renderItem}
                                             keyExtractor={(item, index) => item + index}
@@ -219,6 +246,7 @@ export default function TeachersAndStudents() {
                                     ) : (
                                         <SectionList
                                             sections={people}
+                                            contentInsetAdjustmentBehavior="automatic"
 
                                             SectionSeparatorComponent={() => {
                                                 return (
@@ -234,6 +262,7 @@ export default function TeachersAndStudents() {
                                                     <View style={{
                                                         paddingTop: 7.5,
                                                         paddingBottom: 2,
+                                                        marginLeft: 2.5,
 
                                                         backgroundColor: theme.BLACK,
                                                         opacity: 0.9,
@@ -271,9 +300,6 @@ export default function TeachersAndStudents() {
                                                 itemVisiblePercentThreshold: 0,
                                                 minimumViewTime: 200,
                                                 waitForInteraction: false,
-                                            }}
-                                            onViewableItemsChanged={(items) => {
-                                                
                                             }}
 
                                             keyboardDismissMode="on-drag"

@@ -20,12 +20,7 @@ import { Grade, parseGrades } from './GradeScraper';
 import { Folder, parseDocuments, parseFolders, Document } from './DocumentScraper';
 import { Book, parseBooks } from './BookScraper';
 
-export async function scrapeCache(gymNummer: string, params?: CacheParams): Promise<Person[]> {
-    const saved = await getSaved(Key.CACHE_PEOPLE);
-    if(saved.valid && saved.value != null) {
-        return saved.value;
-    }
-
+export async function scrapeCache(gymNummer: string, params: CacheParams): Promise<{[id: string]: Person}> {
     const url = SCRAPE_URLS(gymNummer).CACHE + (params == undefined ? "" : ("?" + stringifyCacheParams(params)));
 
     const res = await fetch(url, {
@@ -38,8 +33,6 @@ export async function scrapeCache(gymNummer: string, params?: CacheParams): Prom
 
     const text = await res.text();
     const people = scrapePeople(text)
-
-    await saveFetch(Key.CACHE_PEOPLE, people, Timespan.HOUR * 3, params == undefined ? "" : ("?" + stringifyCacheParams(params)));
 
     return people;
 }
@@ -173,9 +166,9 @@ export async function scrapeStudiekort(gymNummer: string): Promise<Studiekort> {
     };
 }
 
-export async function getSchools(): Promise<{[id: string]: string;}> {
+export async function getSchools(bypassCache: boolean = false): Promise<{[id: string]: string;}> {
     const saved = await getSaved(Key.SCHOOLS);
-    if(saved.valid && saved.value != null) {
+    if(!bypassCache && saved.valid && saved.value != null) {
         return saved.value;
     }
 
@@ -199,8 +192,10 @@ export async function getSchools(): Promise<{[id: string]: string;}> {
 
         parsedGyms[text] = href.replace(/\D/g, "")
     });
-
-    await saveFetch(Key.SCHOOLS, parsedGyms, Timespan.DAY * 7);
+    
+    if(unparsedGyms.length > 0)
+        await saveFetch(Key.SCHOOLS, parsedGyms, Timespan.DAY * 7);
+    
     return parsedGyms;
 }
 
