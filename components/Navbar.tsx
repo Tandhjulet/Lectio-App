@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { CalendarIcon, EnvelopeIcon, ClockIcon, EllipsisHorizontalIcon } from 'react-native-heroicons/outline';
 import { themes } from '../modules/Themes';
-import { NavigationHelpers, ParamListBase, TabNavigationState } from '@react-navigation/native';
+import { NavigationHelpers, ParamListBase, StackActions, TabNavigationState, useNavigationState } from '@react-navigation/native';
 import { BottomTabDescriptorMap, BottomTabNavigationEventMap } from '@react-navigation/bottom-tabs/lib/typescript/src/types';
 import { ArrowPathIcon } from 'react-native-heroicons/outline';
 
@@ -90,7 +90,15 @@ const NavigationBar = ({ state, descriptors, navigation }: {
 
             return (
               <TouchableOpacity onPress={() => {
-                navigation.navigate(route.name)
+                const event = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+      
+                if (!isFocused && !event.defaultPrevented) {
+                  navigation.navigate(route.name, route.params);
+                }
               }} key={index}>
                 <View style={[styles.iconContainer, {
                   opacity: isFocused ? 1 : 0.7,

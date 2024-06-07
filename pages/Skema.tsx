@@ -1149,7 +1149,7 @@ export default function Skema({ navigation, route }: {
                                                                             position: 'absolute',
                                                                             backgroundColor: calcColor(1, modul),
 
-                                                                            minHeight: modul.timeSpan.diff,
+                                                                            height: "150%",
                                                                             width: 4,
 
                                                                             left: 0,
@@ -1160,6 +1160,7 @@ export default function Skema({ navigation, route }: {
                                                                         <Text style={{
                                                                             color: calcColor(1, modul),
                                                                             fontSize: 12.5,
+                                                                            maxWidth: "90%",
                                                                         }}>
                                                                             {modul.lokale.replace("...", "").replace(SCHEMA_SEP_CHAR, "").trim()}
                                                                         </Text>
@@ -1169,6 +1170,7 @@ export default function Skema({ navigation, route }: {
                                                                         <Text style={{
                                                                             color: calcColor(1, modul),
                                                                             fontWeight: "bold",
+                                                                            maxWidth: "90%",
 
                                                                         }} ellipsizeMode="middle" numberOfLines={1}>
                                                                             {modul.title}
@@ -1180,6 +1182,7 @@ export default function Skema({ navigation, route }: {
                                                                         fontWeight: "500",
 
                                                                         overflow: "hidden",
+                                                                        maxWidth: "90%",
                                                                     }} ellipsizeMode="middle" numberOfLines={Math.floor(widthNum/25)}>
                                                                         {modul.team.join(", ")}
                                                                     </Text>

@@ -1,4 +1,4 @@
-import { createRef, memo, useCallback, useMemo, useRef } from "react"
+import { createRef, memo, useCallback, useMemo, useRef, useState } from "react"
 import { Person } from "../modules/api/scraper/class/ClassPictureScraper"
 import { ActivityIndicator, StyleProp, StyleSheet, Text, TouchableOpacity, useColorScheme, View, ViewProps, ViewStyle } from "react-native"
 import { StackNavigationProp } from "@react-navigation/stack"
@@ -135,14 +135,6 @@ export default function UserCell() {
         )
     })
 
-    let pressed = useRef(false).current;
-
-    const focusEffect = useCallback(() => {
-        pressed = false;
-    }, [])
-
-    useFocusEffect(focusEffect)
-
     const Cell = memo(function UserCell({ item, gym, theme, style, route }: {
         item: Person,
         gym: any,
@@ -150,12 +142,22 @@ export default function UserCell() {
         style?: ViewStyle,
         route: RouteProp<any>;
     }) {
+        let [pressed, setPressed] = useState<boolean>();
+
+        const focusEffect = useCallback(() => {
+            setPressed(false);
+        }, [pressed])
+    
+        useFocusEffect(focusEffect)
+
         const navigation = useNavigation<StackNavigationProp<any>>();
         const skemaScreenName = useMemo(() => {
             switch(route.name) {
                 case "Modul View":
                     return "Skema";
                 case "TeachersAndStudents":
+                    return "Skemaoversigt";
+                case "Modul information":
                     return "Skemaoversigt";
             }
 
@@ -201,7 +203,7 @@ export default function UserCell() {
                 onPressMenuItem={() => {
                     if(!skemaScreenName || pressed) return;
 
-                    pressed = true;
+                    setPressed(true);
 
                     ref.current?.dismissMenu().then(() => {
                         navigation.push(skemaScreenName, {
@@ -226,7 +228,7 @@ export default function UserCell() {
                 }, style]} onPress={() => {
                     if(!skemaScreenName || pressed) return;
 
-                    pressed = true;
+                    setPressed(true)
 
                     ref.current?.dismissMenu().then(() => {
                         navigation.push(skemaScreenName, {

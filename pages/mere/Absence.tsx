@@ -1189,7 +1189,7 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                             }
 
                             return (
-                                <BottomSheetScrollView keyboardShouldPersistTaps="handled">
+                                <BottomSheetScrollView keyboardShouldPersistTaps="handled" key={0}>
                                     <View style={{
                                         height: "100%",
                                         width: "100%",

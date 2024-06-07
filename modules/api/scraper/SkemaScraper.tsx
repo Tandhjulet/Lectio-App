@@ -130,7 +130,7 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
 
     modulListe.forEach((modul: any, index: number) => {
         
-        if("text" in modul.children[0] && (modul.children[0].text == "Aktivitetsforside" || modul.children[0].text == "Vis prøvehold"))
+        if("text" in modul.children[0] && (modul.children[0].text == "Aktivitetsforside" || modul.children[0].text == "Vis prøvehold" || modul.children[0].text == "Vis udgående censur"))
             return;
 
         const lektier = parseLektieNote(modul.attributes.href, raw);

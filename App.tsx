@@ -335,6 +335,9 @@ const App = () => {
                 </AppStack.Navigator>
               ) : (
                 <Tab.Navigator
+                  screenOptions={{
+                    lazy: false,
+                  }}
                   tabBar={props => <NavigationBar {...props} />}
                 >
                   <Tab.Screen name="SkemaNavigator" component={SkemaNavigator} options={{

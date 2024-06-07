@@ -119,7 +119,7 @@ export default function Grades() {
                                             const color = calculateColor(avg);
 
                                             const l = 1/Object.keys(grades[0].karakterer[0]).length;
-                                            let size = (width - 20*2) * l;
+                                            let size = (width - 20*2 - (l > 0.25 ? 40 : 0)) * l;
                                             if(size > 116) size = 116;
                                             
                                             return (
@@ -130,7 +130,7 @@ export default function Grades() {
                                                     width: size,
                                                     height: size,
                                                     paddingHorizontal: 14,
-                                                }}>
+                                                }} key={index}>
                                                     <Progress.Circle
                                                         key={index + "d"}
 
@@ -175,56 +175,6 @@ export default function Grades() {
                                                             fontWeight: "900",
                                                             fontSize: 11,
                                                             paddingHorizontal: 5,
-                                                            textAlign: "center",
-                                                        }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
-                                                            {title}
-                                                        </Text>
-                                                    </View>
-                                                </View>
-                                            )
-
-                                            return (
-                                                <View key={index + "d"} style={{
-                                                    width: l as DimensionValue,
-                                                    maxWidth: "30%",
-                                                    aspectRatio: 1,
-
-                                                    borderRadius: 200,
-                                                    borderColor: color,
-                                                    borderWidth: 7,
-
-                                                    justifyContent: "center",
-                                                    alignItems: "center",
-                                                    paddingHorizontal: 10,
-                                                }}>
-                                                    <View style={{
-                                                        alignItems: "center",
-                                                    }}>
-                                                        <Text style={{
-                                                            color: scheme === "dark" ? "#FFF" : "#000",
-                                                            opacity: 0.9,
-                                                            fontWeight: "600",
-                                                            fontSize: 11,
-                                                            paddingHorizontal: 8,
-                                                            textAlign: "center",
-                                                        }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
-                                                            Gennemsnit
-                                                        </Text>
-
-                                                        <Text style={{
-                                                            color: scheme === "dark" ? "#FFF" : "#000",
-                                                            fontWeight: "800",
-                                                            fontSize: 25,
-                                                        }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
-                                                            {avg.toFixed(2).replace(".", ",")}
-                                                        </Text>
-
-                                                        <Text style={{
-                                                            color: scheme === "dark" ? "#FFF" : "#000",
-                                                            opacity: 0.9,
-                                                            fontWeight: "900",
-                                                            fontSize: 11,
-                                                            paddingHorizontal: 3,
                                                             textAlign: "center",
                                                         }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
                                                             {title}
