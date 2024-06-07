@@ -479,7 +479,7 @@ export function MereNavigator() {
       headerBackVisible: true,
       headerBackTitleVisible: false,
       contentStyle: {
-        backgroundColor: theme.BLACK
+        backgroundColor: theme.BLACK,
       }
     }}>
       <Settings.Screen name={"Settings"} component={Mere} options={{title: "Yderligere", headerShown: false}} />
@@ -548,7 +548,7 @@ export function MereNavigator() {
         title: "Personer"
         }} />
 
-      <SkemaNav.Screen name={"Skemaoversigt"} component={Skema} options={
+      <Settings.Screen name={"Skemaoversigt"} component={Skema} options={
           ({ route }) => {
             const params = route.params ?? {};
 
@@ -561,7 +561,7 @@ export function MereNavigator() {
             }
           }
       } />
-      <SkemaNav.Screen name={"Modul information"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.title ?? route.params.modul.team.join(", ") })} />
+      <Settings.Screen name={"Modul information"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.title ?? route.params.modul.team.join(", ") })} />
 
       <Settings.Screen name={"Books"} component={Books} options={{title: "Bøger"}} />
       <Settings.Screen name={"Studiekort"} component={Studiekort} options={{title: "Studiekort", header: () => <></>}} />
