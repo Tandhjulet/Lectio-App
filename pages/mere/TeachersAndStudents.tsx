@@ -7,7 +7,6 @@ import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { hexToRgb, Theme, themes } from "../../modules/Themes";
 import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
-import didYouMean from 'didyoumean2'
 
 import 'react-native-console-time-polyfill';
 import { NavigationProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";

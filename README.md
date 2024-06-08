@@ -14,5 +14,4 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 ### __LAV__
 - spørgeskemaer
 - limit på profilbillede-requests (skal gøres native tror jeg)
-- https://www.npmjs.com/package/didyoumean2
 - https://github.com/stevenselcuk/react-native-ask-for-review
