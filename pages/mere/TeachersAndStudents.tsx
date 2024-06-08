@@ -7,6 +7,7 @@ import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { hexToRgb, Theme, themes } from "../../modules/Themes";
 import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
+import didYouMean from 'didyoumean2'
 
 import 'react-native-console-time-polyfill';
 import { NavigationProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
@@ -48,10 +49,9 @@ export default function TeachersAndStudents({ navigation }: {
 
         if(reuse && filteredNamelist.length === 0) reuse = false;
 
-        const setTo = (reuse ? filteredNamelist : namelistAndClassList).filter((name) => {
+        setFilteredNamelist((reuse ? filteredNamelist : namelistAndClassList).filter((name) => {
             return name.toLowerCase().includes(filterText.toLowerCase());
-        });
-        setFilteredNamelist(setTo);
+        }));
     }, [filteredNamelist, namelistAndClassList])
 
     const parseData = useCallback(function parseData(data: {[id: string]: Person}, list: string[], filter?: string): {
