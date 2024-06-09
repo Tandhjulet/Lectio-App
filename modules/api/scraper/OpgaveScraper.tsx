@@ -1,4 +1,3 @@
-import { StringOmit } from "@rneui/base";
 import { Document } from "./DocumentScraper";
 import { SCRAPE_URLS } from "./Helpers";
 import { replaceHTMLEntities } from "./SkemaScraper";

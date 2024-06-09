@@ -2,7 +2,7 @@ import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, Text, Toucha
 import { LectioMessage, TextComponent, ThreadMessage } from "../../modules/api/scraper/MessageScraper";
 import { NavigationProp, RouteProp } from "@react-navigation/native";
 import { hexToRgb, themes } from "../../modules/Themes";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { getMessage } from "../../modules/api/scraper/Scraper";
 import { secureGet, getUnsecure } from "../../modules/api/Authentication";
@@ -91,8 +91,164 @@ export default function BeskedView({ navigation, route }: {
         setRefreshing(true);
     }, []);
 
+    const { ProfilePicture } = UserCell();
+
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
+
+    const renderMessages = useMemo(() => {
+        return threadMessages?.map((message: ThreadMessage, i: number) => (
+            <View key={i} style={{
+                display: "flex",
+                flexDirection: "row",
+
+                gap: 10,
+                marginTop: i === 0 ? 0 : 20,
+                paddingRight: 10,
+            }}>
+                <ProfilePicture navn={message.sender} gymNummer={gym?.gymNummer ?? ""} billedeId={people[CLEAN_NAME(message.sender)]?.billedeId ?? ""} size={50} />
+
+                <View style={{
+                    flexDirection: "column",
+                    gap: 5,
+                    flexGrow: 1,
+                }}>
+                    <View style={{
+                        paddingBottom: 10,
+                        borderRadius: 5,
+
+                        backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
+                        padding: 7.5,
+                    }}>
+                        <View style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 4,
+                        }}>
+                            <View style={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                gap: 10,
+
+                                alignItems: 'center',
+                            }}>
+
+                                <View style={{
+                                    maxWidth: "100%",
+                                }}>
+                                    <Text style={{
+                                        color: theme.WHITE,
+                                        fontWeight: '600',
+                                        fontSize: 11,
+
+                                        opacity: 0.8,
+                                    }}>
+                                        {message.sender.split(" (")[0]}
+                                    </Text>
+
+                                    <Text style={{
+                                        color: theme.WHITE,
+                                        fontWeight: '700',
+                                    }}>
+                                        {message.title}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            <Text style={{
+                                paddingLeft: 7.5,
+                            }}>
+                                {message.body.map((component: TextComponent, index: number) => {
+                                    if(component.isFile) return;
+
+                                    if(component.isBreakLine)
+                                        return (
+                                            <Text 
+                                                key={index}
+                                            >
+                                                {"\n"}
+                                            </Text>
+                                        )
+                                    if(component.isLink) {
+                                        return (
+                                            <Text
+                                                key={index}
+                                                onPress={() => {
+                                                    if(component.url == null) return;
+
+                                                    WebBrowser.openBrowserAsync(cleanURL(component.url), {
+                                                        controlsColor: theme.ACCENT.toString(),
+                                                        dismissButtonStyle: "close",
+                                                        presentationStyle: WebBrowserPresentationStyle.POPOVER,
+            
+                                                        toolbarColor: theme.ACCENT_BLACK.toString(),
+                                                    })
+                                                }}
+                                                style={{
+                                                    color: scheme === "dark" ? "lightblue" : "darkblue",
+                                                    fontWeight: component.isBold ? "bold" : "normal",
+                                                    textDecorationLine: component.isUnderlined ? "underline" : "none",
+                                                    fontStyle: component.isItalic ? "italic" : "normal",
+                                                }}
+                                            >
+                                                {component.inner?.trim()}
+                                            </Text>
+                                        )
+                                    }
+
+                                    return (
+                                        <Text
+                                            key={index}
+                                            style={{
+                                                color: theme.WHITE,
+                                                fontWeight: component.isBold ? "bold" : "normal",
+                                                textDecorationLine: component.isUnderlined ? "underline" : "none",
+                                                fontStyle: component.isItalic ? "italic" : "normal",
+                                            }}
+                                        >
+                                            {component.inner?.trim()}
+                                        </Text>
+                                    )
+                                    
+                                })}
+                            </Text>
+
+                            <Text style={{
+                                color: hexToRgb(theme.WHITE.toString(), 0.6),
+                                textAlign: "right",
+                            }}>
+                                {message.date}
+                            </Text>
+                        </View>
+                    </View>
+                    {message.body.filter((v) => v.isFile).map((file, i) => (
+                        <TouchableOpacity key={threadMessages.length + i} style={{
+                            backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
+                            width: "100%",
+                            padding: 5,
+                            borderRadius: 5,
+
+                            display: "flex",
+                            flexDirection: "row",
+
+                            gap: 5,
+                            alignItems: "center",
+                        }} onPress={() => {
+                            openFile(file);
+                        }}>
+                            {file.inner && findIcon(getUrlExtension(file.inner))}
+
+                            <Text style={{
+                                color: scheme === "dark" ? "lightblue" : "darkblue"
+                            }}>
+                                {file.inner}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </View>
+        ))
+    }, [threadMessages])
 
     const cleanURL = (url: string) => {
         if(url.endsWith("'")) url = url.slice(0,url.length-1);
@@ -136,8 +292,6 @@ export default function BeskedView({ navigation, route }: {
         })
     }, [progress])
 
-    const { ProfilePicture } = UserCell();
-
     const {height, width} = Dimensions.get("screen");
 
     return (
@@ -169,157 +323,7 @@ export default function BeskedView({ navigation, route }: {
                 }} showsVerticalScrollIndicator={false} refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }>  
-                    {threadMessages?.map((message: ThreadMessage, i: number) => (
-                        <View key={i} style={{
-                            display: "flex",
-                            flexDirection: "row",
-
-                            gap: 10,
-                            marginTop: i === 0 ? 0 : 20,
-                            paddingRight: 10,
-                        }}>
-                            <ProfilePicture navn={message.sender} gymNummer={gym?.gymNummer ?? ""} billedeId={people[CLEAN_NAME(message.sender)]?.billedeId ?? ""} size={50} />
-
-                            <View style={{
-                                flexDirection: "column",
-                                gap: 5,
-                                flexGrow: 1,
-                            }}>
-                                <View style={{
-                                    paddingBottom: 10,
-                                    borderRadius: 5,
-
-                                    backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
-                                    padding: 7.5,
-                                }}>
-                                    <View style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: 4,
-                                    }}>
-                                        <View style={{
-                                            display: 'flex',
-                                            flexDirection: 'row',
-                                            gap: 10,
-            
-                                            alignItems: 'center',
-                                        }}>
-
-                                            <View style={{
-                                                maxWidth: "100%",
-                                            }}>
-                                                <Text style={{
-                                                    color: theme.WHITE,
-                                                    fontWeight: '600',
-                                                    fontSize: 11,
-            
-                                                    opacity: 0.8,
-                                                }}>
-                                                    {message.sender.split(" (")[0]}
-                                                </Text>
-            
-                                                <Text style={{
-                                                    color: theme.WHITE,
-                                                    fontWeight: '700',
-                                                }}>
-                                                    {message.title}
-                                                </Text>
-                                            </View>
-                                        </View>
-            
-                                        <Text style={{
-                                            paddingLeft: 7.5,
-                                        }}>
-                                            {message.body.map((component: TextComponent, index: number) => {
-                                                if(component.isFile) return;
-
-                                                if(component.isBreakLine)
-                                                    return (
-                                                        <Text 
-                                                            key={index}
-                                                        >
-                                                            {"\n"}
-                                                        </Text>
-                                                    )
-                                                if(component.isLink) {
-                                                    return (
-                                                        <Text
-                                                            key={index}
-                                                            onPress={() => {
-                                                                if(component.url == null) return;
-
-                                                                WebBrowser.openBrowserAsync(cleanURL(component.url), {
-                                                                    controlsColor: theme.ACCENT.toString(),
-                                                                    dismissButtonStyle: "close",
-                                                                    presentationStyle: WebBrowserPresentationStyle.POPOVER,
-                        
-                                                                    toolbarColor: theme.ACCENT_BLACK.toString(),
-                                                                })
-                                                            }}
-                                                            style={{
-                                                                color: scheme === "dark" ? "lightblue" : "darkblue",
-                                                                fontWeight: component.isBold ? "bold" : "normal",
-                                                                textDecorationLine: component.isUnderlined ? "underline" : "none",
-                                                                fontStyle: component.isItalic ? "italic" : "normal",
-                                                            }}
-                                                        >
-                                                            {component.inner?.trim()}
-                                                        </Text>
-                                                    )
-                                                }
-
-                                                return (
-                                                    <Text
-                                                        key={index}
-                                                        style={{
-                                                            color: theme.WHITE,
-                                                            fontWeight: component.isBold ? "bold" : "normal",
-                                                            textDecorationLine: component.isUnderlined ? "underline" : "none",
-                                                            fontStyle: component.isItalic ? "italic" : "normal",
-                                                        }}
-                                                    >
-                                                        {component.inner?.trim()}
-                                                    </Text>
-                                                )
-                                                
-                                            })}
-                                        </Text>
-
-                                        <Text style={{
-                                            color: hexToRgb(theme.WHITE.toString(), 0.6),
-                                            textAlign: "right",
-                                        }}>
-                                            {message.date}
-                                        </Text>
-                                    </View>
-                                </View>
-                                {message.body.filter((v) => v.isFile).map((file, i) => (
-                                    <TouchableOpacity key={threadMessages.length + i} style={{
-                                        backgroundColor: hexToRgb(theme.WHITE.toString(), 0.1),
-                                        width: "100%",
-                                        padding: 5,
-                                        borderRadius: 5,
-
-                                        display: "flex",
-                                        flexDirection: "row",
-
-                                        gap: 5,
-                                        alignItems: "center",
-                                    }} onPress={() => {
-                                        openFile(file);
-                                    }}>
-                                        {file.inner && findIcon(getUrlExtension(file.inner))}
-
-                                        <Text style={{
-                                            color: scheme === "dark" ? "lightblue" : "darkblue"
-                                        }}>
-                                            {file.inner}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        </View>
-                    ))}
+                    {renderMessages}
                 
                     <View style={{
                         paddingVertical: 75,
