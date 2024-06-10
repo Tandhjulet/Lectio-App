@@ -27,7 +27,8 @@
             "deploymentTarget": "17.0"
           }
         }
-      ]
+      ],
+      ["./app.plugin", {"devTeamId": "BBTQB8LB7C"}]
     ],
     "extra": {
       "eas": {

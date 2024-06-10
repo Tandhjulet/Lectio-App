@@ -6,7 +6,10 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "plugin:build": "tsc -p ./plugin/tsconfig.json",
+    "plugin:watch": "expo-module build plugin",
+    "plugin:test": "expo-module test plugin"
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^4.5.1",
@@ -64,12 +67,15 @@
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@tsconfig/react-native": "^3.0.2",
+    "@types/fs-extra": "^11.0.4",
     "@types/jest": "^29.5.4",
     "@types/react": "^18.2.21",
     "@types/react-lazy-load-image-component": "^1.6.1",
     "@types/react-native-confetti": "^0.1.4",
     "@types/react-native-fetch-blob": "^0.10.11",
     "@types/react-test-renderer": "^18.0.1",
+    "expo-module-scripts": "^3.5.2",
+    "fs-extra": "^11.2.0",
     "typescript": "^5.2.2"
   },
   "private": true
