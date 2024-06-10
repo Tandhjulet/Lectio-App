@@ -1,6 +1,6 @@
-import { createRef, memo, useCallback, useMemo, useRef, useState } from "react"
+import { createRef, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Person } from "../modules/api/scraper/class/ClassPictureScraper"
-import { ActivityIndicator, StyleProp, StyleSheet, Text, TouchableOpacity, useColorScheme, View, ViewProps, ViewStyle } from "react-native"
+import { ActivityIndicator, Animated, ImageLoadEventData, ImageProps, NativeSyntheticEvent, StyleProp, StyleSheet, Text, TouchableOpacity, useColorScheme, View, ViewProps, ViewStyle } from "react-native"
 import { StackNavigationProp } from "@react-navigation/stack"
 import { hexToRgb, Theme, themes } from "../modules/Themes"
 import { ContextMenuView } from "react-native-ios-context-menu"
@@ -9,12 +9,78 @@ import TeacherSVG from "./TeacherSVG"
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native"
 import { SCRAPE_URLS } from "../modules/api/scraper/Helpers"
 import Constants from 'expo-constants';
-import { Image } from "@rneui/themed"
-
+import FastImage, { FastImageProps, OnLoadEvent } from 'react-native-fast-image'
 
 const isExpoGo = Constants.appOwnership === 'expo'
 
 export default function UserCell() {
+    const Image = (function Image({
+        onLoad,
+        containerStyle,
+        style = {},
+        theme,
+
+        ...props
+    }: FastImageProps & {
+        containerStyle?: ViewProps
+        theme: Theme,
+    }) {
+        const [showPlaceholder, setShowPlaceholder] = useState<boolean>(false);
+        const [loading, setLoading] = useState<boolean>(true);
+
+        let thresholdTimer = useRef<number | null>(null).current;
+
+        useEffect(() => {
+            thresholdTimer = setTimeout(() => {
+                setShowPlaceholder(true);
+                thresholdTimer = null;
+            }, 50)
+
+            return () => {
+                if(thresholdTimer)
+                    clearTimeout(thresholdTimer);
+            };
+        }, [])
+
+        const onLoadHandler = useCallback((event: OnLoadEvent) => {
+            setLoading(false);
+            onLoad?.(event);
+        }, [onLoad]);
+
+        // indfør threshold:
+        // https://github.com/oblador/react-native-image-progress/blob/1de7238b3efe1347f61488ec40b9bb26d9de309f/index.js#L30
+    
+        return (
+            <View>
+                <FastImage
+                    {...props}
+                    onLoad={onLoadHandler}
+                    style={style}
+                />
+
+                {showPlaceholder && loading && (
+                    <View style={{
+                        position: "absolute",
+                        height: "100%",
+                        width: "100%",
+
+                        justifyContent: "center",
+                        alignItems: "center",
+
+                        borderRadius: 999,
+
+                        borderWidth: StyleSheet.hairlineWidth,
+                        borderColor: hexToRgb(theme.ACCENT.toString(), 0.2),
+                        backgroundColor: theme.ACCENT_BLACK,
+
+                    }}>
+                        <ActivityIndicator />
+                    </View>
+                )}
+            </View>
+        )
+    });
+
     const ProfilePicture = memo(function ProfilePicture({
         gymNummer,
         billedeId,
@@ -59,19 +125,6 @@ export default function UserCell() {
 
             return (
                 <Image
-                    style={{
-                        borderRadius: borderRadius ? 999 : 0,
-                        width: big ? 3/4 * (size * 6) : size,
-                        height: big ? size * 6 : size,
-                    }}
-                    PlaceholderContent={<ActivityIndicator size={"small"} />}
-                    placeholderStyle={{
-                        backgroundColor: theme.ACCENT_BLACK,
-                        borderColor: hexToRgb(theme.ACCENT.toString(), 0.2),
-                        borderWidth: StyleSheet.hairlineWidth,
-                    }}
-                    crossOrigin="use-credentials"
-
                     source={{
                         uri: url,
                         headers: {
@@ -79,6 +132,12 @@ export default function UserCell() {
                             "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
                         }
                     }}
+                    style={{
+                        borderRadius: borderRadius ? 999 : 0,
+                        width: big ? 3/4 * (size * 6) : size,
+                        height: big ? size * 6 : size,
+                    }}
+                    theme={theme}
                 />
             )
         }
@@ -102,16 +161,20 @@ export default function UserCell() {
                                 "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
                             },
                         }}
-                        crossOrigin="use-credentials"
+                        theme={theme}
                     />
                 )}
                 menuConfig={{
                     menuTitle: navn,
                 }}
+
+                style={{
+                    borderRadius: 999,
+                }}
             >
                 <Image
                     style={{
-                        borderRadius: size * 2,
+                        borderRadius: 999,
                         width: size,
                         height: size,
                     }}
@@ -122,13 +185,7 @@ export default function UserCell() {
                             "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
                         },
                     }}
-                    crossOrigin="use-credentials"
-                    PlaceholderContent={<UserIcon color={hexToRgb(theme.ACCENT.toString(), 0.2)} />}
-                    placeholderStyle={{
-                        backgroundColor: theme.ACCENT_BLACK,
-                        borderColor: hexToRgb(theme.ACCENT.toString(), 0.2),
-                        borderWidth: StyleSheet.hairlineWidth,
-                    }}
+                    theme={theme}
                 />
             </ContextMenuView>
     

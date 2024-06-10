@@ -200,15 +200,8 @@ export default function LandingPage({
             </View>
 
             <View style={{
-                marginTop: 20,
-                marginBottom: 10,
-
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-            }}>
-                <Logo size={80}/>
-            </View>
+                flex: 1,
+            }} />
 
             <View style={{
                 width: "100%",
@@ -263,10 +256,13 @@ export default function LandingPage({
             </View>
 
             <View style={{
+                flex: 1,
+            }} />
+
+            <View style={{
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                marginTop: 15,
             }}>
                 <TouchableOpacity onPress={() => {
                     navigation.navigate("Schools")
@@ -304,6 +300,7 @@ export default function LandingPage({
                 width: "100%",
 
                 marginTop: 20,
+                marginBottom: 50,
             }}>
                 <Text style={{
                     color: hexToRgb(theme.WHITE.toString(), 0.7),

@@ -39,6 +39,7 @@
     "react-native-confetti": "^0.1.0",
     "react-native-console-time-polyfill": "^1.2.3",
     "react-native-dom-parser": "^1.5.3",
+    "react-native-fast-image": "^8.6.3",
     "react-native-file-viewer": "^2.1.5",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "~2.12.0",

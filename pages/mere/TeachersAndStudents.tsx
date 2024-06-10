@@ -291,7 +291,7 @@ export default function TeachersAndStudents({ navigation }: {
                                             stickySectionHeadersEnabled
                                             directionalLockEnabled={true}
 
-                                            maxToRenderPerBatch={5}
+                                            maxToRenderPerBatch={20}
                                             initialNumToRender={10}
                                             removeClippedSubviews
 
