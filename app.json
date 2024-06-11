@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "Lectio 360",
+    "slug": "lectio360",
+    "version": "1.2.4",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "lecioplus",
+    "splash": {
+      "image": "./assets/splash-transparent.png",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.tandhjulet.lectio360",
+      "buildNumber": "21"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "17.0"
+          }
+        }
+      ],
+      [
+        "./app.plugin",
+        {
+          "devTeamId": "BBTQB8LB7C"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "066f8395-174f-432c-abde-ad17a45a3a88"
+      }
+    },
+    "android": {
+      "package": "com.tandhjulet.lectio360"
+    }
+  }
+}
