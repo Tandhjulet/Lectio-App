@@ -28,12 +28,20 @@
           }
         }
       ],
-      ["./app.plugin", {"devTeamId": "BBTQB8LB7C"}]
+      [
+        "./app.plugin",
+        {
+          "devTeamId": "BBTQB8LB7C"
+        }
+      ]
     ],
     "extra": {
       "eas": {
         "projectId": "066f8395-174f-432c-abde-ad17a45a3a88"
       }
+    },
+    "android": {
+      "package": "com.tandhjulet.lectio360"
     }
   }
 }
