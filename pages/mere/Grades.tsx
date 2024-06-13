@@ -183,6 +183,8 @@ export default function Grades() {
                                                             fontSize: length === 4 ? 9 : 10,
                                                             paddingHorizontal: 6,
                                                             textAlign: "center",
+                                                            lineHeight: 10,
+                                                            height: 20,
                                                         }} adjustsFontSizeToFit numberOfLines={2}>
                                                             {title.replace("1.", "Første").replace("2.", "Andet")}
                                                         </Text>
