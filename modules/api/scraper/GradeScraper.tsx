@@ -22,7 +22,7 @@ export function parseGrades(parser: any): Grade[] {
             child.children.forEach((col: any, i: number) => {
                 if(i < 2) return;
 
-                cols.push(col.firstChild.text === "Afsluttende års-/" ? "Afsluttende" : col.firstChild.text.replace(".", ". "));
+                cols.push((col.firstChild.text === "Afsluttende års-/") ? "Årskarakter" : col.firstChild.text.replace(".", ". "));
             })
             
             return;
@@ -40,11 +40,25 @@ export function parseGrades(parser: any): Grade[] {
 
                 if(matches != null)
                     weight = matches[1];
+                else {
+                    weight = (weight.match(/ProtokolVægt: (\d*(,|\.)\d*|\d*)/) ?? [null, "1"])[1]
+                }
             }
 
-            grades[cols[i-2]] = {
-                grade: td.firstChild === undefined ? "" : td.firstChild.firstChild.text,
-                weight: weight,
+            const col = (cols[i-2] === "Eksamens-/" || cols[i-2] === "Intern prøve") ? "Eksamen/årsprøve" : cols[i-2]
+            const latestGrade = grades[col]?.grade
+            const latestWeight = grades[col]?.weight
+
+            if(td.firstChild !== undefined && td.firstChild.firstChild !== undefined && td?.firstChild?.firstChild?.tagName?.trim() === "b") {
+                grades[col] = {
+                    grade: td.firstChild.firstChild.firstChild.text,
+                    weight: weight,
+                }
+            } else {
+                grades[col] = {
+                    grade: td.firstChild === undefined ? (latestGrade ?? "") : td.firstChild.firstChild.text,
+                    weight: weight == "" ? latestWeight : weight,
+                }
             }
         })
 
@@ -60,6 +74,8 @@ export function parseGrades(parser: any): Grade[] {
             out[fagNavn].karakterer.push(grades);
         }
     })
+
+    console.log(JSON.stringify(Object.values(out)))
 
     return Object.values(out);
 }

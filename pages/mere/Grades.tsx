@@ -41,7 +41,7 @@ export default function Grades() {
             scrapeGrades(gymNummer, profile.elevId, (grades) => {
                 setGrades(grades);
                 setLoading(false);
-            });
+            }, true);
         })();
     }, [])
 
@@ -81,8 +81,6 @@ export default function Grades() {
         return `rgba(${res[0]}, ${res[1]}, ${res[2]}, ${opacity})`;
     }, [theme])
 
-    const { width } = Dimensions.get("screen");
-
     return (
         <View>
             <ScrollView style={{
@@ -118,9 +116,18 @@ export default function Grades() {
                                             const avg = calculateAverage(title);
                                             const color = calculateColor(avg);
 
-                                            const l = 1/Object.keys(grades[0].karakterer[0]).length;
-                                            let size = (width - 20*2 - (l > 0.25 ? 40 : 0)) * l;
-                                            if(size > 116) size = 116;
+                                            const length = Object.keys(grades[0].karakterer[0]).length;
+                                            let size;
+                                            switch(length) {
+                                                case 1:
+                                                case 2:
+                                                case 3:
+                                                    size = 110;
+                                                    break;
+                                                case 4:
+                                                    size = 92;
+                                                    break;
+                                            }
                                             
                                             return (
                                                 <View style={{
@@ -154,7 +161,7 @@ export default function Grades() {
                                                             color: scheme === "dark" ? "#FFF" : "#000",
                                                             opacity: 0.9,
                                                             fontWeight: "500",
-                                                            fontSize: 11,
+                                                            fontSize: length === 4 ? 9 : 11,
                                                             paddingHorizontal: 8,
                                                             textAlign: "center",
                                                         }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
@@ -164,7 +171,7 @@ export default function Grades() {
                                                         <Text style={{
                                                             color: scheme === "dark" ? "#FFF" : "#000",
                                                             fontWeight: "700",
-                                                            fontSize: 25,
+                                                            fontSize: length === 4 ? 20 : 25,
                                                         }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
                                                             {avg.toFixed(2).replace(".", ",")}
                                                         </Text>
@@ -173,11 +180,11 @@ export default function Grades() {
                                                             color: scheme === "dark" ? "#FFF" : "#000",
                                                             opacity: 0.9,
                                                             fontWeight: "900",
-                                                            fontSize: 11,
-                                                            paddingHorizontal: 5,
+                                                            fontSize: length === 4 ? 9 : 10,
+                                                            paddingHorizontal: 6,
                                                             textAlign: "center",
-                                                        }} adjustsFontSizeToFit minimumFontScale={0.6} numberOfLines={1}>
-                                                            {title}
+                                                        }} adjustsFontSizeToFit numberOfLines={2}>
+                                                            {title.replace("1.", "Første").replace("2.", "Andet")}
                                                         </Text>
                                                     </View>
                                                 </View>
