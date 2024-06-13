@@ -105,7 +105,7 @@ struct widgetEntryView : View {
   
     func calculateTop(module: Module, first: Date, geoHeight: CGFloat) -> CGFloat {
       let diff = module.start - first;
-      var top = (diff/(60*60*3)) * geoHeight;
+      var top = ((diff+(2))/(60*60*2)) * (geoHeight);
       top = top < 0 ? 0 : top;
       
       return top;
@@ -167,7 +167,7 @@ struct widgetEntryView : View {
                         
                         ZStack(alignment: .topLeading) {
                           Rectangle()
-                            .fill(Color("Primary"))
+                            .fill(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
                             .opacity(1)
                             .clipShape(
                               .rect(
@@ -179,7 +179,7 @@ struct widgetEntryView : View {
                               )
                             )
                             .frame(
-                              width: module.width * geo.size.width, height: module.height * geo.size.height
+                              width: .infinity, height: .infinity
                             )
                           
                           if(module.height * geo.size.height > 10+4*2) {
@@ -188,15 +188,16 @@ struct widgetEntryView : View {
                                 .font(.system(size: 9, weight: .bold))
                                 .multilineTextAlignment(.leading)
                                 .foregroundStyle(Color.white)
+                                .minimumScaleFactor(0.6)
                             }.padding(4)
                           }
                         }
                         .frame(width: module.width * geo.size.width, height: module.height * geo.size.height)
                         
-                        Spacer()
+                        Spacer(minLength: 0)
                       }
                       
-                      Spacer()
+                      Spacer(minLength: 0)
                     }
                   }
                 }
@@ -257,7 +258,7 @@ struct widget: Widget {
 
 func calculateHeight(start: Date, end: Date) -> CGFloat {
   let compareTo: Date = start < Date() ? Date() : start;
-  let diff = (end - compareTo) / (60*60*3);
+  let diff = (end - compareTo) / (60*60*2);
   return diff;
 }
 
@@ -274,7 +275,7 @@ struct widget_Previews: PreviewProvider {
     }
   
     static var previews: some View {
-        let start = Calendar.current.date(byAdding: .minute, value: -5, to: Date())!
+        let start = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
         let end = Calendar.current.date(byAdding: .minute, value: 60, to: Date())!
       
       let start2 = Calendar.current.date(byAdding: .minute, value: 60, to: Date())!
@@ -296,7 +297,7 @@ struct widget_Previews: PreviewProvider {
           start: start,
           end: end,
           title: "test modul",
-          status: Status.normal,
+          status: Status.changed,
           _id: "unique id 2",
           
           height: calculateHeight(start: start, end: end),
@@ -306,7 +307,7 @@ struct widget_Previews: PreviewProvider {
         start: start2,
         end: end2,
         title: "test modul",
-        status: Status.normal,
+        status: Status.cancelled,
         _id: "unique id 3",
         
         height: calculateHeight(start: start2, end: end2),
