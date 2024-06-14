@@ -17,7 +17,7 @@
         "usesNonExemptEncryption": false
       },
       "entitlements": {
-        "com.apple.security.application-groups": true
+        "com.apple.security.application-groups": ["group.com.tandhjulet.lectio360.widget"]
       },
       "bundleIdentifier": "com.tandhjulet.lectio360",
       "buildNumber": "21"
@@ -32,6 +32,7 @@
         }
       ],
       [
+        // need to add group entitlement
         "./app.plugin",
         {
           "devTeamId": "BBTQB8LB7C"

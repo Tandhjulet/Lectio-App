@@ -3,6 +3,7 @@ import SharedGroupPreferences from "react-native-shared-group-preferences";
 import { Day } from "./api/scraper/SkemaScraper";
 import { formatDate } from "../pages/Skema";
 import { getDay } from "./Date";
+import Constants from "expo-constants"
 
 enum Status {
     changed,
@@ -22,11 +23,11 @@ interface EncodedModul {
     left: number,
 }
 
-const group = "group.widget";
+const appGroupIdentifier = `group.${Constants.expoConfig?.ios?.bundleIdentifier}.widget`
 
 export async function save(key: string, data: WidgetData) {
     if(Platform.OS === "ios") {
-        await SharedGroupPreferences.setItem(key, data, group)
+        await SharedGroupPreferences.setItem(key, data, appGroupIdentifier)
     } else {
         throw new Error("Only iOS is supported [Widget]")
     }
@@ -34,7 +35,7 @@ export async function save(key: string, data: WidgetData) {
 
 export async function get<T>(key: string): Promise<T> {
     if(Platform.OS === "ios") {
-        return await SharedGroupPreferences.getItem(key, group);
+        return await SharedGroupPreferences.getItem(key, appGroupIdentifier);
     } else {
         throw new Error("Only iOS is supported [Widget]")
     }
