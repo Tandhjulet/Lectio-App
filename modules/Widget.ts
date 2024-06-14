@@ -46,7 +46,7 @@ export async function saveCurrentSkema(day: Day[]) {
     let i = now.getDay() == 0 ? 6 : now.getDay()-1;
     const parsePercents = (p: string) => parseInt(p.replace("%", "").trim())/100
 
-    const out = day.slice(i).reduce((a, v) => {
+    const out: WidgetData = day.slice(i).reduce((a, v) => {
         const copy = now;
 
         const out: EncodedModul[] = []
@@ -63,7 +63,7 @@ export async function saveCurrentSkema(day: Day[]) {
         });
         now.setDate(now.getDate() + 1)
 
-        return { ...a, [getDay(copy).dayNumber]: v}
+        return { ...a, [getDay(copy).dayNumber]: out}
     }, {}) // no reason to store from previous days
     console.log(out);
 
