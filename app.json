@@ -32,10 +32,9 @@
         }
       ],
       [
-        // need to add group entitlement
-        "./app.plugin",
+        "@bacons/apple-targets",
         {
-          "devTeamId": "BBTQB8LB7C"
+          "appleTeamId": "BBTQB8LB7C"
         }
       ]
     ],

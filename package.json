@@ -12,6 +12,7 @@
     "plugin:test": "expo-module test plugin"
   },
   "dependencies": {
+    "@bacons/apple-targets": "^0.0.3",
     "@gorhom/bottom-sheet": "^4.5.1",
     "@react-native-async-storage/async-storage": "1.18.2",
     "@react-native-community/netinfo": "^11.3.2",
