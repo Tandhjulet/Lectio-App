@@ -23,17 +23,48 @@ struct Provider: TimelineProvider {
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
       
-        var lookAhead: [Date] = []
-        let entryDate = Date()
-      
-        for hourOffset in 0 ..< 3 {
-          lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
-        }
-      
-        let entry = SimpleEntry(date: entryDate,
-                              lookAhead: lookAhead,
-                              modules: [])
-        completion(entry)
+      let userDefaults = UserDefaults.init(suiteName: "group.widget");
+      if(userDefaults != nil) {
+          let entryDate = Date()
+          if let savedData = userDefaults!.value(forKey: "skema") as? String {
+              let decoder = JSONDecoder();
+              let data = savedData.data(using: .utf8);
+              if let parsedData = try? decoder.decode([String: [Module]].self, from: data!) {
+                  
+                  let currentDate = Calendar.current.component(.day, from: entryDate)
+                  
+                  var lookAhead: [Date] = []
+                  for hourOffset in 0 ..< 3 {
+                    lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
+                  }
+                  
+                  let entry = SimpleEntry(date: entryDate,
+                                        lookAhead: lookAhead,
+                                          modules: parsedData[String(currentDate)] ?? [])
+                      
+                  completion(entry)
+              }
+          } else {
+              var lookAhead: [Date] = []
+              let entryDate = Date()
+            
+              for hourOffset in 0 ..< 3 {
+                lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
+              }
+            
+              let entry = SimpleEntry(date: entryDate,
+                                    lookAhead: lookAhead,
+                                    modules: [])
+              completion(entry)
+          }
+      } else {
+          let date = Calendar.current.date(byAdding: .hour, value: 5, to: Date())
+          
+          let entry = SimpleEntry(date: Date(),
+                                lookAhead: [],
+                                  modules: [], error: true)
+          completion(entry)
+      }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
@@ -348,7 +379,7 @@ struct widget_Previews: PreviewProvider {
         
         width: 1,
         left: 0
-      )], error: true))
+      )]))
             .previewContext(WidgetPreviewContext(family: .systemSmall))
     }
 }
