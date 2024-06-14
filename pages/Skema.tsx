@@ -24,6 +24,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 
 import 'react-native-console-time-polyfill';
 import Connectivity from "../components/Connectivity";
+import { saveCurrentSkema } from "../modules/Widget";
 
 /**
  * 
@@ -63,7 +64,7 @@ function findExtremumDates(moduler: Modul[], fallbackValues: {
  * @param dateString a time formatted as a string in the format HHSS
  * @returns a date corresponding to the given string
  */
-function formatDate(dateString: string): Date {
+export function formatDate(dateString: string): Date {
     const padded = dateString.padStart(4, "0");
     const minutes = padded.slice(2);
     const hours = padded.slice(0,2);
@@ -204,7 +205,8 @@ export default function Skema({ navigation, route }: {
             pagerRef.current?.setPageWithoutAnimation(1);
 
             setProfile(profile);
-            getSkema(gymNummer, loadDate, (payload) => {
+
+            const res = await getSkema(gymNummer, loadDate, (payload) => {
                 if(payload) {
                     setSkema([...payload.days]);
                     setModulTimings([...payload.modul]);
@@ -216,6 +218,8 @@ export default function Skema({ navigation, route }: {
                 setLoading(false);
                 setRateLimited(payload === undefined)
             }, route?.params?.user)
+
+            if(res) saveCurrentSkema(res.days)
         })();
 
     }, [loadDate])
@@ -229,7 +233,7 @@ export default function Skema({ navigation, route }: {
         
         (async () => {
             const gymNummer = (await secureGet("gym")).gymNummer;
-            getSkema(gymNummer, loadDate, (payload) => {
+            const res = await getSkema(gymNummer, loadDate, (payload) => {
                 if(payload) {
                     setSkema([...payload.days]);
                     setModulTimings([...payload.modul]);
@@ -240,6 +244,8 @@ export default function Skema({ navigation, route }: {
                 setRateLimited(payload === undefined)
                 setRefreshing(false)
             }, route?.params?.user)
+
+            if(res) saveCurrentSkema(res.days)
         })();
 
     }, [refreshing])

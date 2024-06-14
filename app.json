@@ -16,6 +16,9 @@
       "config": {
         "usesNonExemptEncryption": false
       },
+      "entitlements": {
+        "com.apple.security.application-groups": true
+      },
       "bundleIdentifier": "com.tandhjulet.lectio360",
       "buildNumber": "21"
     },
