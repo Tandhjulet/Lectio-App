@@ -7,7 +7,6 @@ import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
 import { hexToRgb, themes } from "../modules/Themes";
 import { ArrowLeftIcon, ArrowRightIcon, BackwardIcon, ChatBubbleBottomCenterTextIcon, ChevronLeftIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";
 import getDaysOfCurrentWeek, { WeekDay, getDay, getDaysOfThreeWeeks, getNextWeek, getPrevWeek } from "../modules/Date";
-import GestureRecognizer from 'react-native-swipe-gestures';
 import { getPeople } from "../modules/api/scraper/class/PeopleList";
 import { NavigationProp, RouteProp } from "@react-navigation/native";
 import RateLimit from "../components/RateLimit";
@@ -25,6 +24,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import 'react-native-console-time-polyfill';
 import Connectivity from "../components/Connectivity";
 import { saveCurrentSkema } from "../modules/Widget";
+import { Timespan } from "../modules/api/storage/Timespan";
 
 /**
  * 
@@ -219,7 +219,7 @@ export default function Skema({ navigation, route }: {
                 setRateLimited(payload === undefined)
             }, route?.params?.user)
 
-            if(res) saveCurrentSkema(res.days)
+            if(res && (Math.abs(loadDate.valueOf() - new Date().valueOf()) < Timespan.WEEK)) saveCurrentSkema(res.days)
         })();
 
     }, [loadDate])

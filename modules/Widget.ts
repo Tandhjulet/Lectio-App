@@ -3,6 +3,7 @@ import SharedGroupPreferences from "react-native-shared-group-preferences";
 import { Day } from "./api/scraper/SkemaScraper";
 import { getDay } from "./Date";
 import Constants from "expo-constants"
+import { Timespan } from "./api/storage/Timespan";
 
 export function formatDate(dateString: string): Date {
     const padded = dateString.padStart(4, "0");
@@ -22,7 +23,7 @@ enum Status {
     normal,
 }
 
-type WidgetData = {[id: string]: EncodedModul}
+type WidgetData = {[id: string]: EncodedModul[]}
 
 interface EncodedModul {
     start: Date,
@@ -44,9 +45,9 @@ export async function save(key: string, data: WidgetData) {
     }
 }
 
-export async function get<T>(key: string): Promise<T> {
+export async function get(key: string): Promise<WidgetData> {
     if(Platform.OS === "ios") {
-        return await SharedGroupPreferences.getItem(key, appGroupIdentifier);
+        return JSON.parse(await SharedGroupPreferences.getItem(key, appGroupIdentifier));
     } else {
         throw new Error("Only iOS is supported [Widget]")
     }
@@ -56,6 +57,15 @@ export async function saveCurrentSkema(day: Day[]) {
     const now = new Date();
 
     let i = now.getDay() == 0 ? 6 : now.getDay()-1;
+
+    const currSaved: WidgetData = await get("skema")
+    const keepKeys = Object.fromEntries(Object.keys(currSaved)
+                        .filter(s => {
+                            // @ts-expect-error
+                            const date: string | undefined = currSaved[s][0]?.start
+                            return Math.abs(parseInt(s) - now.getDate()) < 7 || (date && new Date(date).valueOf() - now.valueOf() < Timespan.WEEK)
+                        }).map((k) => [k, currSaved[k]]))
+
     const parsePercents = (p: string) => parseInt(p.replace("%", "").trim())/100
 
     const out: WidgetData = day.slice(i).reduce((a, v) => {
@@ -77,7 +87,6 @@ export async function saveCurrentSkema(day: Day[]) {
         now.setDate(currDate + 1)
         return { ...a, [currDate]: out}
     }, {}) // no reason to store from previous days
-    console.log(out);
 
-    await save("skema", out)
+    await save("skema", {...keepKeys, ...out})
 }
