@@ -39,7 +39,7 @@ const appGroupIdentifier = `group.${Constants.expoConfig?.ios?.bundleIdentifier}
 
 export async function save(key: string, data: WidgetData) {
     if(Platform.OS === "ios") {
-        await SharedGroupPreferences.setItem(key, data, appGroupIdentifier)
+        await SharedGroupPreferences.setItem(key, JSON.stringify(data), appGroupIdentifier)
     } else {
         throw new Error("Only iOS is supported [Widget]")
     }
