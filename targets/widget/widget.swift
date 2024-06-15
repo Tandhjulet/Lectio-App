@@ -23,7 +23,7 @@ struct Provider: TimelineProvider {
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
       
-      let userDefaults = UserDefaults.init(suiteName: "group.widget");
+      let userDefaults = UserDefaults.init(suiteName: "group.com.tandhjulet.lectio360.widget");
       if(userDefaults != nil) {
           let entryDate = Date()
           if let savedData = userDefaults!.value(forKey: "skema") as? String {
@@ -58,8 +58,6 @@ struct Provider: TimelineProvider {
               completion(entry)
           }
       } else {
-          let date = Calendar.current.date(byAdding: .hour, value: 5, to: Date())
-          
           let entry = SimpleEntry(date: Date(),
                                 lookAhead: [],
                                   modules: [], error: true)
@@ -68,7 +66,7 @@ struct Provider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        let userDefaults = UserDefaults.init(suiteName: "group.widget");
+        let userDefaults = UserDefaults.init(suiteName: "group.com.tandhjulet.lectio360.widget");
         if(userDefaults != nil) {
             let entryDate = Date()
             if let savedData = userDefaults!.value(forKey: "skema") as? String {
@@ -332,54 +330,59 @@ func calculateHeight(start: Date, end: Date) -> CGFloat {
 }
 
 struct widget_Previews: PreviewProvider {
-    static func calculateLookAhead() -> Array<Date> {
-        var lookAhead: [Date] = []
-        let entryDate = Date()
+    static func getEntry() -> SimpleEntry {
+      var entry: SimpleEntry = SimpleEntry(date: Date(),
+                                           lookAhead: [],
+                                             modules: [], error: true);
       
-        for hourOffset in 0 ..< 3 {
-        lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
-        }
-
-        return lookAhead
+      let userDefaults = UserDefaults.init(suiteName: "group.com.tandhjulet.lectio360.widget");
+      print("userdef")
+      if(userDefaults != nil) {
+          print("!= nil")
+          let entryDate = Date()
+          if let savedData = userDefaults!.value(forKey: "skema") as? String {
+              print("savedData:", savedData)
+            
+              let decoder = JSONDecoder();
+              let data = savedData.data(using: .utf8);
+              if let parsedData = try? decoder.decode([String: [Module]].self, from: data!) {
+                  print("parsedData:", parsedData)
+                  
+                  let currentDate = Calendar.current.component(.day, from: entryDate)
+                  
+                  var lookAhead: [Date] = []
+                  for hourOffset in 0 ..< 3 {
+                    lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
+                  }
+                  
+                  entry = SimpleEntry(date: entryDate,
+                                        lookAhead: lookAhead,
+                                          modules: parsedData[String(currentDate)] ?? [])
+                      
+              }
+          } else {
+              var lookAhead: [Date] = []
+              let entryDate = Date()
+            
+              for hourOffset in 0 ..< 3 {
+                lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
+              }
+            
+              entry = SimpleEntry(date: entryDate,
+                                    lookAhead: lookAhead,
+                                    modules: [])
+          }
+      } else {
+          entry = SimpleEntry(date: Date(),
+                                lookAhead: [],
+                                  modules: [], error: true)
+      }
+      
+      return entry;
     }
   
     static var previews: some View {
-        let start = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
-        let end = Calendar.current.date(byAdding: .minute, value: 60, to: Date())!
-      
-      let start2 = Calendar.current.date(byAdding: .minute, value: 60, to: Date())!
-      let end2 = Calendar.current.date(byAdding: .minute, value: 120, to: Date())!
-      
-        widgetEntryView(entry: SimpleEntry(date: Date(),
-           lookAhead: calculateLookAhead(),
-           modules: [Module(
-            start: start,
-            end: end,
-            title: "test modul",
-            status: Status.normal,
-            _id: "unique id",
-            
-            width: 0.5,
-            left: 0.0
-        ), Module(
-          start: start,
-          end: end,
-          title: "test modul",
-          status: Status.changed,
-          _id: "unique id 2",
-          
-          width: 0.5,
-          left: 0.5
-      ), Module(
-        start: start2,
-        end: end2,
-        title: "test modul",
-        status: Status.cancelled,
-        _id: "unique id 3",
-        
-        width: 1,
-        left: 0
-      )]))
+        widgetEntryView(entry: getEntry())
             .previewContext(WidgetPreviewContext(family: .systemSmall))
     }
 }
