@@ -9,7 +9,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 
 ### __MELLEM__
 - push notifs
-- widgets
 
 ### __LAV__
 - spørgeskemaer

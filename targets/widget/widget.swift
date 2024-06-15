@@ -76,7 +76,7 @@ struct Provider: TimelineProvider {
                     
                     let currentDate = Calendar.current.component(.day, from: entryDate)
                     let currentHour = Calendar.current.component(.hour, from: entryDate)
-                    let requestAfter = Calendar.current.date(byAdding: .hour, value: currentHour > 7 && currentHour < 16 ? 1 : 6, to: entryDate)!
+                    let requestAfter = Calendar.current.date(byAdding: .hour, value: currentHour > 7 && currentHour < 16 ? 1 : 3, to: entryDate)!
                     
                     var lookAhead: [Date] = []
                     for hourOffset in 0 ..< 3 {
@@ -105,7 +105,7 @@ struct Provider: TimelineProvider {
                 completion(timeline)
             }
         } else {
-            let date = Calendar.current.date(byAdding: .hour, value: 5, to: Date())
+            let date = Calendar.current.date(byAdding: .hour, value: 2, to: Date())
             
             let entry = SimpleEntry(date: Date(),
                                   lookAhead: [],
@@ -210,7 +210,7 @@ struct widgetEntryView : View {
                   ItemSeperator.frame(width: geo.size.width)
                   
                   ForEach(entry.modules, id: \._id) { module in
-                    if(module.end > entry.lookAhead.first!) {
+                    if(module.end > entry.lookAhead.first! && module.start < entry.lookAhead.last!) {
                       let top = calculateTop(module: module, first: entry.lookAhead.first!, geoHeight: geo.size.height);
                       
                       VStack(spacing: 0) {

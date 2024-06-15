@@ -75,7 +75,5 @@ export function parseGrades(parser: any): Grade[] {
         }
     })
 
-    console.log(JSON.stringify(Object.values(out)))
-
     return Object.values(out);
 }
