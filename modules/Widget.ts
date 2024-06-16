@@ -26,8 +26,9 @@ enum Status {
 type WidgetData = {[id: string]: EncodedModul[]}
 
 interface EncodedModul {
-    start: Date,
-    end: Date,
+    start: number, // will be encoded to a Date by Swift
+    end: number,
+
     title: string,
     status: Status,
     _id: string,
@@ -47,7 +48,7 @@ export async function save(key: string, data: WidgetData) {
 
 export async function get(key: string): Promise<WidgetData> {
     if(Platform.OS === "ios") {
-        return JSON.parse(await SharedGroupPreferences.getItem(key, appGroupIdentifier));
+        return JSON.parse(await SharedGroupPreferences.getItem(key, appGroupIdentifier) ?? null);
     } else {
         throw new Error("Only iOS is supported [Widget]")
     }
@@ -58,7 +59,7 @@ export async function saveCurrentSkema(day: Day[]) {
 
     let i = now.getDay() == 0 ? 6 : now.getDay()-1;
 
-    const currSaved: WidgetData = await get("skema")
+    const currSaved: WidgetData = (await get("skema")) ?? {}
     const keepKeys = Object.fromEntries(Object.keys(currSaved)
                         .filter(s => {
                             // @ts-expect-error
@@ -75,8 +76,8 @@ export async function saveCurrentSkema(day: Day[]) {
         v.moduler.forEach((modul) => {
             out.push({
                 _id: modul.href,
-                end: formatDate(modul.timeSpan.endNum.toString()),
-                start: formatDate(modul.timeSpan.startNum.toString()),
+                end: formatDate(modul.timeSpan.endNum.toString()).valueOf(),
+                start: formatDate(modul.timeSpan.startNum.toString()).valueOf(),
                 left: parsePercents(modul.left),
                 width: parsePercents(modul.width),
                 status: modul.cancelled ? Status.cancelled : modul.changed ? Status.changed : Status.normal,
