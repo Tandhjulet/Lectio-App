@@ -28,6 +28,7 @@ struct Provider: TimelineProvider {
           let entryDate = Date()
           if let savedData = userDefaults!.value(forKey: "skema") as? String {
               let decoder = JSONDecoder();
+              decoder.dateDecodingStrategy = .millisecondsSince1970
               let data = savedData.data(using: .utf8);
               if let parsedData = try? decoder.decode([String: [Module]].self, from: data!) {
                   
@@ -71,6 +72,7 @@ struct Provider: TimelineProvider {
             let entryDate = Date()
             if let savedData = userDefaults!.value(forKey: "skema") as? String {
                 let decoder = JSONDecoder();
+                decoder.dateDecodingStrategy = .millisecondsSince1970
                 let data = savedData.data(using: .utf8);
                 if let parsedData = try? decoder.decode([String: [Module]].self, from: data!) {
                     
@@ -344,6 +346,7 @@ struct widget_Previews: PreviewProvider {
               print("savedData:", savedData)
             
               let decoder = JSONDecoder();
+              decoder.dateDecodingStrategy = .millisecondsSince1970
               let data = savedData.data(using: .utf8);
               if let parsedData = try? decoder.decode([String: [Module]].self, from: data!) {
                   print("parsedData:", parsedData)
