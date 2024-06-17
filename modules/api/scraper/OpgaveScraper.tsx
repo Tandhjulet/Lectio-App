@@ -34,12 +34,15 @@ export type OpgaveDetails = {
 }
 
 export function parseDate(date: string): Date {
-    const today = new Date();
+    let today = new Date();
 
     try {
-        today.setFullYear(parseInt(date.split("-")[1].split(" ")[0]), parseInt(date.split("/")[1].split("-")[0])-1, parseInt(date.split("/")[0]))
-        today.setHours(parseInt(date.split(" ")[1].split(":")[0]))
-        today.setMinutes(parseInt(date.split(" ")[1].split(":")[1]))
+        try {
+            today.setFullYear(parseInt(date.split("-")[1].split(" ")[0]), parseInt(date.split("/")[1].split("-")[0])-1, parseInt(date.split("/")[0]))
+        } catch {}
+        const index = date.includes(" ") ? 1 : 0;
+        today.setHours(parseInt(date.split(" ")[index].split(":")[0]))
+        today.setMinutes(parseInt(date.split(" ")[index].split(":")[1]))
     } catch {}
 
     return today;

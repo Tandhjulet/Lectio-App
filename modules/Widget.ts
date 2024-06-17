@@ -30,7 +30,7 @@ interface EncodedModul {
     end: number,
 
     title: string,
-    status: Status,
+    status: string,
     _id: string,
     width: number,
     left: number,
@@ -69,18 +69,19 @@ export async function saveCurrentSkema(day: Day[]) {
 
     const parsePercents = (p: string) => parseInt(p.replace("%", "").trim())/100
 
+    let j = 0;
     const out: WidgetData = day.slice(i).reduce((a, v) => {
         const currDate = now.getDate();
 
         const out: EncodedModul[] = []
         v.moduler.forEach((modul) => {
             out.push({
-                _id: modul.href,
+                _id: modul.href + ":" + j++,
                 end: formatDate(modul.timeSpan.endNum.toString()).valueOf(),
                 start: formatDate(modul.timeSpan.startNum.toString()).valueOf(),
                 left: parsePercents(modul.left),
                 width: parsePercents(modul.width),
-                status: modul.cancelled ? Status.cancelled : modul.changed ? Status.changed : Status.normal,
+                status: modul.cancelled ? Status[Status.cancelled] : modul.changed ? Status[Status.changed] : Status[Status.normal],
                 title: modul.title ?? modul.team.join(", ")
             })
         });
