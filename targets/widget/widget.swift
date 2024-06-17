@@ -30,21 +30,23 @@ struct Provider: TimelineProvider {
               let decoder = JSONDecoder();
               decoder.dateDecodingStrategy = .millisecondsSince1970
               let data = savedData.data(using: .utf8);
-              if let parsedData = try? decoder.decode([String: [Module]].self, from: data!) {
+              let parsedData = try? decoder.decode([String: [Module]].self, from: data!)
                   
-                  let currentDate = Calendar.current.component(.day, from: entryDate)
-                  
-                  var lookAhead: [Date] = []
-                  for hourOffset in 0 ..< 3 {
-                    lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
-                  }
-                  
-                  let entry = SimpleEntry(date: entryDate,
-                                        lookAhead: lookAhead,
-                                          modules: parsedData[String(currentDate)] ?? [])
-                      
-                  completion(entry)
+              let currentDate = Calendar.current.component(.day, from: entryDate)
+              
+              var lookAhead: [Date] = []
+              for hourOffset in 0 ..< 3 {
+                lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
               }
+            
+              let modules = parsedData?[String(currentDate)]
+              
+              let entry = SimpleEntry(date: entryDate,
+                                    lookAhead: lookAhead,
+                                      modules: (modules ?? [])!)
+                  
+              completion(entry)
+              
           } else {
               var lookAhead: [Date] = []
               let entryDate = Date()
@@ -74,24 +76,26 @@ struct Provider: TimelineProvider {
                 let decoder = JSONDecoder();
                 decoder.dateDecodingStrategy = .millisecondsSince1970
                 let data = savedData.data(using: .utf8);
-                if let parsedData = try? decoder.decode([String: [Module]].self, from: data!) {
-                    
-                    let currentDate = Calendar.current.component(.day, from: entryDate)
-                    let currentHour = Calendar.current.component(.hour, from: entryDate)
-                    let requestAfter = Calendar.current.date(byAdding: .hour, value: currentHour > 7 && currentHour < 16 ? 1 : 3, to: entryDate)!
-                    
-                    var lookAhead: [Date] = []
-                    for hourOffset in 0 ..< 3 {
-                      lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
-                    }
-                    
-                    let entry = SimpleEntry(date: entryDate,
-                                          lookAhead: lookAhead,
-                                            modules: parsedData[String(currentDate)] ?? [])
-                        
-                    let timeline = Timeline(entries: [entry], policy: .after(requestAfter))
-                    completion(timeline)
+                let parsedData = try? decoder.decode([String: [Module]].self, from: data!)
+                
+                let currentDate = Calendar.current.component(.day, from: entryDate)
+                let currentHour = Calendar.current.component(.hour, from: entryDate)
+                let requestAfter = Calendar.current.date(byAdding: .hour, value: currentHour > 7 && currentHour < 16 ? 1 : 3, to: entryDate)!
+                
+                var lookAhead: [Date] = []
+                for hourOffset in 0 ..< 3 {
+                  lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
                 }
+              
+                let modules = parsedData?[String(currentDate)];
+                
+                let entry = SimpleEntry(date: entryDate,
+                                      lookAhead: lookAhead,
+                                        modules: (modules ?? [])!)
+                    
+                let timeline = Timeline(entries: [entry], policy: .after(requestAfter))
+                completion(timeline)
+                
             } else {
                 var lookAhead: [Date] = []
                 let entryDate = Date()
@@ -133,10 +137,23 @@ extension Date {
 
 }
 
-enum Status: Decodable {
+enum Status: String, Decodable {
   case changed
   case cancelled
   case normal
+  
+  init(from decoder: Decoder) throws {
+    let label = try decoder.singleValueContainer()
+    .decode(String.self)
+
+    switch label {
+      case "changed": self = .changed;
+      case "cancelled": self = .cancelled;
+      case "normal": self = .normal;
+      default:
+        self = .normal;
+    }
+  }
 }
 
 struct Module: Decodable {
@@ -191,16 +208,16 @@ struct widgetEntryView : View {
     }
     
     var body: some View {
-      if #available(iOSApplicationExtension 17.0, *) {
+      if #available(iOSApplicationExtension 17.0, *), (entry.lookAhead.count > 0) {
         VStack {
           HStack(spacing: 0) {
-            Text(entry.lookAhead.first!.dayOfWeek()!)
+            Text((entry.lookAhead.first ?? Date()).dayOfWeek()!)
               .font(.system(size: 9))
               .fontWeight(.heavy)
             
             Spacer()
             
-            Text(entry.lookAhead.first!.formatted(date: .numeric, time: .omitted))
+            Text((entry.lookAhead.first ?? Date()).formatted(date: .numeric, time: .omitted))
               .font(.system(size: 9))
               .fontWeight(.regular)
           }
@@ -307,7 +324,10 @@ struct widgetEntryView : View {
         }.containerBackground(for: .widget, content: {Color("AccentColor")})
         
     } else {
-        Text(entry.date, style: .time)
+      VStack {
+        Text("Der opstod en fejl")
+          .multilineTextAlignment(.center)
+      }.containerBackground(for: .widget, content: {Color("AccentColor")})
     };
   }
 }
@@ -338,43 +358,39 @@ struct widget_Previews: PreviewProvider {
                                              modules: [], error: true);
       
       let userDefaults = UserDefaults.init(suiteName: "group.com.tandhjulet.lectio360.widget");
-      print("userdef")
       if(userDefaults != nil) {
-          print("!= nil")
-          let entryDate = Date()
-          if let savedData = userDefaults!.value(forKey: "skema") as? String {
-              print("savedData:", savedData)
-            
-              let decoder = JSONDecoder();
-              decoder.dateDecodingStrategy = .millisecondsSince1970
-              let data = savedData.data(using: .utf8);
-              if let parsedData = try? decoder.decode([String: [Module]].self, from: data!) {
-                  print("parsedData:", parsedData)
+        let entryDate = Date()
+        let currentDate = Calendar.current.component(.day, from: entryDate)
+        
+        let savedData = """
+{"17":[{"_id":"/lectio/572/privat_aftale.aspx?aftaleid=66603340451&amp;prevurl=SkemaNy.aspx%3fweek%3d252024:1","end":1718578838781,"start":1718575298781,"left":0,"width":1,"status":"normal","title":"test"}],"18":[{"_id":"/lectio/572/privat_aftale.aspx?aftaleid=66603340451&amp;prevurl=SkemaNy.aspx%3fweek%3d252024:0","end":1718578838781,"start":1718575298781,"left":0,"width":1,"status":"normal","title":"test"}],"19":[],"20":[],"21":[]}
+"""
+
+        let decoder = JSONDecoder();
+        decoder.dateDecodingStrategy = .millisecondsSince1970
+        let data = savedData.data(using: .utf8);
+        let parsedData = try? decoder.decode([String: [Module]].self, from: data!)
+        
+        var lookAhead: [Date] = []
+        for hourOffset in 0 ..< 3 {
+          lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
+        }
+        
+        
+        if parsedData != nil {
+          let modules = parsedData?[String(currentDate)]
+                    
+          entry = SimpleEntry(date: Date(),
+                                lookAhead: lookAhead,
+                              modules: (modules ?? [])!, error: false)
+        } else {
+          print("nil")
+        }
                   
-                  let currentDate = Calendar.current.component(.day, from: entryDate)
-                  
-                  var lookAhead: [Date] = []
-                  for hourOffset in 0 ..< 3 {
-                    lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
-                  }
-                  
-                  entry = SimpleEntry(date: entryDate,
-                                        lookAhead: lookAhead,
-                                          modules: parsedData[String(currentDate)] ?? [])
-                      
-              }
-          } else {
-              var lookAhead: [Date] = []
-              let entryDate = Date()
-            
-              for hourOffset in 0 ..< 3 {
-                lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
-              }
-            
-              entry = SimpleEntry(date: entryDate,
-                                    lookAhead: lookAhead,
-                                    modules: [])
-          }
+        //entry = SimpleEntry(date: entryDate,
+        //                      lookAhead: lookAhead,
+        //                        modules: parsedData[String(currentDate)] ?? [])
+          
       } else {
           entry = SimpleEntry(date: Date(),
                                 lookAhead: [],
