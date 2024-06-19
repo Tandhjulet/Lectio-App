@@ -48,7 +48,13 @@ function findExtremumDates(moduler: Modul[], fallbackValues: {
             smallest = modul.timeSpan;
         }
 
-        if(modul.timeSpan.endNum > biggest.endNum) {
+        if(modul.timeSpan.end.split(" ")[0] != modul.timeSpan.start.split(" ")[0]) {
+            biggest = {
+                ...modul.timeSpan,
+                endNum: 2359,
+            }
+        }
+        else if(modul.timeSpan.endNum > biggest.endNum) {
             biggest = modul.timeSpan;
         }
     })
@@ -92,6 +98,7 @@ function hoursBetweenDates(dates: {
 
     const out: number[] = [];
     for(let i = min.getHours()-padding; i <= max.getHours()+padding; i++) {
+        if(i < 0 || i > 24) continue;
         out.push(i);
     }
 
@@ -219,7 +226,9 @@ export default function Skema({ navigation, route }: {
                 setRateLimited(payload === undefined)
             }, route?.params?.user)
 
-            if(res && (Math.abs(loadDate.valueOf() - new Date().valueOf()) < Timespan.WEEK)) saveCurrentSkema(res.days)
+            if(res && (Math.abs(loadDate.valueOf() - new Date().valueOf()) < Timespan.WEEK)) {
+                saveCurrentSkema(res.days)
+            }
         })();
 
     }, [loadDate])
@@ -465,6 +474,7 @@ export default function Skema({ navigation, route }: {
     const { width } = Dimensions.get('screen');
 
     const pagerRef = useRef<PagerView>(null);
+    const scrollView = useRef<ScrollView>(null)
 
     const scheme = useColorScheme();
     const theme = useMemo(() => themes[scheme ?? "dark"], [scheme]);
@@ -911,7 +921,7 @@ export default function Skema({ navigation, route }: {
                             flex: 1,
                         }} refreshControl={
                             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                        } scrollEnabled>
+                        } scrollEnabled ref={scrollView}>
                             <View style={{
                                 paddingTop: 20,
                             }} />
@@ -1041,6 +1051,10 @@ export default function Skema({ navigation, route }: {
                                                     zIndex: 5,
 
                                                     top: calculateTop(modulTiming)
+                                                }} onLayout={() => {
+                                                    if(index === modulTimings.length-1){
+                                                        scrollView.current?.scrollTo({y: calculateTop(modulTiming), animated: true})
+                                                    }
                                                 }}>
                                                     {modulTiming.diff > 60 && (
                                                         <View style={{
@@ -1085,9 +1099,15 @@ export default function Skema({ navigation, route }: {
                                             {skema && skema[dayNum - 1].moduler.map((modul, index) => {
                                                 const {
                                                     width,
-                                                    height,
                                                     left,
                                                 } = modul;
+
+                                                const lectioHeight = modul.height;
+
+                                                let height = modul.timeSpan.diff
+                                                if(modul.timeSpan.end.startsWith(selectedDay.getDate().toString().padStart(2, "0")) && modul.timeSpan.start.split(" ")[0] != modul.timeSpan.end.split(" ")[0]) {
+                                                    height = lectioHeight;
+                                                }
 
                                                 const widthNum = parseInt(width.replace("%", ""));
                                                 //const widthNum = 25;

@@ -32,15 +32,16 @@ export function scrapeSchema(parser: any, raw: string): Week | null {
 }
 
 const formatDate = (date: Date) => {
-    return date.getHours().toString().padStart(2, "0") + ":" + date.getMinutes().toString().padStart(2, "0");
+    return date.toLocaleString("da-DK", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+    }).replace(".", "/").replace(".", ":");
 }
 
-function differenceBetweenDates(date1: Date, date2: Date) {
-    const hours = date1.getHours() - date2.getHours();
-    const minutes = date1.getMinutes() - date2.getMinutes();
-
-    const out = minutes + hours*60;
-    return out;
+function differenceBetweenDates(start: Date, end: Date) {
+    return Math.min(Math.abs(start.valueOf() - end.valueOf()) / 1000 / 60, 60*24);
 }
 
 
@@ -136,20 +137,14 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
         const lektier = parseLektieNote(modul.attributes.href, raw);
 
         let timeSpan: [Date, Date];
-        const regExpTimespan = modul.text.match(new RegExp('\\d{2}:\\d{2}', "gm"));
+        const text: string = modul.text;
+        let regex = text.match(/(\d{1,2}\/\d{1,2}-\d{4} \d{2}:\d{2})/gm)
+        if((regex?.length ?? 1) < 2) {
+            regex = text.match(/(\d{2}:\d{2})/gm)
+        }
 
-        if(regExpTimespan != null && regExpTimespan.length >= 2) {
-
-            const start = new Date();
-            const end = new Date();
-
-            start.setHours(parseInt(regExpTimespan[0].split(":")[0]))
-            start.setMinutes(parseInt(regExpTimespan[0].split(":")[1]))
-
-            end.setHours(parseInt(regExpTimespan[1].split(":")[0]))
-            end.setMinutes(parseInt(regExpTimespan[1].split(":")[1]))
-
-            timeSpan = [start, end];
+        if(regex && regex.length >= 2) { 
+            timeSpan = [parseFullDate(regex[0]), parseFullDate(regex[1])]
         } else {
             timeSpan = getModuleDate(table)[moduleNum];
         }
@@ -194,13 +189,13 @@ function parseDay(htmlObject: any, table: any, dayNum: number, raw: string): Day
             comment: parsedIcons.comment,
             
             timeSpan: {
-                end: startNum > endNum ? formatDate(timeSpan[1]) : formatDate(timeSpan[0]),
+                start: formatDate(timeSpan[0]),
                 startNum: startNum > endNum ? endNum : startNum,
-    
-                start: startNum > endNum ? formatDate(timeSpan[0]) : formatDate(timeSpan[1]),
+
+                end: formatDate(timeSpan[1]),
                 endNum: startNum > endNum ? startNum : endNum,
     
-                diff: differenceBetweenDates(timeSpan[1], timeSpan[0]),
+                diff: differenceBetweenDates(timeSpan[0], timeSpan[1]),
             },
 
             width,
@@ -264,6 +259,21 @@ function scrapeLayout(modul: any): {
 
     // @ts-ignore
     return out;
+}
+
+export function parseFullDate(date: string): Date {
+    let today = new Date();
+
+    try {
+        try {
+            today.setFullYear(parseInt(date.split("-")[1].split(" ")[0]), parseInt(date.split("/")[1].split("-")[0])-1, parseInt(date.split("/")[0]))
+        } catch {}
+        const index = date.includes(" ") ? 1 : 0;
+        today.setHours(parseInt(date.split(" ")[index].split(":")[0]))
+        today.setMinutes(parseInt(date.split(" ")[index].split(":")[1]))
+    } catch {}
+
+    return today;
 }
 
 function parseDate(dateString: string): Date {
