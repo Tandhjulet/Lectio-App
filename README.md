@@ -9,6 +9,9 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectio 360. Jeg h
 
 ### __MELLEM__
 - push notifs
+- widget:
+    - widget der starter før slut, og slutter efter
+    - widget UI rework, større tekst, tilføjelse af start/slut, etc.
 
 ### __LAV__
 - spørgeskemaer
