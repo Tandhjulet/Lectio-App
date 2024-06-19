@@ -212,13 +212,13 @@ struct widgetEntryView : View {
         VStack {
           HStack(spacing: 0) {
             Text((entry.lookAhead.first ?? Date()).dayOfWeek()!)
-              .font(.system(size: 9))
+              .font(.system(size: 11))
               .fontWeight(.heavy)
             
             Spacer()
             
             Text((entry.lookAhead.first ?? Date()).formatted(date: .numeric, time: .omitted))
-              .font(.system(size: 9))
+              .font(.system(size: 10))
               .fontWeight(.regular)
           }
           
@@ -245,9 +245,27 @@ struct widgetEntryView : View {
                             .frame(width: module.left * geo.size.width, height: 0)
                           
                           ZStack(alignment: .topLeading) {
+                            HStack {
+                              Rectangle()
+                                .fill(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
+                                .clipShape(
+                                  .rect(
+                                    topLeadingRadius: module.start > entry.lookAhead.first! ? 3 : 0,
+                                    bottomLeadingRadius: 3,
+                                    style: .continuous
+                                  )
+                                )
+                                .frame(
+                                  width: 3,
+                                  height: .infinity
+                                )
+                              
+                                Spacer()
+                            }
+                            
                             Rectangle()
                               .fill(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
-                              .opacity(1)
+                              .opacity(0.5)
                               .clipShape(
                                 .rect(
                                   topLeadingRadius: module.start > entry.lookAhead.first! ? 3 : 0,
@@ -262,13 +280,21 @@ struct widgetEntryView : View {
                               )
                             
                             if(calculateHeight(start: module.start, end: module.end) * geo.size.height > 10+4*2) {
-                              ZStack {
-                                Text(module.title)
-                                  .font(.system(size: 9, weight: .bold))
+                              ZStack() {
+                                VStack(alignment: .leading, spacing: 0) {
+                                  Text(module.title)
+                                    .font(.system(size:12, weight: .bold))
+                                    .opacity(1)
+                                    .multilineTextAlignment(.leading)
+                                    .minimumScaleFactor(0.6)
+                                  
+                                  Text(module.start.formatted(date: .omitted, time: .shortened) + (module.width >= 0.8 ? " \u{2022} " : "\n") + module.end.formatted(date: .omitted, time: .shortened))
+                                  .font(.system(size: 10))
                                   .multilineTextAlignment(.leading)
-                                  .foregroundStyle(Color.white)
-                                  .minimumScaleFactor(0.6)
-                              }.padding(4)
+                                  .lineLimit(2, reservesSpace: true)
+                                  
+                                }
+                              }.padding(EdgeInsets(top: 4, leading: 8, bottom: 8, trailing: 4))
                             }
                           }
                           .frame(width: module.width * geo.size.width, height: calculateHeight(start: module.start, end: module.end) * geo.size.height)
@@ -369,7 +395,7 @@ struct widget_Previews: PreviewProvider {
         let decoder = JSONDecoder();
         decoder.dateDecodingStrategy = .millisecondsSince1970
         let data = savedData.data(using: .utf8);
-        let parsedData = try? decoder.decode([String: [Module]].self, from: data!)
+        let parsedData = ["19": [Module(start: Calendar.current.date(byAdding: .hour, value: 0, to: Date())!, end: Calendar.current.date(byAdding: .hour, value: 1, to: Date())!, title: "test", status: .normal, _id: "123", width:0.8, left: 0)]]
         
         var lookAhead: [Date] = []
         for hourOffset in 0 ..< 3 {
@@ -377,16 +403,12 @@ struct widget_Previews: PreviewProvider {
         }
         
         
-        if parsedData != nil {
-          let modules = parsedData?[String(currentDate)]
-                    
-          entry = SimpleEntry(date: Date(),
-                                lookAhead: lookAhead,
-                              modules: (modules ?? [])!, error: false)
-        } else {
-          print("nil")
-        }
+        let modules = parsedData[String(currentDate)]
                   
+        entry = SimpleEntry(date: Date(),
+                              lookAhead: lookAhead,
+                            modules: modules!, error: false)
+  
         //entry = SimpleEntry(date: entryDate,
         //                      lookAhead: lookAhead,
         //                        modules: parsedData[String(currentDate)] ?? [])
