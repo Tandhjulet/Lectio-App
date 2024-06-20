@@ -287,11 +287,13 @@ struct widgetEntryView : View {
                                     .opacity(1)
                                     .multilineTextAlignment(.leading)
                                     .minimumScaleFactor(0.6)
+                                    .foregroundStyle(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
                                   
                                   Text(module.start.formatted(date: .omitted, time: .shortened) + (module.width >= 0.8 ? " \u{2022} " : "\n") + module.end.formatted(date: .omitted, time: .shortened))
                                   .font(.system(size: 10))
                                   .multilineTextAlignment(.leading)
-                                  .lineLimit(2, reservesSpace: true)
+                                  .lineLimit(2)
+                                  .foregroundStyle(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
                                   
                                 }
                               }.padding(EdgeInsets(top: 4, leading: 8, bottom: 8, trailing: 4))
