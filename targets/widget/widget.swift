@@ -279,7 +279,8 @@ struct widgetEntryView : View {
                                 width: .infinity, height: .infinity
                               )
                             
-                            if(calculateHeight(start: module.start, end: module.end, lookAhead: entry.lookAhead) * geo.size.height > 10+4*2) {
+                            let height = calculateHeight(start: module.start, end: module.end, lookAhead: entry.lookAhead) * geo.size.height;
+                            if(height > 10 + 4*2) {
                               ZStack() {
                                 VStack(alignment: .leading, spacing: 0) {
                                   Text(module.title)
@@ -289,11 +290,14 @@ struct widgetEntryView : View {
                                     .minimumScaleFactor(0.6)
                                     .foregroundStyle(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
                                   
-                                  Text(module.start.formatted(date: .omitted, time: .shortened) + (module.width >= 0.8 ? " \u{2022} " : "\n") + module.end.formatted(date: .omitted, time: .shortened))
-                                  .font(.system(size: 10))
-                                  .multilineTextAlignment(.leading)
-                                  .lineLimit(2)
-                                  .foregroundStyle(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
+                                  if(height > 20 + 4*2) {
+                                    Text(module.start.formatted(date: .omitted, time: .shortened) + (module.width >= 0.8 ? " \u{2022} " : "\n") + module.end.formatted(date: .omitted, time: .shortened))
+                                    .font(.system(size: 10))
+                                    .minimumScaleFactor(0.6)
+                                    .multilineTextAlignment(.leading)
+                                    .lineLimit(2)
+                                    .foregroundStyle(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
+                                  }
                                   
                                 }
                               }.padding(EdgeInsets(top: 4, leading: 8, bottom: 8, trailing: 4))
@@ -392,7 +396,7 @@ struct widget_Previews: PreviewProvider {
       let entryDate = Date()
       let currentDate = Calendar.current.component(.day, from: entryDate)
 
-      let parsedData = ["20": [Module(start: Calendar.current.date(byAdding: .hour, value: -1, to: Date())!, end: Calendar.current.date(byAdding: .hour, value: 3, to: Date())!, title: "test", status: .normal, _id: "123", width: 1, left: 0)]]
+      let parsedData = ["20": [Module(start: Calendar.current.date(byAdding: .hour, value: 0, to: Date())!, end: Calendar.current.date(byAdding: .minute, value: 80, to: Date())!, title: "test", status: .normal, _id: "123", width: 1, left: 0)]]
       
       var lookAhead: [Date] = []
       for hourOffset in 0 ..< 3 {
