@@ -279,7 +279,7 @@ struct widgetEntryView : View {
                                 width: .infinity, height: .infinity
                               )
                             
-                            if(calculateHeight(start: module.start, end: module.end) * geo.size.height > 10+4*2) {
+                            if(calculateHeight(start: module.start, end: module.end, lookAhead: entry.lookAhead) * geo.size.height > 10+4*2) {
                               ZStack() {
                                 VStack(alignment: .leading, spacing: 0) {
                                   Text(module.title)
@@ -297,7 +297,7 @@ struct widgetEntryView : View {
                               }.padding(EdgeInsets(top: 4, leading: 8, bottom: 8, trailing: 4))
                             }
                           }
-                          .frame(width: module.width * geo.size.width, height: calculateHeight(start: module.start, end: module.end) * geo.size.height)
+                          .frame(width: module.width * geo.size.width, height: calculateHeight(start: module.start, end: module.end, lookAhead: entry.lookAhead) * geo.size.height)
                           
                           Spacer(minLength: 0)
                         }
@@ -371,9 +371,12 @@ struct widget: Widget {
     }
 }
 
-func calculateHeight(start: Date, end: Date) -> CGFloat {
-  let compareTo: Date = start < Date() ? Date() : start;
-  let diff = (end - compareTo) / (60*60*2);
+func calculateHeight(start: Date, end: Date, lookAhead: [Date]) -> CGFloat {
+  let compareStart: Date = start < lookAhead.first! ? lookAhead.first! : start;
+  let compareEnd: Date = end > lookAhead.last! ? lookAhead.last! : end;
+  
+  print(compareStart.formatted(), compareEnd.formatted())
+  let diff = (compareEnd - compareStart) / (60*60*2);
   return diff;
 }
 
@@ -383,41 +386,28 @@ struct widget_Previews: PreviewProvider {
                                            lookAhead: [],
                                              modules: [], error: true);
       
-      let userDefaults = UserDefaults.init(suiteName: "group.com.tandhjulet.lectio360.widget");
-      if(userDefaults != nil) {
-        let entryDate = Date()
-        let currentDate = Calendar.current.component(.day, from: entryDate)
-        
-        let savedData = """
-{"17":[{"_id":"/lectio/572/privat_aftale.aspx?aftaleid=66603340451&amp;prevurl=SkemaNy.aspx%3fweek%3d252024:1","end":1718578838781,"start":1718575298781,"left":0,"width":1,"status":"normal","title":"test"}],"18":[{"_id":"/lectio/572/privat_aftale.aspx?aftaleid=66603340451&amp;prevurl=SkemaNy.aspx%3fweek%3d252024:0","end":1718578838781,"start":1718575298781,"left":0,"width":1,"status":"normal","title":"test"}],"19":[],"20":[],"21":[]}
-"""
 
-        let decoder = JSONDecoder();
-        decoder.dateDecodingStrategy = .millisecondsSince1970
-        let data = savedData.data(using: .utf8);
-        let parsedData = ["19": [Module(start: Calendar.current.date(byAdding: .hour, value: 0, to: Date())!, end: Calendar.current.date(byAdding: .hour, value: 1, to: Date())!, title: "test", status: .normal, _id: "123", width:0.8, left: 0)]]
-        
-        var lookAhead: [Date] = []
-        for hourOffset in 0 ..< 3 {
-          lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
-        }
-        
-        
-        let modules = parsedData[String(currentDate)]
-                  
-        entry = SimpleEntry(date: Date(),
-                              lookAhead: lookAhead,
-                            modules: modules!, error: false)
+      let entryDate = Date()
+      let currentDate = Calendar.current.component(.day, from: entryDate)
+
+      let parsedData = ["20": [Module(start: Calendar.current.date(byAdding: .hour, value: -1, to: Date())!, end: Calendar.current.date(byAdding: .hour, value: 3, to: Date())!, title: "test", status: .normal, _id: "123", width: 1, left: 0)]]
+      
+      var lookAhead: [Date] = []
+      for hourOffset in 0 ..< 3 {
+        lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
+      }
+      
+      
+      let modules = parsedData[String(currentDate)]
+                
+      entry = SimpleEntry(date: Date(),
+                            lookAhead: lookAhead,
+                          modules: (modules ?? [])!, error: false)
   
         //entry = SimpleEntry(date: entryDate,
         //                      lookAhead: lookAhead,
         //                        modules: parsedData[String(currentDate)] ?? [])
-          
-      } else {
-          entry = SimpleEntry(date: Date(),
-                                lookAhead: [],
-                                  modules: [], error: true)
-      }
+
       
       return entry;
     }
