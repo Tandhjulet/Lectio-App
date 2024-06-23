@@ -6,7 +6,6 @@ import { secureGet, getUnsecure } from "../../modules/api/Authentication";
 import { hexToRgb, Theme, themes } from "../../modules/Themes";
 import { AbsenceReason, AbsenceRegistration, AbsenceType, Fag, ModuleAbsence, Registration, postRegistration } from "../../modules/api/scraper/AbsenceScraper";
 import RateLimit from "../../components/RateLimit";
-import { VictoryChart, VictoryContainer, VictoryLabel, VictoryPie, VictoryTheme } from "victory-native";
 import PagerView, { PagerViewOnPageScrollEventData } from "react-native-pager-view";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { BottomSheetModal, BottomSheetModalProvider, BottomSheetScrollView, BottomSheetTextInput } from "@gorhom/bottom-sheet";

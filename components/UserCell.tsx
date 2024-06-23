@@ -169,12 +169,12 @@ export default function UserCell() {
                 }}
 
                 style={{
-                    borderRadius: 999,
+                    borderRadius: borderRadius ? 999 : 0,
                 }}
             >
                 <Image
                     style={{
-                        borderRadius: 999,
+                        borderRadius: borderRadius ? 999 : 0,
                         width: size,
                         height: size,
                     }}
