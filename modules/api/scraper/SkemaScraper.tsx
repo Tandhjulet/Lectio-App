@@ -258,7 +258,8 @@ function scrapeLayout(modul: any): {
                 property -= 8.8;
             }
 
-            out[v] = round((property / parentWidth) * 1.0787989 * 100) + "%";
+            //out[v] = round((property / parentWidth) * 1.0787989 * 100) + "%";
+            out[v] = (property / parentWidth) * 1.0787989 * 100 + "%";
         }
     })
 
