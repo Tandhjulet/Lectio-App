@@ -38,6 +38,24 @@ struct Provider: TimelineProvider {
               for hourOffset in 0 ..< 3 {
                 lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
               }
+              
+              if(parsedData != nil) {
+                  let lastDate = Array(parsedData!.values).last
+                  let endDate = lastDate?.last?.end
+                  
+                  // if now is greater than the latest data entry,
+                  // then no data is available
+                  if(endDate != nil && entryDate > endDate!) {
+                      // since this is a snapshot, we dont want it to look bad.
+                      // therefor we just act like we have data:
+                      let entry = SimpleEntry(date: entryDate,
+                                            lookAhead: lookAhead,
+                                              modules: [])
+                          
+                      completion(entry)
+                      return;
+                  }
+              }
             
               let modules = parsedData?[String(currentDate)]
               
