@@ -42,7 +42,7 @@ export default function Mere({ navigation }: {navigation: any}) {
             const prof = await getProfile()
             setProfile(prof);
             
-            const { valid, endDate, freeTrial } = await hasSubscription(true);
+            const { valid, endDate, freeTrial } = await hasSubscription();
             setGym((await secureGet("gym")))
 
             if(freeTrial && valid) {

@@ -1,4 +1,5 @@
-import { saveUnsecure, secureGet, secureSave } from "../modules/api/Authentication";
+import { fetch as FetchNet } from "@react-native-community/netinfo";
+import { getUnsecure, saveUnsecure, secureGet, secureSave } from "../modules/api/Authentication";
 import { SCRAPE_URLS } from "../modules/api/scraper/Helpers";
 import { getProfile } from "../modules/api/scraper/Scraper";
 
@@ -29,23 +30,20 @@ export default async function receiptValid(receipt: string): Promise<boolean> {
         body: body,
     })
 
-
-    if(res.status != 200) return false;
-    // if problem occurs dont finish the transaction
+    // if a problem occurs dont finish the transaction
     // as the subscription probably wont be persisted.
+    if(res.status != 200) return false;
 
     const json = await res.json();
-    if(json.code !== "OK") return false;
-
-    await saveUnsecure("subscriptionEndDate", {date: json.endDate});
-    
-    return true;
+    return (json.code === "OK");
 }
 
-export async function hasSubscription(save: boolean = true): Promise<ValidationResponse> {
-    return {
-        valid: true,
+export async function hasSubscription(): Promise<ValidationResponse> {
+    const saved: ValidationResponse = await getUnsecure("subscription");
+    if(!(await FetchNet()).isConnected) {
+        return saved ? saved : {valid: false};
     }
+
     const profile = await getProfile();
     const { gymNummer } = await secureGet("gym")
 
@@ -63,13 +61,12 @@ export async function hasSubscription(save: boolean = true): Promise<ValidationR
         body: body,
     })
 
-    if(res.status != 200) return {
-        valid: null,
+    if(res.status != 200) {
+        return saved ? saved : {valid: false}
     };
 
     const json: ValidationResponse = await res.json();
-    if(save)
-        await saveUnsecure("subscriptionEndDate", {date: json.endDate})
+    await saveUnsecure("subscription", json)
 
     json.endDate && (json.endDate = new Date(json.endDate))
 
