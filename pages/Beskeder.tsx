@@ -895,7 +895,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                                     return (
                                         [
                                             {
-                                                editDate: "i dag, " + now.getHours() + ":" + now.getMinutes(),
+                                                editDate: "i dag, " + now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0"),
                                                 sender: profile == null ? "Ukendt" : profile.name,
                                                 title: title,
                                                 unread: false,

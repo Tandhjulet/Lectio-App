@@ -99,12 +99,12 @@ export default function BeskedView({ navigation, route }: {
     const renderMessages = useMemo(() => {
         return threadMessages?.map((message: ThreadMessage, i: number) => (
             <View key={i} style={{
+                maxWidth: "100%",
                 display: "flex",
                 flexDirection: "row",
 
                 gap: 10,
                 marginTop: i === 0 ? 0 : 20,
-                paddingRight: 10,
             }}>
                 <ProfilePicture
                     navn={message.sender}
@@ -117,7 +117,7 @@ export default function BeskedView({ navigation, route }: {
                 <View style={{
                     flexDirection: "column",
                     gap: 5,
-                    flexGrow: 1,
+                    flex: 1,
                 }}>
                     <View style={{
                         paddingBottom: 10,
@@ -239,18 +239,21 @@ export default function BeskedView({ navigation, route }: {
 
                             gap: 5,
                             alignItems: "center",
+                            overflow: "hidden",
                         }} onPress={() => {
                             openFile(file);
                         }}>
                             {file.inner && findIcon(getUrlExtension(file.inner))}
 
                             <Text style={{
-                                color: scheme === "dark" ? "lightblue" : "darkblue"
-                            }}>
+                                color: scheme === "dark" ? "lightblue" : "darkblue",
+                                maxWidth: "90%",
+                            }} ellipsizeMode="middle" numberOfLines={2}>
                                 {file.inner}
                             </Text>
                         </TouchableOpacity>
                     ))}
+                    
                 </View>
             </View>
         ))
