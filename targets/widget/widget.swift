@@ -23,7 +23,7 @@ struct Provider: TimelineProvider {
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
       
-      let userDefaults = UserDefaults.init(suiteName: "group.com.tandhjulet.lectio360.widget");
+      let userDefaults = UserDefaults.init(suiteName: "group.com.tandhjulet.lectimate.widget");
       if(userDefaults != nil) {
           let entryDate = Date()
           if let savedData = userDefaults!.value(forKey: "skema") as? String {
@@ -69,7 +69,7 @@ struct Provider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        let userDefaults = UserDefaults.init(suiteName: "group.com.tandhjulet.lectio360.widget");
+        let userDefaults = UserDefaults.init(suiteName: "group.com.tandhjulet.lectimate.widget");
         if(userDefaults != nil) {
             let entryDate = Date()
             if let savedData = userDefaults!.value(forKey: "skema") as? String {

@@ -12,7 +12,7 @@ import { abort } from "../modules/api/scraper/class/PeopleList";
 import { BottomSheetModal, BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { hasSubscription } from "../components/Lectio360API";
+import { hasSubscription } from "../components/LectimateAPI";
 import { SubscriptionContext } from "../modules/Sub";
 import { useFocusEffect } from "@react-navigation/native";
 import { IdentificationIcon } from "react-native-heroicons/outline";
@@ -80,7 +80,7 @@ export default function Mere({ navigation }: {navigation: any}) {
     const subscriptionTitle: () => string = () => {
         // @ts-ignore
         if(subscriptionState?.serverDown)
-            return "Lectio 360' server er nede"
+            return "Lectimate' server er nede"
 
         if(subscriptionState?.freeTrial)
             return "Din prøveperiode er aktiv"
@@ -98,7 +98,7 @@ export default function Mere({ navigation }: {navigation: any}) {
             return "Udløber d. " + (endDate?.toLocaleDateString() ?? "ukendt dato")
 
         // @ts-ignore
-        return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate?.toLocaleDateString() ?? "ukendt dato") : "Et abonnement giver ubegrænset adgang til Lectio 360";
+        return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate?.toLocaleDateString() ?? "ukendt dato") : "Et abonnement giver ubegrænset adgang til Lectimate";
     }
 
     const scheme = useColorScheme();
@@ -416,7 +416,7 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                             <Cell
                                 cellStyle="Basic"
-                                title={"Kontakt Lectio 360"}
+                                title={"Kontakt Lectimate"}
 
                                 titleTextColor={theme.WHITE}
                                 titleTextStyle={{
@@ -449,7 +449,7 @@ For at kunne hjælpe dig har vi brug for lidt information:
                                     MailComposer.composeAsync({
                                         subject: "Kontakt",
                                         body: body,
-                                        recipients: ["hello@lectio360.com"]
+                                        recipients: ["kontakt@lectimate.com"]
                                     })
 
                                     

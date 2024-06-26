@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Lectio 360",
-    "slug": "lectio360",
+    "name": "Lectimate",
+    "slug": "lectimate",
     "version": "1.2.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,9 +17,9 @@
         "usesNonExemptEncryption": false
       },
       "entitlements": {
-        "com.apple.security.application-groups": ["group.com.tandhjulet.lectio360.widget"]
+        "com.apple.security.application-groups": ["group.com.tandhjulet.lectimate.widget"]
       },
-      "bundleIdentifier": "com.tandhjulet.lectio360",
+      "bundleIdentifier": "com.tandhjulet.lectimate",
       "buildNumber": "21"
     },
     "plugins": [
@@ -44,7 +44,7 @@
       }
     },
     "android": {
-      "package": "com.tandhjulet.lectio360"
+      "package": "com.tandhjulet.lectimate"
     }
   }
 }

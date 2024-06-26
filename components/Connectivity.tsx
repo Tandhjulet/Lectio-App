@@ -19,7 +19,7 @@ export default function Connectivity() {
     return {
         isConnected,
         noConnectionUIError: <UIError details={[
-            "Du har ingen internetforbindelse! Lectio 360 kræver en internetforbindelse for at tilgå Lectio, dog kan du fortsat se gemte informationer!",
+            "Du har ingen internetforbindelse! Lectimate kræver en internetforbindelse for at tilgå Lectio, dog kan du fortsat se gemte informationer!",
         ]} deps={[show]} setDep={[setShow]} />,
         showUIError,
     }

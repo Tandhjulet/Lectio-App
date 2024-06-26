@@ -114,7 +114,7 @@ export default function LandingPage({
     const theme = themes[scheme ?? "dark"];
 
     const bannerItems = useRef([
-        <BannerItem theme={theme} title="Karakterer" description="Lectio 360 udregner automatisk dit vægtede gennemsnit!" />,
+        <BannerItem theme={theme} title="Karakterer" description="Lectimate udregner automatisk dit vægtede gennemsnit!" />,
         <BannerItem theme={theme} title="Skemaoversigt" description="Se en detaljeret oversigt over dit skema, for et effektivt overblik af din hverdag!" />,
         <BannerItem theme={theme} title="Fravær" description="Skab overblik over dit fravær, med en detaljeret rapport!" />,
         <BannerItem theme={theme} title="Indbakke" description="Send og modtag beskeder, så du kan holde dig ajour!" />,
@@ -185,7 +185,7 @@ export default function LandingPage({
                     fontWeight: "900",
                     paddingHorizontal: 20,
                 }} adjustsFontSizeToFit minimumFontScale={0.01} numberOfLines={1}>
-                    Velkommen til Lectio 360
+                    Velkommen til Lectimate
                 </Text>
 
                 <Text style={{
@@ -307,9 +307,9 @@ export default function LandingPage({
                     textAlign: "center",
                     textAlignVertical: "center",
                 }}>
-                    Ved at bruge Lectio 360 accepterer du vores{" "}
+                    Ved at bruge Lectimate accepterer du vores{" "}
                     <Text onPress={() => {
-                        WebBrowser.openBrowserAsync("https://lectio360.dk/eula", {
+                        WebBrowser.openBrowserAsync("https://lectimate.com/eula", {
                             controlsColor: theme.ACCENT.toString(),
                             dismissButtonStyle: "close",
                             presentationStyle: WebBrowser.WebBrowserPresentationStyle.POPOVER,
@@ -324,7 +324,7 @@ export default function LandingPage({
                     </Text>
                     {" og "}
                     <Text onPress={() => {
-                        WebBrowser.openBrowserAsync("https://lectio360.dk/privatliv", {
+                        WebBrowser.openBrowserAsync("https://lectimate.com/privatliv", {
                             controlsColor: theme.ACCENT.toString(),
                             dismissButtonStyle: "close",
                             presentationStyle: WebBrowser.WebBrowserPresentationStyle.POPOVER,

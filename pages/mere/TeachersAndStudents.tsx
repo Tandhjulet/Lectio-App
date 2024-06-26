@@ -206,7 +206,7 @@ export default function TeachersAndStudents({ navigation }: {
                                     letterSpacing: 0.2,
                                     fontSize: 12,
                                 }}>
-                                    Eftersom det er en af de første gange du åbner appen, er Lectio 360 stadig i gang med at hente skolens elever og lærere fra Lectio.
+                                    Eftersom det er en af de første gange du åbner appen, er Lectimate stadig i gang med at hente skolens elever og lærere fra Lectio.
                                     Dette gøres i baggrunden mens appen er åben, og tager sjældent længere end et minut.
                                     {"\n\n"}
                                     Det kan være nødvendigt at genstarte appen, for at personerne vises, hvis de er blevet indlæst.

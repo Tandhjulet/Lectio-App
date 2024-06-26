@@ -1119,7 +1119,7 @@ export default function Skema({ navigation, route }: {
                                                         onPress={() => {
                                                             if(modul.href.includes("proevehold")) {
                                                                 Alert.alert("Eksamen",
-                                                                            "Du kan desværre ikke se yderligere information om din eksamen i Lectio 360.",
+                                                                            "Du kan desværre ikke se yderligere information om din eksamen i Lectimate.",
                                                                             [
                                                                                 {
                                                                                     text: "OK",

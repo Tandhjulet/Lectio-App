@@ -17,6 +17,6 @@ module.exports = {
     },
     deploymentTarget: "17.0",
     entitlements: {
-        "com.apple.security.application-groups": ["group.com.tandhjulet.lectio360.widget"]
+        "com.apple.security.application-groups": ["group.com.tandhjulet.lectimate.widget"]
     }
 };

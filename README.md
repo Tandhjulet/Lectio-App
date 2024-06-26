@@ -12,7 +12,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 - app
     - landing side
     - test at alt er funktionelt
-- hjemmeside
+- hjemmeside 
     - installer knap skal virke
 - app store connect (^)
 

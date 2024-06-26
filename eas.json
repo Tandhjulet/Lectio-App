@@ -29,7 +29,7 @@
   "submit": {
     "production": {
       "ios": {
-        "appName": "Lectio 360"
+        "appName": "Lectimate"
       }
     }
   }

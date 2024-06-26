@@ -73,7 +73,7 @@ export default function UserSettings() {
                                     accessory="Detail"
 
                                     onPress={() => {
-                                        WebBrowser.openBrowserAsync("https://lectio360.com/privatliv", {
+                                        WebBrowser.openBrowserAsync("https://lectimate.com/privatliv", {
                                             controlsColor: theme.ACCENT.toString(),
                                             dismissButtonStyle: "close",
                                             presentationStyle: WebBrowserPresentationStyle.POPOVER,
@@ -91,7 +91,7 @@ export default function UserSettings() {
                                     accessory="Detail"
 
                                     onPress={() => {
-                                        WebBrowser.openBrowserAsync("https://lectio360.com/eula", {
+                                        WebBrowser.openBrowserAsync("https://lectimate.com/eula", {
                                             controlsColor: theme.ACCENT.toString(),
                                             dismissButtonStyle: "close",
                                             presentationStyle: WebBrowserPresentationStyle.POPOVER,

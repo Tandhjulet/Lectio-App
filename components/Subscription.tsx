@@ -208,7 +208,7 @@ export default function Subscription({
                         <Text style={{
                             color: theme.ACCENT,
                         }}>
-                            {" "}Lectio 360
+                            {" "}Lectimate
                         </Text>
                         <Text style={{
                             color: theme.WHITE,
@@ -231,7 +231,7 @@ export default function Subscription({
                         }}>
                             ubegrænset adgang
                         </Text>
-                        {" "}til Lectio 360!
+                        {" "}til Lectimate!
                     </Text>
 
                     <View style={{
@@ -250,7 +250,7 @@ export default function Subscription({
 
                         marginBottom: 20,
                     }}>
-                        Lectio 360 tilbyder følgende muligheder
+                        Lectimate tilbyder følgende muligheder
                     </Text>
 
                     

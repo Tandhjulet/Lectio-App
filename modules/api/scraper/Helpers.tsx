@@ -39,8 +39,8 @@ export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: stri
         "DOCUMENT_UPLOAD": `https://www.lectio.dk/lectio/${gymNummer}/dokumentupload.aspx`,
         "DOCUMENT_CHOOSER": `https://www.lectio.dk/lectio/${gymNummer}/documentchoosercontent.aspx?year=2023&ispublic=0&showcheckbox=0&mode=pickfile`,
 
-        "LECTIO360_SAVE_RECEIPT": `https://lectioplus.com/api/v1/save-receipt`,
-        "LECTIO360_GET": `https://lectioplus.com/api/v1/validate`,
+        "LECTIMATE_SAVE_RECEIPT": `https://lectimate.com/api/v1/save-receipt`,
+        "LECTIMATE_GET": `https://lectimate.com/api/v1/validate`,
     } as const;
 
     return _URLS;

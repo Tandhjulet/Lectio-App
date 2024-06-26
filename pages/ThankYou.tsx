@@ -68,9 +68,9 @@ export default function ThankYou({
                     flexWrap: "wrap",
                 
                 }}>
-                    Dit nye abonnement giver dig fuld adgang til Lectio 360.
+                    Dit nye abonnement giver dig fuld adgang til Lectimate.
                     {"\n\n"}
-                    Opstår der et problem med dit abonnement, kan du kontakte Lectio 360 gennem appen.
+                    Opstår der et problem med dit abonnement, kan du kontakte Lectimate gennem appen.
                 </Text>
             </View>
 
