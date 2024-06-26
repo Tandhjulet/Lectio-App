@@ -6,9 +6,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 ## Prioriteringer/mangler ved appen
 
 ### NEEDED FOR RELEASE
-- widget
-    - data >1 måned gammelt kan blive vist igen, hvis appen ikke åbnes.
-    - hvis der ikke er data gemt for den nuværende dag, skal det reflekteres i widgetet.
 - hjemmeside 
     - installer knap skal virke
 - app store connect (^)
@@ -20,4 +17,4 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 
 ### __LAV__
 - spørgeskemaer
-- ledige lokaler (https://www.lectio.dk/lectio/572/SkemaAvanceret.aspx?type=aktuellelokaler&nosubnav=1&prevurl=FindSkemaAdv.aspx)
+- ledige lokaler (https://www.lectio.dk/lectio/572/SkemaAvanceret.aspx?type=aktuellelokaler&nosubnav=1&prevurl=FindSkemaAdv.aspx) 
