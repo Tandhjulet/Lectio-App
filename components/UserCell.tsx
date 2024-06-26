@@ -16,15 +16,43 @@ const isExpoGo = Constants.appOwnership === 'expo'
 export default function UserCell() {
     const Image = (function Image({
         onLoad,
-        containerStyle,
         style = {},
         theme,
+        borderRadius,
+        source,
+
+        size,
+        big,
 
         ...props
     }: FastImageProps & {
-        containerStyle?: ViewProps
         theme: Theme,
+        borderRadius: boolean,
+
+        size: number,
+        big: boolean,
     }) {
+        if(typeof source == "object" && source.uri === "") {
+            return (
+                <View style={{
+                    width: big ? 3/4 * (size * 6) : size,
+                    height: big ? size * 6 : size,
+
+                    justifyContent: "center",
+                    alignItems: "center",
+
+                    borderRadius: borderRadius ? 999 : 0,
+
+                    borderWidth: StyleSheet.hairlineWidth,
+                    borderColor: hexToRgb(theme.ACCENT.toString(), 0.2),
+                    backgroundColor: theme.ACCENT_BLACK,
+
+                }}>
+                    <UserIcon color={hexToRgb(theme.ACCENT.toString(), 0.6)} size={20} />
+                </View>
+            )
+        }
+
         const [showPlaceholder, setShowPlaceholder] = useState<boolean>(false);
         const [loading, setLoading] = useState<boolean>(true);
 
@@ -54,6 +82,7 @@ export default function UserCell() {
             <View>
                 <FastImage
                     {...props}
+                    source={source}
                     onLoad={onLoadHandler}
                     style={style}
                 />
@@ -67,7 +96,7 @@ export default function UserCell() {
                         justifyContent: "center",
                         alignItems: "center",
 
-                        borderRadius: 999,
+                        borderRadius: borderRadius ? 999 : 0,
 
                         borderWidth: StyleSheet.hairlineWidth,
                         borderColor: hexToRgb(theme.ACCENT.toString(), 0.2),
@@ -137,7 +166,11 @@ export default function UserCell() {
                         width: big ? 3/4 * (size * 6) : size,
                         height: big ? size * 6 : size,
                     }}
+                    borderRadius={borderRadius}
                     theme={theme}
+
+                    size={size}
+                    big={big}
                 />
             )
         }
@@ -162,6 +195,10 @@ export default function UserCell() {
                             },
                         }}
                         theme={theme}
+                        borderRadius={false}
+
+                        size={size}
+                        big={true}
                     />
                 )}
                 menuConfig={{
@@ -174,7 +211,7 @@ export default function UserCell() {
             >
                 <Image
                     style={{
-                        borderRadius: borderRadius ? 999 : 0,
+                        borderRadius: 999,
                         width: size,
                         height: size,
                     }}
@@ -186,6 +223,10 @@ export default function UserCell() {
                         },
                     }}
                     theme={theme}
+                    borderRadius={borderRadius}
+
+                    size={size}
+                    big={false}
                 />
             </ContextMenuView>
     

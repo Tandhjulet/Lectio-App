@@ -51,8 +51,6 @@ export function parseDate(date: string): Date {
         }
     } catch {}
 
-    console.log(today);
-
     return today;
 }
 

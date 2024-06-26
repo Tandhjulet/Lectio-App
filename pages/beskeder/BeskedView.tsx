@@ -106,7 +106,13 @@ export default function BeskedView({ navigation, route }: {
                 marginTop: i === 0 ? 0 : 20,
                 paddingRight: 10,
             }}>
-                <ProfilePicture navn={message.sender} gymNummer={gym?.gymNummer ?? ""} billedeId={people[CLEAN_NAME(message.sender)]?.billedeId ?? ""} size={50} borderRadius={false} />
+                <ProfilePicture
+                    navn={message.sender}
+                    gymNummer={gym?.gymNummer ?? ""}
+                    billedeId={people[CLEAN_NAME(message.sender)]?.billedeId ?? ""}
+                    size={50}
+                    borderRadius
+                />
 
                 <View style={{
                     flexDirection: "column",
