@@ -6,9 +6,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 ## Prioriteringer/mangler ved appen
 
 ### NEEDED FOR RELEASE
-- widget
-    - skedulerer ikke opdatering når den ved det er mellem to forskellige dage
-    - modul på tværs af dage vises muligvis ikke ordentligt - skal testes yderligere
 - app
     - landing side
     - test at alt er funktionelt
