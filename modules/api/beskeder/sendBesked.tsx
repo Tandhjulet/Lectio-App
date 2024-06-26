@@ -19,7 +19,6 @@ export async function sendMessage(title: string, sendTo: Person[], content: stri
     new Promise<void>((resolve, reject) => {
         sendTo.forEach(async (receiver: Person, index: number) => {
             headers = await addReceiver(gymNummer, receiver, headers);
-            console.log(1, receiver);
             if (index === sendTo.length -1) resolve();
         });
     }).then(() => {

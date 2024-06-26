@@ -259,7 +259,6 @@ function scrapeLayout(modul: any): {
             }
 
             out[v] = round((property / parentWidth) * 1.0787989 * 100) + "%";
-            console.log(v, out[v])
         }
     })
 

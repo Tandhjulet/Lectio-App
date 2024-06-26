@@ -6,9 +6,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 ## Prioriteringer/mangler ved appen
 
 ### NEEDED FOR RELEASE
-- app
-    - landing side
-    - test at alt er funktionelt
 - widget
     - data >1 måned gammelt kan blive vist igen, hvis appen ikke åbnes.
     - hvis der ikke er data gemt for den nuværende dag, skal det reflekteres i widgetet.

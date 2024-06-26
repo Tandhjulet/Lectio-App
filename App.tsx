@@ -14,7 +14,6 @@ import TeachersAndStudents from './pages/mere/TeachersAndStudents';
 import BeskedView from './pages/beskeder/BeskedView';
 import { Reducer, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { authorize, secureGet, getUnsecure, saveUnsecure, secureSave } from './modules/api/Authentication';
-import SplashScreen from './pages/SplashScreen';
 import { AuthContext } from './modules/Auth';
 import { BottomTabBar, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import NavigationBar from './components/Navbar';
@@ -72,6 +71,8 @@ import { hasProfileSaved } from './modules/api/scraper/Scraper';
 import Studiekort from './pages/mere/Studiekort';
 import NoAccess from './pages/NoAccess';
 
+import SplashScreen from './pages/SplashScreen';
+
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
   : Linking.createURL('');
@@ -99,12 +100,66 @@ const App = () => {
       (v: {result: boolean | null} | null) =>
         Appearance.setColorScheme("dark") //(v?.result ?? true) ? "dark" : "light")
     )
-  })
 
-  /**
-   * Creates a connections to Apples IAP
-   */
-  useEffect(() => {
+    cleanUp();
+
+    (async () => {
+      // LOGIN
+      let payload: SignInPayload = {
+        gym: null,
+        password: null,
+        username: null,
+      };
+
+      payload = {
+        gym: await secureGet("gym"),
+        password: await secureGet("password"),
+        username: await secureGet("username"),
+      }
+
+      // validate and retry if it didn't work (lectio is autistic)
+      if(!(await authorize(payload))) {
+        setTimeout(async () => {
+          if(!(await authorize(payload))) {
+            dispatch({ type: 'SIGN_OUT' });
+          } else {
+            dispatch({ type: 'SIGN_IN' });
+            setTimeout(() => scrapePeople(), 100);
+
+            if(await hasProfileSaved())
+              return;
+            
+            const { valid, freeTrial } = await hasSubscription();
+            if(freeTrial && valid) {
+              dispatchSubscription({ type: "FREE_TRIAL"})
+            } else if(valid === null) {
+              dispatchSubscription({ type: "SERVER_DOWN"})
+            } else {
+              dispatchSubscription({ type: valid ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
+            }
+          }
+        }, 100)
+      } else {
+        dispatch({ type: 'SIGN_IN' });
+        setTimeout(() => scrapePeople(), 100);
+      }
+
+      // STATE DISPATCH
+      if(!(await hasProfileSaved()))
+        return;
+
+      const { valid, freeTrial } = await hasSubscription();
+
+      if(freeTrial && valid) {
+        dispatchSubscription({ type: "FREE_TRIAL"})
+      } else if(valid === null) {
+        dispatchSubscription({ type: "SERVER_DOWN"})
+      } else {
+        dispatchSubscription({ type: valid ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
+      }
+    })();
+
+    // IAP
     let purchaseListener: EmitterSubscription | null;
     let errorListener: EmitterSubscription | null;
     if(!isExpoGo) {
@@ -167,72 +222,6 @@ const App = () => {
       isLoading: true,
     }
   );
-
-  /**
-   * Starts a clean up of the cache if it itsn't on cooldown.
-   * Afterwards tries to authorize to Lectio with saved credentials, if there are any.
-   */
-  useEffect(() => {
-    cleanUp();
-
-    (async () => {
-      let payload: SignInPayload = {
-        gym: null,
-        password: null,
-        username: null,
-      };
-
-      payload = {
-        gym: await secureGet("gym"),
-        password: await secureGet("password"),
-        username: await secureGet("username"),
-      }
-
-      // validate and retry if it didn't work (lectio is autistic)
-      if(!(await authorize(payload))) {
-        setTimeout(async () => {
-          if(!(await authorize(payload))) {
-            dispatch({ type: 'SIGN_OUT' });
-          } else {
-            dispatch({ type: 'SIGN_IN' });
-            setTimeout(() => scrapePeople(), 100);
-
-            if(await hasProfileSaved())
-              return;
-            
-            const { valid, freeTrial } = await hasSubscription();
-            if(freeTrial && valid) {
-              dispatchSubscription({ type: "FREE_TRIAL"})
-            } else if(valid === null) {
-              dispatchSubscription({ type: "SERVER_DOWN"})
-            } else {
-              dispatchSubscription({ type: valid ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
-            }
-          }
-        }, 100)
-      } else {
-        dispatch({ type: 'SIGN_IN' });
-        setTimeout(() => scrapePeople(), 100);
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      if(!(await hasProfileSaved()))
-        return;
-
-      const { valid, freeTrial } = await hasSubscription();
-
-      if(freeTrial && valid) {
-        dispatchSubscription({ type: "FREE_TRIAL"})
-      } else if(valid === null) {
-        dispatchSubscription({ type: "SERVER_DOWN"})
-      } else {
-        dispatchSubscription({ type: valid ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
-      }
-    })();
-  }, [])
 
   /**
    * Auth Context passed to the rest of the app
