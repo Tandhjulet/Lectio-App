@@ -882,9 +882,12 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                         if (title != null && content != null && recipients.length != 0 && gym != null) {
                             setSendingMessage(true);
                             sendMessage(title, recipients, content ?? "", gym?.gymNummer, files ?? [], (messageId: string | null) => {
+                                setSendingMessage(false);
+                                if(!messageId) {
+                                    return;
+                                }
                                 const now = new Date();
 
-                                setSendingMessage(false);
                                 handleCloseModalPress();
 
                                 deleteSaved(Key.BESKEDER);

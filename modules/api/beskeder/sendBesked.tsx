@@ -19,32 +19,42 @@ export async function sendMessage(title: string, sendTo: Person[], content: stri
     new Promise<void>((resolve, reject) => {
         sendTo.forEach(async (receiver: Person, index: number) => {
             headers = await addReceiver(gymNummer, receiver, headers);
+            console.log(1, receiver);
             if (index === sendTo.length -1) resolve();
         });
     }).then(() => {
         new Promise<void>((res, rej) => {
-            attachments.forEach(async (file: UploadResult, index: number) => {
-                try {
-                    headers = await addFile(gymNummer, file, headers);
-                    if (index === attachments.length -1) res();
-                } catch {
-                    if (index === attachments.length -1) res();
-                } // if some error occurs we might be able to send the message anyway
-                  // it just wont include the attachment :-(
-            });
-        }).then(async () => {
-            const response = await send(title, content, headers, gymNummer);
-            const matches = response.url.match(new RegExp('id=(\\d+)', "gm"));
-
-            if(matches == null) {
-                finished(null);
-                return;
-            }
+            if(attachments.length == 0) {
+                res();
+            } else {
+                attachments.forEach(async (file: UploadResult, index: number) => {
+                    try {
+                        headers = await addFile(gymNummer, file, headers);
+                    } catch {}
+                    // if some error occurs we might be able to send the message anyway
+                    // it just wont include the attachment :-(
     
-            const messageId = matches[0].replace("id=", "");
-            finished(messageId);
+                    if (index === attachments.length -1) res();
+                });
+            }
         })
-    })
+        .then(async () => {
+            try {
+                const response = await send(title, content, headers, gymNummer);
+                const matches = response.url.match(new RegExp('id=(\\d+)', "gm"));
+
+                if(matches == null) {
+                    finished(null);
+                    return;
+                }
+        
+                const messageId = matches[0].replace("id=", "");
+                finished(messageId);
+            } catch {
+                finished(null)
+            }
+        })
+    }).catch(() => finished(null));
 }
 
 /**
