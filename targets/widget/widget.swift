@@ -81,8 +81,26 @@ struct Provider: TimelineProvider {
                 let currentDate = Calendar.current.component(.day, from: entryDate)
                 let currentHour = Calendar.current.component(.hour, from: entryDate)
                 var requestAfter = Calendar.current.date(byAdding: .hour, value: currentHour > 7 && currentHour < 16 ? 1 : 3, to: entryDate)!
+                
                 if(Calendar.current.component(.hour, from: requestAfter) >= 20) {
-                  var requestAfter = Calendar.current.date(byAdding: .hour, value: 4, to: entryDate)!
+                    requestAfter = Calendar.current.date(byAdding: .hour, value: 4, to: entryDate)!
+                }
+                
+                if(parsedData != nil) {
+                    let lastDate = Array(parsedData!.values).last
+                    let endDate = lastDate?.last?.end
+                    
+                    // if now is greater than the latest data entry,
+                    // then no data is available
+                    if(endDate != nil && entryDate > endDate!) {
+                        let entry = SimpleEntry(date: entryDate,
+                                              lookAhead: [],
+                                                modules: [], hasData: false)
+                            
+                        let timeline = Timeline(entries: [entry], policy: .after(requestAfter))
+                        completion(timeline)
+                        return;
+                    }
                 }
                 
                 var lookAhead: [Date] = []
@@ -179,6 +197,7 @@ struct SimpleEntry: TimelineEntry {
     let modules: Array<Module>
     
     var error: Bool = false
+    var hasData: Bool = true
 }
 
 struct widgetEntryView : View {
@@ -211,8 +230,10 @@ struct widgetEntryView : View {
     }
     
     var body: some View {
-      if #available(iOSApplicationExtension 17.0, *), (entry.lookAhead.count > 0) {
-        if(entry.lookAhead.first!.dayOfWeek() == entry.lookAhead.last!.dayOfWeek()) {
+        // check hasData aswell, so the next condition can take care of that state.
+        // bad practice, but it is what it is.
+      if #available(iOSApplicationExtension 17.0, *), (entry.lookAhead.count > 0 || !entry.hasData) {
+        if(entry.lookAhead.first!.dayOfWeek() == entry.lookAhead.last!.dayOfWeek() && entry.hasData) {
           VStack {
             HStack(spacing: 0) {
               Text((entry.lookAhead.first ?? Date()).dayOfWeek()!)
