@@ -221,6 +221,11 @@ function scrapeLayout(modul: any): {
     top: number,
     height: number,
 } {
+    function round(input: number, range: number = 5): number {
+        const roundedWithDefault = ([50, 75, 100].find((v) => input < v+range && input > v-range)) ?? input;
+        return roundedWithDefault;
+    }
+
     function scrapeProperties(modul: any): {width: string; left: string; top: string; height: string} {
         const properties: { width: string; left: string; top: string; height: string; } | {[id: string]: string} = {};
 
@@ -253,7 +258,8 @@ function scrapeLayout(modul: any): {
                 property -= 8.8;
             }
 
-            out[v] = (property / parentWidth) * 1.0787989 * 100 + "%";
+            out[v] = round((property / parentWidth) * 1.0787989 * 100) + "%";
+            console.log(v, out[v])
         }
     })
 

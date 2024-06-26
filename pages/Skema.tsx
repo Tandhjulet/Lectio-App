@@ -1052,7 +1052,7 @@ export default function Skema({ navigation, route }: {
 
                                                     top: calculateTop(modulTiming)
                                                 }} onLayout={() => {
-                                                    if(index === modulTimings.length-1){
+                                                    if(index === 0){
                                                         scrollView.current?.scrollTo({y: calculateTop(modulTiming), animated: true})
                                                     }
                                                 }}>
@@ -1102,15 +1102,17 @@ export default function Skema({ navigation, route }: {
                                                     left,
                                                 } = modul;
 
-                                                const lectioHeight = modul.height;
-
-                                                let height = modul.timeSpan.diff
-                                                if(modul.timeSpan.end.startsWith(selectedDay.getDate().toString().padStart(2, "0")) && modul.timeSpan.start.split(" ")[0] != modul.timeSpan.end.split(" ")[0]) {
-                                                    height = lectioHeight;
+                                                // brug højden defineret af lectio, desto mindre modulet går på tværs af dage.
+                                                // i det tilfælde bruger vi vores egen.
+                                                let height = modul.height
+                                                if(modul.timeSpan.end.startsWith(selectedDay.getDate().toString().padStart(2, "0")) &&
+                                                   modul.timeSpan.start.split(" ")[0] != modul.timeSpan.end.split(" ")[0] &&
+                                                   modul.timeSpan.diff > 0) { // FIXME: exams start and end-date will always be 0 as they are unsupported by the parser.
+                                                                              // this might make the exam appear shorter than it actually is, if it stretches over multiple days. 
+                                                    height = modul.timeSpan.diff;
                                                 }
 
                                                 const widthNum = parseInt(width.replace("%", ""));
-                                                //const widthNum = 25;
 
                                                 return (
                                                     <TouchableHighlight
