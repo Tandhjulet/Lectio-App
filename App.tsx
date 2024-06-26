@@ -94,9 +94,10 @@ export const isExpoGo = Constants.appOwnership === 'expo';
 
 const App = () => {
   useEffect(() => {
+    // FIXME: make light theme a bit prettier, then this can be reenabled:
     getUnsecure("useDarkMode").then(
       (v: {result: boolean | null} | null) =>
-        Appearance.setColorScheme((v?.result ?? true) ? "dark" : "light")
+        Appearance.setColorScheme("dark") //(v?.result ?? true) ? "dark" : "light")
     )
   })
 
