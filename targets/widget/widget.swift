@@ -80,7 +80,10 @@ struct Provider: TimelineProvider {
                 
                 let currentDate = Calendar.current.component(.day, from: entryDate)
                 let currentHour = Calendar.current.component(.hour, from: entryDate)
-                let requestAfter = Calendar.current.date(byAdding: .hour, value: currentHour > 7 && currentHour < 16 ? 1 : 3, to: entryDate)!
+                var requestAfter = Calendar.current.date(byAdding: .hour, value: currentHour > 7 && currentHour < 16 ? 1 : 3, to: entryDate)!
+                if(Calendar.current.component(.hour, from: requestAfter) >= 20) {
+                  var requestAfter = Calendar.current.date(byAdding: .hour, value: 4, to: entryDate)!
+                }
                 
                 var lookAhead: [Date] = []
                 for hourOffset in 0 ..< 3 {
@@ -209,155 +212,161 @@ struct widgetEntryView : View {
     
     var body: some View {
       if #available(iOSApplicationExtension 17.0, *), (entry.lookAhead.count > 0) {
-        VStack {
-          HStack(spacing: 0) {
-            Text((entry.lookAhead.first ?? Date()).dayOfWeek()!)
-              .font(.system(size: 11))
-              .fontWeight(.heavy)
+        if(entry.lookAhead.first!.dayOfWeek() == entry.lookAhead.last!.dayOfWeek()) {
+          VStack {
+            HStack(spacing: 0) {
+              Text((entry.lookAhead.first ?? Date()).dayOfWeek()!)
+                .font(.system(size: 11))
+                .fontWeight(.heavy)
+              
+              Spacer()
+              
+              Text((entry.lookAhead.first ?? Date()).formatted(date: .numeric, time: .omitted))
+                .font(.system(size: 10))
+                .fontWeight(.regular)
+            }
             
-            Spacer()
-            
-            Text((entry.lookAhead.first ?? Date()).formatted(date: .numeric, time: .omitted))
-              .font(.system(size: 10))
-              .fontWeight(.regular)
-          }
-          
-          HStack(spacing: 5) {
-            if(!entry.error) {
-              GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                  ItemSeperator.frame(width: geo.size.width)
-                  
-                  ForEach(entry.modules, id: \._id) { module in
-                    if(module.end > entry.lookAhead.first! && module.start < entry.lookAhead.last!) {
-                      let top = calculateTop(module: module, first: entry.lookAhead.first!, geoHeight: geo.size.height);
-                      
-                      VStack(spacing: 0) {
-                        Color.clear
-                          .opacity(0)
-                          .frame(
-                            maxWidth: .infinity,
-                            maxHeight: top
-                          )
+            HStack(spacing: 5) {
+              if(!entry.error) {
+                GeometryReader { geo in
+                  ZStack(alignment: .leading) {
+                    ItemSeperator.frame(width: geo.size.width)
+                    
+                    ForEach(entry.modules, id: \._id) { module in
+                      if(module.end > entry.lookAhead.first! && module.start < entry.lookAhead.last!) {
+                        let top = calculateTop(module: module, first: entry.lookAhead.first!, geoHeight: geo.size.height);
                         
-                        HStack(spacing: 0) {
+                        VStack(spacing: 0) {
                           Color.clear
-                            .frame(width: module.left * geo.size.width, height: 0)
+                            .opacity(0)
+                            .frame(
+                              maxWidth: .infinity,
+                              maxHeight: top
+                            )
                           
-                          ZStack(alignment: .topLeading) {
-                            HStack {
+                          HStack(spacing: 0) {
+                            Color.clear
+                              .frame(width: module.left * geo.size.width, height: 0)
+                            
+                            ZStack(alignment: .topLeading) {
+                              HStack {
+                                Rectangle()
+                                  .fill(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
+                                  .clipShape(
+                                    .rect(
+                                      topLeadingRadius: module.start > entry.lookAhead.first! ? 3 : 0,
+                                      bottomLeadingRadius: 3,
+                                      style: .continuous
+                                    )
+                                  )
+                                  .frame(
+                                    width: 3,
+                                    height: .infinity
+                                  )
+                                
+                                Spacer()
+                              }
+                              
                               Rectangle()
                                 .fill(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
+                                .opacity(0.5)
                                 .clipShape(
                                   .rect(
                                     topLeadingRadius: module.start > entry.lookAhead.first! ? 3 : 0,
                                     bottomLeadingRadius: 3,
+                                    bottomTrailingRadius: 3,
+                                    topTrailingRadius: module.start > entry.lookAhead.first! ? 3 : 0,
                                     style: .continuous
                                   )
                                 )
                                 .frame(
-                                  width: 3,
-                                  height: .infinity
+                                  width: .infinity, height: .infinity
                                 )
                               
-                                Spacer()
-                            }
-                            
-                            Rectangle()
-                              .fill(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
-                              .opacity(0.5)
-                              .clipShape(
-                                .rect(
-                                  topLeadingRadius: module.start > entry.lookAhead.first! ? 3 : 0,
-                                  bottomLeadingRadius: 3,
-                                  bottomTrailingRadius: 3,
-                                  topTrailingRadius: module.start > entry.lookAhead.first! ? 3 : 0,
-                                  style: .continuous
-                                )
-                              )
-                              .frame(
-                                width: .infinity, height: .infinity
-                              )
-                            
-                            let height = calculateHeight(start: module.start, end: module.end, lookAhead: entry.lookAhead) * geo.size.height;
-                            if(height > 10 + 4*2) {
-                              ZStack() {
-                                VStack(alignment: .leading, spacing: 0) {
-                                  Text(module.title)
-                                    .font(.system(size:12, weight: .bold))
-                                    .opacity(1)
-                                    .multilineTextAlignment(.leading)
-                                    .minimumScaleFactor(0.6)
-                                    .foregroundStyle(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
-                                  
-                                  if(height > 20 + 4*2) {
-                                    Text(module.start.formatted(date: .omitted, time: .shortened) + (module.width >= 0.8 ? " \u{2022} " : "\n") + module.end.formatted(date: .omitted, time: .shortened))
-                                    .font(.system(size: 10))
-                                    .minimumScaleFactor(0.6)
-                                    .multilineTextAlignment(.leading)
-                                    .lineLimit(2)
-                                    .foregroundStyle(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
+                              let height = calculateHeight(start: module.start, end: module.end, lookAhead: entry.lookAhead) * geo.size.height;
+                              if(height > 10 + 4*2) {
+                                ZStack() {
+                                  VStack(alignment: .leading, spacing: 0) {
+                                    Text(module.title)
+                                      .font(.system(size:12, weight: .bold))
+                                      .opacity(1)
+                                      .multilineTextAlignment(.leading)
+                                      .minimumScaleFactor(0.6)
+                                      .foregroundStyle(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
+                                    
+                                    if(height > 20 + 4*2) {
+                                      Text(module.start.formatted(date: .omitted, time: .shortened) + (module.width >= 0.8 ? " \u{2022} " : "\n") + module.end.formatted(date: .omitted, time: .shortened))
+                                        .font(.system(size: 10))
+                                        .minimumScaleFactor(0.6)
+                                        .multilineTextAlignment(.leading)
+                                        .lineLimit(2)
+                                        .foregroundStyle(module.status == .normal ? Color("Primary") : module.status == .changed ? Color.yellow : Color("Red"))
+                                    }
+                                    
                                   }
-                                  
-                                }
-                              }.padding(EdgeInsets(top: 4, leading: 8, bottom: 8, trailing: 4))
+                                }.padding(EdgeInsets(top: 4, leading: 8, bottom: 8, trailing: 4))
+                              }
                             }
+                            .frame(width: module.width * geo.size.width, height: calculateHeight(start: module.start, end: module.end, lookAhead: entry.lookAhead) * geo.size.height)
+                            
+                            Spacer(minLength: 0)
                           }
-                          .frame(width: module.width * geo.size.width, height: calculateHeight(start: module.start, end: module.end, lookAhead: entry.lookAhead) * geo.size.height)
                           
                           Spacer(minLength: 0)
                         }
-                        
-                        Spacer(minLength: 0)
                       }
                     }
                   }
+                  .frame(
+                    maxWidth: .infinity,
+                    maxHeight: .infinity
+                  )
                 }
-                .frame(
-                  maxWidth: .infinity,
-                  maxHeight: .infinity
-                )
-              }
-              
-              VStack(alignment: .leading, spacing: 0) {
-                ForEach(entry.lookAhead, id: \.self) { lookAhead in
-                  Color.clear
-                    .frame(
-                      maxWidth: 0,
-                      maxHeight: 0
-                    )
-                  
-                  let time = lookAhead.formatted(date: .omitted, time: .shortened)
-                  
-                  
-                  Text(time.replacingOccurrences(of: ".", with: ":"))
-                    .font(.system(
-                      size:8.5
-                    ))
-                    .multilineTextAlignment(.trailing)
-                    .frame(height: 10)
-                    .foregroundColor(.secondary)
-                  
-                  if entry.lookAhead.last.self != lookAhead.self {
-                    Spacer()
+                
+                VStack(alignment: .leading, spacing: 0) {
+                  ForEach(entry.lookAhead, id: \.self) { lookAhead in
+                    Color.clear
+                      .frame(
+                        maxWidth: 0,
+                        maxHeight: 0
+                      )
+                    
+                    let time = lookAhead.formatted(date: .omitted, time: .shortened)
+                    
+                    
+                    Text(time.replacingOccurrences(of: ".", with: ":"))
+                      .font(.system(
+                        size:8.5
+                      ))
+                      .multilineTextAlignment(.trailing)
+                      .frame(height: 10)
+                      .foregroundColor(.secondary)
+                    
+                    if entry.lookAhead.last.self != lookAhead.self {
+                      Spacer()
+                    }
                   }
                 }
+              } else {
+                
+                Text("Der opstod en fejl").frame(
+                  maxWidth: .infinity,
+                  maxHeight: .infinity,
+                  alignment: .center
+                ).multilineTextAlignment(.center)
+                
               }
-            } else {
-              
-              Text("Der opstod en fejl").frame(
-                maxWidth: .infinity,
-                maxHeight: .infinity,
-                alignment: .center
-              ).multilineTextAlignment(.center)
-              
             }
-          }
-        }.containerBackground(for: .widget, content: {Color("AccentColor")})
-        
+          }.containerBackground(for: .widget, content: {Color("AccentColor")})
+        } else {
+          VStack {
+            Text("Skema ikke tilgængeligt")
+              .multilineTextAlignment(.center)
+          }.containerBackground(for: .widget, content: {Color("AccentColor")})
+        }
     } else {
       VStack {
-        Text("Der opstod en fejl")
+        Text("Skema-data kunne ikke indlæses. Log ind på appen.")
           .multilineTextAlignment(.center)
       }.containerBackground(for: .widget, content: {Color("AccentColor")})
     };
@@ -396,7 +405,7 @@ struct widget_Previews: PreviewProvider {
       let entryDate = Date()
       let currentDate = Calendar.current.component(.day, from: entryDate)
 
-      let parsedData = ["20": [Module(start: Calendar.current.date(byAdding: .hour, value: 0, to: Date())!, end: Calendar.current.date(byAdding: .minute, value: 80, to: Date())!, title: "test", status: .normal, _id: "123", width: 1, left: 0)]]
+      let parsedData = ["26": [Module(start: Calendar.current.date(byAdding: .day, value: -1, to: Date())!, end: Calendar.current.date(byAdding: .day, value: 1, to: Date())!, title: "test", status: .normal, _id: "123", width: 1, left: 0)]]
       
       var lookAhead: [Date] = []
       for hourOffset in 0 ..< 3 {
