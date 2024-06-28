@@ -80,7 +80,7 @@ export default function Mere({ navigation }: {navigation: any}) {
     const subscriptionTitle: () => string = () => {
         // @ts-ignore
         if(subscriptionState?.serverDown)
-            return "Lectimate' server er nede"
+            return "Lectimates server er nede"
 
         if(subscriptionState?.freeTrial)
             return "Din prøveperiode er aktiv"
@@ -92,13 +92,12 @@ export default function Mere({ navigation }: {navigation: any}) {
     const subscriptionSubtitle: () => string = () => {
         // @ts-ignore
         if(subscriptionState?.serverDown)
-            return "Dette abonnement er midlertidigt"
+            return "Ukendt udløbsdato"
 
         if(subscriptionState?.freeTrial)
-            return "Udløber d. " + (endDate?.toLocaleDateString() ?? "ukendt dato")
+            return "Udløber d. " + (endDate ? endDate.toLocaleDateString() : "ukendt dato")
 
-        // @ts-ignore
-        return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate?.toLocaleDateString() ?? "ukendt dato") : "Et abonnement giver ubegrænset adgang til Lectimate";
+        return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate ? endDate.toLocaleDateString() : "ukendt dato") : "Et abonnement giver ubegrænset adgang til Lectimate";
     }
 
     const scheme = useColorScheme();

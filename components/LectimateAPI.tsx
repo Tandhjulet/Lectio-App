@@ -40,6 +40,7 @@ export default async function receiptValid(receipt: string): Promise<boolean> {
 
 export async function hasSubscription(): Promise<ValidationResponse> {
     const saved: ValidationResponse = await getUnsecure("subscription");
+    saved && saved.endDate && (saved.endDate = new Date(saved.endDate))
     if(!(await FetchNet()).isConnected) {
         return saved ? saved : {valid: false};
     }
