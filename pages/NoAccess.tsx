@@ -191,7 +191,7 @@ export default function NoAccess({
                 <Option
                     title={'Månedligt'}
                     subtitle={'1 mdr. varighed\nFornyes automatisk!'}
-                    sku={"premium_monthly"}
+                    sku={"full_monthly"}
                     price={'9,00'}
                 />
                 
@@ -199,7 +199,7 @@ export default function NoAccess({
                     title={'Årligt'}
                     subtitle={'1 års varighed\nFornyes automatisk!'}
                     price={'59,00'}
-                    sku={"premium_yearly"}
+                    sku={"full_yearly"}
                 />
             </View>
         </View>

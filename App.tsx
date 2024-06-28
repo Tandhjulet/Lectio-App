@@ -164,6 +164,8 @@ const App = () => {
     let errorListener: EmitterSubscription | null;
     if(!isExpoGo) {
       initConnection().then(async () => {
+        console.log("init")
+
         await clearProductsIOS();
         await clearTransactionIOS();
 
