@@ -5,11 +5,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 
 ## Prioriteringer/mangler ved appen
 
-### NEEDED FOR RELEASE
-- hjemmeside 
-    - installer knap skal virke
-- app store connect (^)
-
 ### __HØJ__
 - react native web workers til background fetching af f.x. profilbilleder
 
