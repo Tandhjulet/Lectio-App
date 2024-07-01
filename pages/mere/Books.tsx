@@ -22,7 +22,7 @@ export default function Books() {
             const profile = await getProfile();
 
             scrapeBooks(gymNummer, profile.elevId, (books => {
-                setBooks(books);
+                books && setBooks(books);
                 setLoading(false);
             }));
         })();
@@ -244,7 +244,7 @@ export default function Books() {
 
                                                         fontSize: 12.5,
                                                     }}>
-                                                        {((1-diff)*100).toFixed(0)}%
+                                                        {Math.max(((1-diff)*100), 0).toFixed(0)}%
                                                     </Text>
                                                 </View>
                                             </View>

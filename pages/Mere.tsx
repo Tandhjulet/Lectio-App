@@ -3,7 +3,7 @@ import NavigationBar from "../components/Navbar";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { hexToRgb, themes } from "../modules/Themes";
 import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { AcademicCapIcon, AdjustmentsVerticalIcon, ArrowPathIcon, BellSnoozeIcon, BookOpenIcon, BuildingLibraryIcon, CheckCircleIcon, CheckIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, Square2StackIcon, UserMinusIcon, UsersIcon, XMarkIcon } from "react-native-heroicons/outline";
+import { AcademicCapIcon, AdjustmentsVerticalIcon, ArrowPathIcon, BellSnoozeIcon, BookOpenIcon, BuildingLibraryIcon, CheckCircleIcon, CheckIcon, ClipboardDocumentIcon, ClipboardDocumentListIcon, ClipboardIcon, ClockIcon, ComputerDesktopIcon, Square2StackIcon, UserMinusIcon, UsersIcon, XMarkIcon } from "react-native-heroicons/outline";
 import { getUnsecure, removeSecure, removeUnsecure, secureGet, signOutReq } from "../modules/api/Authentication";
 import { Profile, getProfile, saveProfile } from "../modules/api/scraper/Scraper";
 import { AuthContext } from "../modules/Auth";
@@ -268,6 +268,26 @@ export default function Mere({ navigation }: {navigation: any}) {
                                 accessoryColorDisclosureIndicator={theme.WHITE}
                                 onPress={() => {
                                     navigation.navigate("TeachersAndStudents")
+                                }}
+
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
+                                }}
+                            />
+
+                            <Cell
+                                cellStyle="Basic"
+                                title="Lokaler"
+                                titleTextColor={theme.WHITE}
+                                image={
+                                    <ComputerDesktopIcon color={theme.ACCENT} style={{
+                                        opacity: 0.85,
+                                    }}  />
+                                }
+                                accessory="DisclosureIndicator"
+                                accessoryColorDisclosureIndicator={theme.WHITE}
+                                onPress={() => {
+                                    navigation.navigate("Lokaler")
                                 }}
 
                                 contentContainerStyle={{

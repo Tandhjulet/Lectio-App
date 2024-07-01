@@ -31,6 +31,7 @@ export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: stri
         "FOLDERS": `https://www.lectio.dk/lectio/${gymNummer}/DokumentOversigt.aspx?elevid=${elevId}`,
         "DOCUMENTS": `https://www.lectio.dk/lectio/${gymNummer}/DokumentOversigt.aspx?elevid=${elevId}&folderid=${klasseId}`,
         "BOOKS": `https://www.lectio.dk/lectio/${gymNummer}/BD/UserReservations.aspx?ElevID=${elevId}`,
+        "LOKALER": `https://www.lectio.dk/lectio/${gymNummer}/SkemaAvanceret.aspx?type=aktuellelokaler&nosubnav=1&prevurl=FindSkemaAdv.aspx`,
 
         "STUDIEKORT": `https://www.lectio.dk/lectio/${gymNummer}/digitaltStudiekort.aspx`,
         "PROFILE": `https://www.lectio.dk/lectio/${gymNummer}/indstillinger/studentIndstillinger.aspx`,

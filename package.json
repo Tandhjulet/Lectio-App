@@ -58,6 +58,7 @@
     "react-native-shared-group-preferences": "^1.1.24",
     "react-native-svg": "13.9.0",
     "react-native-tableview-simple": "^4.4.0",
+    "react-native-threads": "github:gaodeng/react-native-threads",
     "rn-fetch-blob": "^0.12.0"
   },
   "devDependencies": {

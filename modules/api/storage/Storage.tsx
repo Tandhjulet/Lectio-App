@@ -43,6 +43,8 @@ export enum Key {
 
     DOCUMENTS,
     FOLDERS,
+
+    LOKALER,
 }
 
 export type SaveStructure = {

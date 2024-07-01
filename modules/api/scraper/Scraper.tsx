@@ -19,6 +19,7 @@ import treat, { _treat, treatRaw } from './TextTreater';
 import { Grade, parseGrades } from './GradeScraper';
 import { Folder, parseDocuments, parseFolders, Document } from './DocumentScraper';
 import { Book, parseBooks } from './BookScraper';
+import { Lokale, scrapeLokaler } from './LokaleScraper';
 
 export async function scrapeCache(gymNummer: string, params: CacheParams): Promise<{[id: string]: Person}> {
     const url = SCRAPE_URLS(gymNummer).CACHE + (params == undefined ? "" : ("?" + stringifyCacheParams(params)));
@@ -496,6 +497,18 @@ export async function getAbsence(gymNummer: string, bypassCache: boolean = false
     });
 
     return await fetchWithCache<Fag[]>(req, Key.FRAVÆR, undefined, -1, cb, scrapeAbsence, bypassCache)
+}
+
+export async function getLokaler(gymNummer: string, bypassCache: boolean = false, cb: (data: Lokale[] | undefined | null) => Promise<void> | void): Promise<Lokale[] | undefined | null> { 
+    const req = new Request(SCRAPE_URLS(gymNummer).LOKALER, {
+        method: "GET",
+        credentials: 'include',
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+        },
+    });
+
+    return await fetchWithCache<Lokale[]>(req, Key.LOKALER, undefined, -1, cb, scrapeLokaler, bypassCache)
 }
 
 export async function getAbsenceRegistration(gymNummer: string, bypassCache: boolean = false, cb: (data: Registration[] | undefined | null) => Promise<void> | void): Promise<Registration[] | undefined | null> { 

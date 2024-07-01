@@ -52,9 +52,6 @@ const SkemaNav = createNativeStackNavigator();
 
 const Tab = createBottomTabNavigator();
 
-import { LogBox } from 'react-native';
-LogBox.ignoreLogs(["Sending"]) // dårligt, men umiddelbart eneste løsning.
-
 import * as Linking from 'expo-linking';
 import Constants from 'expo-constants';
 import LandingPage from './pages/login/LandingPage';
@@ -72,6 +69,7 @@ import Studiekort from './pages/mere/Studiekort';
 import NoAccess from './pages/NoAccess';
 
 import SplashScreen from './pages/SplashScreen';
+import Lokaler from './pages/mere/Lokaler';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -542,6 +540,16 @@ export function MereNavigator() {
         },
         title: "Personer"
         }} />
+
+      <Settings.Screen name={"Lokaler"} component={Lokaler} options={{
+        headerSearchBarOptions: {
+          inputType: "text",
+          placeholder: "Søg efter lokale",
+          cancelButtonText: "Annuller",
+          hideWhenScrolling: false,
+        },
+        title: "Lokaler"
+      }} />
 
       <Settings.Screen name={"Skemaoversigt"} component={Skema} options={
           ({ route }) => {
