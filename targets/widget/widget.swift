@@ -73,7 +73,6 @@ struct Provider: TimelineProvider {
               
           } else {
               var lookAhead: [Date] = []
-              let entryDate = Date()
             
               for hourOffset in 0 ..< 3 {
                 lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
@@ -144,7 +143,6 @@ struct Provider: TimelineProvider {
                 
             } else {
                 var lookAhead: [Date] = []
-                let entryDate = Date()
               
                 for hourOffset in 0 ..< 3 {
                   lookAhead.append(Calendar.current.date(byAdding: .hour, value: hourOffset, to: entryDate)!)
