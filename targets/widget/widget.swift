@@ -25,7 +25,13 @@ struct Provider: TimelineProvider {
       
       let userDefaults = UserDefaults.init(suiteName: "group.com.tandhjulet.lectimate.widget");
       if(userDefaults != nil) {
-          let entryDate = Date()
+          var entryDate = Date()
+          let currentHour = Calendar.current.component(.hour, from: entryDate)
+          if(currentHour >= 21) {
+              entryDate = Calendar.current.date(bySetting: .hour, value: 21, of: entryDate)!
+              entryDate = Calendar.current.date(bySetting: .minute, value: 0, of: entryDate)!
+          }
+          
           if let savedData = userDefaults!.value(forKey: "skema") as? String {
               let decoder = JSONDecoder();
               decoder.dateDecodingStrategy = .millisecondsSince1970
@@ -89,7 +95,13 @@ struct Provider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
         let userDefaults = UserDefaults.init(suiteName: "group.com.tandhjulet.lectimate.widget");
         if(userDefaults != nil) {
-            let entryDate = Date()
+            var entryDate = Date()
+            let currentHour = Calendar.current.component(.hour, from: entryDate)
+            if(currentHour >= 21) {
+                entryDate = Calendar.current.date(bySetting: .hour, value: 21, of: entryDate)!
+                entryDate = Calendar.current.date(bySetting: .minute, value: 0, of: entryDate)!
+            }
+            
             if let savedData = userDefaults!.value(forKey: "skema") as? String {
                 let decoder = JSONDecoder();
                 decoder.dateDecodingStrategy = .millisecondsSince1970
@@ -97,12 +109,7 @@ struct Provider: TimelineProvider {
                 let parsedData = try? decoder.decode([String: [Module]].self, from: data!)
                 
                 let currentDate = Calendar.current.component(.day, from: entryDate)
-                let currentHour = Calendar.current.component(.hour, from: entryDate)
-                var requestAfter = Calendar.current.date(byAdding: .hour, value: currentHour > 7 && currentHour < 16 ? 1 : 3, to: entryDate)!
-                
-                if(Calendar.current.component(.hour, from: requestAfter) >= 20) {
-                    requestAfter = Calendar.current.date(byAdding: .hour, value: 4, to: entryDate)!
-                }
+                let requestAfter = Calendar.current.date(byAdding: .hour, value: currentHour > 7 && currentHour < 16 ? 1 : 3, to: entryDate)!
                 
                 if(parsedData != nil) {
                     let lastDate = Array(parsedData!.values).last
@@ -130,7 +137,7 @@ struct Provider: TimelineProvider {
                 
                 let entry = SimpleEntry(date: entryDate,
                                       lookAhead: lookAhead,
-                                        modules: (modules ?? [])!)
+                                        modules: (modules ?? [])!, hasData: (parsedData != nil))
                     
                 let timeline = Timeline(entries: [entry], policy: .after(requestAfter))
                 completion(timeline)
