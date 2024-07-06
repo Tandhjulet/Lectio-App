@@ -23,7 +23,7 @@ export default function Lokaler({ navigation }: {
     const theme = themes[scheme ?? "dark"];
 
     const filterSearch = useCallback(function filterSearch(filterText: string, reuse: boolean) {
-        if(lokaler.length == 0) reuse = false;
+        if(filteredLokaler.length == 0) reuse = false;
 
         setFilteredLokaler((reuse ? filteredLokaler : lokaler).filter((name) => {
             return name.title.toLowerCase().includes(filterText.toLowerCase());
