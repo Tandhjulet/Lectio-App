@@ -13,4 +13,4 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 
 ### __LAV__
 - spørgeskemaer
-- ledige lokaler (https://www.lectio.dk/lectio/572/SkemaAvanceret.aspx?type=aktuellelokaler&nosubnav=1&prevurl=FindSkemaAdv.aspx) 
+- karakterer ui re-design
