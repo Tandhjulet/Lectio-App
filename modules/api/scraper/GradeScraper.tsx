@@ -1,7 +1,8 @@
 export interface Grade {
     fag: string,
-    type: string[],
-    karakterer: {[id: string]: WeightedGrade}[],
+    type: "Mundtlig" | "Skriftlig" | "Samlet",
+    karakterer: {[id: string]: WeightedGrade | undefined},
+    weight: string,
 }
 
 export interface WeightedGrade {
@@ -11,10 +12,12 @@ export interface WeightedGrade {
 
 export function parseGrades(parser: any): Grade[] {
     const table = parser.getElementById("s_m_Content_Content_karakterView_KarakterGV");
-    if(table === null)
+    if(table === null) {
+        console.log("table is null")
         return [];
+    }
 
-    const out: {[id: string]: Grade} = {};
+    const out: Grade[] = [];
     const cols: string[] = [];
 
     table.children.forEach((child: any, i: number) => {        
@@ -22,58 +25,69 @@ export function parseGrades(parser: any): Grade[] {
             child.children.forEach((col: any, i: number) => {
                 if(i < 2) return;
 
-                cols.push((col.firstChild.text === "Afsluttende års-/") ? "Årskarakter" : col.firstChild.text.replace(".", ". "));
+                cols.push(col.firstChild.text.replace(".", ". "));
             })
             
             return;
         };
 
         const fag = child.children[1].firstChild.text;
-        const grades: {[id: string]: WeightedGrade} = {}
+        const grades: {[id: string]: WeightedGrade | undefined} = {};
+
+        // ["1. standpunkt", "2. standpunkt", "Eksamen/årsprøve", "Årskarakter"].forEach((v) => {
+        //     if(!grades[v]) {
+        //         grades[v] = undefined
+        //     }
+        // })
+
         child.children.forEach((td: any, i: number) => {
             if(i < 2) return;
 
             let weight: string = "";
             if(td.firstChild !== undefined) {
                 weight = td.firstChild.text;
-                const matches = weight.match(/KarakterVægt: (\d*(,|\.)\d*|\d*)/)
+                const matches = weight.match(/Vægt: (\d*(,|\.)\d*|\d*)/)
 
                 if(matches != null)
                     weight = matches[1];
-                else {
-                    weight = (weight.match(/ProtokolVægt: (\d*(,|\.)\d*|\d*)/) ?? [null, "1"])[1]
-                }
+                else
+                    weight = "1"
             }
 
-            const col = (cols[i-2] === "Eksamens-/" || cols[i-2] === "Intern prøve") ? "Eksamen/årsprøve" : cols[i-2]
-            const latestGrade = grades[col]?.grade
-            const latestWeight = grades[col]?.weight
+            let col: string;
+            switch(cols[i-2].toLowerCase()) {
+                case "eksamens-/":
+                case "intern prøve":
+                    col = "Eksamen/årsprøve"
+                    break;
+                case "afsluttende års-/":
+                case "årskarakter":
+                    col = "Årskarakter"
+                    break;
+                default:
+                    col = cols[i-2]
+            }
 
-            if(td.firstChild !== undefined && td.firstChild.firstChild !== undefined && td?.firstChild?.firstChild?.tagName?.trim() === "b") {
+            const grade = td.firstChild === undefined ? "" : 
+                            td.firstChild.firstChild.tagName == "b" ?
+                            td.firstChild.firstChild.firstChild.text : td.firstChild.firstChild.text
+
+            if(!grades[col] || grades[col]?.grade == "") {
                 grades[col] = {
-                    grade: td.firstChild.firstChild.firstChild.text,
-                    weight: weight,
-                }
-            } else {
-                grades[col] = {
-                    grade: td.firstChild === undefined ? (latestGrade ?? "") : td.firstChild.firstChild.text,
-                    weight: weight == "" ? latestWeight : weight,
+                    grade,
+                    weight,
                 }
             }
         })
 
-        const fagNavn = fag.split(", ")[0];
-        if(!out[fagNavn]) {
-            out[fagNavn] = {
-                fag: fag.split(", ")[0],
-                karakterer: [grades],
-                type: [fag.split(", ")[1] === "SAM" ? "Samlet" : fag.split(", ")[1]],
-            }
-        } else {
-            out[fagNavn].type.push(fag.split(", ")[1] === "SAM" ? "Samlet" : fag.split(", ")[1]);
-            out[fagNavn].karakterer.push(grades);
-        }
+        out.push(({
+            fag: fag.split(", ")[0],
+            karakterer: grades,
+            type: fag.split(", ")[1] === "SAM" ? "Samlet" : fag.split(", ")[1],
+            weight: "",
+        }))
     })
 
-    return Object.values(out);
+
+    return out;
 }

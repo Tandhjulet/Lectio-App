@@ -13,4 +13,3 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 
 ### __LAV__
 - spørgeskemaer
-- karakterer ui re-design
