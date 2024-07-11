@@ -14,3 +14,4 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 
 ### __LAV__
 - spørgeskemaer
+- navbar should automatically displace content to allow for cleaner code and remove edgecases
