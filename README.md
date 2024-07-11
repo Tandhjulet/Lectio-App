@@ -10,6 +10,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 
 ### __MELLEM__
 - push notifs
+- keyboard should not persist scroll (person & room list)
 
 ### __LAV__
 - spørgeskemaer
