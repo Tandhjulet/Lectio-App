@@ -167,9 +167,12 @@ export default function Lokaler({ navigation }: {
 
                     contentInsetAdjustmentBehavior="automatic"
                     contentContainerStyle={{
-                        paddingBottom: 260,
+                        paddingBottom: 89,
                         paddingHorizontal: 15,
                     }}
+
+                    keyboardDismissMode="on-drag"
+                    keyboardShouldPersistTaps="always"
                 />
             )}
         </View>

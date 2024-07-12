@@ -16,3 +16,4 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 - spørgeskemaer
 - navbar should automatically displace content to allow for cleaner code and remove edgecases
 - istedet for hold så parse gruppen til et fag vha. https://www.lectio.dk/lectio/572/FindSkemaAdv.aspx
+- class picture scraper cannot read property text of undefined

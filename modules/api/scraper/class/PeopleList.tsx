@@ -10,6 +10,7 @@ let IDS: number[] = []
 enum InterruptReason {
     RATELIMITED,
     NO_INTERNET,
+    GENERIC,
 }
 
 const unsubscribe = NetInfo.addEventListener((state) => {
@@ -84,8 +85,15 @@ export async function scrapePeople(force: boolean = false) {
                     ERROR = InterruptReason.NO_INTERNET;
                     return;
                 }
-    
-                const pictureData = (await scrapeStudentPictures(klasser[i].classId, klasser[i].name, gym));
+                
+                const pictureData = (await scrapeStudentPictures(klasser[i].classId, klasser[i].name, gym)
+                    .catch((rej) => {
+                        console.error(rej);
+
+                        ERROR = InterruptReason.GENERIC
+                        return;
+                    })
+                );
                 if(pictureData == null) {
                     // save current stage. probably rate limited?
                     await saveUnsecure("peopleListBackup", { stage: i, data: out })
@@ -96,12 +104,12 @@ export async function scrapePeople(force: boolean = false) {
                 out = {...out, ...pictureData};
     
                 if(i + 1 == klasser.length) {
-                    console.log("[Done] Saved stage " + i + "/" + klasser.length)
+                    console.log("[Done] Saved stage " + (i+1) + "/" + klasser.length + ` [${klasser[i].name}]`)
                     done(out);
                 } else {
                     // save current stage in case app gets shut down.
                     await saveUnsecure("peopleListBackup", { stage: i, data: out })
-                    console.log("Saved stage " + i + "/" + klasser.length)
+                    console.log("[Done] Saved stage " + (i+1) + "/" + klasser.length + ` [${klasser[i].name}]`)
                 }
             }, ((i - (oldData == null ? 0 : oldData.stage)) + 1) * 2000))
         }
