@@ -174,7 +174,11 @@ export default function TeachersAndStudents({ navigation }: {
     }, [])
 
     return (
-        <View style={{height: '100%',width:'100%'}}>
+        <View style={{
+            height: '100%',
+            width:'100%',
+            paddingBottom: 89,
+        }}>
             {!loading &&
                 <>
                     <TableView style={{
@@ -225,7 +229,7 @@ export default function TeachersAndStudents({ navigation }: {
                                             renderItem={renderItem}
                                             keyExtractor={(item, index) => item + index}
                                             contentContainerStyle={{
-                                                paddingBottom: 137 + 70,
+                                                paddingBottom: 50,
                                                 paddingRight: 5,
                                                 paddingLeft: 5,
                                             }}
@@ -283,7 +287,7 @@ export default function TeachersAndStudents({ navigation }: {
                                             }}
 
                                             contentContainerStyle={{
-                                                paddingBottom: 137 + 70,
+                                                paddingBottom: 50,
                                                 paddingRight: 5,
                                                 paddingLeft: 5,
                                             }}

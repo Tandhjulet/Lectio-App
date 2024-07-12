@@ -686,6 +686,8 @@ export default function Afleveringer({ navigation }: {navigation: NativeStackNav
         <View style={{
             minHeight: "100%",
             minWidth: "100%",
+
+            paddingBottom: 89,
         }}>
             {loading ?
                 <View style={{
@@ -752,7 +754,6 @@ export default function Afleveringer({ navigation }: {navigation: NativeStackNav
 
                             contentContainerStyle={{
                                 minHeight: "100%",
-                                paddingBottom: 150,
                                 paddingTop: 2.5,
                             }}
                         />

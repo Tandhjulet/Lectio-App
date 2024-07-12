@@ -164,7 +164,12 @@ export default function Grades() {
     const theme = themes[scheme ?? "dark"];
 
     return (
-        <View>
+        <View style={{
+            maxHeight: "100%",
+            maxWidth: "100%",
+
+            paddingBottom: 89,
+        }}>
             <ScrollView style={{
                 minHeight: "100%",
                 minWidth: "100%",
@@ -359,10 +364,6 @@ export default function Grades() {
                             </View>
 
                         </View>
-
-                        <View style={{
-                            paddingBottom: 89,
-                        }} />
                     </>
                 }
             </ScrollView>

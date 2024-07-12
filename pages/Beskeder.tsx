@@ -383,7 +383,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
         minWidth:'100%',
         backgroundColor: theme.BLACK,
 
-        paddingBottom: 50,
+        paddingBottom: 89,
     }}>
         {loading ? 
             <View style={{

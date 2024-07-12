@@ -577,8 +577,8 @@ export default function Skema({ navigation, route }: {
                 }}
             >
                 <View style={{
-                    height: StyleSheet.hairlineWidth,
-                    width: width - 30 - 10 - 15,
+                    height: StyleSheet.hairlineWidth * 2,
+                    width: width - 50,
                     backgroundColor: "#ff5e5e",
                     opacity: 0.8,
                     zIndex: 10,
@@ -752,12 +752,15 @@ export default function Skema({ navigation, route }: {
                     <TouchableOpacity onPress={() => {
                         if(loading || dateCompare(selectedDay, time) || blockScroll) return;
 
-                        setLoadDate(time);
-                        setSelectedDay(time);
-                        setDayNum(getDay(time).weekDayNumber)
+                        if(getWeekNumber(time) !== getWeekNumber(selectedDay)) {
+                            pagerRef.current?.setPage(selectedDay > time ? 0 : 2);
+                            setBlockScroll(true);
+                            setLoadDate(time);
+                        }
 
-                        setBlockScroll(true);
-                        pagerRef.current?.setPage(selectedDay > time ? 0 : 2);
+                        setDayNum(getDay(time).weekDayNumber)
+                        setSelectedDay(time);
+
                         
                         !isConnected && showUIError();
                     }}>
@@ -921,7 +924,7 @@ export default function Skema({ navigation, route }: {
                             flex: 1,
                         }} refreshControl={
                             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                        } scrollEnabled ref={scrollView}>
+                        } scrollEnabled ref={scrollView} showsVerticalScrollIndicator={false}>
                             <View style={{
                                 paddingTop: 20,
                             }} />
@@ -996,7 +999,7 @@ export default function Skema({ navigation, route }: {
                                                     flexDirection: "row-reverse",
                                                     alignItems: "center",
 
-                                                    right: 10,
+                                                    right: 5,
                                                     gap: 5,
 
                                                     transform: [{
@@ -1092,7 +1095,7 @@ export default function Skema({ navigation, route }: {
                                         <View style={{
                                             position: "relative",
                                             marginLeft: 38 + 7.5,
-                                            marginRight: 40 + 7.5 * 2,
+                                            marginRight: 35 + 7.5 * 2,
 
                                             zIndex: 5,
                                         }}>

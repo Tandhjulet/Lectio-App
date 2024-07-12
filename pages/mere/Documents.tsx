@@ -101,14 +101,14 @@ export default function Documents({ route }: {
         <View style={{
             height: "100%",
             width: "100%",
+
+            paddingBottom: 89,
         }}>
             <ScrollView style={{
                 height: "100%",
                 width: "100%",
             }}>
-                <TableView style={{
-                    paddingBottom: 89,
-                }}>
+                <TableView>
                     {folders?.map((folder, i) => {
                         return (
                             <Cell

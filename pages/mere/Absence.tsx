@@ -698,7 +698,9 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
             <BottomSheetModalProvider>
                 <View style={{
                     height: '100%',
-                    width:'100%'
+                    width:'100%',
+
+                    paddingBottom: 140,
                 }}>
                     <PaginationIndicator scrollOffset={scrollOffsetAnimatedValue} position={positionAnimatedValue} pagerRef={pagerRef} />
 
@@ -747,8 +749,6 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
 
                                         marginHorizontal: 20,
                                         gap: 25,
-
-                                        paddingBottom: 150,
                                         paddingTop: 15,
                                     }}>
                                         <View style={{
@@ -1144,10 +1144,7 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
 
                                     style={{
                                         paddingHorizontal: 15,
-                                    }}
-
-                                    contentContainerStyle={{
-                                        paddingBottom: 150,
+                                        paddingBottom: 50,
                                     }}
 
                                     refreshControl={
