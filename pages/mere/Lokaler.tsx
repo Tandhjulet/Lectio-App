@@ -13,7 +13,7 @@ export default function Lokaler({ navigation }: {
     const [loading, setLoading] = useState<boolean>(true);
     const [refreshing, setRefreshing] = useState<boolean>(false);
 
-    const [lokaler, setLokaler] = useState<Lokale[]>([]);
+    let lokaler = useRef<Lokale[]>([]).current;
     const [filteredLokaler, setFilteredLokaler] = useState<Lokale[]>([]);
 
     const [gestureEnabled, setGestureEnabled] = useState<boolean>(true);
@@ -117,7 +117,7 @@ export default function Lokaler({ navigation }: {
                 setLoading(false);
                 if(!data) return;
 
-                setLokaler(data ?? []);
+                lokaler = data ?? [];
                 setFilteredLokaler(data ?? []);
             })
         })();
@@ -132,7 +132,7 @@ export default function Lokaler({ navigation }: {
                 setRefreshing(false);
                 if(!data) return;
 
-                setLokaler(data ?? []);
+                lokaler = data ?? [];
                 setFilteredLokaler(data ?? []);
             })
         })();
@@ -148,6 +148,7 @@ export default function Lokaler({ navigation }: {
             minWidth: "100%",
 
             justifyContent: "center",
+            paddingBottom: 89,
         }}>
             {loading ? (
                 <ActivityIndicator />
@@ -167,7 +168,6 @@ export default function Lokaler({ navigation }: {
 
                     contentInsetAdjustmentBehavior="automatic"
                     contentContainerStyle={{
-                        paddingBottom: 89,
                         paddingHorizontal: 15,
                     }}
 
