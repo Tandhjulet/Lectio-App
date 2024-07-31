@@ -1,9 +1,10 @@
 import { Fragment, memo, useCallback, useEffect, useState } from "react"
-import { getProfile, scrapeGrades } from "../../modules/api/scraper/Scraper";
+import { getProfile, Profile, scrapeGrades } from "../../modules/api/scraper/Scraper";
 import { secureGet } from "../../modules/api/Authentication";
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { Grade } from "../../modules/api/scraper/GradeScraper";
 import { hexToRgb, Theme, themes } from "../../modules/Themes";
+import { Hold } from "../../modules/api/scraper/hold/HoldScraper";
 
 const Cell = memo(function Cell({ grade, theme }: {
     grade: Grade,
@@ -107,6 +108,7 @@ const Cell = memo(function Cell({ grade, theme }: {
 })
 
 export default function Grades() {
+    const [ profile, setProfile ] = useState<Profile>();
 
     const [grades, setGrades] = useState<Grade[]>();
 
@@ -134,6 +136,7 @@ export default function Grades() {
         (async () => {
             const { gymNummer } = await secureGet("gym");
             const profile = await getProfile();
+            setProfile(profile)
 
             await scrapeGrades(gymNummer, profile.elevId, (data) => {
                 setGrades(data ?? []);
@@ -148,6 +151,7 @@ export default function Grades() {
         (async () => {
             const { gymNummer } = await secureGet("gym");
             const profile = await getProfile();
+            setProfile(profile);
 
             await scrapeGrades(gymNummer, profile.elevId, (data) => {
                 setGrades(data ?? []);
@@ -282,6 +286,12 @@ export default function Grades() {
                             flexDirection: "column",
                         }}>
                             {grades?.map((grade: Grade, i: number) => <Cell key={i} grade={grade} theme={theme} />)}
+                            {grades?.length === 0 && profile?.hold?.map((hold: Hold, i: number) => <Cell key={i} grade={{
+                                fag: hold.holdNavn,
+                                karakterer: {},
+                                type: "Ukendt",
+                                weight: "",
+                            }} theme={theme} />)}
                         </View>
 
                         <View style={{
@@ -327,7 +337,7 @@ export default function Grades() {
                                 flexDirection: "row",
                                 width: "65%",
                             }}>
-                                {grades && ["1. standpunkt", "2. standpunkt", "Eksamen/årsprøve", "Årskarakter"].map((title, index) => {
+                                {grades && grades[0] && ["1. standpunkt", "2. standpunkt", "Eksamen/årsprøve", "Årskarakter"].map((title, index) => {
                                     if(!grades[0].karakterer[title] || grades[0].karakterer[title].grade == "") {
                                         return (
                                             <View
@@ -356,8 +366,6 @@ export default function Grades() {
                                             }}>
                                                 {calculateAverage(title)}
                                             </Text>
-                                            
-                                            
                                         </View>
                                     )
                                 })}

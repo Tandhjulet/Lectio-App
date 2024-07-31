@@ -1,6 +1,6 @@
 export interface Grade {
     fag: string,
-    type: "Mundtlig" | "Skriftlig" | "Samlet",
+    type: "Mundtlig" | "Skriftlig" | "Samlet" | "Ukendt",
     karakterer: {[id: string]: WeightedGrade | undefined},
     weight: string,
 }

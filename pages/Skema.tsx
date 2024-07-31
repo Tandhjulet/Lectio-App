@@ -1033,8 +1033,9 @@ export default function Skema({ navigation, route }: {
                                                 <View key={index} style={{
                                                     position: "absolute",
 
+                                                    top: calculateTop(modulTiming),
                                                     transform: [{
-                                                        translateY: modulTiming.diff/2 -30/2,
+                                                        translateY: modulTiming.diff/2 - (modulTiming.diff > 60 ? 30/2 : 22.5),
                                                     }],
                                                     height: modulTiming.diff > 60 ? 30 : modulTiming.diff,
                                                     width: modulTiming.diff > 60 ? 30 : 33.5+5,
@@ -1052,8 +1053,6 @@ export default function Skema({ navigation, route }: {
 
                                                     backgroundColor: scheme == "dark" ? "#1f1f1f" : "#cecece",
                                                     zIndex: 5,
-
-                                                    top: calculateTop(modulTiming)
                                                 }} onLayout={() => {
                                                     if(index === 0){
                                                         scrollView.current?.scrollTo({y: calculateTop(modulTiming), animated: true})
@@ -1076,7 +1075,7 @@ export default function Skema({ navigation, route }: {
                                                             borderBottomRightRadius: 7.5,
 
                                                             transform: [{
-                                                                translateY: -modulTiming.diff/2 +30/2
+                                                                translateY: -modulTiming.diff/2 + 30/2
                                                             }],
                                                             backgroundColor: scheme == "dark" ? "#1f1f1f" : "#cecece",
                                                         }}/>
@@ -1107,12 +1106,12 @@ export default function Skema({ navigation, route }: {
 
                                                 // brug højden defineret af lectio, desto mindre modulet går på tværs af dage.
                                                 // i det tilfælde bruger vi vores egen.
-                                                let height = modul.height
+                                                let height = modul.height - 1
                                                 if(modul.timeSpan.end.startsWith(selectedDay.getDate().toString().padStart(2, "0")) &&
                                                    modul.timeSpan.start.split(" ")[0] != modul.timeSpan.end.split(" ")[0] &&
                                                    modul.timeSpan.diff > 0) { // FIXME: exams start and end-date will always be 0 as they are unsupported by the parser.
                                                                               // this might make the exam appear shorter than it actually is, if it stretches over multiple days. 
-                                                    height = modul.timeSpan.diff;
+                                                    height = modul.timeSpan.diff - 1;
                                                 }
 
                                                 const widthNum = parseInt(width.replace("%", ""));
