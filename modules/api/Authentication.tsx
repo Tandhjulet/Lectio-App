@@ -8,6 +8,7 @@ import { SCRAPE_URLS, getASPHeaders } from './scraper/Helpers';
 import { Key, saveFetch } from './storage/Storage';
 import { treatRaw } from './scraper/TextTreater';
 import { scrapeHoldListe } from './scraper/hold/HoldScraper';
+import selectTerm from './term/TermManager';
 
 /**
  * @param key the key of the item
@@ -49,7 +50,7 @@ export async function validate(gymNummer: string, username: string, password: st
     }
     const stringifiedData = parsedData.join("&");
 
-    await fetch(SCRAPE_URLS(gymNummer).LOGIN_URL, {
+    const res = await fetch(SCRAPE_URLS(gymNummer).LOGIN_URL, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -74,23 +75,26 @@ export async function validate(gymNummer: string, username: string, password: st
         body: stringifiedData,
     });
 
-    const res2 = await fetch(SCRAPE_URLS(gymNummer).FORSIDE, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-        },
-        body: stringifiedData,
-    });
-    const isAuth = (res2.url == SCRAPE_URLS(gymNummer).FORSIDE);
+    let text = await res.text();
+    if(res.url !== "https://www.lectio.dk/lectio/572/forside.aspx") {
+        text = await (await fetch(SCRAPE_URLS(gymNummer).FORSIDE, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+            },
+            body: stringifiedData,
+        })).text();
+    }
+    const isAuth = (res.url == SCRAPE_URLS(gymNummer).FORSIDE && text.includes("Log ud"));
 
     if(isAuth) {
-        const body = await res2.text()
-
-        await _fetchProfile(body, gymNummer)
+        await _fetchProfile(text, gymNummer)
         await saveFetch(Key.FORSIDE, {
-            body: body,
+            body: text,
         }, -1)
+
+        setTimeout(() => selectTerm(gymNummer), 200);
     }
 
     return isAuth;

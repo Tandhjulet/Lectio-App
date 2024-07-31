@@ -7,6 +7,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 
 ### __HØJ__
 - react native web workers til background fetching af f.x. profilbilleder
+- 
 
 ### __MELLEM__
 - push notifs

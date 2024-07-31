@@ -375,7 +375,7 @@ export async function getMessage(gymNummer: string, messageId: string, headers: 
 
         "__EVENTTARGET": "__Page",
         "__EVENTARGUMENT": "$LB2$_MC_$_"+messageId,
-        "s$m$ChooseTerm$term": "2023",
+        "s$m$ChooseTerm$term": new Date().getFullYear().toString(),
         "s$m$searchinputfield": "",
         "s$m$Content$Content$ListGridSelectionTree$folders": "-70",
         "s$m$Content$Content$SPSearchText$tb": "",

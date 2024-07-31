@@ -21,7 +21,7 @@ export async function getClasses(): Promise<Klasse[] | null> {
         "masterfootervalue": "X1!ÆØÅ",
         "LectioPostbackId": "",
         "__EVENTTARGET": "m$Content$AktuelAndAfdelingCB$ShowOnlyAktulleCB",
-        "m$ChooseTerm$term": "2023",
+        "m$ChooseTerm$term": new Date().getFullYear().toString(),
     }
 
     delete payload["m$Content$AktuelAndAfdelingCB$ShowOnlyCurrentShoolAfdelingCB"]

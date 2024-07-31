@@ -32,13 +32,14 @@ export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: stri
         "DOCUMENTS": `https://www.lectio.dk/lectio/${gymNummer}/DokumentOversigt.aspx?elevid=${elevId}&folderid=${klasseId}`,
         "BOOKS": `https://www.lectio.dk/lectio/${gymNummer}/BD/UserReservations.aspx?ElevID=${elevId}`,
         "LOKALER": `https://www.lectio.dk/lectio/${gymNummer}/SkemaAvanceret.aspx?type=aktuellelokaler&nosubnav=1&prevurl=FindSkemaAdv.aspx`,
+        "HOVEDMENU": `https://www.lectio.dk/lectio/${gymNummer}/default.aspx`,
 
         "STUDIEKORT": `https://www.lectio.dk/lectio/${gymNummer}/digitaltStudiekort.aspx`,
         "PROFILE": `https://www.lectio.dk/lectio/${gymNummer}/indstillinger/studentIndstillinger.aspx`,
         "QR_CODE_URL": `https://www.lectio.dk/lectio/${gymNummer}/GetImage.aspx?studentid=${elevId}&type=studiekortqr&time=${(new Date()).valueOf()}`,
 
         "DOCUMENT_UPLOAD": `https://www.lectio.dk/lectio/${gymNummer}/dokumentupload.aspx`,
-        "DOCUMENT_CHOOSER": `https://www.lectio.dk/lectio/${gymNummer}/documentchoosercontent.aspx?year=2023&ispublic=0&showcheckbox=0&mode=pickfile`,
+        "DOCUMENT_CHOOSER": `https://www.lectio.dk/lectio/${gymNummer}/documentchoosercontent.aspx?year=${new Date().getFullYear()}&ispublic=0&showcheckbox=0&mode=pickfile`,
 
         "LECTIMATE_SAVE_RECEIPT": `https://lectimate.com/api/v1/save-receipt`,
         "LECTIMATE_GET": `https://lectimate.com/api/v1/validate`,
