@@ -191,7 +191,6 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
 
         setAlmindeligt(almindeligt);
         setSkriftligt(skriftligt);
-
         setChartedAbsence(out);
     }, [])
 
@@ -222,10 +221,10 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
 
                 setRateLimited(payload == undefined)
                 if(!payload) {
+                    
                     setLoading(false);
                     return;
                 }
-
                 handleAbsenceData(payload, out);
                 setLoading(false);
             })
@@ -585,7 +584,7 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                     {reg.studentNote?.split("\n")[0] ?? "Opgiv årsag"}
                                 </Text>
 
-                                {reg.studentNote?.split("\n")[1] && (
+                                {reg.studentNote?.split("\n")[1] ? (
                                     <Text style={{
                                         color: hexToRgb(color, 1),
                                         fontSize: 14,
@@ -594,7 +593,7 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                     }} adjustsFontSizeToFit minimumFontScale={0.8} numberOfLines={4} ellipsizeMode="middle">
                                         {reg.studentNote?.split("\n")[1]}
                                     </Text>
-                                )}
+                                ): null }
                             </View>
                         </View>
 
@@ -771,7 +770,7 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                                 </Text>
                                             </View>
 
-                                            {chartedAbsence?.almindeligt?.absent && chartedAbsence?.almindeligt?.absent > 0 && (
+                                            {chartedAbsence?.almindeligt?.absent && chartedAbsence?.almindeligt?.absent > 0 ? (
                                                 <View style={{
                                                     flexDirection: "column"
                                                 }}>
@@ -799,14 +798,14 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                                                         justifyContent: "center",
                                                                         alignItems: "center",
                                                                     }} key={i}>
-                                                                        {totalHeight*300 > 7.5 && (
+                                                                        {totalHeight*300 > 7.5 ? (
                                                                             <Text style={{
                                                                                 color: scheme === "dark" ? "#FFF" : "#000",
                                                                                 position: "absolute"
                                                                             }}>
                                                                                 {(totalHeight * 100).toFixed(0)}%
                                                                             </Text>
-                                                                        )}
+                                                                        ) : null}
                                                                     </View>
                                                                 )
                                                             })}
@@ -870,7 +869,7 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                                                 fontSize: 15,
                                                                 marginBottom: 4,
                                                             }}>
-                                                                {treatNumber((chartedAbsence.almindeligt.absent/chartedAbsence.almindeligt.settled)*100, 1)}%
+                                                                {treatNumber(1, 1)}%
                                                             </Text>
 
                                                             <Text style={{
@@ -904,7 +903,7 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                                                 fontSize: 15,
                                                                 marginBottom: 4,
                                                             }}>
-                                                                {treatNumber((chartedAbsence.almindeligt.absent/chartedAbsence.almindeligt.yearly)*100, 1)}%
+                                                                {treatNumber(1, 1)}%
                                                             </Text>
 
                                                             <Text style={{
@@ -915,7 +914,9 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                                         </View>
                                                     </View>
                                                 </View>
-                                            )}
+                                            ) : <View style={{
+                                                marginBottom: 200,
+                                            }} />}
                                         </View>
 
                                         <View style={{
@@ -938,7 +939,7 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                                 </Text>
                                             </View>
 
-                                            {chartedAbsence?.skriftligt?.absent && chartedAbsence?.skriftligt?.absent > 0 && (
+                                            {chartedAbsence?.skriftligt?.absent && chartedAbsence?.skriftligt?.absent > 0 ? (
                                                 <View style={{
                                                     flexDirection: "column"
                                                 }}>
@@ -966,14 +967,14 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                                                         justifyContent: "center",
                                                                         alignItems: "center",
                                                                     }} key={i}>
-                                                                        {totalHeight*300 > 7.5 && (
+                                                                        {totalHeight*300 > 7.5 ? (
                                                                             <Text style={{
                                                                                 color: scheme === "dark" ? "#FFF" : "#000",
                                                                                 position: "absolute"
                                                                             }}>
                                                                                 {(totalHeight * 100).toFixed(0)}%
                                                                             </Text>
-                                                                        )}
+                                                                        ) : null}
                                                                     </View>
                                                                 )
                                                             })}
@@ -1037,7 +1038,7 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                                                 fontSize: 15,
                                                                 marginBottom: 4,
                                                             }}>
-                                                                {treatNumber((chartedAbsence.skriftligt.absent/chartedAbsence.skriftligt.settled)*100, 1)}%
+                                                                {treatNumber(1, 1)}%
                                                             </Text>
 
                                                             <Text style={{
@@ -1071,7 +1072,7 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                                                 fontSize: 15,
                                                                 marginBottom: 4,
                                                             }}>
-                                                                {treatNumber((chartedAbsence.skriftligt.absent/chartedAbsence.skriftligt.yearly)*100, 1)}%
+                                                                {treatNumber(1, 1)}%
                                                             </Text>
 
                                                             <Text style={{
@@ -1082,9 +1083,10 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                                         </View>
                                                     </View>
                                                 </View>
-                                            )}
+                                            ) : null}
                                         </View>
-                                    </View>
+                                    </View>  
+                                    
 
                                     <View style={{
                                         height: 89 / 2,
@@ -1095,7 +1097,7 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                         </View>
                         
                         <View key="1">
-                            {remappedRegs.length == 0 && !registrationLoading && (
+                            {remappedRegs.length == 0 && !registrationLoading ? (
                                 <ScrollView refreshControl={
                                     <RefreshControl refreshing={registrationRefreshing} onRefresh={onRegistrationRefresh} />
                                 } contentContainerStyle={{
@@ -1115,8 +1117,8 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                         Du har ingen fraværsregistreringer.
                                     </Text>
                                 </ScrollView>
-                            )}
-                            {registrationLoading && (
+                            ) : null}
+                            {registrationLoading ? (
                                 <View style={{
                                     height: height / 2,
                                     width: width,
@@ -1127,8 +1129,8 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                 }}>
                                     <ActivityIndicator size={"small"} />
                                 </View>
-                            )}
-                            {!registrationLoading && remappedRegs && (
+                            ) : null}
+                            {!registrationLoading && remappedRegs ? (
                                 <SectionList
                                     sections={remappedRegs}
                                     renderItem={renderItemSectionList}
@@ -1151,11 +1153,11 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                         <RefreshControl refreshing={registrationRefreshing} onRefresh={onRegistrationRefresh} />
                                     }
                                 />
-                            )}
+                            ) : null}
                         </View>
 
                     </AnimatedPagerView>
-                    {rateLimited && <RateLimit />}
+                    {rateLimited ? <RateLimit /> : null}
 
                     <BottomSheetModal
                         ref={bottomSheetModalRef}
@@ -1173,7 +1175,7 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                         }}
 
                     >   
-                        {(!registrationLoading && !registrationRefreshing) && (() => {
+                        {(!registrationLoading && !registrationRefreshing) ? (() => {
                             let color;
                             if(absenceReason == null) {
                                 const colorIndex = fraværIndexes.findIndex((v) => v == (!registration?.studentProvidedReason ? "Ikke angivet" : registration?.studentNote?.split("\n")[0])?.toLowerCase())
@@ -1408,7 +1410,7 @@ export default function Absence({ navigation }: { navigation: NativeStackNavigat
                                     </View>
                                 </BottomSheetScrollView>
                             )
-                        })()}
+                        })() : null}
                     </BottomSheetModal>
 
                     <BottomSheetModal

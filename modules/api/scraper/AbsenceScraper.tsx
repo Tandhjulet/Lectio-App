@@ -60,7 +60,6 @@ export type ModuleAbsence = {
 
 function scrapeAbsenceRow(row: any): Fag {
     const team: string = row.firstChild.firstChild.firstChild.text;
-
     const scaffOld = (absenceType: AbsenceType): ModuleAbsence => {
         return ({
             team: team,

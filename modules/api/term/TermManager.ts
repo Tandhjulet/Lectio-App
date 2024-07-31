@@ -1,3 +1,4 @@
+import { getUnsecure, saveUnsecure } from "../Authentication";
 import { getASPHeaders, parseASPHeaders, SCRAPE_URLS } from "../scraper/Helpers";
 import treat from "../scraper/TextTreater";
 
@@ -20,7 +21,6 @@ export default async function selectTerm(gymNummer: string) {
     let maxTerm: number | undefined = undefined;
 
     for(let option of terms.children) {
-        console.log(option.text);
         try {
             const termValue = parseInt(option.attributes.value);
             if(termValue == currentYear) {
@@ -89,4 +89,27 @@ export default async function selectTerm(gymNummer: string) {
         },
         body: stringifiedData
     })
+    await saveUnsecure("currentTerm", {term: maxTerm.toString()})
+}
+
+export async function getTerm(parser?: any): Promise<number> {
+    const terms = parser?.getElementById("m_ChooseTerm_term");
+    const currentTerm = await getUnsecure("currentTerm");
+
+    if(!terms && !currentTerm) {
+        console.warn("Couldn't find term, guessing...")
+        return new Date().getFullYear();
+    }
+
+    if(terms && terms?.children)
+        for(let option of terms.children) {
+            try {
+                if(option?.attributes?.selected === "selected") {
+                    await saveUnsecure("currentTerm", {term: option?.attributes?.value})
+                    return parseInt(option?.attributes?.value);
+                }
+            } catch {}
+        }
+
+    return parseInt(currentTerm?.term ?? new Date().getFullYear());
 }

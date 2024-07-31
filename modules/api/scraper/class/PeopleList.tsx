@@ -111,9 +111,9 @@ export async function scrapePeople(force: boolean = false) {
                     await saveUnsecure("peopleListBackup", { stage: i, data: out })
                     console.log("[Done] Saved stage " + (i+1) + "/" + klasser.length + ` [${klasser[i].name}]`)
                 }
-            }, ((i - (oldData == null ? 0 : oldData.stage)) + 1) * 2000))
+            }, ((i - (oldData == null ? 0 : oldData.stage)) + 1) * 5000))
         }
-    }, 2400)
+    }, 4900)
 }
 
 export async function abort() {

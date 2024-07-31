@@ -193,6 +193,8 @@ export default function UserCell() {
                                 "User-Agent": "Mozilla/5.0",
                                 "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
                             },
+                            cache: "web",
+                            priority: "high",
                         }}
                         theme={theme}
                         borderRadius={false}
