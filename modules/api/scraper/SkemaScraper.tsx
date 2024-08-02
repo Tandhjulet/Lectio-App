@@ -412,8 +412,9 @@ export function parseInfoString(info: any): {
         }
     });
 
-    if(info.firstChild.tagName == "span" && info.firstChild.attributes["data-lectioContextCard"] == undefined) {
-        out["title"] = replaceHTMLEntities(info.firstChild.firstChild.text);
+    if(info.lastChild.tagName == "span" && info.lastChild.attributes["data-lectioContextCard"] == undefined) {
+        console.log("Title set")
+        out["title"] = replaceHTMLEntities(info.lastChild.firstChild.text);
     }
     if(out["lokale"].startsWith("...")) {
         out["lokale"] = out["lokale"].replace(/\.\.\./, "");
