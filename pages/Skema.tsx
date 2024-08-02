@@ -2,7 +2,7 @@ import { ActivityIndicator, Alert, Animated, ColorValue, DimensionValue, Dimensi
 import NavigationBar from "../components/Navbar";
 import { createRef, memo, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
-import { secureGet } from "../modules/api/Authentication";
+import { secureGet } from "../modules/api/helpers/Storage";
 import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
 import { hexToRgb, themes } from "../modules/Themes";
 import { ArrowLeftIcon, ArrowRightIcon, BackwardIcon, ChatBubbleBottomCenterTextIcon, ChevronLeftIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";
@@ -10,7 +10,7 @@ import getDaysOfCurrentWeek, { WeekDay, getDay, getDaysOfThreeWeeks, getNextWeek
 import { getPeople } from "../modules/api/scraper/class/PeopleList";
 import { NavigationProp, RouteProp } from "@react-navigation/native";
 import RateLimit from "../components/RateLimit";
-import { Key, getSaved } from "../modules/api/storage/Storage";
+import { Key, getSaved } from "../modules/api/helpers/Cache";
 import { SCHEMA_SEP_CHAR } from "../modules/Config";
 import Logo from "../components/Logo";
 import PagerView from "react-native-pager-view";
@@ -24,7 +24,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import 'react-native-console-time-polyfill';
 import Connectivity from "../components/Connectivity";
 import { saveCurrentSkema } from "../modules/Widget";
-import { Timespan } from "../modules/api/storage/Timespan";
+import { Timespan } from "../modules/api/helpers/Timespan";
 
 /**
  * 

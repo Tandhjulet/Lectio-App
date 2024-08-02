@@ -5,7 +5,7 @@ import { Cell, Section, Separator, TableView } from "react-native-tableview-simp
 import { Opgave, OpgaveDetails, parseDate, postDocument, Status } from "../../modules/api/scraper/OpgaveScraper";
 import { formatDate } from "../Afleveringer";
 import { getAflevering, getProfile } from "../../modules/api/scraper/Scraper";
-import { secureGet, getUnsecure } from "../../modules/api/Authentication";
+import { secureGet, getUnsecure } from "../../modules/api/helpers/Storage";
 import { hexToRgb, themes } from "../../modules/Themes";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";

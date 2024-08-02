@@ -1,7 +1,7 @@
 import * as DocumentPicker from 'expo-document-picker';
 import RNFS from "react-native-fs";
 import { getASPHeaders, SCRAPE_URLS } from '../scraper/Helpers';
-import { secureGet } from '../Authentication';
+import { secureGet } from '../helpers/Storage';
 import RNFetchBlob from 'rn-fetch-blob'
 
 export interface LocalDocument {

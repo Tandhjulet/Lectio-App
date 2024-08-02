@@ -5,7 +5,7 @@ import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { hexToRgb, Theme, themes } from "../../modules/Themes";
-import { secureGet, getUnsecure } from "../../modules/api/Authentication";
+import { secureGet, getUnsecure } from "../../modules/api/helpers/Storage";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 
 import 'react-native-console-time-polyfill';

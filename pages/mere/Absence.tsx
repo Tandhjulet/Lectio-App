@@ -2,7 +2,7 @@ import { ActivityIndicator, Animated, Dimensions, Pressable, RefreshControl, Scr
 import NavigationBar from "../../components/Navbar";
 import { ReactElement, RefObject, createRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { getAbsence, getAbsenceRegistration } from "../../modules/api/scraper/Scraper";
-import { secureGet, getUnsecure } from "../../modules/api/Authentication";
+import { secureGet, getUnsecure } from "../../modules/api/helpers/Storage";
 import { hexToRgb, Theme, themes } from "../../modules/Themes";
 import { AbsenceReason, AbsenceRegistration, AbsenceType, Fag, ModuleAbsence, Registration, postRegistration } from "../../modules/api/scraper/AbsenceScraper";
 import RateLimit from "../../components/RateLimit";

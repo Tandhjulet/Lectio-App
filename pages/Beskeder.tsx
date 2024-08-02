@@ -3,7 +3,7 @@ import NavigationBar from "../components/Navbar";
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { Profile, getMessages, getProfile } from "../modules/api/scraper/Scraper";
 import { hexToRgb, themes } from "../modules/Themes";
-import { secureGet, getUnsecure } from "../modules/api/Authentication";
+import { secureGet, getUnsecure } from "../modules/api/helpers/Storage";
 import { LectioMessage } from "../modules/api/scraper/MessageScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronRightIcon, DocumentIcon, EnvelopeIcon, EnvelopeOpenIcon, FolderIcon, FolderMinusIcon, PaperAirplaneIcon, PencilSquareIcon, SunIcon, TrashIcon, UserIcon, XCircleIcon } from "react-native-heroicons/solid";
@@ -15,7 +15,7 @@ import {
     BottomSheetScrollView,
     BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
-import { Key, deleteSaved, getSaved } from "../modules/api/storage/Storage";
+import { Key, deleteSaved, getSaved } from "../modules/api/helpers/Cache";
 import { Person } from "../modules/api/scraper/class/ClassPictureScraper";
 import { SCRAPE_URLS } from "../modules/api/scraper/Helpers";
 import { getPeople } from "../modules/api/scraper/class/PeopleList";

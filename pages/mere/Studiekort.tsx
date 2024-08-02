@@ -1,6 +1,6 @@
 import { Image, Platform, ScrollView, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
-import { secureGet } from "../../modules/api/Authentication";
+import { secureGet } from "../../modules/api/helpers/Storage";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getProfile, Profile, scrapeStudiekort, Studiekort as StudieKort } from "../../modules/api/scraper/Scraper";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";

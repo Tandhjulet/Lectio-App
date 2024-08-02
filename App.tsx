@@ -13,7 +13,7 @@ import Absence from './pages/mere/Absence';
 import TeachersAndStudents from './pages/mere/TeachersAndStudents';
 import BeskedView from './pages/beskeder/BeskedView';
 import { Reducer, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
-import { authorize, secureGet, getUnsecure, saveUnsecure, secureSave } from './modules/api/Authentication';
+import { secureGet, getUnsecure, saveUnsecure, secureSave } from './modules/api/helpers/Storage';
 import { AuthContext } from './modules/Auth';
 import { BottomTabBar, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import NavigationBar from './components/Navbar';
@@ -24,7 +24,7 @@ import AfleveringView from './pages/afleveringer/AfleveringView';
 import { Appearance, Button, EmitterSubscription, Pressable, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronLeftIcon, PencilSquareIcon } from 'react-native-heroicons/solid';
 import { HeaderStyleInterpolators, TransitionPresets, createStackNavigator } from '@react-navigation/stack';
-import { cleanUp } from './modules/api/storage/Storage';
+import { cleanUp } from './modules/api/helpers/Cache';
 
 import {
   ProductPurchase,
@@ -70,6 +70,7 @@ import NoAccess from './pages/NoAccess';
 
 import SplashScreen from './pages/SplashScreen';
 import Lokaler from './pages/mere/Lokaler';
+import { authorize } from './modules/api/Authentication';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')

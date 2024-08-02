@@ -18,7 +18,7 @@ import {
 import {Cell, Section, TableView} from 'react-native-tableview-simple';
 import { hexToRgb, themes } from '../../modules/Themes';
 import { getSchools } from '../../modules/api/scraper/Scraper';
-import { saveUnsecure, secureSave } from '../../modules/api/Authentication';
+import { saveUnsecure, secureSave } from '../../modules/api/helpers/Storage';
 import { replaceHTMLEntities } from '../../modules/api/scraper/SkemaScraper';
 import Constants from "expo-constants";
 import { StackNavigationProp } from '@react-navigation/stack';

@@ -1,7 +1,7 @@
 import { NavigationProp } from "@react-navigation/native";
 import { createRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, ColorSchemeName, Modal, Pressable, RefreshControl, ScrollView, SectionList, SectionListData, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, VirtualizedList, useColorScheme } from "react-native";
-import { secureGet, getUnsecure } from "../modules/api/Authentication";
+import { secureGet, getUnsecure } from "../modules/api/helpers/Storage";
 import { getAfleveringer } from "../modules/api/scraper/Scraper";
 import { Opgave, Status } from "../modules/api/scraper/OpgaveScraper";
 import { Theme, hexToRgb, themes } from "../modules/Themes";

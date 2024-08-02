@@ -1,6 +1,6 @@
 // @ts-ignore
 import DomSelector from 'react-native-dom-parser';
-import { secureGet, getUnsecure, saveUnsecure } from "../../Authentication"
+import { secureGet, getUnsecure, saveUnsecure } from "../../helpers/Storage"
 import { SCRAPE_URLS, getASPHeaders } from '../Helpers';
 
 export type Klasse = {

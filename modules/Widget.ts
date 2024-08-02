@@ -3,7 +3,7 @@ import SharedGroupPreferences from "react-native-shared-group-preferences";
 import { Day } from "./api/scraper/SkemaScraper";
 import { getDay } from "./Date";
 import Constants from "expo-constants"
-import { Timespan } from "./api/storage/Timespan";
+import { Timespan } from "./api/helpers/Timespan";
 
 export function formatDate(dateString: string): Date {
     const padded = dateString.padStart(4, "0");

@@ -1,5 +1,5 @@
 import { fetch as FetchNet } from "@react-native-community/netinfo";
-import { getUnsecure, saveUnsecure, secureGet, secureSave } from "../modules/api/Authentication";
+import { getUnsecure, saveUnsecure, secureGet, secureSave } from "../modules/api/helpers/Storage";
 import { SCRAPE_URLS } from "../modules/api/scraper/Helpers";
 import { getProfile } from "../modules/api/scraper/Scraper";
 

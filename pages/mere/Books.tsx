@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ColorSchemeName, Dimensions, ScrollView, Text, useColorScheme, View } from "react-native";
 import { getProfile, scrapeBooks } from "../../modules/api/scraper/Scraper";
-import { secureGet } from "../../modules/api/Authentication";
+import { secureGet } from "../../modules/api/helpers/Storage";
 import { Book } from "../../modules/api/scraper/BookScraper";
 import { hexToRgb, themes } from "../../modules/Themes";
 import * as Progress from 'react-native-progress';

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { getProfile, scrapeDocuments, scrapeFolders } from "../../modules/api/scraper/Scraper";
-import { secureGet } from "../../modules/api/Authentication";
+import { secureGet } from "../../modules/api/helpers/Storage";
 import { Folder, Document } from "../../modules/api/scraper/DocumentScraper";
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { Cell, TableView } from "react-native-tableview-simple";

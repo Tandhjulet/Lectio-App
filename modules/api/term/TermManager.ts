@@ -1,4 +1,4 @@
-import { getUnsecure, saveUnsecure } from "../Authentication";
+import { getUnsecure, saveUnsecure } from "../helpers/Storage";
 import { getASPHeaders, parseASPHeaders, SCRAPE_URLS } from "../scraper/Helpers";
 import treat from "../scraper/TextTreater";
 

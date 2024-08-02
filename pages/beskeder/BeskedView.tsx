@@ -5,7 +5,7 @@ import { hexToRgb, themes } from "../../modules/Themes";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { getMessage } from "../../modules/api/scraper/Scraper";
-import { secureGet, getUnsecure } from "../../modules/api/Authentication";
+import { secureGet, getUnsecure } from "../../modules/api/helpers/Storage";
 import { UserIcon } from "react-native-heroicons/solid";
 import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";

@@ -1,6 +1,6 @@
 // @ts-ignore
 import DomSelector from 'react-native-dom-parser';
-import { secureGet, getUnsecure } from "../../Authentication"
+import { secureGet, getUnsecure } from "../../helpers/Storage"
 import { SCRAPE_URLS, getASPHeaders } from '../Helpers';
 import { replaceHTMLEntities } from '../SkemaScraper';
 import { treatRaw } from '../TextTreater';

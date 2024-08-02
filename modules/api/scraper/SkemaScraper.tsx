@@ -413,7 +413,6 @@ export function parseInfoString(info: any): {
     });
 
     if(info.lastChild.tagName == "span" && info.lastChild.attributes["data-lectioContextCard"] == undefined) {
-        console.log("Title set")
         out["title"] = replaceHTMLEntities(info.lastChild.firstChild.text);
     }
     if(out["lokale"].startsWith("...")) {

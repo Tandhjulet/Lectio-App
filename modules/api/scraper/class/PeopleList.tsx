@@ -1,5 +1,5 @@
-import { getUnsecure, removeUnsecure, saveUnsecure, secureGet } from "../../Authentication";
-import { Timespan } from "../../storage/Timespan";
+import { getUnsecure, removeUnsecure, saveUnsecure, secureGet } from "../../helpers/Storage";
+import { Timespan } from "../../helpers/Timespan";
 import { scrapeCache } from "../Scraper";
 import { Person, scrapeStudentPictures } from "./ClassPictureScraper";
 import { Klasse, getClasses } from "./ClassScraper";
