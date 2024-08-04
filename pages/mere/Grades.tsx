@@ -191,11 +191,11 @@ export default function Grades() {
                                 justifyContent: 'center',
                                 alignItems: 'center',
 
-                                paddingTop: 150,
+                                paddingTop: 100,
 
                                 gap: 5,
                             }}>
-                                
+                                <Logo size={50} color={hexToRgb(theme.ACCENT.toString(), 0.8)} minOpacity={0.8} />
                                 <Text style={{
                                     fontSize: 20,
                                     color: hexToRgb(theme.LIGHT.toString(), 1),

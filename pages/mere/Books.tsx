@@ -6,6 +6,7 @@ import { Book } from "../../modules/api/scraper/BookScraper";
 import { hexToRgb, themes } from "../../modules/Themes";
 import * as Progress from 'react-native-progress';
 import { BookmarkIcon, BookOpenIcon, ExclamationTriangleIcon, SwatchIcon } from "react-native-heroicons/outline";
+import Logo from "../../components/Logo";
 
 export default function Books() {
     const [books, setBooks] = useState<Book[]>();
@@ -93,6 +94,31 @@ export default function Books() {
 
                 padding: 20,
             }}>
+                {!books || books.length === 0 ? (
+                    <View style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+
+                        paddingTop: 100,
+
+                        gap: 5,
+                    }}>
+                        <Logo size={50} color={hexToRgb(theme.ACCENT.toString(), 0.8)} minOpacity={0.8} />
+                        <Text style={{
+                            fontSize: 20,
+                            color: hexToRgb(theme.LIGHT.toString(), 1),
+                        }}>
+                            Ingen bøger udlånt
+                        </Text>
+                        <Text style={{
+                            color: theme.WHITE,
+                            textAlign: 'center'
+                        }}>
+                            Din skole har ikke udlånt dig nogen bøger.
+                        </Text>
+                    </View>
+                ) : null}
                 {books?.map((book: Book, i) => {
                     const aflrFrist = parseDate(book.afleveringsfrist);
                     const diff = 1-(aflrFrist.valueOf() - now)/(aflrFrist.valueOf() - parseDate(book.udlånt).valueOf());
