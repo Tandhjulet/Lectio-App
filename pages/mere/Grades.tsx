@@ -5,6 +5,7 @@ import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, useCol
 import { Grade } from "../../modules/api/scraper/GradeScraper";
 import { hexToRgb, Theme, themes } from "../../modules/Themes";
 import { Hold } from "../../modules/api/scraper/hold/HoldScraper";
+import Logo from "../../components/Logo";
 
 const Cell = memo(function Cell({ grade, theme }: {
     grade: Grade,
@@ -108,8 +109,6 @@ const Cell = memo(function Cell({ grade, theme }: {
 })
 
 export default function Grades() {
-    const [ profile, setProfile ] = useState<Profile>();
-
     const [grades, setGrades] = useState<Grade[]>();
 
     const [ loading, setLoading ] = useState<boolean>(true);
@@ -136,7 +135,6 @@ export default function Grades() {
         (async () => {
             const { gymNummer } = await secureGet("gym");
             const profile = await getProfile();
-            setProfile(profile)
 
             await scrapeGrades(gymNummer, profile.elevId, (data) => {
                 setGrades(data ?? []);
@@ -151,7 +149,6 @@ export default function Grades() {
         (async () => {
             const { gymNummer } = await secureGet("gym");
             const profile = await getProfile();
-            setProfile(profile);
 
             await scrapeGrades(gymNummer, profile.elevId, (data) => {
                 setGrades(data ?? []);
@@ -180,12 +177,40 @@ export default function Grades() {
             }} refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }>
-                {loading ? 
-                    <View style={{
-                        marginTop: "50%",
-                    }}>
-                        <ActivityIndicator size={"small"} />
-                    </View>
+                {loading || (!grades || grades?.length == 0) ? 
+                    <>
+                        {loading ? 
+                            <View style={{
+                                marginTop: "50%",
+                            }}>
+                                <ActivityIndicator size={"small"} />
+                            </View>
+                            :
+                            <View style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+
+                                paddingTop: 150,
+
+                                gap: 5,
+                            }}>
+                                
+                                <Text style={{
+                                    fontSize: 20,
+                                    color: hexToRgb(theme.LIGHT.toString(), 1),
+                                }}>
+                                    Ingen karakterer i år
+                                </Text>
+                                <Text style={{
+                                    color: theme.WHITE,
+                                    textAlign: 'center'
+                                }}>
+                                    Du har endnu ikke fået nogen karakterer.
+                                </Text>
+                            </View>
+                        }
+                    </>
                     :
                     <>
                         <View style={{
@@ -286,12 +311,6 @@ export default function Grades() {
                             flexDirection: "column",
                         }}>
                             {grades?.map((grade: Grade, i: number) => <Cell key={i} grade={grade} theme={theme} />)}
-                            {grades?.length === 0 && profile?.hold?.map((hold: Hold, i: number) => <Cell key={i} grade={{
-                                fag: hold.holdNavn,
-                                karakterer: {},
-                                type: "Ukendt",
-                                weight: "",
-                            }} theme={theme} />)}
                         </View>
 
                         <View style={{
