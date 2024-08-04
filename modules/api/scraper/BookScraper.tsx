@@ -13,7 +13,7 @@ export function parseBooks(parser: any): Book[] {
 
     const out: Book[] = []
 
-    table.children.forEach((book: any, i: number) => {
+    table?.children?.forEach((book: any, i: number) => {
         if(i == 0) return;
 
         out.push({
