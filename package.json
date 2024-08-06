@@ -17,6 +17,7 @@
     "@react-native-async-storage/async-storage": "1.18.2",
     "@react-native-community/netinfo": "^11.3.2",
     "@react-navigation/bottom-tabs": "^6.5.9",
+    "@react-navigation/material-top-tabs": "^6.6.14",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.13",
     "@react-navigation/stack": "^6.3.18",
@@ -58,6 +59,7 @@
     "react-native-screens": "~3.22.0",
     "react-native-shared-group-preferences": "^1.1.24",
     "react-native-svg": "13.9.0",
+    "react-native-tab-view": "^3.5.2",
     "react-native-tableview-simple": "^4.4.0",
     "react-native-threads": "github:gaodeng/react-native-threads",
     "rn-fetch-blob": "^0.12.0"

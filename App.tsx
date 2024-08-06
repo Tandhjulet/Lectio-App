@@ -9,7 +9,6 @@ import { HeaderBackButton } from "@react-navigation/elements";
 import 'react-native-console-time-polyfill';
 import Login from './pages/login/Login';
 import Schools from './pages/login/Schools';
-import Absence from './pages/mere/Absence';
 import TeachersAndStudents from './pages/mere/TeachersAndStudents';
 import BeskedView from './pages/beskeder/BeskedView';
 import { Reducer, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
@@ -21,7 +20,7 @@ import ModulView from './pages/skema/ModulView';
 import { scrapePeople } from './modules/api/scraper/class/PeopleList';
 import Afleveringer from './pages/Afleveringer';
 import AfleveringView from './pages/afleveringer/AfleveringView';
-import { Appearance, Button, EmitterSubscription, Pressable, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Appearance, Button, Dimensions, EmitterSubscription, Pressable, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronLeftIcon, PencilSquareIcon } from 'react-native-heroicons/solid';
 import { HeaderStyleInterpolators, TransitionPresets, createStackNavigator } from '@react-navigation/stack';
 import { cleanUp } from './modules/api/helpers/Cache';
@@ -55,7 +54,7 @@ const Tab = createBottomTabNavigator();
 import * as Linking from 'expo-linking';
 import Constants from 'expo-constants';
 import LandingPage from './pages/login/LandingPage';
-import { themes } from './modules/Themes';
+import { hexToRgb, themes } from './modules/Themes';
 import UserSettings from './pages/mere/UserSettings';
 import receiptValid, { hasSubscription } from './components/LectimateAPI';
 import { SubState, SubscriptionContext } from './modules/Sub';
@@ -71,6 +70,9 @@ import NoAccess from './pages/NoAccess';
 import SplashScreen from './pages/SplashScreen';
 import Lokaler from './pages/mere/Lokaler';
 import { authorize } from './modules/api/Authentication';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import Registreringer from './pages/mere/fravær/Registreringer';
+import Fravær from './pages/mere/fravær/Fravær';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -455,6 +457,55 @@ export function BeskedNavigator() {
   )
 }
 
+const Absence = createMaterialTopTabNavigator();
+
+export function AbsenceNavigator() {
+  const scheme = useColorScheme();
+  const theme = themes[scheme ?? "dark"];
+
+  return (
+    <Absence.Navigator
+      initialRouteName='Fravær' initialLayout={{
+       width: Dimensions.get("window").width
+      }}
+      screenOptions={{
+        tabBarStyle: {
+          backgroundColor: theme.ACCENT_BLACK,
+        },
+        tabBarLabelStyle: {
+          fontWeight: "bold"
+        },
+        tabBarActiveTintColor: theme.WHITE.toString(),
+        tabBarIndicatorStyle: {
+          backgroundColor: theme.DARK,
+          height: 5,
+        },
+
+        lazy: true,
+        lazyPlaceholder() {
+          return (
+            <View style={{
+              height: "100%",
+              width: "100%",
+
+              justifyContent: 'center',
+              alignItems: "center",
+            }}>
+              <ActivityIndicator />
+            </View>
+          )
+        }
+      }}
+      sceneContainerStyle={{
+        backgroundColor: theme.BLACK,
+      }}
+    >
+      <Absence.Screen name={"Fravær"} component={Fravær} options={{title: "Fravær"}} />
+      <Absence.Screen name={"Registration"} component={Registreringer} options={{title: "Registration"}} />
+    </Absence.Navigator>
+  )
+}
+
 export function MereNavigator() {
 
   const scheme = useColorScheme();
@@ -479,7 +530,7 @@ export function MereNavigator() {
       <Settings.Screen name={"Settings"} component={Mere} options={{title: "Yderligere", headerShown: false}} />
       <Settings.Screen name={"UserSettings"} component={UserSettings} options={{title: "Brugerindstillinger"}} />
 
-      <Settings.Screen name={"Absence"} component={Absence} options={{title: "Fravær"}} />
+      <Settings.Screen name={"Absence"} component={AbsenceNavigator} options={{title: "Fravær"}} />
 
       <Settings.Screen name={"Afleveringer"} component={Afleveringer} options={{
         title: "Afleveringer",
