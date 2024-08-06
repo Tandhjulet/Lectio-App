@@ -8,8 +8,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 ### __HØJ__
 - react native web workers til background fetching af f.x. profilbilleder
 - Sentry
-- Fravær, den skal kun indlæse registreringer når man skifter til den
-    - måske kan man lave så det er individuelle screens endda?
 
 ### __MELLEM__
 - push notifs
@@ -17,5 +15,3 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 ### __LAV__
 - spørgeskemaer
 - istedet for hold så parse gruppen til et fag vha. https://www.lectio.dk/lectio/572/FindSkemaAdv.aspx
-
-test no access på de fravær nye routes
