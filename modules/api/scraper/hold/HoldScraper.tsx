@@ -15,16 +15,20 @@ export async function holdScraper(parser: any) {
 }
 
 export async function scrapeHoldListe(parser: any): Promise<Hold[]> {
-    const out: Hold[] = [];
+    try {
+        const out: Hold[] = [];
 
-    const holdWrapper: any[] = parser.getElementsByClassName("entitylinklistH");
+        const holdWrapper: any[] = parser.getElementsByClassName("entitylinklistH");
 
-    holdWrapper[0].children.forEach((hold: any) => {
-        out.push({
-            holdId: hold.lastChild.attributes.href.split("&")[1].replace(/\D/gm, ""),
-            holdNavn: hold.lastChild.firstChild.text,
+        holdWrapper[0].children.forEach((hold: any) => {
+            out.push({
+                holdId: hold.lastChild.attributes.href.split("&")[1].replace(/\D/gm, ""),
+                holdNavn: hold.lastChild.firstChild.text,
+            });
         });
-    });
 
-    return out;
+        return out;
+    } catch {
+        return [];
+    }
 }

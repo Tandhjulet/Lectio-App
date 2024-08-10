@@ -275,6 +275,8 @@ export default function Skema({ navigation, route }: {
         
         const hoursBetween = hoursBetweenDates(extrenumDates, 1)
         setHoursToMap(hoursBetween)
+
+        console.log(JSON.stringify(skema[dayNum-1]))
     }, [modulTimings, dayNum])
 
     /**

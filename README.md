@@ -6,11 +6,11 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 ## Prioriteringer/mangler ved appen
 
 ### __HØJ__
-- react native web workers til background fetching af f.x. profilbilleder
-- Sentry
+- sentry
 
 ### __MELLEM__
 - push notifs
+- widget skal selv forsøge at fetch skemaet. Lykkedes det ikke, kan den tjekke om noget er gemt i dens app group (som normalt).
 
 ### __LAV__
 - spørgeskemaer

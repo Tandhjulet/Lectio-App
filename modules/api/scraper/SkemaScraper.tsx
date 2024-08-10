@@ -395,6 +395,9 @@ export function parseInfoString(info: any): {
             out["lokale"] = replaceHTMLEntities(element.text.replace(` ${SCHEMA_SEP_CHAR} `, ""))
         }
 
+        if(element.tagName === "span" && !("data-lectioContextCard" in (element?.attributes ?? {})))
+            out["title"] = replaceHTMLEntities(element.firstChild.text);
+
         if("attributes" in element) {
 
             const attr: string = element.attributes["data-lectioContextCard"];
