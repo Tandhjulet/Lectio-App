@@ -2,7 +2,7 @@ import { ActivityIndicator, Appearance, ScrollView, Switch, View, useColorScheme
 import { themes } from "../../modules/Themes";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { useContext, useEffect, useRef, useState } from "react";
-import { getUnsecure, removeSecure, saveUnsecure, secureGet, signOutReq } from "../../modules/api/helpers/Storage";
+import { getUnsecure, removeSecure, saveUnsecure, secureGet } from "../../modules/api/helpers/Storage";
 import { BottomSheetModal, BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import * as WebBrowser from 'expo-web-browser';
 import { WebBrowserPresentationStyle } from "expo-web-browser";
@@ -10,6 +10,7 @@ import { abort } from "../../modules/api/scraper/class/PeopleList";
 import { AuthContext } from "../../modules/Auth";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { signOutReq } from "../../modules/api/Authentication";
 
 export default function UserSettings() {
     const [darkMode, setDarkMode] = useState<boolean>()
