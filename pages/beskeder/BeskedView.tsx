@@ -47,8 +47,6 @@ export default function BeskedView({ navigation, route }: {
     const message: LectioMessage = route.params?.message;
     const headers = route.params?.headers;
 
-    console.log(message);
-
     const { calculateSize, findIcon, getUrlExtension } = File();
 
     /**
