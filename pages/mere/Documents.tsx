@@ -15,6 +15,7 @@ import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
 import * as Progress from 'react-native-progress';
 import File from "../../modules/File";
 import RateLimit from "../../components/RateLimit";
+import * as Sentry from 'sentry-expo';
 
 export default function Documents({ route }: {
     route: any,
@@ -63,6 +64,8 @@ export default function Documents({ route }: {
                 showOpenWithDialog: true,
             })
             setProgress(-1);
+        }).catch(err => {
+            Sentry.Native.captureException(err)
         })
     }, [progress])
 

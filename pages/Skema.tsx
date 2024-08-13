@@ -227,7 +227,7 @@ export default function Skema({ navigation, route }: {
             }, route?.params?.user)
 
             if(res && (Math.abs(loadDate.valueOf() - new Date().valueOf()) < Timespan.WEEK)) {
-                saveCurrentSkema(res.days)
+                await saveCurrentSkema(res.days)
             }
         })();
 
@@ -275,8 +275,6 @@ export default function Skema({ navigation, route }: {
         
         const hoursBetween = hoursBetweenDates(extrenumDates, 1)
         setHoursToMap(hoursBetween)
-
-        console.log(JSON.stringify(skema[dayNum-1]))
     }, [modulTimings, dayNum])
 
     /**

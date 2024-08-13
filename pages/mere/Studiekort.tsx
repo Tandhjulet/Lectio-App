@@ -14,6 +14,7 @@ import { NavigationProp } from "@react-navigation/native";
 import BloomingSVG from "../../components/BloomingSVG";
 import { UserIcon } from "react-native-heroicons/outline";
 import Connectivity from "../../components/Connectivity";
+import * as Sentry from 'sentry-expo';
 
 export default function Studiekort({ navigation }: {
     navigation: NavigationProp<any>;
@@ -81,6 +82,8 @@ export default function Studiekort({ navigation }: {
                     const path = res.path();
                     setqrcodeFetched(new Date());
                     setQRCode(Platform.OS === "android" ? "file://" + path : "" + path);
+                }).catch((err) => {
+                    Sentry.Native.captureException(err)
                 })
         }
     }, [studiekort, showQR, isConnected])

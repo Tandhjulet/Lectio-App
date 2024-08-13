@@ -1,5 +1,6 @@
 import { SCRAPE_URLS } from "./Helpers";
 import { replaceHTMLEntities } from "./SkemaScraper";
+import * as Sentry from 'sentry-expo';
 
 export type LectioMessage = {
     title: string,
@@ -94,11 +95,18 @@ export async function scrapeMessage(parser: any): Promise<ThreadMessage[] | null
         return null;
     }
 
+    const grayedOut: any[] = parser.getElementsByClassName("grayed-out");
+    if(grayedOut.length > 1) {
+        Sentry.Native.captureMessage("grayedOut.length > 1 [MessageScraper]")
+    }
+
+    const threadCanBeAnswered = grayedOut.length === 0;
+
     const data = table.children;
     const out: ThreadMessage[] = [];
 
     data.forEach((message: any, index: number) => {
-        if(index == data.length - 1)
+        if(threadCanBeAnswered && index == data.length - 1)
             return; // last index is answer field
 
         const gridRowMessage = message.firstChild.firstChild;

@@ -17,7 +17,7 @@ import FileViewer from "react-native-file-viewer";
 import RNFS from "react-native-fs";
 import * as Progress from 'react-native-progress';
 import UserCell from "../../components/UserCell";
-
+import * as Sentry from 'sentry-expo';
 
 /**
  * Removes the extra data associated to each name
@@ -46,6 +46,8 @@ export default function BeskedView({ navigation, route }: {
 
     const message: LectioMessage = route.params?.message;
     const headers = route.params?.headers;
+
+    console.log(message);
 
     const { calculateSize, findIcon, getUrlExtension } = File();
 
@@ -298,6 +300,8 @@ export default function BeskedView({ navigation, route }: {
                 showOpenWithDialog: true,
             })
             setProgress(-1);
+        }).catch((err) => {
+            Sentry.Native.captureException(err);
         })
     }, [progress])
 

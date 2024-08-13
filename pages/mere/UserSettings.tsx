@@ -119,6 +119,8 @@ export default function UserSettings() {
                                             await removeSecure("username");
                                             await removeSecure("gym");
 
+                                            await AsyncStorage.clear();
+
                                             await signOutReq();
                                             await abort();
 
@@ -130,31 +132,20 @@ export default function UserSettings() {
 
                             {__DEV__ && (
                                 <Section>
-                                <Cell
-                                    cellStyle="Basic"
-                                    title="Slet data og log ud"
+                                    <Cell
+                                        cellStyle="Basic"
+                                        title="Force error"
 
-                                    titleTextStyle={{
-                                        fontWeight: "bold"
-                                    }}
-                                    titleTextColor={theme.RED}
-                                    accessory="DisclosureIndicator"
+                                        titleTextStyle={{
+                                            fontWeight: "bold"
+                                        }}
+                                        titleTextColor={theme.RED}
+                                        accessory="DisclosureIndicator"
 
-                                    onPress={() => {
-                                        (async () => {
-                                            await removeSecure("password");
-                                            await removeSecure("username");
-                                            await removeSecure("gym");
-
-                                            await AsyncStorage.clear();
-
-                                            await signOutReq();
-                                            await abort();
-
-                                            await signOut();
-                                        })();
-                                    }}
-                                />
+                                        onPress={() => {
+                                            throw new Error("Error thrown from dev menu")
+                                        }}
+                                    />
                                 </Section>
                             )}
 

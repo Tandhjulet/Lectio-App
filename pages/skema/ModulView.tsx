@@ -16,6 +16,8 @@ import { SCHEMA_SEP_CHAR } from "../../modules/Config";
 import UserCell from "../../components/UserCell";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MapPinIcon } from "react-native-heroicons/outline";
+import * as Sentry from 'sentry-expo';
+
 
 /**
  * 
@@ -61,6 +63,8 @@ export default function ModulView({ navigation, route }: {
                     else
                         setMembers(v)
                     setLoading(false);
+                }).catch((err) => {
+                    Sentry.Native.captureException(err);
                 })
             } else {
                 setLoading(false);
@@ -87,6 +91,8 @@ export default function ModulView({ navigation, route }: {
                     else
                         setMembers(v)
                     setRefreshing(false);
+                }).catch((err) => {
+                    Sentry.Native.captureException(err);
                 })
             } else {
                 setRefreshing(false);

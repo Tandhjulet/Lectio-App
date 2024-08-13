@@ -20,6 +20,7 @@ import { replaceHTMLEntities } from "../../modules/api/scraper/SkemaScraper";
 import { DocumentCheckIcon } from "react-native-heroicons/outline";
 import { upload } from "../../modules/api/filer/FileManager";
 import Shake from "../../components/Shake";
+import * as Sentry from 'sentry-expo';
 
 export default function AfleveringView({ navigation, route }: {
     navigation: NavigationProp<any>,
@@ -133,7 +134,9 @@ export default function AfleveringView({ navigation, route }: {
                 showOpenWithDialog: true,
             });
             setDownloading(false);
-        })
+        }).catch((err) => {
+            Sentry.Native.captureException(err)
+        }) 
     }, [downloading])
 
     const {

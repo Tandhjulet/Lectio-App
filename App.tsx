@@ -46,10 +46,17 @@ import {
 const AppStack = createNativeStackNavigator();
 const Settings = createNativeStackNavigator();
 const Messages = createStackNavigator();
-const Opgaver = createNativeStackNavigator();
 const SkemaNav = createNativeStackNavigator();
 
 const Tab = createBottomTabNavigator();
+
+import * as Sentry from 'sentry-expo';
+
+Sentry.init({
+  dsn: 'https://c026c665046dbe3bb4441be91943ee7b@o4507719891288064.ingest.de.sentry.io/4507719895875664',
+  enableInExpoDevelopment: true,
+  debug: false, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
+});
 
 import * as Linking from 'expo-linking';
 import Constants from 'expo-constants';
@@ -96,15 +103,16 @@ export const isExpoGo = Constants.appOwnership === 'expo';
 
 const App = () => {
   useEffect(() => {
-    // FIXME: make light theme a bit prettier, then this can be reenabled:
-    getUnsecure("useDarkMode").then(
-      (v: {result: boolean | null} | null) =>
-        Appearance.setColorScheme("dark") //(v?.result ?? true) ? "dark" : "light")
-    )
-
-    cleanUp();
+    // // FIXME: make light theme a bit prettier, then this can be reenabled:
+    // getUnsecure("useDarkMode").then(
+    //   (v: {result: boolean | null} | null) =>
+    //     Appearance.setColorScheme("dark") //(v?.result ?? true) ? "dark" : "light")
+    // ).catch(() => {
+    // })
 
     (async () => {
+      await cleanUp();
+
       // LOGIN
       let payload: SignInPayload = {
         gym: null,
@@ -188,7 +196,9 @@ const App = () => {
 
         })
    
-       })
+      }).catch((err) => {
+        Sentry.Native.captureException(err);
+      })
     }
 
     return () => {

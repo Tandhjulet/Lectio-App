@@ -2,6 +2,7 @@ import { SCRAPE_URLS, getASPHeaders, parseASPHeaders } from "../scraper/Helpers"
 import { Person } from "../scraper/class/ClassPictureScraper";
 import { UploadResult } from '../filer/FileManager';
 import treat, { _treat, treatRaw } from '../scraper/TextTreater';
+import * as Sentry from 'sentry-expo';
 
 /**
  * Sends a message over lectio to the specified recipients with the specified data
@@ -49,11 +50,17 @@ export async function sendMessage(title: string, sendTo: Person[], content: stri
         
                 const messageId = matches[0].replace("id=", "");
                 finished(messageId);
-            } catch {
+            } catch(err) {
                 finished(null)
+                Sentry.Native.captureException(err)
             }
+        }).catch((err) => {
+            Sentry.Native.captureException(err)
         })
-    }).catch(() => finished(null));
+    }).catch((err) => {
+        finished(null)
+        Sentry.Native.captureException(err)
+    });
 }
 
 /**
