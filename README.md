@@ -6,7 +6,8 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 ## Prioriteringer/mangler ved appen
 
 ### __HØJ__
-- app referral
+- referral
+- tjek om person er reel vha studiekort
 
 ### __MELLEM__
 - push notifs
