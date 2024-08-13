@@ -6,12 +6,12 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 ## Prioriteringer/mangler ved appen
 
 ### __HØJ__
-- sentry
+- app referral
 
 ### __MELLEM__
 - push notifs
 - widget skal selv forsøge at fetch skemaet. Lykkedes det ikke, kan den tjekke om noget er gemt i dens app group (som normalt).
+- appen skal virke på mac
 
 ### __LAV__
 - spørgeskemaer
-- istedet for hold så parse gruppen til et fag vha. https://www.lectio.dk/lectio/572/FindSkemaAdv.aspx
