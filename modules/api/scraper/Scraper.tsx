@@ -537,3 +537,14 @@ export function getWeekNumber(d: any): number {
 
     return weekNo;
 }
+
+export function compareWeeks(d1: Date): boolean {
+    const copy = new Date(d1);
+    const now = new Date();
+
+    if(copy.getDate() === 0 || copy.getDate() === 6) {
+        copy.setDate(copy.getDate() + 3)
+    }
+
+    return getWeekNumber(copy) === getWeekNumber(now);
+}

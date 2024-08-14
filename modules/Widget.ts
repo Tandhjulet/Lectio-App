@@ -46,26 +46,10 @@ export async function save(key: string, data: WidgetData) {
     }
 }
 
-export async function get(key: string): Promise<WidgetData> {
-    if(Platform.OS === "ios") {
-        return JSON.parse(await SharedGroupPreferences.getItem(key, appGroupIdentifier) ?? null);
-    } else {
-        throw new Error("Only iOS is supported [Widget]")
-    }
-}
-
 export async function saveCurrentSkema(day: Day[]) {
     const now = new Date();
 
     let i = now.getDay() == 0 ? 6 : now.getDay()-1;
-
-    const currSaved: WidgetData = (await get("skema")) ?? {}
-    const keepKeys = Object.fromEntries(Object.keys(currSaved)
-                        .filter(s => {
-                            // @ts-expect-error
-                            const date: string | undefined = currSaved[s][0]?.start
-                            return Math.abs(parseInt(s) - now.getDate()) < 7 || (date && new Date(date).valueOf() - now.valueOf() < Timespan.WEEK)
-                        }).map((k) => [k, currSaved[k]]))
 
     const parsePercents = (p: string) => parseInt(p.replace("%", "").trim())/100
 
@@ -90,5 +74,8 @@ export async function saveCurrentSkema(day: Day[]) {
         return { ...a, [currDate]: out}
     }, {}) // no reason to store from previous days
 
-    await save("skema", {...keepKeys, ...out})
+    console.log("end")
+    console.log(out)
+
+    await save("skema", {...out})
 }

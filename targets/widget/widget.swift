@@ -427,6 +427,7 @@ struct widget: Widget {
         }
         .configurationDisplayName("Skemaoversigt")
         .description("Dan dig et overblik over dit skema")
+        .supportedFamilies([.systemSmall])
     }
 }
 

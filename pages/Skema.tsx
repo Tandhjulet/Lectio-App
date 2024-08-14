@@ -1,7 +1,7 @@
 import { ActivityIndicator, Alert, Animated, ColorValue, DimensionValue, Dimensions, Modal, PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
 import NavigationBar from "../components/Navbar";
 import { createRef, memo, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Profile, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
+import { Profile, compareWeeks, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
 import { secureGet } from "../modules/api/helpers/Storage";
 import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
 import { hexToRgb, themes } from "../modules/Themes";
@@ -226,7 +226,7 @@ export default function Skema({ navigation, route }: {
                 setRateLimited(payload === undefined)
             }, route?.params?.user)
 
-            if(res && (Math.abs(loadDate.valueOf() - new Date().valueOf()) < Timespan.WEEK)) {
+            if(res && compareWeeks(loadDate)) {
                 await saveCurrentSkema(res.days)
             }
         })();
@@ -254,7 +254,7 @@ export default function Skema({ navigation, route }: {
                 setRefreshing(false)
             }, route?.params?.user)
 
-            if(res) saveCurrentSkema(res.days)
+            if(res && (loadDate.valueOf() >= new Date().valueOf())) saveCurrentSkema(res.days)
         })();
 
     }, [refreshing])
