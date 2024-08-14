@@ -5,7 +5,7 @@ import treat, { _treat, treatRaw } from './TextTreater';
 export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: string, type?: "bcstudent" | "bcteacher", selectedFolder: number = -70) {
     const _URLS = {
         "BASE_URL": "https://www.lectio.dk",
-        "GYM_LIST": "https://www.lectio.dk/lectio/login_list.aspx?showall=1",
+        "GYM_LIST": "https://www.lectio.dk/lectio/login_list.aspx",
         "LOGIN_URL": `https://www.lectio.dk/lectio/${gymNummer}/login.aspx`,
         "FORSIDE": `https://www.lectio.dk/lectio/${gymNummer}/forside.aspx`,
         "SKEMA": `https://www.lectio.dk/lectio/${gymNummer}/SkemaNy.aspx`,
@@ -33,6 +33,8 @@ export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: stri
         "BOOKS": `https://www.lectio.dk/lectio/${gymNummer}/BD/UserReservations.aspx?ElevID=${elevId}`,
         "LOKALER": `https://www.lectio.dk/lectio/${gymNummer}/SkemaAvanceret.aspx?type=aktuellelokaler&nosubnav=1&prevurl=FindSkemaAdv.aspx`,
         "HOVEDMENU": `https://www.lectio.dk/lectio/${gymNummer}/default.aspx`,
+        "S_MODUL": `https://www.lectio.dk/lectio/${gymNummer}/aktivitet/aktivitetforside2.aspx?absid=${elevId}&prevurl=SkemaNy.aspx&elevid=${klasseId}`,
+
 
         "STUDIEKORT": `https://www.lectio.dk/lectio/${gymNummer}/digitaltStudiekort.aspx`,
         "PROFILE": `https://www.lectio.dk/lectio/${gymNummer}/indstillinger/studentIndstillinger.aspx`,

@@ -74,8 +74,5 @@ export async function saveCurrentSkema(day: Day[]) {
         return { ...a, [currDate]: out}
     }, {}) // no reason to store from previous days
 
-    console.log("end")
-    console.log(out)
-
     await save("skema", {...out})
 }

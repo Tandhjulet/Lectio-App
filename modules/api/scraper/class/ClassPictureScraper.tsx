@@ -86,7 +86,6 @@ export async function extractDataFromTable(table: any, className?: string): Prom
             };
         } catch(err) {
             console.error(err)
-            console.log(replaceHTMLEntities(trElement.children[3].firstChild.firstChild.firstChild.text))
         }
     })
 

@@ -232,6 +232,8 @@ export default function TeachersAndStudents({ navigation }: {
                                                 paddingBottom: 50,
                                                 paddingRight: 5,
                                                 paddingLeft: 5,
+
+                                                height: "100%",
                                             }}
 
                                             getItemLayout={getLayout}
@@ -290,6 +292,8 @@ export default function TeachersAndStudents({ navigation }: {
                                                 paddingBottom: 50,
                                                 paddingRight: 5,
                                                 paddingLeft: 5,
+
+                                                height: "100%",
                                             }}
 
                                             stickySectionHeadersEnabled

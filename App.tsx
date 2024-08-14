@@ -55,7 +55,12 @@ import * as Sentry from 'sentry-expo';
 Sentry.init({
   dsn: 'https://c026c665046dbe3bb4441be91943ee7b@o4507719891288064.ingest.de.sentry.io/4507719895875664',
   enableInExpoDevelopment: true,
-  debug: __DEV__, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
+  debug: __DEV__,
+  integrations: [
+    new Sentry.Native.ReactNativeTracing({
+      enableAppStartTracking: false,
+    }),
+  ],
 });
 
 import * as Linking from 'expo-linking';

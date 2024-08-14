@@ -114,6 +114,7 @@ export default function ModulView({ navigation, route }: {
         <View style={{
             minHeight: '100%',
             minWidth:'100%',
+            paddingBottom: 89,
         }}>
             <ScrollView refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

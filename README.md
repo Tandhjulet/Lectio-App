@@ -8,7 +8,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 ### __HØJ__
 - referral
 - tjek om person er reel vha studiekort
-- lektier til link
+- lektier til link (søg efter lc-display-fragment og tjek bg image for h1 for at vide om det er lektier eller ej)
 
 ### __MELLEM__
 - push notifs

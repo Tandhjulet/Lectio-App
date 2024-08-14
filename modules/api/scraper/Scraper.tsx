@@ -20,6 +20,7 @@ import { Folder, parseDocuments, parseFolders, Document } from './DocumentScrape
 import { Book, parseBooks } from './BookScraper';
 import { Lokale, scrapeLokaler } from './LokaleScraper';
 import { getUnsecure, saveUnsecure, secureGet } from '../helpers/Storage';
+import { Link, parseLinks } from './ModulScraper';
 
 export async function scrapeCache(gymNummer: string, params: CacheParams): Promise<{[id: string]: Person}> {
     const url = SCRAPE_URLS(gymNummer).CACHE + (params == undefined ? "" : ("?" + stringifyCacheParams(params)));
@@ -360,6 +361,18 @@ export async function getSkema(gymNummer: string, date: Date, cb: (data: Week | 
     });
 
     return await fetchWithCache(req, Key.SKEMA, getWeekNumber(date).toString(), Timespan.WEEK * 2, cb, scrapeSchema, !!person, !person)
+}
+
+export async function getLektier(gymNummer: string, absId: string, id: string, cb: (data: Link[] | undefined | null) => Promise<void>, bypassCache: boolean = false) {
+    const req = new Request(SCRAPE_URLS(gymNummer, absId, id).S_MODUL, {
+        method: "GET",
+        credentials: 'include',
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+        },
+    });
+
+    return await fetchWithCache<Link[]>(req, Key.S_MODUL, undefined, Timespan.WEEK, cb, parseLinks, bypassCache)
 }
 
 export async function getMessage(gymNummer: string, messageId: string, headers: {}, bypassCache: boolean = false, cb: (data: ThreadMessage[] | undefined | null) => Promise<void> | void): Promise<ThreadMessage[] | null | void> {
