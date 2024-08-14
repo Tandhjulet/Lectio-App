@@ -8,7 +8,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 ### __HØJ__
 - referral
 - tjek om person er reel vha studiekort
-- lektier til link (søg efter lc-display-fragment og tjek bg image for h1 for at vide om det er lektier eller ej)
+- Links til lektier m.v. i moduler skal komme på sin egen side, sådan man kan indlæse dem fra appen af uden ratelimiting
 
 ### __MELLEM__
 - push notifs

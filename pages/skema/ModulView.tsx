@@ -362,10 +362,6 @@ export default function ModulView({ navigation, route }: {
                             }
                         </>
                     }
-
-                    <View style={{
-                        paddingVertical: 100,
-                    }} />
                 </TableView>
             </ScrollView>
         </View>
