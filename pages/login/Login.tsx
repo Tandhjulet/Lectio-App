@@ -106,7 +106,7 @@ export default function Login({ route, navigation }: {
 
             <Logo style={{
                 marginBottom: 20,
-            }} />
+            }} color={hexToRgb(theme.WHITE.toString(), 0.8)} minOpacity={0.8} />
 
             <Text style={{
                 fontSize: 30,
@@ -154,12 +154,13 @@ export default function Login({ route, navigation }: {
                     borderColor: hexToRgb(theme.ACCENT.toString(), 0.6),
                     shadowColor: (invalidCredentials) ? theme.RED : undefined,
                 }}>
-                    <UserIcon size={20} color={theme.WHITE} />
+                    <UserIcon size={20} color={theme.WHITE} opacity={scheme === "light" ? 0.6 : 1} />
 
                     <TextInput
                         onFocus={() => setInvalidCredentials(false)}
                         onChangeText={(updated) => setUsername(updated)}
                         placeholder="Brugernavn"
+                        placeholderTextColor={hexToRgb(theme.WHITE.toString(), 0.6)}
                         style={{
                             ...styles.textInput,
                             color: theme.WHITE,
@@ -183,7 +184,7 @@ export default function Login({ route, navigation }: {
                     borderColor: hexToRgb(theme.ACCENT.toString(), 0.6),
                     shadowColor: (invalidCredentials) ? theme.RED : undefined,
                 }}>
-                    <LockClosedIcon size={20} color={theme.WHITE} />
+                    <LockClosedIcon size={20} color={theme.WHITE} opacity={scheme === "light" ? 0.6 : 1} />
 
                     <TextInput
                         ref={passwdRef}
@@ -191,6 +192,7 @@ export default function Login({ route, navigation }: {
                         onChangeText={(updated) => setPassword(updated)}
                         placeholder="Kodeord"
                         secureTextEntry={true}
+                        placeholderTextColor={hexToRgb(theme.WHITE.toString(), 0.6)}
                         style={{
                             ...styles.textInput,
                             color: theme.WHITE,
@@ -227,7 +229,7 @@ export default function Login({ route, navigation }: {
                         paddingVertical: 10,
                         borderRadius: 99,
 
-                        backgroundColor: theme.LIGHT,
+                        backgroundColor: scheme === "dark" ? theme.LIGHT : theme.DARK,
 
                         display: 'flex',
                         flexDirection: 'row',

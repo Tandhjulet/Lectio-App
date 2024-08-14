@@ -82,7 +82,7 @@ export default function LandingPage({
                         paddingVertical: 15,
                         borderRadius: 20,
 
-                        backgroundColor: "#1f2120",
+                        backgroundColor: scheme === "dark" ? "#1f2120" : hexToRgb(theme.BLACK.toString(), 0.5),
 
                         display: "flex",
                         flexDirection: "row",
