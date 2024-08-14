@@ -9,16 +9,18 @@ export type Theme = {
   ACCENT: ColorValue,
   WHITE: ColorValue,
   RED: ColorValue,
+  GREEN_INTENSE: ColorValue
 }
 
 export const LightTheme: Theme = {
   BLACK: "#f2f2f2",
   ACCENT_BLACK: "#e3e3e3",
   DARK: "#89b39e",
-  LIGHT: "#5C8374",
+  LIGHT: "#3b6152",
   ACCENT: "#3d6354",
   WHITE: "#000000",
   RED: "#ff7a7a",
+  GREEN_INTENSE: "#007d47",
 }
 
 export const DarkTheme: Theme = {
@@ -29,6 +31,7 @@ export const DarkTheme: Theme = {
   ACCENT: "#9bd1bc",
   WHITE: "#d1d1d1",
   RED: "#ff7a7a",
+  GREEN_INTENSE: "#00c972",
 }
 
 export const themes = {light: LightTheme, dark: DarkTheme};

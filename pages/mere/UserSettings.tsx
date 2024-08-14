@@ -20,27 +20,6 @@ export default function UserSettings() {
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
 
-    // FIXME: make light theme prettier, then reenable. remember to enable in App.tsx aswell.
-    // useEffect(() => {
-    //     (async () => {
-    //         const useDarkMode: {result: boolean} = await getUnsecure("useDarkMode") || {result: null};
-    //         if(useDarkMode.result == null) {
-    //             setDarkMode(true);
-    //         } else {
-    //             setDarkMode(useDarkMode.result);
-    //         }
-    //     })();
-    // }, []);
-
-    // useEffect(() => {
-    //     if(darkMode == undefined || darkMode == (scheme == "dark")) return;
-
-    //     saveUnsecure("useDarkMode", {result: darkMode}).then(() => {
-    //         Appearance.setColorScheme(darkMode ? "dark" : "light");
-    //     });
-
-    // }, [darkMode])
-
     return (
         <GestureHandlerRootView>
             <BottomSheetModalProvider>
@@ -52,7 +31,7 @@ export default function UserSettings() {
                         <TableView style={{
                             paddingHorizontal: 20,
                         }}>
-                            {/* <Section header={"Udseende"} roundedCorners={true} hideSurroundingSeparators={true}>
+                            <Section header={"Udseende"} roundedCorners={true} hideSurroundingSeparators={true}>
                                 <Cell
                                     cellStyle="Basic"
                                     title="Brug mørk tilstand"
@@ -64,7 +43,7 @@ export default function UserSettings() {
                                         value={darkMode}
                                     />}
                                 />
-                            </Section> */}
+                            </Section>
 
                             <Section hideSurroundingSeparators roundedCorners>
                                 <Cell

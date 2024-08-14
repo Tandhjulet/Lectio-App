@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ColorSchemeName, Dimensions, ScrollView, Text, useColorScheme, View } from "react-native";
+import { ColorSchemeName, ColorValue, Dimensions, ScrollView, Text, useColorScheme, View } from "react-native";
 import { getProfile, scrapeBooks } from "../../modules/api/scraper/Scraper";
 import { secureGet } from "../../modules/api/helpers/Storage";
 import { Book } from "../../modules/api/scraper/BookScraper";
@@ -45,9 +45,14 @@ export default function Books() {
      * @param date date to calculate color from
      * @returns a color
      */
-    const calculateColor = useCallback((diff: number) => {  
-        const COLOR2 = [252, 83, 83]
-        const COLOR1 = [0, 201, 114]
+    const calculateColor = useCallback((diff: number) => {
+        function hexToRGBArray(hex: ColorValue) {
+            const v = hex.toString().substring(1);
+            return [parseInt(v.substring(0, 2), 16), parseInt(v.substring(2, 4), 16), parseInt(v.substring(4, 6), 16)]
+        }
+
+        const COLOR2 = hexToRGBArray(scheme === "light" ? "#ffae00" : "#fc5353");
+        const COLOR1 = hexToRGBArray(theme.GREEN_INTENSE)
 
         const res = [
             COLOR1[0] + diff * (COLOR2[0] - COLOR1[0]),
@@ -56,7 +61,7 @@ export default function Books() {
         ]
 
         return `rgb(${res[0]}, ${res[1]}, ${res[2]})`;
-    }, [theme]);
+    }, [scheme, theme]);
 
     /**
      * 

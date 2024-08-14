@@ -529,7 +529,7 @@ export default function Skema({ navigation, route }: {
      */
     const calcColor = useCallback((opacity: number, modul: Modul) => {
         if(modul.changed) {
-            return scheme == "dark" ? `rgba(255, 211, 0, ${opacity-0.05})` : `rgba(201, 172, 30, ${opacity})`;
+            return scheme == "dark" ? `rgba(255, 211, 0, ${opacity-0.05})` : `rgba(168, 144, 25, ${opacity})`;
         }
 
         if(modul.cancelled) {
@@ -591,7 +591,7 @@ export default function Skema({ navigation, route }: {
 
     const color = useCallback((isSelectedDay: boolean, isToday: boolean, title: boolean) => {
         if(isSelectedDay) {
-            return "#00c972";
+            return theme.GREEN_INTENSE;
         }
 
         if(isToday && title) {
@@ -674,7 +674,7 @@ export default function Skema({ navigation, route }: {
                                         width: StyleSheet.hairlineWidth,
                                         marginVertical: 5,
 
-                                        backgroundColor: isDayBeforeSelectedDay || isSelectedDay ? hexToRgb("#00c972", 0.6) : hexToRgb(theme.WHITE.toString(), 0.5),
+                                        backgroundColor: isDayBeforeSelectedDay || isSelectedDay ? hexToRgb(theme.GREEN_INTENSE.toString(), 0.6) : hexToRgb(theme.WHITE.toString(), 0.5),
                                     }} />
                                 )}
                             </React.Fragment>
@@ -769,7 +769,7 @@ export default function Skema({ navigation, route }: {
                             padding: 5,
                             borderRadius: 12.5,
 
-                            opacity: (!loading && !dateCompare(selectedDay, time)) ? 1 : 0.5,
+                            opacity: (!loading && !dateCompare(selectedDay, time)) ? 1 : scheme === "light" ? 0.8 : 0.5,
                         }}>
                             <BackwardIcon color={theme.DARK} />
                         </View>
@@ -793,7 +793,7 @@ export default function Skema({ navigation, route }: {
                                 borderRadius: 12.5,
                                 marginLeft: 20,
 
-                                opacity: (skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter.length == 0)) ? 0.5 : 1,
+                                opacity: (skema != null && (skema[dayNum-2] == undefined || skema[dayNum-2].skemaNoter.length == 0)) ? scheme === "light" ? 0.8 : 0.5 : 1,
                             }}>
                                 <ClipboardDocumentListIcon color={theme.DARK} />
                             </TouchableOpacity>
