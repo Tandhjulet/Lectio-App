@@ -54,7 +54,7 @@ import * as Sentry from 'sentry-expo';
 
 Sentry.init({
   dsn: 'https://c026c665046dbe3bb4441be91943ee7b@o4507719891288064.ingest.de.sentry.io/4507719895875664',
-  enableInExpoDevelopment: true,
+  enableInExpoDevelopment: false,
   debug: __DEV__,
   integrations: [
     new Sentry.Native.ReactNativeTracing({
@@ -85,6 +85,7 @@ import { authorize } from './modules/api/Authentication';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import Registreringer from './pages/mere/fravær/Registreringer';
 import Fravær from './pages/mere/fravær/Fravær';
+import Lektier from './pages/skema/Lektier';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -364,7 +365,6 @@ const App = () => {
 }
 
 export function SkemaNavigator() {
-
   const scheme = useColorScheme();
   const theme = themes[scheme ?? "dark"];
 
@@ -394,7 +394,9 @@ export function SkemaNavigator() {
             }
           }
       } />
-      <SkemaNav.Screen name={"Modul View"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.title ?? route.params.modul.team.join(", ") })} />
+      <SkemaNav.Screen name={"Modul View"} component={ModulNavigator} options={({ route }: any) => ({ title: route.params.modul.title ?? route.params.modul.team.join(", ") })} initialParams={{
+        origin: "Skema"
+      }} />
       <SkemaNav.Screen name="Tak" component={ThankYou} options={{
         header: () => <></>
       }} />
@@ -465,6 +467,49 @@ export function BeskedNavigator() {
   )
 }
 
+const Modul = createMaterialTopTabNavigator();
+
+export function ModulNavigator({ route }: {
+  route: RouteProp<any>,
+}) {
+  if(!route?.params?.origin)
+    throw new Error("Origin not present on Modul Navigator")
+
+  const scheme = useColorScheme();
+  const theme = themes[scheme ?? "dark"];
+
+  return (
+    <Modul.Navigator
+      initialRouteName='Oversigt' initialLayout={{
+       width: Dimensions.get("window").width
+      }}
+      screenOptions={{
+        tabBarStyle: {
+          backgroundColor: theme.ACCENT_BLACK,
+        },
+        tabBarLabelStyle: {
+          fontWeight: "bold"
+        },
+        tabBarActiveTintColor: theme.WHITE.toString(),
+        tabBarIndicatorStyle: {
+          backgroundColor: theme.DARK,
+          height: 5,
+        },
+
+        lazy: true,
+      }}
+      sceneContainerStyle={{
+        backgroundColor: theme.BLACK,
+      }}
+    >
+      <Modul.Screen name={"Oversigt"} component={ModulView} options={{title: "Oversigt", }} initialParams={{
+        ...route.params,
+      }} />
+      <Modul.Screen name={"Andet"} component={Lektier} options={{title: "Andet"}} initialParams={route.params} />
+    </Modul.Navigator>
+  )
+}
+
 const Absence = createMaterialTopTabNavigator();
 
 export function AbsenceNavigator() {
@@ -489,20 +534,7 @@ export function AbsenceNavigator() {
           height: 5,
         },
 
-        lazy: true,
-        lazyPlaceholder() {
-          return (
-            <View style={{
-              height: "100%",
-              width: "100%",
-
-              justifyContent: 'center',
-              alignItems: "center",
-            }}>
-              <ActivityIndicator />
-            </View>
-          )
-        }
+        lazy: true
       }}
       sceneContainerStyle={{
         backgroundColor: theme.BLACK,
@@ -624,7 +656,9 @@ export function MereNavigator() {
             }
           }
       } />
-      <Settings.Screen name={"Modul information"} component={ModulView} options={({ route }: any) => ({ title: route.params.modul.title ?? route.params.modul.team.join(", ") })} />
+      <Settings.Screen name={"Modul information"} component={ModulNavigator} options={({ route }: any) => ({ title: route.params.modul.title ?? route.params.modul.team.join(", ") })} initialParams={{
+        origin: "Skemaoversigt"
+      }} />
 
       <Settings.Screen name={"Books"} component={Books} options={{title: "Bøger"}} />
       <Settings.Screen name={"Studiekort"} component={Studiekort} options={{title: "Studiekort", header: () => <></>}} />

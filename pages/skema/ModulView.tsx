@@ -15,8 +15,9 @@ import { UserIcon } from "react-native-heroicons/solid";
 import { SCHEMA_SEP_CHAR } from "../../modules/Config";
 import UserCell from "../../components/UserCell";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { MapPinIcon } from "react-native-heroicons/outline";
+import { ArrowRightCircleIcon, BookOpenIcon, MapPinIcon } from "react-native-heroicons/outline";
 import * as Sentry from 'sentry-expo';
+import { MaterialTopTabNavigationHelpers } from "@react-navigation/material-top-tabs/lib/typescript/src/types";
 
 
 /**
@@ -33,8 +34,8 @@ const getStatus = (modul: Modul) => {
 }
 
 export default function ModulView({ navigation, route }: {
-    navigation: StackNavigationProp<any>,
-    route: RouteProp<any>
+    navigation: MaterialTopTabNavigationHelpers,
+    route: RouteProp<any>,
 }) {
     const modul: Modul = route.params?.modul;
 
@@ -300,47 +301,47 @@ export default function ModulView({ navigation, route }: {
 
                     {modul.homework && modul.lektier != undefined &&
                         <Section header="LEKTIER" roundedCorners={true} hideSurroundingSeparators={true}>
-                            {modul.lektier?.map((lektie: string, index: number) => {
-                                return (
-                                    <Cell 
-                                        key={index}
-                                        cellStyle="Basic"
+                            <Cell
+                                contentContainerStyle={{
+                                    paddingVertical: 5,
+                                }}
+                                onPress={() => {
+                                    navigation.navigate("Andet")
+                                }}
+                                cellContentView={
+                                    <View style={{
+                                        flexDirection: "row",
+                                        alignItems: "center",
+                                        paddingVertical: 7.5,
+                                        gap: 10,
+                                    }}>
+                                       <BookOpenIcon color={theme.ACCENT} size={25} /> 
 
-                                        cellContentView={
+                                        <View>
+                                            <Text style={{
+                                                color: theme.ACCENT,
+                                                fontWeight: "900",
+                                            }}>
+                                                Lektier
+                                            </Text>
+
                                             <Text style={{
                                                 color: theme.WHITE,
-                                                paddingVertical: 8,
-                                                fontSize: 16,
                                             }}>
-                                                {replaceHTMLEntities(lektie)}
+                                                Du har {modul.lektier.length} lektie{modul.lektier.length !== 1 && "r"} for
                                             </Text>
-                                        }
-                                    />)
-                            })}
+                                        </View>
+                                        
+                                        <View style={{
+                                            flexGrow: 1,
+                                        }} />
+
+                                        <ArrowRightCircleIcon color={theme.ACCENT} />
+                                    </View>
+                                }
+                            />
                         </Section>
                     }
-
-                    {modul.extra && (
-                        <Section header="ØVRIGT INDHOLD" roundedCorners hideSurroundingSeparators>
-                            {modul.extra?.map((lektie: string, index: number) => {
-                                return (
-                                    <Cell 
-                                        key={index}
-                                        cellStyle="Basic"
-
-                                        cellContentView={
-                                            <Text style={{
-                                                color: theme.WHITE,
-                                                paddingVertical: 8,
-                                                fontSize: 16,
-                                            }}>
-                                                {replaceHTMLEntities(lektie)}
-                                            </Text>
-                                        }
-                                    />)
-                            })}
-                        </Section>
-                    )}
 
                     {loading ?
                         <ActivityIndicator size={"small"} color={theme.WHITE} style={{
@@ -354,7 +355,7 @@ export default function ModulView({ navigation, route }: {
                                         <Cell
                                             key={index}
                                             cellContentView={(
-                                                <UCell item={person} gym={gym} theme={theme} route={route} />
+                                                <UCell item={person} gym={gym} theme={theme} route={route} originScreen={route.params!.origin} />
                                             )}
                                         />
                                     ))}

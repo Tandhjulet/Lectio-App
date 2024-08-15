@@ -158,7 +158,7 @@ export default function TeachersAndStudents({ navigation }: {
 
         return <Cell item={rawPeople[user]} gym={gym} theme={theme} route={route} style={{
             paddingLeft: 15,
-        }} />
+        }} originScreen="Skemaoversigt" />
     }, [rawPeople, gym, theme, route]);
 
     const renderItemSectionList = useCallback(({ item }: {
@@ -166,7 +166,7 @@ export default function TeachersAndStudents({ navigation }: {
         index: number,
     }) => <Cell item={item} gym={gym} theme={theme} style={{
         paddingLeft: 15,
-    }} route={route} />, [gym, theme, route]);
+    }} route={route} originScreen="Skemaoversigt" />, [gym, theme, route]);
 
     const keyExtractor = useCallback((item: Person, index: number) => item.navn + "-" + item.billedeId + ":" + index, [])
     const getLayout = useCallback((data: any, index: number) => {

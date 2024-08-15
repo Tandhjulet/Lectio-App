@@ -235,11 +235,12 @@ export default function UserCell() {
         )
     })
 
-    const Cell = memo(function UserCell({ item, gym, theme, style, route }: {
+    const Cell = memo(function UserCell({ item, gym, theme, style, route, originScreen }: {
         item: Person,
         gym: any,
         theme: Theme,
         style?: ViewStyle,
+        originScreen: string,
         route: RouteProp<any>;
     }) {
         let [pressed, setPressed] = useState<boolean>();
@@ -251,18 +252,6 @@ export default function UserCell() {
         useFocusEffect(focusEffect)
 
         const navigation = useNavigation<StackNavigationProp<any>>();
-        const skemaScreenName = useMemo(() => {
-            switch(route.name) {
-                case "Modul View":
-                    return "Skema";
-                case "TeachersAndStudents":
-                    return "Skemaoversigt";
-                case "Modul information":
-                    return "Skemaoversigt";
-            }
-
-            console.log("[UserCell] could not find skema-path for origin", route.name)
-        }, [route])
 
         const ref = createRef<ContextMenuView>();
 
@@ -301,11 +290,11 @@ export default function UserCell() {
                 }}
 
                 onPressMenuItem={() => {
-                    if(!skemaScreenName || pressed) return;
+                    if(!originScreen || pressed) return;
 
                     setPressed(true);
 
-                    navigation.push(skemaScreenName, {
+                    navigation.push(originScreen, {
                         user: item,
                     });
                 }}
@@ -324,12 +313,12 @@ export default function UserCell() {
                     width: "100%",
 
                 }, style]} onPress={() => {
-                    if(!skemaScreenName || pressed) return;
+                    if(!originScreen || pressed) return;
 
                     setPressed(true)
 
                     ref.current?.dismissMenu().then(() => {
-                        navigation.push(skemaScreenName, {
+                        navigation.push(originScreen, {
                             user: item,
                         });
                     });

@@ -44,10 +44,11 @@ const FlyInView: React.FC<FlyInViewProps> = props => {
     );
   };
 
-export default function UIError({ details, deps, setDep }: {
+export default function UIError({ details, deps, setDep, paddingTop = 45 }: {
     details: string[],
     deps?: any[],
     setDep?: ((v: boolean) => void)[],
+    paddingTop: number,
 }) {
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
@@ -56,7 +57,7 @@ export default function UIError({ details, deps, setDep }: {
         <FlyInView style={{
             zIndex: 25,
 
-            paddingTop: 45,
+            paddingTop: paddingTop,
             paddingBottom: 10,
 
             width: "100%",

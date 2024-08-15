@@ -1,28 +1,71 @@
-export interface Link {
-    href: string;
-    title: string;
-    lektier: boolean;
+import { TextComponent } from "./MessageScraper";
+import { replaceHTMLEntities } from "./SkemaScraper";
+import * as Sentry from 'sentry-expo';
+
+export interface Component {
+    inner: string,
+    isLink?: boolean,
+    url?: string,
 }
 
-export function assertLinks(extra: string[], lektier: string[]) {
+export interface Lektie {
+    body: Component[],
+    isHomework?: boolean,
+}
 
+export function scrapeLektier(elements: any[], opts?: {
+    isLink?: boolean,
+    url?: string,
+}): Component[] {
+    if(!elements)
+        return [];
+
+    const out: Component[] = []
+
+    try {
+        elements.forEach((element) => {
+            if(element.tagName === "hr" || element.tagName === "br") {
+                out.push({
+                    inner: "\n",
+                })
+            } else if(element.tagName !== undefined && (element?.children?.length ?? 0) > 0) {
+                const url: undefined | string = element?.attributes?.href ? replaceHTMLEntities(element?.attributes?.href) : undefined;
+
+                out.push(...scrapeLektier(element.children, {
+                    isLink: url !== undefined,
+                    url,
+                }))
+            } else {
+                out.push({
+                    inner: replaceHTMLEntities(element.text),
+                    isLink: opts?.isLink,
+                    url: opts?.url,
+                })
+            }
+        })
+    } catch(err) {
+        Sentry.Native.captureException(err);
+    }
+
+    return out;
 }
 
 export function parseLinks(parser: any) {
-    const links = parser.getElementsByClassName("lc-display-fragment");
-    if(links == null) return [];
+    const elements = parser.getElementsByClassName("lc-display-fragment");
+    if(elements == null) return [];
 
-    const parsedLinks: Link[] = []
+    const out: Lektie[] = [];
 
-    links.forEach((link: any) => {
-        const style: string | undefined = link?.firstChild?.attributes?.style;
+    elements.forEach((element: any) => {
+        const lektier = scrapeLektier(element?.children[0]?.children);
+        if(lektier.length === 0)
+            return;
 
-        parsedLinks.push({
-            href: link.firstChild.firstChild.attributes.href,
-            lektier: style?.includes("doc-homework") ?? true,
-            title: link.firstChild.firstChild.firstChild.text,
-        })
+        out.push({
+            body: lektier,
+            isHomework: element?.children[0]?.attributes?.style?.includes("doc-homework") ?? false,
+        });
     })
 
-    return parsedLinks;
+    return out;
 }

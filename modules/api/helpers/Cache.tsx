@@ -167,7 +167,10 @@ export async function fetchWithCache<T>(req: Request, key: Key, identifier: stri
     const { isConnected } = await fetchNetInfo();
     if(isConnected) {
         const response = await fetch(req);
-        const text = _treat(await response.text());
+        const rawText = await response.text();
+        // if(key === Key.S_MODUL)
+        //     console.log(rawText);
+        const text = _treat(rawText);
         const parser = DomSelector(text);
     
         const args = key == Key.SKEMA ? [parser, text] : [parser];
