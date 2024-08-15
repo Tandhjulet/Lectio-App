@@ -4,6 +4,7 @@ import { Day } from "./api/scraper/SkemaScraper";
 import { getDay } from "./Date";
 import Constants from "expo-constants"
 import { Timespan } from "./api/helpers/Timespan";
+import * as Sentry from 'sentry-expo';
 
 export function formatDate(dateString: string): Date {
     const padded = dateString.padStart(4, "0");
@@ -40,7 +41,18 @@ const appGroupIdentifier = `group.${Constants.expoConfig?.ios?.bundleIdentifier}
 
 export async function save(key: string, data: WidgetData) {
     if(Platform.OS === "ios") {
-        await SharedGroupPreferences.setItem(key, JSON.stringify(data), appGroupIdentifier)
+        try {
+            await SharedGroupPreferences.setItem(key, JSON.stringify(data), appGroupIdentifier)
+        } catch(errCode) {
+            switch(errCode) {
+                case 0:
+                    Sentry.Native.captureMessage("There is no suite with that name [App Group, L49]")
+                    return;
+                default:
+                    Sentry.Native.captureMessage("Invalid error code sent from App Group " + errCode)
+            }
+            console.log("App Group Error: " + errCode)
+        }
     } else {
         throw new Error("Only iOS is supported [Widget]")
     }
@@ -73,6 +85,6 @@ export async function saveCurrentSkema(day: Day[]) {
         now.setDate(currDate + 1)
         return { ...a, [currDate]: out}
     }, {}) // no reason to store from previous days
-
+    
     await save("skema", {...out})
 }
