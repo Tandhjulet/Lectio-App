@@ -14,6 +14,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 - push notifs
 - widget skal selv forsøge at fetch skemaet. Lykkedes det ikke, kan den tjekke om noget er gemt i dens app group (som normalt).
 - appen skal virke på mac
+- app på forsiden
 
 ### __LAV__
 - spørgeskemaer
