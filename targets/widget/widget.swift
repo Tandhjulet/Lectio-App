@@ -35,8 +35,8 @@ struct Provider: TimelineProvider {
           if let savedData = userDefaults!.value(forKey: "skema") as? String {
               let decoder = JSONDecoder();
               decoder.dateDecodingStrategy = .millisecondsSince1970
-              let data = savedData.data(using: .utf8);
-              let parsedData = try? decoder.decode([String: [Module]].self, from: data!)
+              let data = savedData.data(using: .utf8) ?? Data("{}".utf8);
+              let parsedData = try? decoder.decode([String: [Module]].self, from: data)
                   
               let currentDate = Calendar.current.component(.day, from: entryDate)
               
@@ -104,8 +104,8 @@ struct Provider: TimelineProvider {
             if let savedData = userDefaults!.value(forKey: "skema") as? String {
                 let decoder = JSONDecoder();
                 decoder.dateDecodingStrategy = .millisecondsSince1970
-                let data = savedData.data(using: .utf8);
-                let parsedData = try? decoder.decode([String: [Module]].self, from: data!)
+                let data = savedData.data(using: .utf8) ?? Data("{}".utf8);
+                let parsedData = try? decoder.decode([String: [Module]].self, from: data)
                 
                 let currentDate = Calendar.current.component(.day, from: entryDate)
                 let requestAfter = Calendar.current.date(byAdding: .hour, value: currentHour > 7 && currentHour < 16 ? 1 : 3, to: entryDate)!
