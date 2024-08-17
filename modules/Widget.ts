@@ -44,13 +44,34 @@ export async function save(key: string, data: WidgetData) {
         try {
             await SharedGroupPreferences.setItem(key, JSON.stringify(data), appGroupIdentifier)
         } catch(errCode) {
-            switch(errCode) {
-                case 0:
-                    Sentry.Native.captureMessage("There is no suite with that name [App Group, L49]")
-                    return;
-                default:
-                    Sentry.Native.captureMessage("Invalid error code sent from App Group " + errCode)
-            }
+            if(!__DEV__)
+                switch(errCode) {
+                    case 0:
+                        Sentry.Native.captureMessage("There is no suite with that name [App Group, L49]")
+                        return;
+                    default:
+                        Sentry.Native.captureMessage("Invalid error code sent from App Group " + errCode)
+                }
+            console.log("App Group Error: " + errCode)
+        }
+    } else {
+        throw new Error("Only iOS is supported [Widget]")
+    }
+}
+
+export async function get(key: string) {
+    if(Platform.OS === "ios") {
+        try {
+            await SharedGroupPreferences.getItem(key, appGroupIdentifier)
+        } catch(errCode) {
+            if(!__DEV__)
+                switch(errCode) {
+                    case 0:
+                        Sentry.Native.captureMessage("There is no suite with that name [App Group, L49]")
+                        return;
+                    default:
+                        Sentry.Native.captureMessage("Invalid error code sent from App Group " + errCode)
+                }
             console.log("App Group Error: " + errCode)
         }
     } else {
@@ -61,12 +82,12 @@ export async function save(key: string, data: WidgetData) {
 export async function saveCurrentSkema(day: Day[]) {
     const now = new Date();
 
-    let i = now.getDay() == 0 ? 6 : now.getDay()-1;
+    console.log("before", await get("skema") === undefined);
 
     const parsePercents = (p: string) => parseInt(p.replace("%", "").trim())/100
 
     let j = 0;
-    const out: WidgetData = day.slice(i).reduce((a, v) => {
+    const out: WidgetData = day.reduce((a, v) => {
         const currDate = now.getDate();
 
         const out: EncodedModul[] = []
@@ -87,4 +108,5 @@ export async function saveCurrentSkema(day: Day[]) {
     }, {}) // no reason to store from previous days
     
     await save("skema", {...out})
+    console.log("after", await get("skema") === undefined);
 }

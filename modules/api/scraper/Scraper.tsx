@@ -553,11 +553,10 @@ export function getWeekNumber(d: any): number {
 
 export function compareWeeks(d1: Date): boolean {
     const copy = new Date(d1);
-    const now = new Date();
-
-    if(copy.getDate() === 0 || copy.getDate() === 6) {
-        copy.setDate(copy.getDate() + 3)
+    let selectedDay = new Date();
+    if(selectedDay.getDay() % 6 === 0) {
+        selectedDay.setDate(selectedDay.getDate() + (selectedDay.getDay() === 0 ? 1 : 2));
     }
 
-    return getWeekNumber(copy) === getWeekNumber(now);
+    return getWeekNumber(copy) === getWeekNumber(selectedDay);
 }
