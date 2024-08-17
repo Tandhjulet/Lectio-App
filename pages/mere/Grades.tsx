@@ -120,7 +120,7 @@ export default function Grades() {
         let unique: number = 0;
 
         grades?.forEach((grade: Grade) => {
-            if(!grade.karakterer[title] || grade.karakterer[title].grade == "") return;
+            if(!grade.karakterer[title] || grade.karakterer[title].grade == "" || grade.karakterer[title].grade == "--") return;
 
             const weight = parseFloat(grade.karakterer[title].weight.replace(",", "."));
             const gradeInt = parseInt(grade.karakterer[title].grade);
@@ -357,7 +357,7 @@ export default function Grades() {
                                 width: "65%",
                             }}>
                                 {grades && grades[0] && ["1. standpunkt", "2. standpunkt", "Eksamen/årsprøve", "Årskarakter"].map((title, index) => {
-                                    if(!grades[0].karakterer[title] || grades[0].karakterer[title].grade == "") {
+                                    if(!grades[0].karakterer[title] || grades[0].karakterer[title].grade == "" || grades[0].karakterer[title].grade == "--") {
                                         return (
                                             <View
                                                 key={title + index + "footer"}
