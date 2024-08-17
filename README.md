@@ -7,8 +7,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 
 ### __HØJ__
 - referral
-- tjek om person er reel vha studiekort
-- fix widget
+- fix widget getTimeline (måske skyldes det at group.com.tandhjulet.lectimate.widget ikke tillader get på en eller anden måde) virker ikke, tror jeg
 
 ### __MELLEM__
 - push notifs

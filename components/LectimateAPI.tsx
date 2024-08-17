@@ -2,6 +2,7 @@ import { fetch as FetchNet } from "@react-native-community/netinfo";
 import { getUnsecure, saveUnsecure, secureGet, secureSave } from "../modules/api/helpers/Storage";
 import { SCRAPE_URLS } from "../modules/api/scraper/Helpers";
 import { getProfile } from "../modules/api/scraper/Scraper";
+import { parseQR } from "../modules/api/qr/QRCode";
 
 interface ValidationResponse {
     valid: boolean | null,
@@ -48,10 +49,14 @@ export async function hasSubscription(): Promise<ValidationResponse> {
     const profile = await getProfile();
     const { gymNummer } = await secureGet("gym")
 
+    let qrUrl = await parseQR(profile, gymNummer);
+    qrUrl && (qrUrl = qrUrl.split("QrId=")[1])
+
     const body = JSON.stringify({
         "name": profile.name,
         "gym": gymNummer,
         "id": profile.elevId,
+        qrUrl,
     }).trim();
     
     const res: Response = await fetch(SCRAPE_URLS().LECTIMATE_GET, {

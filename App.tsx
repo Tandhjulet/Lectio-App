@@ -151,20 +151,6 @@ const App = () => {
         dispatch({ type: 'SIGN_IN' });
         setTimeout(() => scrapePeople(), 100);
       }
-
-      // STATE DISPATCH
-      if(!(await hasProfileSaved()))
-        return;
-
-      const { valid, freeTrial } = await hasSubscription();
-
-      if(freeTrial && valid) {
-        dispatchSubscription({ type: "FREE_TRIAL"})
-      } else if(valid === null) {
-        dispatchSubscription({ type: "SERVER_DOWN"})
-      } else {
-        dispatchSubscription({ type: valid ? "SUBSCRIBED" : "NOT_SUBSCRIBED"})
-      }
     })();
 
     // IAP
