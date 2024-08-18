@@ -105,7 +105,7 @@ export async function saveCurrentSkema(day: Day[]) {
 
         now.setDate(currDate + 1)
         return { ...a, [currDate]: out}
-    }, {}) // no reason to store from previous days
+    }, {})
     
     await save("skema", {...out})
     console.log("after", await get("skema") === undefined);

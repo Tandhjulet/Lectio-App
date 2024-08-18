@@ -7,7 +7,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 
 ### __HØJ__
 - referral
-- fix widget getTimeline (måske skyldes det at group.com.tandhjulet.lectimate.widget ikke tillader get på en eller anden måde) virker ikke, tror jeg
+- fix widget
 
 ### __MELLEM__
 - push notifs
