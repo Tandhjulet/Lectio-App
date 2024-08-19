@@ -8,6 +8,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 ### __HØJ__
 - referral
 - fix widget
+- beskeder går ikke igennem/kan ikke sendes
 
 ### __MELLEM__
 - push notifs

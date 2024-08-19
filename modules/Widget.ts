@@ -82,7 +82,7 @@ export async function get(key: string) {
 export async function saveCurrentSkema(day: Day[]) {
     const now = new Date();
 
-    console.log("before", await get("skema") === undefined);
+    //console.log("before", await get("skema") === undefined);
 
     const parsePercents = (p: string) => parseInt(p.replace("%", "").trim())/100
 
@@ -108,5 +108,5 @@ export async function saveCurrentSkema(day: Day[]) {
     }, {})
     
     await save("skema", {...out})
-    console.log("after", await get("skema") === undefined);
+    //console.log("after", await get("skema") === undefined);
 }

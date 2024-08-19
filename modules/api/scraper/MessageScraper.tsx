@@ -96,17 +96,19 @@ export async function scrapeMessage(parser: any): Promise<ThreadMessage[] | null
     }
 
     const grayedOut: any[] = parser.getElementsByClassName("grayed-out");
-    if(grayedOut.length > 1) {
-        Sentry.Native.captureMessage("grayedOut.length > 1 [MessageScraper]")
-    }
+    let isThreadAnswerable = true;
+    for(let v of grayedOut) {
+        if(!v?.firstChild?.text?.includes("Denne tråd kan ikke besvares")) continue;
 
-    const threadCanBeAnswered = grayedOut.length === 0;
+        isThreadAnswerable = false;
+        break;
+    }
 
     const data = table.children;
     const out: ThreadMessage[] = [];
 
     data.forEach((message: any, index: number) => {
-        if(threadCanBeAnswered && index == data.length - 1)
+        if(isThreadAnswerable && index == data.length - 1)
             return; // last index is answer field
 
         const gridRowMessage = message.firstChild.firstChild;
