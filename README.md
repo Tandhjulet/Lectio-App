@@ -12,6 +12,9 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 
 ### __MELLEM__
 - push notifs
+  - skoledagen starter sent
+  - aflyst/ændret modul
+  - evt. afleveringer/lektier
 - widget skal selv forsøge at fetch skemaet. Lykkedes det ikke, kan den tjekke om noget er gemt i dens app group (som normalt).
 - appen skal virke på mac
 - app på forsiden
