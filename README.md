@@ -21,3 +21,4 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 
 ### __LAV__
 - spørgeskemaer
+- istedet for hold så parse gruppen til et fag vha. https://www.lectio.dk/lectio/572/FindSkemaAdv.aspx
