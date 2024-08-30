@@ -1,16 +1,16 @@
 import { NavigationProp } from "@react-navigation/native";
 import { createRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, ColorSchemeName, Modal, Pressable, RefreshControl, ScrollView, SectionList, SectionListData, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, VirtualizedList, useColorScheme } from "react-native";
-import { secureGet, getUnsecure } from "../modules/api/helpers/Storage";
-import { getAfleveringer } from "../modules/api/scraper/Scraper";
-import { Opgave, Status } from "../modules/api/scraper/OpgaveScraper";
-import { Theme, hexToRgb, themes } from "../modules/Themes";
+import { secureGet, getUnsecure } from "../../../modules/api/helpers/Storage";
+import { getAfleveringer } from "../../../modules/api/scraper/Scraper";
+import { Opgave, Status } from "../../../modules/api/scraper/OpgaveScraper";
+import { Theme, hexToRgb, themes } from "../../../modules/Themes";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { AdjustmentsVerticalIcon, ChevronRightIcon } from "react-native-heroicons/solid";
 import { HeaderBackButton } from "@react-navigation/elements";
-import RateLimit from "../components/RateLimit";
-import Logo from "../components/Logo";
-import { SubscriptionContext } from "../modules/Sub";
+import RateLimit from "../../../components/RateLimit";
+import Logo from "../../../components/Logo";
+import { SubscriptionContext } from "../../../modules/Sub";
 import Popover from "react-native-popover-view";
 import { Placement } from "react-native-popover-view/dist/Types";
 import { BellAlertIcon, CheckBadgeIcon, ClockIcon, ExclamationCircleIcon, ShieldExclamationIcon } from "react-native-heroicons/outline";
@@ -133,7 +133,6 @@ const filterData = (data: Opgave[] | null | undefined) => {
 
 export default function Afleveringer({ navigation }: {navigation: NativeStackNavigationProp<any>}) {
     const { subscriptionState } = useContext(SubscriptionContext);
-
     const currTime = useRef(new Date().valueOf()).current;
 
     /**

@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ColorSchemeName, ColorValue, Dimensions, ScrollView, Text, useColorScheme, View } from "react-native";
-import { getProfile, scrapeBooks } from "../../modules/api/scraper/Scraper";
-import { secureGet } from "../../modules/api/helpers/Storage";
-import { Book } from "../../modules/api/scraper/BookScraper";
-import { hexToRgb, themes } from "../../modules/Themes";
+import { getProfile, scrapeBooks } from "../../../modules/api/scraper/Scraper";
+import { secureGet } from "../../../modules/api/helpers/Storage";
+import { Book } from "../../../modules/api/scraper/BookScraper";
+import { hexToRgb, themes } from "../../../modules/Themes";
 import * as Progress from 'react-native-progress';
 import { BookmarkIcon, BookOpenIcon, ExclamationTriangleIcon, SwatchIcon } from "react-native-heroicons/outline";
-import Logo from "../../components/Logo";
+import Logo from "../../../components/Logo";
 
 export default function Books() {
     const [books, setBooks] = useState<Book[]>();

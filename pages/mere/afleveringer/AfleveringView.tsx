@@ -2,24 +2,19 @@ import { NavigationProp, RouteProp } from "@react-navigation/native"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Dimensions, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from "react-native";
 import { Cell, Section, Separator, TableView } from "react-native-tableview-simple";
-import { Opgave, OpgaveDetails, parseDate, postDocument, Status } from "../../modules/api/scraper/OpgaveScraper";
-import { formatDate } from "../Afleveringer";
-import { getAflevering, getProfile } from "../../modules/api/scraper/Scraper";
-import { secureGet, getUnsecure } from "../../modules/api/helpers/Storage";
-import { hexToRgb, themes } from "../../modules/Themes";
-import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
-import { getPeople } from "../../modules/api/scraper/class/PeopleList";
-import { CLEAN_NAME } from "../beskeder/BeskedView";
-import { UserIcon } from "react-native-heroicons/solid";
-import File from "../../modules/File";
+import { Opgave, OpgaveDetails, parseDate, postDocument, Status } from "../../../modules/api/scraper/OpgaveScraper";
+import { getAflevering, getProfile } from "../../../modules/api/scraper/Scraper";
+import { secureGet, getUnsecure } from "../../../modules/api/helpers/Storage";
+import { hexToRgb, themes } from "../../../modules/Themes";
+import File from "../../../modules/File";
 import FileViewer from "react-native-file-viewer";
 import RNFS from "react-native-fs";
 import * as Progress from 'react-native-progress';
-import { Document } from "../../modules/api/scraper/DocumentScraper";
-import { replaceHTMLEntities } from "../../modules/api/scraper/SkemaScraper";
+import { Document } from "../../../modules/api/scraper/DocumentScraper";
+import { replaceHTMLEntities } from "../../../modules/api/scraper/SkemaScraper";
 import { DocumentCheckIcon } from "react-native-heroicons/outline";
-import { upload } from "../../modules/api/filer/FileManager";
-import Shake from "../../components/Shake";
+import { upload } from "../../../modules/api/filer/FileManager";
+import Shake from "../../../components/Shake";
 import * as Sentry from 'sentry-expo';
 
 export default function AfleveringView({ navigation, route }: {

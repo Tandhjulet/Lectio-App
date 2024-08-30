@@ -1,11 +1,11 @@
 import { Fragment, memo, useCallback, useEffect, useState } from "react"
-import { getProfile, Profile, scrapeGrades } from "../../modules/api/scraper/Scraper";
-import { secureGet } from "../../modules/api/helpers/Storage";
+import { getProfile, Profile, scrapeGrades } from "../../../modules/api/scraper/Scraper";
+import { secureGet } from "../../../modules/api/helpers/Storage";
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, useColorScheme, View } from "react-native";
-import { Grade } from "../../modules/api/scraper/GradeScraper";
-import { hexToRgb, Theme, themes } from "../../modules/Themes";
-import { Hold } from "../../modules/api/scraper/hold/HoldScraper";
-import Logo from "../../components/Logo";
+import { Grade } from "../../../modules/api/scraper/GradeScraper";
+import { hexToRgb, Theme, themes } from "../../../modules/Themes";
+import { Hold } from "../../../modules/api/scraper/hold/HoldScraper";
+import Logo from "../../../components/Logo";
 
 const Cell = memo(function Cell({ grade, theme }: {
     grade: Grade,

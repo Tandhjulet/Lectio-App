@@ -1,35 +1,35 @@
 import { ActivityIndicator, Alert, Button, ColorValue, Image, Keyboard, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
-import NavigationBar from "../components/Navbar";
+import NavigationBar from "../../components/Navbar";
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
-import { Profile, getMessages, getProfile } from "../modules/api/scraper/Scraper";
-import { hexToRgb, themes } from "../modules/Themes";
-import { secureGet, getUnsecure } from "../modules/api/helpers/Storage";
-import { LectioMessage } from "../modules/api/scraper/MessageScraper";
+import { Profile, getMessages, getProfile } from "../../modules/api/scraper/Scraper";
+import { hexToRgb, themes } from "../../modules/Themes";
+import { secureGet, getUnsecure } from "../../modules/api/helpers/Storage";
+import { LectioMessage } from "../../modules/api/scraper/MessageScraper";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import { AdjustmentsVerticalIcon, ArrowUpOnSquareStackIcon, ChevronRightIcon, DocumentIcon, EnvelopeIcon, EnvelopeOpenIcon, FolderIcon, FolderMinusIcon, PaperAirplaneIcon, PencilSquareIcon, SunIcon, TrashIcon, UserIcon, XCircleIcon } from "react-native-heroicons/solid";
 import { NavigationProp, useFocusEffect, useIsFocused } from "@react-navigation/native";
-import RateLimit from "../components/RateLimit";
+import RateLimit from "../../components/RateLimit";
 import {
     BottomSheetModal,
     BottomSheetModalProvider,
     BottomSheetScrollView,
     BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
-import { Key, deleteSaved, getSaved } from "../modules/api/helpers/Cache";
-import { Person } from "../modules/api/scraper/class/ClassPictureScraper";
-import { SCRAPE_URLS } from "../modules/api/scraper/Helpers";
-import { getPeople } from "../modules/api/scraper/class/PeopleList";
+import { Key, deleteSaved, getSaved } from "../../modules/api/helpers/Cache";
+import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
+import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
+import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { KeyboardAvoidingView } from "react-native";
-import { sendMessage } from "../modules/api/beskeder/sendBesked";
-import Logo from "../components/Logo";
-import File from "../modules/File";
+import { sendMessage } from "../../modules/api/beskeder/sendBesked";
+import Logo from "../../components/Logo";
+import File from "../../modules/File";
 import Popover from "react-native-popover-view/dist/Popover";
 import { Placement } from "react-native-popover-view/dist/Types";
 import { LinkIcon, PaperClipIcon } from "react-native-heroicons/outline";
-import { upload, UploadResult } from "../modules/api/filer/FileManager";
+import { upload, UploadResult } from "../../modules/api/filer/FileManager";
 import React from "react";
-import Shake from "../components/Shake";
-import UserCell from "../components/UserCell";
+import Shake from "../../components/Shake";
+import UserCell from "../../components/UserCell";
 
 export default function Beskeder({ navigation }: {navigation: NavigationProp<any>}) {
 

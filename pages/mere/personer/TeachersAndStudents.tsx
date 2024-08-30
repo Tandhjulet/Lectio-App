@@ -1,17 +1,16 @@
 import { ActivityIndicator, FlatList, Image, ImageBackground, Modal, Pressable, ScrollView, SectionList, SectionListData, StyleSheet, Text, TextInput, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
-import NavigationBar from "../../components/Navbar";
+import NavigationBar from "../../../components/Navbar";
 import React, { Suspense, memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Person } from "../../modules/api/scraper/class/ClassPictureScraper";
-import { getPeople } from "../../modules/api/scraper/class/PeopleList";
+import { Person } from "../../../modules/api/scraper/class/ClassPictureScraper";
+import { getPeople } from "../../../modules/api/scraper/class/PeopleList";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import { hexToRgb, Theme, themes } from "../../modules/Themes";
-import { secureGet, getUnsecure } from "../../modules/api/helpers/Storage";
-import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
+import { hexToRgb, Theme, themes } from "../../../modules/Themes";
+import { secureGet, getUnsecure } from "../../../modules/api/helpers/Storage";
+import { SCRAPE_URLS } from "../../../modules/api/scraper/Helpers";
 
-import 'react-native-console-time-polyfill';
 import { NavigationProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import UserCell from "../../components/UserCell";
+import UserCell from "../../../components/UserCell";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 export default function TeachersAndStudents({ navigation }: {

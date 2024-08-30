@@ -1,10 +1,10 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react"
-import { Lokale } from "../../modules/api/scraper/LokaleScraper"
+import { Lokale } from "../../../modules/api/scraper/LokaleScraper"
 import { ActivityIndicator, Dimensions, FlatList, KeyboardAvoidingView, RefreshControl, SafeAreaView, StyleSheet, TouchableOpacity, useColorScheme, View } from "react-native";
-import { getLokaler } from "../../modules/api/scraper/Scraper";
-import { secureGet } from "../../modules/api/helpers/Storage";
+import { getLokaler } from "../../../modules/api/scraper/Scraper";
+import { secureGet } from "../../../modules/api/helpers/Storage";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { hexToRgb, Theme, themes } from "../../modules/Themes";
+import { hexToRgb, Theme, themes } from "../../../modules/Themes";
 import { Text } from "react-native";
 
 export default function Lokaler({ navigation }: {

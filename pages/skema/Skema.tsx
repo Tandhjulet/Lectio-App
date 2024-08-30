@@ -1,20 +1,20 @@
 import { ActivityIndicator, Alert, Animated, ColorValue, DimensionValue, Dimensions, Modal, PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View, useColorScheme } from "react-native";
-import NavigationBar from "../components/Navbar";
+import NavigationBar from "../../components/Navbar";
 import { createRef, memo, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Profile, compareWeeks, getProfile, getSkema, getWeekNumber } from "../modules/api/scraper/Scraper";
-import { secureGet } from "../modules/api/helpers/Storage";
-import { Day, Modul, ModulDate } from "../modules/api/scraper/SkemaScraper";
-import { hexToRgb, themes } from "../modules/Themes";
+import { Profile, compareWeeks, getProfile, getSkema, getWeekNumber } from "../../modules/api/scraper/Scraper";
+import { secureGet } from "../../modules/api/helpers/Storage";
+import { Day, Modul, ModulDate } from "../../modules/api/scraper/SkemaScraper";
+import { hexToRgb, themes } from "../../modules/Themes";
 import { ArrowLeftIcon, ArrowRightIcon, BackwardIcon, ChatBubbleBottomCenterTextIcon, ChevronLeftIcon, ClipboardDocumentListIcon, InboxStackIcon, PuzzlePieceIcon } from "react-native-heroicons/solid";
-import getDaysOfCurrentWeek, { WeekDay, getDay, getDaysOfThreeWeeks, getNextWeek, getPrevWeek } from "../modules/Date";
-import { getPeople } from "../modules/api/scraper/class/PeopleList";
+import getDaysOfCurrentWeek, { WeekDay, getDay, getDaysOfThreeWeeks, getNextWeek, getPrevWeek } from "../../modules/Date";
+import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { NavigationProp, RouteProp } from "@react-navigation/native";
-import RateLimit from "../components/RateLimit";
-import { Key, getSaved } from "../modules/api/helpers/Cache";
-import { SCHEMA_SEP_CHAR } from "../modules/Config";
-import Logo from "../components/Logo";
+import RateLimit from "../../components/RateLimit";
+import { Key, getSaved } from "../../modules/api/helpers/Cache";
+import { SCHEMA_SEP_CHAR } from "../../modules/Config";
+import Logo from "../../components/Logo";
 import PagerView from "react-native-pager-view";
-import { SubscriptionContext } from "../modules/Sub";
+import { SubscriptionContext } from "../../modules/Sub";
 import Popover from "react-native-popover-view";
 import { Mode, Placement } from "react-native-popover-view/dist/Types";
 import Constants from 'expo-constants';
@@ -22,9 +22,9 @@ import React from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 
 import 'react-native-console-time-polyfill';
-import Connectivity from "../components/Connectivity";
-import { saveCurrentSkema } from "../modules/Widget";
-import { Timespan } from "../modules/api/helpers/Timespan";
+import Connectivity from "../../components/Connectivity";
+import { saveCurrentSkema } from "../../modules/Widget";
+import { Timespan } from "../../modules/api/helpers/Timespan";
 
 /**
  * 

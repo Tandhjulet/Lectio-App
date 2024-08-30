@@ -1,27 +1,19 @@
-import { ActivityIndicator, Alert, Linking, NativeModules, ScrollView, StyleSheet, Switch, Text, View, useColorScheme } from "react-native";
-import NavigationBar from "../components/Navbar";
-import { Cell, Section, TableView } from "react-native-tableview-simple";
-import { hexToRgb, themes } from "../modules/Themes";
-import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { AcademicCapIcon, AdjustmentsVerticalIcon, ArrowPathIcon, BellSnoozeIcon, BookOpenIcon, ClockIcon, ComputerDesktopIcon, Square2StackIcon, UserMinusIcon, UsersIcon, XMarkIcon } from "react-native-heroicons/solid";
-import { getUnsecure, removeSecure, removeUnsecure, secureGet } from "../modules/api/helpers/Storage";
-import { Profile, getProfile, saveProfile } from "../modules/api/scraper/Scraper";
-import { AuthContext } from "../modules/Auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { abort } from "../modules/api/scraper/class/PeopleList";
 import { BottomSheetModal, BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { useContext, useEffect, useRef, useState } from "react";
+import { SubscriptionContext } from "../../modules/Sub";
+import { getProfile, Profile } from "../../modules/api/scraper/Scraper";
+import { hasSubscription } from "../../components/LectimateAPI";
+import { secureGet } from "../../modules/api/helpers/Storage";
+import { ActivityIndicator, ScrollView, useColorScheme, View } from "react-native";
+import { hexToRgb, themes } from "../../modules/Themes";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-
-import { hasSubscription } from "../components/LectimateAPI";
-import { SubscriptionContext } from "../modules/Sub";
-import { useFocusEffect } from "@react-navigation/native";
-import { CheckCircleIcon, IdentificationIcon } from "react-native-heroicons/outline";
-import * as Device from 'expo-device';
-import * as MailComposer from 'expo-mail-composer';
-import { EnvelopeIcon, WrenchScrewdriverIcon } from "react-native-heroicons/solid";
-import * as WebBrowser from 'expo-web-browser';
-import Subscription from "../components/Subscription";
 import Constants from "expo-constants";
+import { Cell, Section, TableView } from "react-native-tableview-simple";
+import { AcademicCapIcon, AdjustmentsVerticalIcon, ArrowPathIcon, BellSnoozeIcon, BookOpenIcon, CheckCircleIcon, ClockIcon, ComputerDesktopIcon, EnvelopeIcon, IdentificationIcon, Square2StackIcon, UsersIcon, WrenchScrewdriverIcon, XMarkIcon } from "react-native-heroicons/solid";
+import * as WebBrowser from 'expo-web-browser';
+import * as MailComposer from 'expo-mail-composer';
+import * as Device from 'expo-device';
+import Subscription from "../../components/Subscription";
 
 export default function Mere({ navigation }: {navigation: any}) {
     const { subscriptionState, dispatchSubscription } = useContext(SubscriptionContext);

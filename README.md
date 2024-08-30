@@ -7,8 +7,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 
 ### __HØJ__
 - referral
-- fix widget
-- beskeder går ikke igennem/kan ikke sendes
+- beskeder går ikke igennem/kan ikke sendes i nogen tilfælde (??? - ved ikke lige hvad der er afgørende)
 
 ### __MELLEM__
 - push notifs
@@ -18,6 +17,7 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 - widget skal selv forsøge at fetch skemaet. Lykkedes det ikke, kan den tjekke om noget er gemt i dens app group (som normalt).
 - appen skal virke på mac
 - app på forsiden
+- improve folder structure and naming/general code readability in /modules/ folder
 
 ### __LAV__
 - spørgeskemaer

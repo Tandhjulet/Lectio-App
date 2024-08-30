@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useState } from "react"
-import { getProfile, scrapeDocuments, scrapeFolders } from "../../modules/api/scraper/Scraper";
-import { secureGet } from "../../modules/api/helpers/Storage";
-import { Folder, Document } from "../../modules/api/scraper/DocumentScraper";
+import { getProfile, scrapeDocuments, scrapeFolders } from "../../../modules/api/scraper/Scraper";
+import { secureGet } from "../../../modules/api/helpers/Storage";
+import { Folder, Document } from "../../../modules/api/scraper/DocumentScraper";
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { Cell, TableView } from "react-native-tableview-simple";
 import { FolderOpenIcon } from "react-native-heroicons/outline";
 import {useNavigation } from "@react-navigation/native";
-import { hexToRgb, themes } from "../../modules/Themes";
+import { hexToRgb, themes } from "../../../modules/Themes";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
 import FileViewer from "react-native-file-viewer";
 import RNFS from "react-native-fs";
-import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
+import { SCRAPE_URLS } from "../../../modules/api/scraper/Helpers";
 import * as Progress from 'react-native-progress';
-import File from "../../modules/File";
-import RateLimit from "../../components/RateLimit";
+import File from "../../../modules/File";
+import RateLimit from "../../../components/RateLimit";
 import * as Sentry from 'sentry-expo';
 
 export default function Documents({ route }: {

@@ -1,20 +1,20 @@
 import { Image, Platform, ScrollView, Text, TouchableOpacity, useColorScheme, View } from "react-native";
-import { SCRAPE_URLS } from "../../modules/api/scraper/Helpers";
-import { secureGet } from "../../modules/api/helpers/Storage";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getProfile, Profile, scrapeStudiekort, Studiekort as StudieKort } from "../../modules/api/scraper/Scraper";
-import { getPeople } from "../../modules/api/scraper/class/PeopleList";
-import { hexToRgb, themes } from "../../modules/Themes";
+import { getProfile, Profile, scrapeStudiekort, Studiekort as StudieKort } from "../../../modules/api/scraper/Scraper";
 import Constants from 'expo-constants';
 import { QrCodeIcon, XMarkIcon } from "react-native-heroicons/outline";
-import StudiekortSVG from "../../components/StudiekortSVG";
 import Animated, { BounceIn, BounceOut, withTiming, ZoomIn, ZoomOut } from "react-native-reanimated";
 import RNFetchBlob from "rn-fetch-blob";
 import { NavigationProp } from "@react-navigation/native";
-import BloomingSVG from "../../components/BloomingSVG";
 import { UserIcon } from "react-native-heroicons/outline";
-import Connectivity from "../../components/Connectivity";
 import * as Sentry from 'sentry-expo';
+import Connectivity from "../../../components/Connectivity";
+import { secureGet } from "../../../modules/api/helpers/Storage";
+import { hexToRgb, themes } from "../../../modules/Themes";
+import { SCRAPE_URLS } from "../../../modules/api/scraper/Helpers";
+import StudiekortSVG from "../../../components/StudiekortSVG";
+import BloomingSVG from "../../../components/BloomingSVG";
 
 export default function Studiekort({ navigation }: {
     navigation: NavigationProp<any>;
@@ -191,7 +191,8 @@ export default function Studiekort({ navigation }: {
                     fontWeight: "900",
                     letterSpacing: 0.6,
                     fontSize: 22.5,
-                }}>
+                    maxWidth: "80%",
+                }} numberOfLines={1}>
                     {studiekort?.name ?? "Indlæser..."}
                 </Text>
 
