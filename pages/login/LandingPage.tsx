@@ -7,6 +7,7 @@ import * as WebBrowser from 'expo-web-browser';
 import Constants from 'expo-constants';
 import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AcademicCapIcon } from "react-native-heroicons/outline";
+import { getName } from "../../modules/Config";
 
 export default function LandingPage({
     navigation,
@@ -51,7 +52,7 @@ export default function LandingPage({
                     paddingHorizontal: 20,
                     textTransform: "uppercase",
                 }} adjustsFontSizeToFit minimumFontScale={0.01} numberOfLines={1}>
-                    Lectimate
+                    {getName()}
                 </Text>
 
                 <Text style={{
@@ -115,7 +116,7 @@ export default function LandingPage({
                     textAlign: "center",
                     textAlignVertical: "center",
                 }}>
-                    Ved at bruge Lectimate accepterer du vores{" "}
+                    Ved at bruge {getName()} accepterer du vores{" "}
                     <Text onPress={() => {
                         WebBrowser.openBrowserAsync("https://lectimate.com/eula", {
                             controlsColor: theme.ACCENT.toString(),

@@ -25,12 +25,5 @@
       "developmentClient": false,
       "autoIncrement": true
     }
-  },
-  "submit": {
-    "production": {
-      "ios": {
-        "appName": "Lectimate"
-      }
-    }
   }
 }

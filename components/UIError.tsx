@@ -48,7 +48,7 @@ export default function UIError({ details, deps, setDep, paddingTop = 45 }: {
     details: string[],
     deps?: any[],
     setDep?: ((v: boolean) => void)[],
-    paddingTop: number,
+    paddingTop?: number,
 }) {
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];

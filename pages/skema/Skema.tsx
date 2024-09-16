@@ -11,7 +11,7 @@ import { getPeople } from "../../modules/api/scraper/class/PeopleList";
 import { NavigationProp, RouteProp } from "@react-navigation/native";
 import RateLimit from "../../components/RateLimit";
 import { Key, getSaved } from "../../modules/api/helpers/Cache";
-import { SCHEMA_SEP_CHAR } from "../../modules/Config";
+import { getName, SCHEMA_SEP_CHAR } from "../../modules/Config";
 import Logo from "../../components/Logo";
 import PagerView from "react-native-pager-view";
 import { SubscriptionContext } from "../../modules/Sub";
@@ -1123,7 +1123,7 @@ export default function Skema({ navigation, route }: {
                                                         onPress={() => {
                                                             if(modul.href.includes("proevehold")) {
                                                                 Alert.alert("Eksamen",
-                                                                            "Du kan desværre ikke se yderligere information om din eksamen i Lectimate.",
+                                                                            `Du kan desværre ikke se yderligere information om din eksamen i ${getName()}.`,
                                                                             [
                                                                                 {
                                                                                     text: "OK",

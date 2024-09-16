@@ -14,6 +14,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as MailComposer from 'expo-mail-composer';
 import * as Device from 'expo-device';
 import Subscription from "../../components/Subscription";
+import { getName } from "../../modules/Config";
 
 export default function Mere({ navigation }: {navigation: any}) {
     const { subscriptionState, dispatchSubscription } = useContext(SubscriptionContext);
@@ -72,7 +73,7 @@ export default function Mere({ navigation }: {navigation: any}) {
     const subscriptionTitle: () => string = () => {
         // @ts-ignore
         if(subscriptionState?.serverDown)
-            return "Lectimates server er nede"
+            return "Vores server er nede"
 
         if(subscriptionState?.freeTrial)
             return "Din prøveperiode er aktiv"
@@ -89,7 +90,7 @@ export default function Mere({ navigation }: {navigation: any}) {
         if(subscriptionState?.freeTrial)
             return "Udløber d. " + (endDate ? endDate.toLocaleDateString() : "ukendt dato")
 
-        return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate ? endDate.toLocaleDateString() : "ukendt dato") : "Et abonnement giver ubegrænset adgang til Lectimate";
+        return (subscriptionState?.hasSubscription && endDate) ? "Udløber d. " + (endDate ? endDate.toLocaleDateString() : "ukendt dato") : `Et abonnement giver ubegrænset adgang til {getName()}`;
     }
 
     const scheme = useColorScheme();
@@ -427,7 +428,7 @@ export default function Mere({ navigation }: {navigation: any}) {
 
                             <Cell
                                 cellStyle="Basic"
-                                title={"Kontakt Lectimate"}
+                                title={`Kontakt ${getName()}`}
 
                                 titleTextColor={theme.WHITE}
                                 titleTextStyle={{

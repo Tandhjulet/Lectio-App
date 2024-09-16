@@ -15,6 +15,7 @@ import { Pressable } from 'react-native';
 import { hexToRgb, themes } from '../modules/Themes';
 import { Sku, getSubscriptions, requestSubscription,  purchaseUpdatedListener, Purchase } from "react-native-iap";
 import { useNavigation } from '@react-navigation/native';
+import { getName } from '../modules/Config';
 
 export function Option({
     title,
@@ -208,7 +209,7 @@ export default function Subscription({
                         <Text style={{
                             color: theme.ACCENT,
                         }}>
-                            {" "}Lectimate
+                            {" "}{getName()}
                         </Text>
                         <Text style={{
                             color: theme.WHITE,
@@ -231,7 +232,7 @@ export default function Subscription({
                         }}>
                             ubegrænset adgang
                         </Text>
-                        {" "}til Lectimate!
+                        {" "}til {getName()}!
                     </Text>
 
                     <View style={{
@@ -250,7 +251,7 @@ export default function Subscription({
 
                         marginBottom: 20,
                     }}>
-                        Lectimate tilbyder følgende muligheder
+                        {getName()} tilbyder følgende muligheder
                     </Text>
 
                     

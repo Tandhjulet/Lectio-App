@@ -12,6 +12,7 @@ import { NavigationProp, useFocusEffect, useNavigation, useRoute } from "@react-
 import { StackNavigationProp } from "@react-navigation/stack";
 import UserCell from "../../../components/UserCell";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { getName } from "../../../modules/Config";
 
 export default function TeachersAndStudents({ navigation }: {
     navigation: NativeStackNavigationProp<any>,
@@ -209,7 +210,7 @@ export default function TeachersAndStudents({ navigation }: {
                                     letterSpacing: 0.2,
                                     fontSize: 12,
                                 }}>
-                                    Eftersom det er en af de første gange du åbner appen, er Lectimate stadig i gang med at hente skolens elever og lærere fra Lectio.
+                                    Eftersom det er en af de første gange du åbner appen, er {getName()} stadig i gang med at hente skolens elever og lærere fra Lectio.
                                     Dette gøres i baggrunden mens appen er åben, og tager sjældent længere end et minut.
                                     {"\n\n"}
                                     Det kan være nødvendigt at genstarte appen, for at personerne vises, hvis de er blevet indlæst.

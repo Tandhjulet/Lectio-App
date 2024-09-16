@@ -5,6 +5,7 @@ import React, { createRef, useCallback, useEffect } from "react";
 
 import Confetti from 'react-native-confetti';
 import { NavigationProp, useFocusEffect } from "@react-navigation/native";
+import { getName } from "../modules/Config";
 
 
 export default function ThankYou({
@@ -68,9 +69,9 @@ export default function ThankYou({
                     flexWrap: "wrap",
                 
                 }}>
-                    Dit nye abonnement giver dig fuld adgang til Lectimate.
+                    Dit nye abonnement giver dig fuld adgang til {getName()}.
                     {"\n\n"}
-                    Opstår der et problem med dit abonnement, kan du kontakte Lectimate gennem appen.
+                    Opstår der et problem med dit abonnement, kan du kontakte {getName()} gennem appen.
                 </Text>
             </View>
 
