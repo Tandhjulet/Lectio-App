@@ -22,7 +22,6 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 - app på forsiden
 - improve folder structure and naming/general code readability in /modules/ folder
 - folk bliver dobbelt sat ind i databasen (?)
-- fravær procent virker stadig ik (?)
 
 ### __LAV__
 - spørgeskemaer
