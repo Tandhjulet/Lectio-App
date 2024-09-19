@@ -8,6 +8,9 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 ### __HØJ__
 - referral
 - beskeder går ikke igennem/kan ikke sendes i nogen tilfælde (??? - ved ikke lige hvad der er afgørende)
+- web:
+  - hjemmeside til EasyStudy
+  - QR kode sendes for at verificere
 
 ### __MELLEM__
 - push notifs

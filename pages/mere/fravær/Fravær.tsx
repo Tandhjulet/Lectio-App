@@ -302,7 +302,7 @@ export default function Fravær() {
                                                 fontSize: 15,
                                                 marginBottom: 4,
                                             }}>
-                                                {treatNumber(chartedAbsence.almindeligt.absent/chartedAbsence.almindeligt.settled, 1)}%
+                                                {treatNumber((chartedAbsence.almindeligt.absent/chartedAbsence.almindeligt.settled)*100, 1)}%
                                             </Text>
 
                                             <Text style={{
@@ -336,7 +336,7 @@ export default function Fravær() {
                                                 fontSize: 15,
                                                 marginBottom: 4,
                                             }}>
-                                                {treatNumber(chartedAbsence.almindeligt.absent/chartedAbsence.almindeligt.yearly, 1)}%
+                                                {treatNumber((chartedAbsence.almindeligt.absent/chartedAbsence.almindeligt.yearly)*100, 1)}%
                                             </Text>
 
                                             <Text style={{
@@ -471,7 +471,7 @@ export default function Fravær() {
                                                 fontSize: 15,
                                                 marginBottom: 4,
                                             }}>
-                                                {treatNumber(chartedAbsence.skriftligt.absent/chartedAbsence.skriftligt.settled, 1)}%
+                                                {treatNumber((chartedAbsence.skriftligt.absent/chartedAbsence.skriftligt.settled)*100, 1)}%
                                             </Text>
 
                                             <Text style={{
@@ -505,7 +505,7 @@ export default function Fravær() {
                                                 fontSize: 15,
                                                 marginBottom: 4,
                                             }}>
-                                                {treatNumber(1, 1)}%
+                                                {treatNumber((chartedAbsence.skriftligt.absent/chartedAbsence.skriftligt.yearly)*100, 1)}%
                                             </Text>
 
                                             <Text style={{
