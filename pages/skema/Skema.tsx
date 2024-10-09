@@ -601,7 +601,7 @@ export default function Skema({ navigation, route }: {
         }
 
         return theme.WHITE;
-    }, []);
+    }, [theme, scheme]);
 
     const renderSlider = useMemo(() => {
         return daysOfThreeWeeks.map((days, i) => (
@@ -653,7 +653,17 @@ export default function Skema({ navigation, route }: {
                                         opacity: pressed ? 0.6 : 1,
                                     }
                                 ]}>
-                                    <View style={{...styles.dayContainer}}>
+                                    <View style={{
+										width: 40,
+
+										display: 'flex',
+										flexDirection: 'column',
+										justifyContent: 'center',
+										alignItems: 'center',
+
+										paddingBottom: 5,
+										paddingTop: 5,
+									}}>
                                         <Text style={{
                                             color: color(isSelectedDay, isToday, true),
                                             fontWeight: "bold",
@@ -1163,7 +1173,7 @@ export default function Skema({ navigation, route }: {
                                                                 width: "100%",
                                                             }}>
                                                                 <View style={{
-                                                                    backgroundColor: (modul.changed && scheme == "light") ? calcColor(0.3, modul) : calcColor(0.5, modul),
+                                                                    backgroundColor: calcColor(0.5, modul),
                                                                     borderRadius: 5,
 
                                                                     width: "100%",
@@ -1350,18 +1360,3 @@ export default function Skema({ navigation, route }: {
         </View>
     )
 }
-
-const styles = StyleSheet.create({
-    dayContainer: {
-                                        
-        width: 40,
-
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-
-        paddingBottom: 5,
-        paddingTop: 5,
-    },
-})

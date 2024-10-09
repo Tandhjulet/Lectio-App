@@ -100,6 +100,14 @@ export const isExpoGo = Constants.appOwnership === 'expo';
 const App = () => {
   useEffect(() => {
     (async () => {
+	  try {
+		const { scheme } = await getUnsecure("colorScheme");
+		console.log(scheme)
+		Appearance.setColorScheme(scheme);
+	  } catch {
+		console.debug("fdailed")
+	  }
+
       await cleanUp();
 
       // LOGIN

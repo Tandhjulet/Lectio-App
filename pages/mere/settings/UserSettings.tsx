@@ -13,12 +13,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { signOutReq } from "../../../modules/api/Authentication";
 
 export default function UserSettings() {
-    const [darkMode, setDarkMode] = useState<boolean>()
-
-    const { signOut } = useContext(AuthContext);
-
     const scheme = useColorScheme();
     const theme = themes[scheme ?? "dark"];
+
+    const [darkMode, setDarkMode] = useState<boolean>(scheme === "dark")
+
+    const { signOut } = useContext(AuthContext);
 
     return (
         <GestureHandlerRootView>
@@ -39,7 +39,12 @@ export default function UserSettings() {
                                     cellAccessoryView={<Switch 
                                         trackColor={{false: '#767577', true: "#4ca300"}}
 
-                                        onValueChange={setDarkMode}
+                                        onValueChange={async () => {
+											setDarkMode((prev) => !prev);
+											const newScheme = scheme === "dark" ? "light" : "dark";
+											Appearance.setColorScheme(newScheme);
+											await saveUnsecure("colorScheme", {scheme: newScheme});
+										}}
                                         value={darkMode}
                                     />}
                                 />
