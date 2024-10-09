@@ -399,9 +399,7 @@ export default function Beskeder({ navigation }: {navigation: NavigationProp<any
                 <ActivityIndicator size={"small"} color={theme.ACCENT} />
             </View>
             :
-            <ScrollView style={{
-                marginBottom: 50,
-            }} refreshControl={
+            <ScrollView refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }>
                 {messages == null ? 
