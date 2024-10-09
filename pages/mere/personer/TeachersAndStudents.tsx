@@ -233,7 +233,7 @@ export default function TeachersAndStudents({ navigation }: {
                                                 paddingRight: 5,
                                                 paddingLeft: 5,
 
-                                                height: "100%",
+                                                minHeight: "100%",
                                             }}
 
                                             getItemLayout={getLayout}
@@ -289,11 +289,11 @@ export default function TeachersAndStudents({ navigation }: {
                                             }}
 
                                             contentContainerStyle={{
-                                                paddingBottom: 50,
+                                                paddingBottom: 120,
                                                 paddingRight: 5,
                                                 paddingLeft: 5,
-
-                                                height: "100%",
+												
+												minHeight: "100%",
                                             }}
 
                                             stickySectionHeadersEnabled
@@ -302,12 +302,6 @@ export default function TeachersAndStudents({ navigation }: {
                                             maxToRenderPerBatch={20}
                                             initialNumToRender={10}
                                             removeClippedSubviews
-
-                                            viewabilityConfig={{
-                                                itemVisiblePercentThreshold: 0,
-                                                minimumViewTime: 200,
-                                                waitForInteraction: false,
-                                            }}
 
                                             keyboardDismissMode="on-drag"
                                             keyboardShouldPersistTaps="always"

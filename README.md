@@ -7,22 +7,16 @@ På nuværende tidspunkt søger jeg dog hjælp til at lave på Lectimate. Jeg ha
 
 ### __HØJ__
 - referral
-- beskeder går ikke igennem/kan ikke sendes i nogen tilfælde (??? - ved ikke lige hvad der er afgørende)
-- web:
-  - hjemmeside til EasyStudy
-  - QR kode sendes for at verificere
 
 ### __MELLEM__
 - push notifs
   - skoledagen starter sent
   - aflyst/ændret modul
   - evt. afleveringer/lektier
-- widget skal selv forsøge at fetch skemaet. Lykkedes det ikke, kan den tjekke om noget er gemt i dens app group (som normalt).
 - appen skal virke på mac
 - app på forsiden
-- improve folder structure and naming/general code readability in /modules/ folder
 - folk bliver dobbelt sat ind i databasen (?)
 
-### __LAV__
+### __LAV__	
 - spørgeskemaer
 - istedet for hold så parse gruppen til et fag vha. https://www.lectio.dk/lectio/572/FindSkemaAdv.aspx

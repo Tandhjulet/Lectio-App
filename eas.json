@@ -25,5 +25,12 @@
       "developmentClient": false,
       "autoIncrement": true
     }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "bundleIdentifier": "com.tandhjulet.lectimate"
+      }
+    }
   }
 }
