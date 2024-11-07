@@ -174,7 +174,6 @@ export default function Skema({ navigation, route }: {
             }
             
             if(getWeekNumber(prev) != getWeekNumber(copy)) {
-                // @ts-ignore
                 if(!subscriptionState?.hasSubscription) {
                     navigation.push("NoAccessSkema")
                     pagerRef.current?.setPageWithoutAnimation(1);
@@ -484,8 +483,8 @@ export default function Skema({ navigation, route }: {
     const threshold = useRef(60).current;
     const maxExtension = useRef(90).current;
 
-    const panResponder = useRef(
-        PanResponder.create({
+    const panResponder = useMemo(() => {
+		return PanResponder.create({
             onStartShouldSetPanResponder : () => false,
             onMoveShouldSetPanResponder : (e, gestureState) => {
                 const {dx, dy} = gestureState;
@@ -519,7 +518,8 @@ export default function Skema({ navigation, route }: {
                     }
                 ).start();
             }
-        })).current;
+        })
+	}, [daySelector]);
 
     /**
      * Calculates the color of a given module from it's status.
