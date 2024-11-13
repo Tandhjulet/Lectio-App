@@ -165,7 +165,14 @@ export default function Skema({ navigation, route }: {
      */
     const daySelector = useCallback((t: "ADD" | "REMOVE") => {
         setSelectedDay((prev) => {
+			if(!subscriptionState?.hasSubscription) {
+				navigation.push("NoAccessSkema")
+				pagerRef.current?.setPageWithoutAnimation(1);
+				return prev;
+			}
+
             const copy = new Date(prev);
+			
     
             if(t == "ADD") {
                 copy.setDate(prev.getDate()+1)
@@ -174,11 +181,6 @@ export default function Skema({ navigation, route }: {
             }
             
             if(getWeekNumber(prev) != getWeekNumber(copy)) {
-                if(!subscriptionState?.hasSubscription) {
-                    navigation.push("NoAccessSkema")
-                    pagerRef.current?.setPageWithoutAnimation(1);
-                    return prev;
-                }
                 setBlockScroll(true);
 
                 if(t === "ADD") pagerRef.current?.setPage(2);
@@ -500,6 +502,11 @@ export default function Skema({ navigation, route }: {
                         return (
                             <React.Fragment key={j + "."}>
                                 <Pressable onPress={() => {
+									if(!subscriptionState?.hasSubscription) {
+										navigation.push("NoAccessSkema")
+										return;
+									}
+
                                     setDayNum(day.weekDayNumber);
                                     setSelectedDay(day.date);
                                 }} style={({pressed}) => [
