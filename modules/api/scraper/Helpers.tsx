@@ -15,7 +15,7 @@ export function SCRAPE_URLS(gymNummer?: String, elevId?: string, klasseId?: stri
         "ABSENCE_REGISTRATION": `https://www.lectio.dk/lectio/${gymNummer}/subnav/fravaerelev_fravaersaarsager.aspx`,
         "RAW_MESSAGE_URL": `https://www.lectio.dk/lectio/${gymNummer}/beskeder2.aspx`,
         "MESSAGES": `https://www.lectio.dk/lectio/${gymNummer}/beskeder2.aspx?mappeid=${elevId}`,
-        "NEW_MESSAGE": `https://www.lectio.dk/lectio/572/beskeder2.aspx?mappeid=${selectedFolder}`,
+        "NEW_MESSAGE": `https://www.lectio.dk/lectio/${gymNummer}/beskeder2.aspx?mappeid=${selectedFolder}`,
         "S_MESSAGE": `https://www.lectio.dk/lectio/${gymNummer}/beskeder2.aspx?type=visbesked&id=${elevId}`,
         "PEOPLE": `https://www.lectio.dk/lectio/${gymNummer}/cache/DropDown.aspx?type=${type}`,
         "CLASS_LIST": `https://www.lectio.dk/lectio/${gymNummer}/FindSkema.aspx?type=stamklasse`,

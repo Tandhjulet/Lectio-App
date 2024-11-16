@@ -58,18 +58,20 @@ export async function validate(gymNummer: string, username: string, password: st
         body: stringifiedData,
     });
 
+	const isAuth = res.status === 303;
+
     let text = await res.text();
-    if(res.url !== "https://www.lectio.dk/lectio/572/forside.aspx") {
-        text = await (await fetch(SCRAPE_URLS(gymNummer).FORSIDE, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-            },
-            body: stringifiedData,
-        })).text();
-    }
-    const isAuth = (res.url == SCRAPE_URLS(gymNummer).FORSIDE && text.includes("Log ud"));
+    // if(res.url !== "https://www.lectio.dk/lectio/572/forside.aspx") {
+    //     text = await (await fetch(SCRAPE_URLS(gymNummer).FORSIDE, {
+    //         method: "POST",
+    //         credentials: "include",
+    //         headers: {
+    //             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    //         },
+    //         body: stringifiedData,
+    //     })).text();
+    // }
+    // const isAuth = (res.url == SCRAPE_URLS(gymNummer).FORSIDE && text.includes("Log ud"));
 
     if(isAuth) {
         await _fetchProfile(text, gymNummer)
