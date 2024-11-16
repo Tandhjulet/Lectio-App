@@ -49,7 +49,7 @@ import * as Sentry from 'sentry-expo';
 
 Sentry.init({
   dsn: 'https://c026c665046dbe3bb4441be91943ee7b@o4507719891288064.ingest.de.sentry.io/4507719895875664',
-  enableInExpoDevelopment: false,
+  enableInExpoDevelopment: true,
   debug: __DEV__,
   integrations: [
     new Sentry.Native.ReactNativeTracing({
@@ -76,6 +76,7 @@ import Registreringer from './pages/mere/fravær/Registreringer';
 import Fravær from './pages/mere/fravær/Fravær';
 import Lektier from './pages/skema/Lektier';
 import { MereNavigator } from './pages/mere/Navigator';
+import React from 'react';
 
 Constants.appOwnership === 'expo'
   ? Linking.createURL('/--/')
@@ -102,10 +103,9 @@ const App = () => {
     (async () => {
 	  try {
 		const { scheme } = await getUnsecure("colorScheme");
-		console.log(scheme)
 		Appearance.setColorScheme(scheme);
 	  } catch {
-		console.debug("fdailed")
+		Appearance.setColorScheme("dark");
 	  }
 
       await cleanUp();
