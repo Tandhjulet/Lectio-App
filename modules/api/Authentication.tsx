@@ -17,15 +17,19 @@ import { saveUnsecure } from './helpers/Storage';
  * @returns a boolean value indicating whether the request succeded or not
  */
 export async function validate(gymNummer: string, username: string, password: string): Promise<boolean> {
+	const headers = (await getASPHeaders(SCRAPE_URLS(gymNummer).LOGIN_URL));
     const payload: {[id: string]: string} = {
-        ...(await getASPHeaders(SCRAPE_URLS(gymNummer).LOGIN_URL)),
+        ...headers,
 
         "__EVENTTARGET": "m$Content$submitbtn2",
         "m$Content$username": username,
         "m$Content$password": password,
         "masterfootervalue": "X1!ÆØÅ",
         "LectioPostbackId": "",
+		time: "0",
     }
+
+	delete payload["__VIEWSTATEENCRYPTED"];
     
     const parsedData = [];
     for (const key in payload) {
@@ -39,11 +43,12 @@ export async function validate(gymNummer: string, username: string, password: st
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Encoding": "gzip, deflate, br, zstd",
             "Accept-Language": "da-DK,da;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6",
             "Cache-Control": "no-cache",
             "Origin": "https://www.lectio.dk",
             "Pragma": "no-cache",
+			"Priority": "u=0, i",
             "Referer": `https://www.lectio.dk/lectio/${gymNummer}/login.aspx`,
             "Sec-Ch-Ua": `"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"`,
             "Sec-Ch-Ua-Mobile": "?0",
@@ -53,25 +58,24 @@ export async function validate(gymNummer: string, username: string, password: st
             "Sec-Fetch-Site": "same-origin",
             "Sec-Fetch-User": "?1",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+			"Connection": "keep-alive",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
         },
         body: stringifiedData,
     });
 
-	const isAuth = res.status === 303;
-
     let text = await res.text();
-    // if(res.url !== "https://www.lectio.dk/lectio/572/forside.aspx") {
-    //     text = await (await fetch(SCRAPE_URLS(gymNummer).FORSIDE, {
-    //         method: "POST",
-    //         credentials: "include",
-    //         headers: {
-    //             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-    //         },
-    //         body: stringifiedData,
-    //     })).text();
-    // }
-    // const isAuth = (res.url == SCRAPE_URLS(gymNummer).FORSIDE && text.includes("Log ud"));
+    if(res.url !== `https://www.lectio.dk/lectio/${gymNummer}/forside.aspx`) {
+        text = await (await fetch(SCRAPE_URLS(gymNummer).FORSIDE, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+            },
+            body: stringifiedData,
+        })).text();
+    }
+    const isAuth = (res.url == SCRAPE_URLS(gymNummer).FORSIDE && text.includes("Log ud"));
 
     if(isAuth) {
         await _fetchProfile(text, gymNummer)
