@@ -26,10 +26,9 @@ export async function validate(gymNummer: string, username: string, password: st
         "m$Content$password": password,
         "masterfootervalue": "X1!ÆØÅ",
         "LectioPostbackId": "",
+		"__VIEWSTATEENCRYPTED": "",
 		time: "0",
     }
-
-	delete payload["__VIEWSTATEENCRYPTED"];
     
     const parsedData = [];
     for (const key in payload) {
