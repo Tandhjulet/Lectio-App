@@ -58,10 +58,10 @@ export function parseASPHeaders(ASPHeader: any) {
     return parsedHeaders;
 }
 
-export async function getASPHeaders(url: string): Promise<{[id: string]: string}> {
+export async function getASPHeaders(url: string, credentials: RequestCredentials_  = "include"): Promise<{[id: string]: string}> {
     const res = (await fetch(url, {
         method: "GET",
-        credentials: 'include',
+        credentials: credentials,
         headers: {
             "User-Agent": "Mozilla/5.0",
         },

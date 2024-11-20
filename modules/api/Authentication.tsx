@@ -17,7 +17,7 @@ import { saveUnsecure } from './helpers/Storage';
  * @returns a boolean value indicating whether the request succeded or not
  */
 export async function validate(gymNummer: string, username: string, password: string): Promise<boolean> {
-	const headers = (await getASPHeaders(SCRAPE_URLS(gymNummer).LOGIN_URL));
+	const headers = (await getASPHeaders(SCRAPE_URLS(gymNummer).LOGIN_URL, "omit"));
     const payload: {[id: string]: string} = {
         ...headers,
 
@@ -29,6 +29,8 @@ export async function validate(gymNummer: string, username: string, password: st
 		"__VIEWSTATEENCRYPTED": "",
 		time: "0",
     }
+	// console.log("sending");
+	// console.log(payload);
     
     const parsedData = [];
     for (const key in payload) {
@@ -74,8 +76,9 @@ export async function validate(gymNummer: string, username: string, password: st
             body: stringifiedData,
         });
     }
+
 	let text = await req.text();
-    const isAuth = (res.url == SCRAPE_URLS(gymNummer).FORSIDE && text.includes("Log ud"));
+    const isAuth = res.url == SCRAPE_URLS(gymNummer).FORSIDE;
 
     if(isAuth) {
         await _fetchProfile(text, gymNummer)
