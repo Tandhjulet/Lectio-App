@@ -116,7 +116,7 @@ export async function scrapePeople(force: boolean = false) {
     }, 4900)
 }
 
-export async function abort() {
+export function abort() {
     IDS.forEach((id: number) => {
         clearTimeout(id);
     })
