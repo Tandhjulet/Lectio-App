@@ -99,16 +99,17 @@ export default function UserSettings() {
 
                                     onPress={() => {
                                         (async () => {
-                                            await removeSecure("password");
-                                            await removeSecure("username");
-                                            await removeSecure("gym");
-
-                                            await AsyncStorage.clear();
-
-                                            await signOutReq();
-                                            await abort();
-
-                                            await signOut();
+											await Promise.allSettled([
+												abort(),
+												removeSecure("password"),
+												removeSecure("username"),
+												removeSecure("gym"),
+												removeSecure("profile"),
+												AsyncStorage.clear()
+											]);
+											
+											await signOutReq();
+											await signOut();
                                         })();
                                     }}
                                 />
