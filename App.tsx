@@ -62,7 +62,7 @@ import * as Linking from 'expo-linking';
 import Constants from 'expo-constants';
 import LandingPage from './pages/login/LandingPage';
 import { hexToRgb, themes } from './modules/Themes';
-import receiptValid, { hasSubscription } from './components/LectimateAPI';
+import receiptValid, { hasSubscription, ValidationResponse } from './components/LectimateAPI';
 import { SubState, SubscriptionContext } from './modules/Sub';
 import ThankYou from './pages/ThankYou';
 import { Opgave } from './modules/api/scraper/OpgaveScraper';
@@ -131,6 +131,9 @@ const App = () => {
           } else {
             dispatch({ type: 'SIGN_IN' });
             setTimeout(() => scrapePeople(), 100);
+
+			const persistedSubscription: ValidationResponse = await getUnsecure("subscription")
+			dispatchSubscription({ type: persistedSubscription.valid ? persistedSubscription.freeTrial ? "FREE_TRIAL" : "SUBSCRIBED" : "NOT_SUBSCRIBED" })
 
             if(await hasProfileSaved())
               return;
@@ -229,13 +232,15 @@ const App = () => {
           return false;
 
         if(await authorize(payload)) {
-          await secureSave("username", payload.username);
-          await secureSave("password", payload.password);
-          
-          dispatch({ type: 'SIGN_IN' })
+			await secureSave("username", payload.username);
+			await secureSave("password", payload.password);
+			
+			dispatch({ type: 'SIGN_IN' })
+			const persistedSubscription: ValidationResponse = await getUnsecure("subscription")
+			dispatchSubscription({ type: persistedSubscription.valid ? persistedSubscription.freeTrial ? "FREE_TRIAL" : "SUBSCRIBED" : "NOT_SUBSCRIBED" })
 
-          setTimeout(() => scrapePeople(), 100);
-          return true;
+			setTimeout(() => scrapePeople(), 100);
+			return true;
         }
 
         return false;

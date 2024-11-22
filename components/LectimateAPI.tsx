@@ -4,7 +4,7 @@ import { SCRAPE_URLS } from "../modules/api/scraper/Helpers";
 import { getProfile } from "../modules/api/scraper/Scraper";
 import { parseQR } from "../modules/api/qr/QRCode";
 
-interface ValidationResponse {
+export interface ValidationResponse {
     valid: boolean | null,
     endDate?: Date,
     productId?: string,
