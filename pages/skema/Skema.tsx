@@ -554,7 +554,7 @@ export default function Skema({ navigation, route }: {
                 </View>
             </View>
         ))
-    }, [daysOfThreeWeeks, selectedDay, loading])
+    }, [daysOfThreeWeeks, selectedDay, loading, subscriptionState])
     // skema depends on loading and will always be set before loading
     // therefor its not needed on the list
 
